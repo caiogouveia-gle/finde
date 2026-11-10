@@ -318,3 +318,121 @@ test('base ausente: sobe vazio, avisa e responde sem quebrar', async () => {
   assert.match(r.aviso, /vazia/);
   assert.ok(avisos.some((a) => /não existe/.test(a)));
 });
+
+// ---------------------------------------------------------------- detalhe da festa
+
+test('cada opção traz a festa inteira do registro e a data', async () => {
+  const r = await chamar('POST', '/api/festas', { criterios: PEDIDO });
+  assert.equal(r.status, 200);
+  for (const o of r.corpo.opcoes) {
+    assert.match(o.data, /^\d{4}-\d{2}-\d{2}$/, o.festa.id);
+    for (const k of ['endereco', 'lotes', 'entradaNaPorta', 'linkCompra', 'linkEvento', 'instagram', 'cartaz', 'lineup', 'idadeMinima', 'regras', 'fontes', 'campos', 'coletadoEm']) {
+      assert.ok(k in o.festa, `${o.festa.id} sem ${k}`);
+    }
+    assert.equal(o.festa.exemplo, true);
+    assert.equal(typeof o.festa.origemIdade, 'string');
+    assert.match(o.festa.campos.mediaIdade.conferidoEm, /-03:00$/);
+  }
+});
+
+test('conversa que não entende devolve as opções anteriores também com a data', async () => {
+  const antes = await chamar('POST', '/api/festas', { criterios: PEDIDO });
+  const r = await conversar(antes.corpo.criterios, antes.corpo.opcoes.map((o) => o.festa.id), 'algo mais tranquilo');
+  assert.equal(r.corpo.entendeu, false);
+  assert.ok(r.corpo.opcoes.length > 0);
+  for (const o of r.corpo.opcoes) assert.match(o.data, /^\d{4}-\d{2}-\d{2}$/);
+});
+
+test('o convite guarda o registro da festa e a descrição de compartilhamento leva o endereço', async () => {
+  const criado = await chamar('POST', '/api/planos', { criterios: PEDIDO, festa: 'sabado-groove' });
+  const lido = await chamar('GET', `/api/planos/${criado.corpo.id}`);
+  const f = lido.corpo.festa.festa;
+  assert.equal(f.exemplo, true);
+  assert.match(f.endereco.texto, /\d/);
+  assert.ok(Array.isArray(f.lotes));
+  const pagina = await chamar('GET', `/p/${criado.corpo.id}`);
+  const desc = pagina.corpo.match(/<meta property="og:description" content="([^"]*)">/)[1];
+  assert.ok(desc.includes(f.endereco.texto.replace(/&/g, '&amp;')), desc);
+});
+
+test('a base fictícia anda com o relógio do servidor', async () => {
+  const outra = fs.mkdtempSync(path.join(os.tmpdir(), 'finde-relogio-'));
+  const agora = Date.parse('2026-11-28T21:00:00-03:00');
+  const s = criarServidor({ dados: DADOS, varDir: path.join(outra, 'var'), log: mudo, relogio: () => agora });
+  await new Promise((r) => s.listen(0, '127.0.0.1', r));
+  const r = await fetch(`http://127.0.0.1:${s.address().port}/api/festas`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: PEDIDO }),
+  }).then((x) => x.json());
+  await new Promise((r2) => s.close(r2));
+  fs.rmSync(outra, { recursive: true, force: true });
+  for (const o of r.opcoes) {
+    const idade = agora - Date.parse(o.festa.coletadoEm);
+    assert.ok(idade >= 0 && idade < 7 * 3600e3, `${o.festa.id}: coletada há ${idade / 3600e3} h`);
+  }
+});
+
+test('cartazes: cada festa tem o seu, servido como webp', async () => {
+  const { festas } = JSON.parse(fs.readFileSync(DADOS, 'utf8'));
+  for (const f of festas) {
+    const r = await fetch(raiz + f.cartaz);
+    assert.equal(r.status, 200, f.cartaz);
+    assert.equal(r.headers.get('content-type'), 'image/webp');
+    await r.arrayBuffer();
+  }
+});
+
+test('/fora.html: a página de saída do protótipo, sem script inline', async () => {
+  const r = await chamar('GET', '/fora.html?servico=Instagram&para=https%3A%2F%2Fwww.instagram.com%2Fx%2F');
+  assert.equal(r.status, 200);
+  assert.match(r.cabecalhos.get('content-security-policy'), /script-src 'self'/);
+  assert.match(r.corpo, /<script src="\/fora\.js" defer><\/script>/);
+  assert.doesNotMatch(r.corpo, /<script>(?!<)/);
+  assert.equal((await chamar('GET', '/fora.js')).status, 200);
+});
+
+// ---------------------------------------------------------------- perguntas novas (R18 a R22)
+
+const PEDIDO_NOVO = { dia: 'sab', janela: 'fim-de-tarde', idade: { min: 28, max: 35 }, teto: 80, estilos: [], bairros: ['pinheiros', 'centro'] };
+
+test('formulário traz as zonas com os bairros e a faixa padrão de 28 a 35', async () => {
+  const r = await chamar('GET', '/api/formulario');
+  assert.deepEqual(r.corpo.idade, { min: 18, max: 50, padrao: { min: 28, max: 35 } });
+  assert.deepEqual(r.corpo.zonas.map((z) => z.nome), ['Zona Oeste', 'Centro', 'Centro-Sul']);
+  assert.equal(r.corpo.zonas.flatMap((z) => z.bairros).length, 7);
+});
+
+test('festas com bairros e intervalo: blocos, frase do pedido e nada de faixa obrigatória', async () => {
+  const r = await chamar('POST', '/api/festas', { criterios: PEDIDO_NOVO });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.corpo.opcoes.map((o) => o.bloco), ['pedido', 'pedido', 'perto']);
+  assert.ok(r.corpo.pedidoPartes.some((p) => p.chave === 'bairros'));
+  assert.ok(r.corpo.pedidoPartes.some((p) => p.chave === 'idade' && p.texto === 'gente de 28 a 35'));
+  assert.deepEqual(r.corpo.criterios.idade, { min: 28, max: 35 });
+});
+
+test('conversa com intervalo: entende e responde 200', async () => {
+  const antes = await chamar('POST', '/api/festas', { criterios: PEDIDO_NOVO });
+  const r = await conversar(antes.corpo.criterios, antes.corpo.opcoes.map((o) => o.festa.id), 'gente mais velha');
+  assert.equal(r.status, 200);
+  assert.equal(r.corpo.entendeu, true);
+});
+
+test('conversa com intervalo: "mais velha" desloca o intervalo; no teto, diz que já é o mais velho', async () => {
+  const pedir = async (idade, texto) => {
+    const antes = await chamar('POST', '/api/festas', { criterios: { ...PEDIDO_NOVO, idade } });
+    return conversar(antes.corpo.criterios, antes.corpo.opcoes.map((o) => o.festa.id), texto);
+  };
+  let r = await pedir({ min: 28, max: 35 }, 'gente mais velha');
+  assert.deepEqual(r.corpo.criterios.idade, { min: 33, max: 40 });
+  assert.match(r.corpo.resposta, /33 a 40/);
+  r = await pedir({ min: 40, max: 50 }, 'gente mais velha');
+  assert.deepEqual(r.corpo.criterios.idade, { min: 40, max: 50 });
+  assert.match(r.corpo.resposta, /já é a faixa mais velha/i);
+  r = await pedir({ min: 28, max: 35 }, 'mais nova');
+  assert.deepEqual(r.corpo.criterios.idade, { min: 23, max: 30 });
+  r = await pedir({ min: 18, max: 50 }, 'público de 30 a 40');
+  assert.deepEqual(r.corpo.criterios.idade, { min: 30, max: 40 });
+  r = await pedir({ min: 18, max: 50 }, 'tem gente da minha idade?');
+  assert.match(r.corpo.resposta, /18 a 50/);
+  assert.doesNotMatch(r.corpo.resposta, /25 a 29/);
+});

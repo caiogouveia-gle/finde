@@ -1,6 +1,8 @@
 /* finde. v1
    O manual de identidade visual é a base: paleta, as três famílias, a voz,
-   o botão em pílula, o pré-quiz com fios rosé, as boas-vindas com fio.
+   o pré-quiz com fios rosé, as boas-vindas com fio. Sem pílula: botões,
+   chips e passos têm canto reto, como os fios (decisão de 10/11/2026); só
+   marcadores e pontos de seletor são redondos, porque ali a forma é função.
    O acabamento é editorial: hierarquia por tamanho, peso e itálico; fios no
    lugar de caixas; resultados como programação; o ponto rosé como gesto de
    acento. Sem sombra, degradê, ícone ou emoji. */
@@ -328,7 +330,7 @@ button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action
 
 /* ---------------------------------------------------------------- botão (manual) */
 
-/* Pílula de 44 px com raio de 22 px: primário cheio, secundário vazado. */
+/* Botão de 44 px, canto reto: primário cheio, secundário vazado. */
 .botao {
   display: inline-flex;
   align-items: center;
@@ -336,7 +338,7 @@ button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action
   min-height: 44px;
   padding: 0 26px;
   border: .5px solid var(--acao);
-  border-radius: 22px;
+  border-radius: 0;
   background: var(--acao);
   color: var(--acao-tinta);
   font: 500 14px/1.2 var(--sans);
@@ -369,7 +371,7 @@ button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action
 }
 .botao--vazado.carregando::before, .link.carregando::before { background: var(--tinta); }
 .link.carregando::before { left: 0; right: 0; bottom: calc(50% - 11px); }
-.festa .link.carregando::before, .pedido .link.carregando::before { bottom: -6px; }
+.pedido .link.carregando::before { bottom: -6px; }
 @keyframes correr {
   0% { transform: scaleX(0); transform-origin: left center; }
   50% { transform: scaleX(1); transform-origin: left center; }
@@ -434,7 +436,7 @@ p.carregando {
 
 /* ---------------------------------------------------------------- formulário */
 
-.progresso { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--e1); margin-top: var(--e2); align-items: start; }
+.progresso { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--e1); margin-top: var(--e2); align-items: start; }
 .progresso span { height: 2px; background: var(--fio-off); }
 .progresso span.feito { background: var(--tinta); }
 .progresso span.atual { background: var(--tinta); height: 1px; margin-top: .5px; }
@@ -490,6 +492,61 @@ p.carregando {
 .aviso-erro { font-size: 14px; color: var(--tinta); }
 .aviso-erro:empty { display: none; }
 
+/* Onde (R19): chips de canto reto por zona, que se somam. O marcado é cheio,
+   como o botão primário; o resto, vazado. Alvo de 44 px. */
+.onde-chips { display: flex; flex-direction: column; gap: var(--e4); margin-top: var(--e6); }
+.chips { display: flex; flex-wrap: wrap; column-gap: 20px; row-gap: var(--e1); }
+.zona { display: flex; flex-direction: column; gap: var(--e2); }
+.chip {
+  position: relative;
+  min-height: 44px;
+  padding: 0 0 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--corrido);
+  font: 400 16px/1.2 var(--sans);
+  text-decoration: underline;
+  text-decoration-thickness: .5px;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--fio);
+  cursor: pointer;
+}
+/* Marcado: o sublinhado firma em bordô e o quadrado do pré-quiz (o da
+   escolha múltipla) aparece à esquerda. Sem caixa e sem mudar a largura. */
+.chip[aria-pressed="true"] { color: var(--tinta); text-decoration-thickness: 1.5px; text-decoration-color: var(--tinta); }
+.chip[aria-pressed="true"]::before { content: ''; position: absolute; left: 0; top: 50%; width: 6px; height: 6px; margin-top: -3px; background: var(--marcado); }
+.chip:focus-visible { outline-offset: 2px; }
+.chip:active { opacity: .85; }
+@media (hover: hover) and (pointer: fine) {
+  .chip[aria-pressed="false"]:hover { color: var(--tinta); text-decoration-color: var(--tinta); }
+}
+
+/* A faixa de idade (R20, R22): o intervalo grande, em serifa; o trilho com
+   dois pontos de 44 px de alvo; a escala; os botões de passo. */
+.faixa { display: flex; flex-direction: column; gap: var(--e4); margin-top: var(--e6); }
+.faixa-valor { font-family: var(--serifa); font-size: 44px; line-height: 1; color: var(--tinta); font-variant-numeric: lining-nums; }
+.faixa-trilho { position: relative; height: 44px; margin: 0 22px; touch-action: pan-y; cursor: pointer; }
+.faixa-passo[aria-disabled="true"] { color: var(--fio-off); cursor: default; }
+.faixa-base { position: absolute; left: -22px; right: -22px; top: 21px; border-top: 1px solid var(--fio-off); }
+.faixa-sel { position: absolute; top: 20px; height: 3px; background: var(--tinta); }
+.faixa-ponto { position: absolute; top: 0; width: 44px; height: 44px; margin-left: -22px; display: grid; place-items: center; border-radius: 50%; outline-offset: -6px; cursor: grab; }
+.faixa-ponto-marca { width: 20px; height: 20px; border-radius: 50%; background: var(--fundo); border: 1.5px solid var(--tinta); }
+.faixa-ponto:focus-visible .faixa-ponto-marca, .arrastando .faixa-ponto:focus .faixa-ponto-marca { background: var(--tinta); }
+.faixa-escala { display: flex; justify-content: space-between; margin-top: -20px; font-size: 12px; font-weight: 500; color: var(--rotulo); }
+.faixa-passos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e4); margin-top: var(--e3); padding-top: var(--e3); border-top: .5px solid var(--fio); }
+.faixa-passo-grupo { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.faixa-passo-grupo + .faixa-passo-grupo { align-items: flex-end; }
+.faixa-passo-linha { display: flex; align-items: center; gap: 0; }
+/* O número entre os sinais, em serifa; os sinais sem caixa, alvo de 44 px. */
+.faixa-num { min-width: 2.2ch; text-align: center; font-family: var(--serifa); font-size: 26px; line-height: 1; color: var(--tinta); }
+.faixa-passo { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 0; background: none; color: var(--tinta); font: 400 22px/1 var(--sans); cursor: pointer; }
+@media (max-width: 359px) {
+  .faixa-passos { grid-template-columns: 1fr; row-gap: var(--e2); }
+  .faixa-passos .faixa-passo-grupo, .faixa-passos .faixa-passo-grupo + .faixa-passo-grupo { flex-direction: row; align-items: center; justify-content: space-between; }
+}
+.faixa-passo:active { opacity: .85; }
+
 /* ---------------------------------------------------------------- resultado */
 
 /* O pedido como frase: cada trecho reabre a pergunta dele. */
@@ -499,7 +556,9 @@ p.carregando {
    até a metade do vão entre as linhas, nunca por cima da linha vizinha (com
    44 px de altura, o toque em "Sábado" abria o preço, da linha de baixo).
    Na horizontal, nenhum trecho fica abaixo de 44 px. */
-.pedido .link { display: inline-block; min-height: 0; min-width: 44px; font-size: inherit; line-height: 1.3; color: var(--tinta); padding: 4px 0; margin: -4px 0; text-align: center; }
+.pedido .link { position: relative; display: inline-block; min-height: 0; font-size: inherit; line-height: 1.3; color: var(--tinta); padding: 4px 0; margin: -4px 0; }
+/* Alvo de 44 px na horizontal sem abrir espaço no texto ("Sexta ,"). */
+.pedido .link::after { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; min-width: 44px; width: 100%; transform: translateX(-50%); }
 
 .conversa { display: flex; flex-direction: column; gap: var(--e2); scroll-margin-top: var(--e5); }
 .conversa:empty { display: none; }
@@ -523,9 +582,11 @@ p.carregando {
 .festa:last-child { border-bottom-color: var(--tinta); }
 .festa-quando { display: flex; flex-direction: column; gap: 2px; }
 .festa .hora { font-family: var(--serifa); font-size: 38px; line-height: .9; letter-spacing: 0; color: var(--tinta); white-space: nowrap; }
-.media { margin-top: var(--e1); font-size: 13px; color: var(--tinta); }
-.idade-origem { margin-top: 2px; font-size: 12px; line-height: 1.35; color: var(--rotulo); text-wrap: balance; }
-.marca-lateral { margin-top: var(--e2); font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
+.enche { margin-top: var(--e1); font-size: 13px; color: var(--rotulo); }
+.media { font-size: 13px; color: var(--tinta); }
+.enche + .media { margin-top: 0; }
+.idade-origem { margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--rotulo); text-wrap: balance; }
+.marca-lateral { margin-top: var(--e2); font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
 .festa-o-que { display: flex; flex-direction: column; min-width: 0; }
 .festa .nome { font: 500 19px/1.2 var(--sans); letter-spacing: -.01em; color: var(--tinta); }
 /* Quando a festa fura o pedido: uma nota de margem, como num impresso
@@ -542,44 +603,197 @@ p.carregando {
 }
 .festa-aviso::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
 .festa-aviso + .onde { margin-top: var(--e2); }
-.onde { margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--rotulo); }
-.festa .frase {
-  margin-top: var(--e2);
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--corrido);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-}
-@media (max-width: 340px) { .festa .frase { -webkit-line-clamp: 3; line-clamp: 3; } }
+.onde { margin-top: var(--e1); font-size: 14px; line-height: 1.4; color: var(--rotulo); }
 /* O porquê: o que distingue a festa, na cor do rótulo. */
 .porque { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--rotulo); }
 .porque .item { white-space: nowrap; }
-.festa .link { position: relative; align-self: flex-start; min-height: 0; margin-top: var(--e2); font-size: 14px; }
-.festa .link::after { content: ''; position: absolute; inset: -12px -4px; }
 
-/* Linha do tempo de cada festa, num eixo comum das 17h às 3h (left e width
-   em % vêm do app). De cima para baixo: o eixo apagado; a festa, um traço
-   bordô do começo ao fim; a pista cheia, um bloco de 5 px sobre o traço; a
-   janela pedida, um colchete em fio rosé logo abaixo, aberto para cima, que
-   abraça (ou não) a festa; e só duas horas, começo e fim, presas às pontas
-   da festa por dentro, para nunca colidirem. Lê-se de relance onde a festa
-   cai na noite: cedo e curta fica à esquerda. */
-.linha-tempo { position: relative; height: 34px; margin-top: var(--e4); }
-.linha-tempo::before { content: ''; position: absolute; left: 0; right: 0; top: 8px; border-top: .5px solid var(--fio-off); }
-.lt-janela { position: absolute; top: 11px; height: 5px; border: 1.5px solid var(--fio); border-top: 0; }
-.lt-festa { position: absolute; top: 7px; height: 1.5px; min-width: 1px; background: var(--tinta); }
-.lt-pico { position: absolute; top: 5.5px; width: 5px; height: 5px; margin-left: -2.5px; background: var(--tinta); }
-.lt-rotulo { position: absolute; top: 20px; transform: translateX(0); font-size: 11px; font-weight: 500; line-height: 1; letter-spacing: .02em; color: var(--rotulo); white-space: nowrap; }
-.lt-rotulo--fim { transform: translateX(-100%); }
+/* Os blocos da lista (R19, R21): o rótulo abre o bloco, acima do fio. */
+.bloco-lista + .bloco-lista { margin-top: var(--e5); }
+.bloco-rotulo { margin: 0 0 var(--e2); }
+/* Entre blocos, um fio só: o rosé acima do rótulo do bloco seguinte. */
+.bloco-lista:not(:last-child) .festa:last-child { border-bottom: 0; }
+.bloco-lista + .bloco-lista { padding-top: var(--e5); border-top: .5px solid var(--tinta); }
+.bloco-lista + .bloco-lista .festas { border-top: 0; }
 
-/* A legenda usa as mesmas peças, em miniatura. */
-.legenda { display: flex; align-items: center; flex-wrap: wrap; column-gap: 6px; font-size: 12px; line-height: 1.5; color: var(--rotulo); margin-bottom: var(--e3); }
-.legenda .amostra-janela { display: inline-block; width: 16px; height: 4px; border: 1px solid var(--fio); border-top: 0; margin-top: 3px; }
-.legenda .amostra-pista { display: inline-block; width: 5px; height: 5px; background: var(--tinta); }
+/* O item inteiro abre o detalhe: o nome é o botão, e a área de toque dele
+   cobre o item (o ::after vai até as bordas do li). "Ver a festa" é só o
+   sinal visível, no lugar onde antes ficava o envio. */
+.festa { position: relative; }
+.festa-abrir {
+  display: inline;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.festa-abrir::after { content: ''; position: absolute; inset: 0; }
+.festa-abrir:focus-visible { outline: none; }
+.festa:has(.festa-abrir:focus-visible) { outline: 1.5px solid var(--foco); outline-offset: 2px; }
+.festa:has(.festa-abrir:active) .festa-o-que, .festa:has(.festa-abrir:active) .festa-quando { opacity: .72; }
+.onde-preco { color: var(--tinta); white-space: nowrap; }
+.ver {
+  align-self: flex-start;
+  margin-top: var(--e3);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tinta);
+  text-decoration: underline;
+  text-decoration-thickness: .5px;
+  text-underline-offset: 5px;
+  text-decoration-color: var(--fio);
+}
+@media (hover: hover) and (pointer: fine) {
+  .festa:hover .ver { text-decoration-thickness: 1px; text-decoration-color: var(--tinta); }
+  .festa:hover .nome { text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 5px; text-decoration-color: var(--fio); }
+}
+
+
+/* ---------------------------------------------------------------- detalhe da festa */
+
+/* A barra fixa mede uns 69 px mais a área segura; o conteúdo termina acima dela. */
+:root { --barra: 69px; }
+.tela-festa { padding-bottom: calc(var(--barra) + env(safe-area-inset-bottom)); }
+
+/* Quando e para quem (R4, R5): a data e o bairro no rótulo; a hora grande
+   com a média na mesma linha de base, como no convite; a régua; o encaixe
+   no pedido; a média com a origem e quando foi conferida. */
+.detalhe-quando { display: flex; flex-direction: column; gap: var(--e3); padding: var(--e5) 0 var(--e5); }
+.detalhe-hora { display: flex; align-items: baseline; gap: var(--e3); flex-wrap: wrap; }
+.detalhe-hora .hora { font-family: var(--serifa); font-size: 64px; line-height: .9; letter-spacing: 0; color: var(--tinta); }
+.detalhe-media-curta { font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta); }
+
+/* A régua: eixo das 15h às 3h, a festa num traço firme, a pista cheia num
+   quadrado e a janela pedida num colchete rosé por baixo. Rótulos presos ao
+   que marcam: começo e fim em cima, a pista cheia embaixo. left e width em %
+   vêm do app, pelo CSSOM. */
+.regua { margin: var(--e1) 0 0; }
+.rg-cima, .rg-baixo { position: relative; height: 16px; }
+.rg-trilho { position: relative; height: 22px; }
+.rg-trilho::before { content: ''; position: absolute; left: 0; right: 0; top: 7px; border-top: .5px solid var(--fio-off); }
+.rg-festa { position: absolute; top: 6px; height: 3px; min-width: 2px; background: var(--tinta); }
+.rg-pico { position: absolute; z-index: 1; top: 3.5px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--tinta); }
+.rg-janela { position: absolute; top: 13px; height: 6px; border: 1.5px solid var(--fio); border-top: 0; }
+.rg-rotulo { position: absolute; top: 0; font-size: 12px; font-weight: 500; line-height: 16px; letter-spacing: .02em; color: var(--tinta); white-space: nowrap; }
+.rg-rotulo--voce { color: var(--rotulo); }
+.rg-esq { transform: none; }
+.rg-meio { transform: translateX(-50%); }
+.rg-dir { transform: translateX(-100%); }
+
+.detalhe-encaixe { font-size: 14px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
+.detalhe-encaixe--fura { position: relative; padding-left: 18px; color: var(--tinta); }
+.detalhe-encaixe--fura::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
+.detalhe-media { display: flex; flex-direction: column; gap: var(--e1); margin-top: var(--e2); }
+.rg-media { position: absolute; z-index: 1; top: 3.5px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--tinta); }
+.regua-idade .rg-trilho::before { top: 7px; }
+.regua-idade .rg-janela { top: 9px; }
+.idade-encaixe { font-size: 14px; line-height: 1.45; color: var(--tinta); }
+.detalhe-media .media-origem + .idade-encaixe { margin-top: calc(-1 * var(--e1)); }
+.media-origem { font-size: 14px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
+/* Tela baixa (SE, 568 px): a hora encolhe para o nome caber antes da barra. */
+@media (max-height: 660px) {
+  .detalhe-hora .hora { font-size: 48px; }
+  .detalhe-quando { gap: var(--e2); padding-top: var(--e3); }
+  /* A frase "Dentro da sua faixa" fica; a régua da idade sai. */
+  .regua-idade { display: none; }
+}
+
+/* Quem e onde (R6): o cartaz em miniatura ao lado do nome, da produtora e
+   da casa; depois a frase do curador e o endereço com o mapa. */
+.detalhe-quem { padding: var(--e5) 0; border-top: .5px solid var(--fio); }
+.ficha { display: grid; grid-template-columns: 96px 1fr; column-gap: var(--e4); align-items: start; }
+.ficha:not(:has(.cartaz)) { grid-template-columns: 1fr; }
+.cartaz { display: block; width: 96px; height: 120px; object-fit: cover; background: var(--fio-off); color: var(--tinta); font-size: 12px; }
+.cartaz--ausente { display: flex; align-items: flex-end; padding: var(--e2); font-family: var(--serifa); font-size: 15px; line-height: 1.05; overflow: hidden; }
+/* Tab no detalhe: o foco nunca fica escondido sob a barra fixa. */
+:root:has(body[data-tela="festa"]) { scroll-padding-bottom: calc(var(--barra) + var(--e4)); }
+.ficha-texto { display: flex; flex-direction: column; gap: var(--e1); min-width: 0; }
+.festa-nome { font-family: var(--serifa); font-weight: 400; font-size: 40px; line-height: 1; letter-spacing: -.005em; color: var(--tinta); text-wrap: balance; overflow-wrap: anywhere; margin-bottom: var(--e1); }
+.ficha-produtora { font-size: 14px; font-weight: 500; line-height: 1.35; color: var(--tinta); }
+.ficha-casa { font-size: 14px; line-height: 1.35; color: var(--rotulo); }
+.ficha-frase { margin-top: var(--e4); font-size: 15px; line-height: 1.5; color: var(--corrido); max-width: 34ch; text-wrap: pretty; }
+.bloco-onde { display: flex; flex-direction: column; margin-top: var(--e4); }
+.endereco { font-size: 15px; line-height: 1.45; color: var(--tinta); }
+.endereco-bairro { display: block; font-size: 13px; color: var(--rotulo); }
+.bloco-onde > .link:last-child { margin-bottom: -12px; }
+
+/* Campo que a fonte não trouxe: sempre igual (R12). */
+.ausente { font-size: 14px; line-height: 1.45; color: var(--rotulo); }
+
+/* As seções de baixo: um rótulo e um fio rosé por cima, texto corrido. */
+.secao { display: flex; flex-direction: column; gap: var(--e3); padding: var(--e5) 0; border-top: .5px solid var(--fio); }
+/* Na metade de baixo, um fio só abre o trecho; entre seções curtas, o espaço. */
+.secao + .secao { border-top: 0; padding-top: var(--e2); }
+h2.secao-rotulo { margin: 0; }
+.secao-texto { font-size: 15px; line-height: 1.5; color: var(--tinta); max-width: 34ch; text-wrap: pretty; }
+
+/* Ingresso (R7). */
+.bloco-ingresso { display: flex; flex-direction: column; gap: var(--e2); }
+.ingresso-preco { display: flex; align-items: baseline; gap: var(--e3); flex-wrap: wrap; }
+.ingresso-valor { font-family: var(--serifa); font-size: 40px; line-height: 1; color: var(--tinta); }
+.ingresso--porta .ingresso-valor, .ingresso--esgotado .ingresso-valor, .ingresso--sem-preco .ingresso-valor { font-size: 30px; line-height: 1.1; }
+.ingresso-taxa { font-size: 13px; color: var(--rotulo); }
+.ingresso-lote { font-size: 14px; line-height: 1.45; color: var(--tinta); }
+.ingresso-onde { font-size: 14px; line-height: 1.45; color: var(--corrido); }
+.bloco-ingresso .link { align-self: flex-start; }
+.bloco-ingresso > .link:last-child { margin-bottom: -12px; }
+
+/* Links de origem (R8): uma linha por link, sem tabela. */
+.links-origem { display: flex; flex-direction: column; }
+.origem .link { overflow-wrap: anywhere; }
+.origem .ausente { display: flex; align-items: center; min-height: 44px; }
+.links-origem .origem:last-child .link, .links-origem .origem:last-child .ausente { margin-bottom: -12px; }
+.links-origem .origem:first-child .link, .links-origem .origem:first-child .ausente { margin-top: -12px; }
+
+/* De onde vem (R12): uma linha, no pé. */
+.detalhe-fontes { padding: var(--e3) 0 0; }
+.fontes { font-size: 13px; line-height: 1.5; color: var(--corrido); }
+.fontes .rotulo { display: block; margin: 0 0 var(--e1); }
+.tela-festa .rodape { padding-top: var(--e6); }
+
+/* A barra fixa (R9): presa ao pé da coluna, com a área segura do iPhone. À
+   esquerda a compra (ou o preço, quando não há compra), à direita o envio. */
+.barra {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 440px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--e3);
+  padding: 12px var(--lateral) max(12px, env(safe-area-inset-bottom));
+  background: var(--fundo);
+  border-top: .5px solid var(--fio);
+}
+.barra .botao { white-space: nowrap; padding: 0 20px; }
+.barra-comprar-preco { font-weight: 400; }
+.barra-preco { display: flex; flex-direction: column; justify-content: center; gap: 3px; min-height: 44px; padding-right: var(--e2); color: inherit; text-decoration: none; }
+.barra-comprar-rotulo { color: var(--tinta); text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 4px; text-decoration-color: var(--fio); }
+.barra-comprar:active { opacity: .85; }
+.barra-preco-valor { font-family: var(--serifa); font-size: 26px; line-height: 1; color: var(--tinta); }
+.barra-preco-rotulo { font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
+@media (max-width: 359px) {
+  .barra .botao { padding: 0 16px; }
+}
+/* No desktop, o fio da barra fica na largura do texto da coluna. */
+@media (min-width: 1024px) {
+  .barra { border-top: 0; }
+  .barra::before { content: ''; position: absolute; top: 0; left: var(--lateral); right: var(--lateral); border-top: .5px solid var(--fio); }
+}
+@media (min-width: 1400px) { .barra { max-width: 480px; } }
+
+/* A página de saída do protótipo: o botão logo abaixo do texto. */
+.pe--junto { margin-top: 0; }
+.fora-destino { font-size: 14px; color: var(--rotulo); overflow-wrap: anywhere; }
 
 /* ---------------------------------------------------------------- ajuste */
 
@@ -695,10 +909,25 @@ p.carregando {
    celular. Presa à coluna, viraria um cartão. */
 @media (min-width: 1024px) {
   .moldura { overflow-x: clip; }
-  .festa-convite { margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50% + var(--lateral)); }
+  .festa-convite { margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%); }
   .convite--passou .festa-convite { margin-inline: 0; padding-inline: 0; }
 }
 .tela-plano > .link { margin-top: var(--e6); white-space: normal; }
+
+/* O essencial do detalhe no convite (R13), abaixo da resposta. */
+.convite-detalhes { display: flex; flex-direction: column; border-top: .5px solid var(--fio); }
+.convite-onde { display: grid; grid-template-columns: 72px 1fr; column-gap: var(--e4); row-gap: var(--e3); align-items: start; padding: var(--e5) 0; }
+.convite-onde > .rotulo { grid-column: 1 / -1; }
+.convite-onde:not(:has(.cartaz)) { grid-template-columns: 1fr; }
+.cartaz--convite { width: 72px; height: 90px; }
+.convite-onde-texto { display: flex; flex-direction: column; gap: var(--e1); min-width: 0; }
+.tela-plano .quem { margin-top: var(--e4); padding-bottom: var(--e5); }
+.tela-plano > .link { margin-top: var(--e4); }
+.convite-casa { font-size: 15px; font-weight: 500; color: var(--tinta); }
+.convite-onde .bloco-onde { margin-top: 0; }
+.convite-bloco { display: flex; flex-direction: column; gap: var(--e3); padding: var(--e5) 0; border-top: .5px solid var(--fio); }
+.convite-bloco .ingresso-valor { font-size: 30px; }
+.convite--passou .convite-detalhes { opacity: .8; }
 
 /* ---------------------------------------------------------------- rodapé */
 
@@ -713,7 +942,8 @@ p.carregando {
    ficam firmes. Depois de um ajuste, só as festas novas. */
 @keyframes surgir { from { opacity: .35; } to { opacity: 1; } }
 .entra .cabeca, .entra .cabeca-pergunta, .entra .opcoes, .entra .abre, .entra .lockup,
-.entra .festas, .entra .festa-convite, .entra .bloco { animation: surgir 160ms var(--curva) both; }
+.entra .festas, .entra .festa-convite, .entra .bloco,
+.tela-festa.entra > :not(.topo):not(.barra) { animation: surgir 160ms var(--curva) backwards; }
 .festa.nova, .marca-lateral.nova-marca { animation: surgir 320ms var(--curva) both; }
 
 @media (prefers-reduced-motion: reduce) {

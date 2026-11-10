@@ -122,7 +122,7 @@ test('lista vazia com teto firme: diz o que travou, oferece, e "sim" aceita', as
 test('pedido difícil: o resultado diz que nada é do jeito pedido, e cada festa diz o que fura', async () => {
   const [r] = await conversar({ dia: 'dom', janela: 'noite', faixa: '36+', teto: 50, estilos: ['funk'] });
   assert.equal(r.atendem, 0);
-  assert.equal(r.resposta, 'Nada do jeito que você pediu. Funk no domingo, só às 17h, com média 24.');
+  assert.equal(r.resposta, 'Funk no domingo, só às 17h, com média 24.');
   for (const o of r.opcoes) {
     assert.equal(o.atende, false);
     assert.ok(o.motivos.length >= 2);

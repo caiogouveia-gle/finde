@@ -10,8 +10,9 @@ const C = require('./nucleo/catalogo');
 const motor = require('./nucleo/motor');
 const conversa = require('./nucleo/conversa');
 const { entender } = require('./nucleo/entender');
-const { prepararBase, lerLinhas } = require('./nucleo/base');
+const { prepararBase, lerBase, deslocarDatas } = require('./nucleo/base');
 const { criarPlanos, ErroPlano } = require('./nucleo/planos');
+const FT = require('./publico/festa-texto');
 
 const RAIZ = __dirname;
 const PUBLICO = path.join(RAIZ, 'publico');
@@ -26,6 +27,7 @@ const TIPOS_ARQUIVO = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.webp': 'image/webp',
   '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
 };
@@ -54,9 +56,14 @@ const CABECALHOS = {
 
 // ---------------------------------------------------------------- base
 
+// Base fictícia: a cada meia hora os carimbos andam com o relógio (KTD8).
+const RELER_FICTICIA_MS = 30 * 60 * 1000;
+
 // Lê a base e relê quando o arquivo muda. Linhas inválidas saem com aviso no log.
-function criarFonteDaBase(caminho, log) {
-  let atual = { base: [], marca: null };
+// Numa base marcada como fictícia, os carimbos de "conferido" andam com o
+// relógio, para "conferido há 2 h" continuar verdade no dia da apresentação.
+function criarFonteDaBase(caminho, log, relogio) {
+  let atual = { base: [], marca: null, lidaEm: 0, ficticia: false };
 
   function carregar() {
     let marca;
@@ -65,18 +72,23 @@ function criarFonteDaBase(caminho, log) {
     } catch {
       marca = 'sem-arquivo';
     }
-    if (marca === atual.marca) return atual.base;
-    let linhas = [];
+    const agora = relogio();
+    if (marca === atual.marca && !(atual.ficticia && agora - atual.lidaEm >= RELER_FICTICIA_MS)) return atual.base;
+    let lida = { linhas: [], ficticia: false, referencia: null };
     try {
-      linhas = lerLinhas(JSON.parse(fs.readFileSync(caminho, 'utf8')));
+      lida = lerBase(JSON.parse(fs.readFileSync(caminho, 'utf8')));
     } catch (e) {
       const motivo = e.code === 'ENOENT' ? 'não existe' : `não abriu (${e.message})`;
       log.warn(`[finde] a base ${caminho} ${motivo}; sigo com a base vazia`);
     }
+    const linhas = lida.referencia ? deslocarDatas(lida.linhas, agora - Date.parse(lida.referencia)) : lida.linhas;
     const { base, avisos } = prepararBase(linhas);
-    for (const a of avisos) log.warn(`[finde] ${a}`);
-    log.info(`[finde] base: ${base.length} festas de ${caminho}`);
-    atual = { base, marca };
+    const releitura = marca === atual.marca;
+    if (!releitura) {
+      for (const a of avisos) log.warn(`[finde] ${a}`);
+      log.info(`[finde] base: ${base.length} festas de ${caminho}`);
+    }
+    atual = { base, marca, lidaEm: agora, ficticia: lida.ficticia };
     return base;
   }
 
@@ -256,6 +268,12 @@ function formulario(base) {
     dias: C.ORDEM_DIAS.map((id) => ({ id, rotulo: C.DIAS[id].nome })),
     janelas: C.JANELAS.map((j) => ({ id: j.id, rotulo: `${j.rotulo} · ${j.nome}` })),
     faixas: C.FAIXAS.map((f) => ({ id: f.id, rotulo: f.rotulo })),
+    // A faixa em que a pessoa se sente bem (R20): de 18 a 50, padrão 28 a 35.
+    idade: { min: motor.IDADE_MIN, max: motor.IDADE_MAX, padrao: { min: 28, max: 35 } },
+    // Os bairros por zona (R19), na ordem das regiões do catálogo.
+    zonas: Object.entries(C.REGIOES).map(([id, nome]) => ({
+      id, nome, bairros: Object.entries(C.BAIRROS).filter(([, b]) => b.regiao === id).map(([bid, b]) => ({ id: bid, rotulo: b.nome })),
+    })),
     tetos: C.TETOS.map((t) => ({ id: t.id, rotulo: t.rotulo })),
     estilos: C.ESTILOS.map((e) => ({ id: e.id, rotulo: e.rotulo })),
   };
@@ -265,15 +283,20 @@ function criarServidor({
   dados = process.env.FINDE_DADOS || path.join(RAIZ, 'dados', 'festas.json'),
   varDir = process.env.FINDE_VAR || path.join(RAIZ, 'var'),
   log = console,
+  relogio = () => Date.now(),
 } = {}) {
-  const fonte = criarFonteDaBase(path.resolve(dados), log);
+  const fonte = criarFonteDaBase(path.resolve(dados), log, relogio);
   fonte.base();
   const planos = criarPlanos(path.resolve(varDir), { log });
 
+  // Cada opção leva a data da festa: o detalhe abre com ela (R4). Fica aqui
+  // para valer nos três caminhos da conversa.
   function resultado(criterios) {
     const base = fonte.base();
     if (!base.length) return { opcoes: [], afrouxou: [], aviso: 'A lista de festas está vazia agora. Volte daqui a pouco.' };
-    return motor.escolher(criterios, base);
+    const r = motor.escolher(criterios, base);
+    const agora = new Date(relogio());
+    return { ...r, opcoes: r.opcoes.map((o) => ({ ...o, data: (dataDaFesta(o.festa, agora) || {}).data || null })) };
   }
 
   const rotas = {
@@ -309,7 +332,22 @@ function criarServidor({
       if (pedidos.length === 1 && pedidos[0] === 'aceitar' && antes.oferta) {
         ({ mudar, pedidos, duvida, diaRecusado } = entender(antes.oferta, contexto));
       }
-      const depois = motor.completar({ ...antes, ...motor.sanearCriterios(mudar) });
+      const mudanca = motor.sanearCriterios(mudar);
+      // Com o intervalo de idade (R20): "mais velha" e "mais nova" deslocam o
+      // intervalo em cinco anos; "de 30 a 40" vira o intervalo dito; uma idade
+      // solta ("gente de 40") vira a faixa fixa dela.
+      if (antes.idade && (mudanca.faixa || pedidos.some((p) => p === 'mais-velho' || p === 'mais-novo'))) {
+        if (pedidos.includes('mais-velho')) mudanca.idade = motor.deslocarIdade(antes.idade, +5);
+        else if (pedidos.includes('mais-novo')) mudanca.idade = motor.deslocarIdade(antes.idade, -5);
+        else {
+          const m = corpo.texto.match(/\b(\d{2})\s*(?:a|até|ate|e|-)\s*(\d{2})\b/);
+          const fx = C.FAIXAS.find((x) => x.id === mudanca.faixa);
+          mudanca.idade = m ? { min: Number(m[1]), max: Number(m[2]) } : { min: fx.min, max: Math.min(fx.max, motor.IDADE_MAX) };
+          Object.assign(mudanca, motor.sanearCriterios({ idade: mudanca.idade }));
+        }
+        delete mudanca.faixa;
+      }
+      const depois = motor.completar({ ...antes, ...mudanca });
       delete depois.oferta;
       depois.firmes = conversa.firmesDe(antes, depois);
       let r = resultado(depois);
@@ -377,7 +415,7 @@ function criarServidor({
       if (!festa) throw new ErroPlano(400, 'Essa festa não está mais na lista.');
       const plano = planos.criar({
         festa: motor.opcao(festa, criterios), pedido: motor.resumoDoPedido(criterios), autor: corpo.autor,
-        quando: dataDaFesta(festa, new Date()),
+        quando: dataDaFesta(festa, new Date(relogio())),
       });
       return [201, { id: plano.id, url: `/p/${plano.id}`, data: plano.data }];
     },
@@ -394,7 +432,8 @@ function criarServidor({
     const o = p.festa;
     const dia = C.DIAS[o.festa.dia];
     const titulo = `Bora ${dia.id === 'sex' ? 'na' : 'no'} ${dia.frase}? ${o.festa.nome}, ${o.hora} · média ${o.festa.mediaIdade}`;
-    const descricao = `${o.festa.casa} · ${o.preco}. ${o.horario}`;
+    const onde = o.festa.endereco && o.festa.endereco.texto ? `${o.festa.casa}, ${o.festa.endereco.texto}` : o.festa.casa;
+    const descricao = `${onde} · ${FT.precoNaLista(o.festa)}. ${o.horario}`;
     return enviarPagina(req, res, arquivo, { titulo, descricao });
   }
 

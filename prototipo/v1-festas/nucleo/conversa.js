@@ -56,10 +56,14 @@ function sobreTeto(teto, antes) {
 // "Dança cedo, dorme bem." só quando tudo na tela acaba até a meia-noite.
 const dormeBem = (opcoes) => opcoes.length > 0 && opcoes.every((o) => o.festa.fim <= 24);
 
-function sobreIdade(faixa, opcoes) {
+// O nome da faixa que vale: o intervalo do formulário, ou a faixa fixa.
+const nomeDaFaixa = (c) => (c.idade ? `${c.idade.min} a ${c.idade.max}${c.idade.max >= 50 ? ' ou mais' : ''}` : C.nomeFaixa(c.faixa));
+const mesmaFaixa = (a, b) => (a.idade && b.idade ? a.idade.min === b.idade.min && a.idade.max === b.idade.max : a.faixa === b.faixa);
+
+function sobreIdade(c, opcoes) {
   if (!opcoes.length) return '';
   const fora = opcoes.filter((o) => o.fora.some((m) => /^média/.test(m))).length;
-  const nome = C.nomeFaixa(faixa);
+  const nome = nomeDaFaixa(c);
   if (!fora) return `Sim: todas com média de ${nome}.`;
   const dentro = opcoes.length - fora;
   if (!dentro) return `Nenhuma com média de ${nome} nesse pedido.`;
@@ -108,16 +112,16 @@ function reagir(pedidos, antes, depois, resultado, extra) {
         f.push(extra.piso ? `R$ ${depois.teto} é o mais barato ${noDia(depois.dia)} nesse pedido.` : sobreTeto(depois.teto, antes.teto));
         break;
       case 'mais-velho':
-        f.push(depois.faixa === antes.faixa ? 'Essa já é a faixa mais velha.' : `Gente de ${C.nomeFaixa(depois.faixa)}, então.`);
+        f.push(mesmaFaixa(depois, antes) ? 'Essa já é a faixa mais velha.' : `Gente de ${nomeDaFaixa(depois)}, então.`);
         break;
       case 'mais-novo':
-        f.push(depois.faixa === antes.faixa ? 'Essa já é a faixa mais nova.' : `Gente de ${C.nomeFaixa(depois.faixa)}, então.`);
+        f.push(mesmaFaixa(depois, antes) ? 'Essa já é a faixa mais nova.' : `Gente de ${nomeDaFaixa(depois)}, então.`);
         break;
       case 'faixa':
-        f.push(depois.faixa === antes.faixa ? `Já é gente de ${C.nomeFaixa(depois.faixa)}.` : `Gente de ${C.nomeFaixa(depois.faixa)}, então.`);
+        f.push(mesmaFaixa(depois, antes) ? `Já é gente de ${nomeDaFaixa(depois)}.` : `Gente de ${nomeDaFaixa(depois)}, então.`);
         break;
       case 'minha-idade':
-        f.push(sobreIdade(depois.faixa, resultado.opcoes));
+        f.push(sobreIdade(depois, resultado.opcoes));
         break;
       case 'sem-estilo': {
         const novos = depois.evitarEstilos.filter((e) => !antes.evitarEstilos.includes(e));
@@ -236,7 +240,7 @@ function firmesDe(antes, depois) {
   const novos = [];
   if (antes.teto !== depois.teto) novos.push('preco');
   if (antes.janela !== depois.janela || antes.voltaMax !== depois.voltaMax) novos.push('horario');
-  if (antes.faixa !== depois.faixa) novos.push('idade');
+  if (!mesmaFaixa(antes, depois)) novos.push('idade');
   return [...new Set([...(antes.firmes || []), ...novos])];
 }
 

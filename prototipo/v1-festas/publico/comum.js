@@ -134,6 +134,7 @@
   // "média 31, informada pela produtora", para leitor de tela e mensagem.
   function mediaFalada(f) {
     const t = origemDaIdade(f);
+    if (!Number.isInteger(f.mediaIdade)) return 'média de idade não informada';
     return `média ${f.mediaIdade}${t ? `, ${t}` : ''}`;
   }
 
@@ -142,7 +143,7 @@
   function quandoGrande(o) {
     return el('p', { class: 'quando-grande', 'aria-hidden': 'true' },
       hora(o.hora),
-      el('span', { class: 'media-grande', texto: `média ${o.festa.mediaIdade} anos` }),
+      el('span', { class: 'media-grande', texto: Number.isInteger(o.festa.mediaIdade) ? `média ${o.festa.mediaIdade} anos` : 'média não informada' }),
       idadeOrigem(o.festa));
   }
 
@@ -185,7 +186,78 @@
   // "terraço em Pinheiros" -> "terraço"; o bairro já aparece ao lado.
   const casaCurta = (casa) => casa.replace(/\s+(em|na|no|nos|nas)\s+.+$/, '');
 
+
+  // ------------------------------------------------------------ blocos da festa
+  // O detalhe (app.js) e o convite (plano.js) montam a festa com as mesmas
+  // peças. O texto vem de festa-texto.js; aqui só o desenho. Cada bloco é
+  // isolado e tem a sua classe, para o desenho poder mudar sem mexer na ordem.
+
+  const FT = () => window.FindeTexto;
+
+  // Link que sai do finde: aba nova, e o leitor de tela ouve que sai.
+  function linkFora(url, texto, servico, exemplo, classe = 'link') {
+    const href = FT().destino(url, servico, exemplo);
+    if (!href) return null;
+    return el('a', { class: `${classe} fora`, href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': texto ? `${texto}, abre fora do finde` : null }, texto);
+  }
+
+  // O cartaz da produtora, em miniatura 4:5. Sem cartaz, nada.
+  function cartaz(f, classe = 'cartaz') {
+    if (typeof f.cartaz !== 'string' || !f.cartaz) return null;
+    const img = el('img', {
+      class: classe, src: f.cartaz, alt: `Cartaz de ${f.nome}`, width: '120', height: '150', loading: 'lazy', decoding: 'async',
+    });
+    // Cartaz que não carrega: fica o fundo com o nome, nunca o ícone quebrado.
+    img.addEventListener('error', () => img.replaceWith(el('span', { class: `${classe} cartaz--ausente`, role: 'img', 'aria-label': `Cartaz de ${f.nome}`, texto: f.nome })), { once: true });
+    return img;
+  }
+
+  // Campo que a fonte não trouxe: aparece como ausente (R12), sempre igual.
+  const ausente = (texto) => el('p', { class: 'ausente', texto });
+
+  // Onde (R6): endereço, bairro e o link do mapa.
+  function blocoOnde(f, bairro, exemplo) {
+    const e = f.endereco;
+    if (!e || typeof e.texto !== 'string' || !e.texto.trim()) return el('div', { class: 'bloco-onde' }, ausente('Endereço não informado.'));
+    return el('div', { class: 'bloco-onde' },
+      el('p', { class: 'endereco' }, e.texto, el('span', { class: 'endereco-bairro', texto: bairro ? `${bairro}, São Paulo` : 'São Paulo' })),
+      linkFora(FT().mapa(e, bairro), 'Abrir no mapa', 'Google Maps', exemplo));
+  }
+
+  // Ingresso (R7): o preço que se paga hoje, com a taxa quando a fonte dá; numa
+  // linha, o lote (ou a regra do horário) e o que vem depois; onde se compra.
+  // A compra em si fica na barra fixa do detalhe; o convite, que não tem
+  // barra, pede o link aqui (comprar: true).
+  function blocoIngresso(f, exemplo, { comprar = false } = {}) {
+    const p = FT().preco(f);
+    const linha = p.horario
+      ? p.horario.replace(/^./, (c) => c.toLocaleUpperCase('pt-BR'))
+      : p.tipo === 'online' && p.lote ? [p.lote, p.nota, p.depois].filter(Boolean).join(' · ') : null;
+    let onde = null;
+    if (p.compra) onde = `Vende no ${p.servico}.`;
+    else if (p.tipo === 'esgotado') onde = 'Os lotes esgotaram.';
+    else if (p.tipo === 'sem-preco') onde = 'A venda ainda não abriu.';
+    return el('div', { class: `bloco-ingresso ingresso--${p.tipo}` },
+      el('p', { class: 'ingresso-preco' },
+        el('span', { class: 'ingresso-valor', texto: p.tipo === 'online' ? `R$ ${p.valor}` : p.texto }),
+        p.taxa ? el('span', { class: 'ingresso-taxa', texto: p.taxa }) : null),
+      linha ? el('p', { class: 'ingresso-lote', texto: linha }) : null,
+      // No convite, o link de compra já diz onde: a frase "Vende no X" sai.
+      onde && !(comprar && p.compra) ? el('p', { class: 'ingresso-onde', texto: onde }) : null,
+      comprar && p.compra ? linkFora(p.url, `Comprar no ${p.servico}`, p.servico, exemplo) : null);
+  }
+
+  // Links de origem (R8): Instagram e página do evento, cada um com o nome do
+  // serviço; o que falta aparece como ausente.
+  function blocoLinks(f, exemplo) {
+    return el('ul', { class: 'links-origem' }, FT().links(f).map((l) => el('li', { class: 'origem' },
+      l.url ? linkFora(l.url, l.texto, l.servico, exemplo) : el('span', { class: 'ausente', texto: `${l.texto}.` }))));
+  }
+
   const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  window.Finde = { el, titulo, chamar, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, manterVisivel };
+  window.Finde = {
+    el, titulo, chamar, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, manterVisivel,
+    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks,
+  };
 })();

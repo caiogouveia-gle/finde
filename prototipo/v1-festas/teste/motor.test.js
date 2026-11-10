@@ -44,7 +44,7 @@ test('o caminho do vídeo: sábado, começo da noite, 30 a 35, até R$ 80, house
   const groove = r.opcoes[1];
   assert.equal(groove.linha, 'Sáb · 19h00 · Pinheiros · média 31 anos');
   assert.equal(groove.horario, 'Começa às 19h, a pista enche às 21h e acaba à 1h.');
-  assert.deepEqual(groove.motivos, ['sobra R$ 20', 'house']);
+  assert.deepEqual(groove.motivos, ['dentro do seu teto', 'house']);
 });
 
 test('quem atende cabe no pedido de verdade: dia, preço, idade pela média, chegar e voltar', () => {
@@ -141,7 +141,7 @@ test('estilo: primeiro o som pedido; "som parecido" só quando é parecido de ve
 test('nada do jeito que você pediu: diz, e diz o que barra o som pedido', () => {
   const r = motor.escolher({ dia: 'dom', janela: 'fim-de-tarde', faixa: '30-35', teto: 50, estilos: ['funk'] }, base);
   assert.equal(r.atendem, 0);
-  assert.equal(r.aviso, 'Nada do jeito que você pediu. Funk no domingo, só com média 24.');
+  assert.equal(r.aviso, 'Funk no domingo, só com média 24.');
 });
 
 test('afrouxamento: uma frase, com o valor novo', () => {
@@ -262,4 +262,158 @@ test('escrita de horário: meia-noite, 1h, meia hora; origem da média', () => {
   assert.equal(C.reais(0), 'grátis');
   assert.equal(C.origemCurta({ tipo: 'avaliacoes', avaliacoes: 42 }), '42 avaliações');
   assert.equal(C.origemLonga({ tipo: 'edicoes' }), 'estimada pelo público das edições anteriores');
+});
+
+// ---------------------------------------------------------------- bairros e faixa como preferência (R19 a R21)
+
+const pedidoNovo = (extra = {}) => ({ dia: 'sab', janela: 'comeco-da-noite', idade: { min: 28, max: 35 }, teto: 80, ...extra });
+const blocos = (r) => r.opcoes.map((o) => [o.festa.id, o.bloco]);
+
+test('Covers AE7. Bairros marcados primeiro; os vizinhos completam num bloco à parte', () => {
+  const r = motor.escolher(pedidoNovo({ janela: 'fim-de-tarde', bairros: ['pinheiros', 'centro'] }), base);
+  assert.equal(r.opcoes.length, 3);
+  assert.deepEqual(blocos(r).map(([, b]) => b), ['pedido', 'pedido', 'perto']);
+  assert.equal(r.opcoes[2].festa.bairro, 'barra-funda');
+  assert.equal(r.blocos.perto, 'Perto de Pinheiros e do Centro');
+  assert.equal(r.noPedido, 2, 'o título conta só as do pedido');
+  assert.match(r.opcoes[2].motivos[0], /^a \d+ min (de Pinheiros|do Centro)$/);
+  const pedido = r.opcoes.filter((o) => o.bloco === 'pedido');
+  const perto = r.opcoes.filter((o) => o.bloco === 'perto');
+  assert.ok(pedido.length >= 1 && perto.length >= 1, JSON.stringify(blocos(r)));
+  for (const o of pedido) assert.ok(['pinheiros', 'centro'].includes(o.festa.bairro), o.festa.id);
+  for (const o of perto) assert.ok(!['pinheiros', 'centro'].includes(o.festa.bairro), o.festa.id);
+  // Os do pedido vêm antes dos vizinhos, e cada bloco em ordem de horário.
+  const ordemBlocos = r.opcoes.map((o) => o.bloco);
+  assert.deepEqual(ordemBlocos, [...ordemBlocos].sort((a, b) => ['pedido', 'perto', 'faixa'].indexOf(a) - ['pedido', 'perto', 'faixa'].indexOf(b)));
+});
+
+test('bairro longe dos marcados não entra, nem como vizinho', () => {
+  const r = motor.escolher(pedidoNovo({ bairros: ['pinheiros'] }), base);
+  for (const o of r.opcoes) assert.notEqual(o.festa.bairro, 'vila-mariana', o.festa.id);
+  assert.ok(motor.vizinho('pinheiros', 'vila-madalena'));
+  assert.ok(motor.vizinho('pinheiros', 'barra-funda'));
+  assert.ok(!motor.vizinho('pinheiros', 'vila-mariana'));
+  assert.ok(motor.vizinho('centro', 'bela-vista'), 'mesma região');
+});
+
+test('São Paulo inteira (bairros vazio): nada muda em relação a sem bairros', () => {
+  const a = motor.escolher(pedidoNovo(), base);
+  const b = motor.escolher(pedidoNovo({ bairros: [] }), base);
+  assert.deepEqual(a.opcoes.map((o) => o.festa.id), b.opcoes.map((o) => o.festa.id));
+  assert.ok(a.opcoes.every((o) => o.bloco !== 'perto'));
+});
+
+test('Covers AE6. Faixa 30 a 36: a festa de média 27 vem depois, no bloco da faixa, com o aviso', () => {
+  const c = { dia: 'sex', janela: 'noite', idade: { min: 30, max: 36 }, teto: 50 };
+  const r = motor.escolher(c, base);
+  const fora = r.opcoes.filter((o) => o.bloco === 'faixa');
+  assert.ok(fora.length >= 1, JSON.stringify(blocos(r)));
+  const ultimasFaixa = r.opcoes.slice(r.opcoes.length - fora.length);
+  assert.deepEqual(ultimasFaixa, fora, 'o bloco da faixa fica no fim');
+  for (const o of fora) assert.match(o.aviso, new RegExp(`média ${o.festa.mediaIdade}, (um pouco )?(abaixo|acima) da sua faixa`, 'i'), o.festa.id);
+  const vinteSete = fora.find((o) => o.festa.mediaIdade === 27);
+  assert.ok(vinteSete, JSON.stringify(blocos(r)));
+  assert.match(vinteSete.aviso, /^Média 27, um pouco abaixo da sua faixa/);
+});
+
+test('nada some só por idade: faixa 18 a 20 ainda devolve três festas, todas avisadas', () => {
+  const r = motor.escolher(pedidoNovo({ idade: { min: 18, max: 20 } }), base);
+  assert.equal(r.opcoes.length, 3);
+  assert.ok(r.opcoes.every((o) => o.bloco === 'faixa' && /acima da sua faixa/i.test(o.aviso)), JSON.stringify(blocos(r)));
+});
+
+test('aviso de idade: até 3 anos é "um pouco"; mais que isso, não', () => {
+  const c = motor.completar(motor.sanearCriterios(pedidoNovo({ idade: { min: 30, max: 32 } })));
+  assert.match(motor.opcao(festa('x', { mediaIdade: 35, faixas: ['30-35'] }), c).aviso, /^Média 35, um pouco acima/);
+  assert.match(motor.opcao(festa('y', { mediaIdade: 40, faixas: ['36+'] }), c).aviso, /^Média 40, acima/);
+  assert.equal(motor.opcao(festa('z', { mediaIdade: 31 }), c).aviso, null);
+});
+
+test('sanear: intervalo invertido se endireita, fora de 18 a 50 se apara, bairro inválido cai', () => {
+  const c = motor.sanearCriterios({ idade: { min: 40, max: 30 }, bairros: ['pinheiros', 'atlantida', 'pinheiros'] });
+  assert.deepEqual(c.idade, { min: 30, max: 40 });
+  assert.deepEqual(c.bairros, ['pinheiros']);
+  assert.deepEqual(motor.sanearCriterios({ idade: { min: 10, max: 90 } }).idade, { min: 18, max: 50 });
+  assert.equal(motor.sanearCriterios({ idade: { min: 'x' } }).idade, undefined);
+  assert.deepEqual(motor.falta(motor.sanearCriterios({ dia: 'sab', janela: 'noite', idade: { min: 28, max: 35 }, teto: 80 })), []);
+  assert.deepEqual(motor.falta(motor.sanearCriterios({ dia: 'sab', janela: 'noite', teto: 80 })), ['faixa']);
+});
+
+test('o pedido em frase leva os bairros e a faixa, cada um reabrindo a pergunta', () => {
+  const c = motor.completar(motor.sanearCriterios(pedidoNovo({ bairros: ['pinheiros', 'centro'], idade: { min: 28, max: 50 } })));
+  const partes = motor.pedidoEmPartes(c);
+  assert.ok(partes.some((p) => p.chave === 'bairros' && p.texto === 'em Pinheiros e no Centro'), JSON.stringify(partes));
+  assert.ok(partes.some((p) => p.chave === 'idade' && p.texto === 'gente de 28 a 50 ou mais'), JSON.stringify(partes));
+  assert.match(motor.resumoDoPedido(c), /28 a 50\+/);
+});
+
+test('todos os 528 intervalos de idade funcionam em todos os dias e janelas (nenhum 500)', () => {
+  for (let min = 18; min <= 49; min++) {
+    for (let max = min + 1; max <= 50; max++) {
+      for (const dia of ['sex', 'sab', 'dom']) {
+        for (const janela of ['fim-de-tarde', 'noite']) {
+          const r = motor.escolher({ dia, janela, idade: { min, max }, teto: 80 }, base);
+          assert.ok(Array.isArray(r.opcoes), `${min}–${max} ${dia} ${janela}`);
+        }
+      }
+    }
+  }
+});
+
+test('festa do bairro vizinho não conta como "cabe": título e fala dizem o mesmo', () => {
+  for (const bairros of [['pinheiros'], ['vila-mariana'], ['centro'], ['jardins', 'barra-funda']]) {
+    for (const dia of ['sex', 'sab', 'dom']) {
+      for (const janela of ['fim-de-tarde', 'comeco-da-noite', 'noite']) {
+        const r = motor.escolher({ dia, janela, idade: { min: 28, max: 35 }, teto: 50, bairros }, base);
+        if (!r.aviso || !r.opcoes.length) continue;
+        const diz = /^Duas cabem/.test(r.aviso) ? 2 : /^Uma cabe/.test(r.aviso) ? 1 : /^Nada do jeito/.test(r.aviso) ? 0 : null;
+        if (diz !== null) assert.equal(diz, r.noPedido, `${bairros} ${dia} ${janela}: "${r.aviso}" com ${r.noPedido} no pedido`);
+      }
+    }
+  }
+});
+
+test('o pedido diz o lugar com a preposição certa, e "em toda a cidade" sem bairro', () => {
+  const frase = (bairros) => motor.pedidoEmPartes(motor.completar(motor.sanearCriterios(pedidoNovo({ bairros })))).find((p) => p.chave === 'bairros').texto;
+  assert.equal(frase(['jardins']), 'nos Jardins');
+  assert.equal(frase(['vila-madalena', 'barra-funda']), 'na Vila Madalena e na Barra Funda');
+  assert.equal(frase(['pinheiros', 'centro']), 'em Pinheiros e no Centro');
+  assert.equal(frase([]), 'em toda a cidade');
+});
+
+test('festa que fura o pedido (som, horário, preço) vai para um bloco rotulado depois das que cabem', () => {
+  // O caso da conferência: a Gafieira (outro som) saía no meio das que cabem.
+  const r = motor.escolher(pedidoNovo({ janela: 'comeco-da-noite', idade: { min: 28, max: 40 }, estilos: ['house-disco'], bairros: ['pinheiros', 'centro'] }), base);
+  assert.deepEqual(r.opcoes.map((o) => [o.festa.id, o.bloco]), [
+    ['disco-ao-por-do-sol', 'pedido'], ['sabado-groove', 'pedido'], ['matine-eletronica', 'perto'],
+  ], 'a vaga vai para a vizinha que é house, não para a de outro som');
+  assert.equal(r.noPedido, 2);
+  // Quando ela aparece, vem depois, rotulada.
+  const s = motor.escolher({ dia: 'sex', janela: 'fim-de-tarde', idade: { min: 28, max: 40 }, teto: 80, estilos: ['house-disco'], bairros: [] }, base);
+  assert.deepEqual(s.opcoes.map((o) => o.bloco), ['pedido', 'pedido', 'quase']);
+  assert.equal(s.blocos.quase, 'Quase no seu pedido');
+  assert.match(s.opcoes[2].aviso, /som/);
+});
+
+test('no formulário novo, nenhuma festa com aviso fica no bloco do pedido, e os blocos vêm em ordem', () => {
+  const ordem = ['pedido', 'perto', 'quase', 'faixa'];
+  for (const dia of ['sex', 'sab', 'dom']) for (const janela of ['fim-de-tarde', 'comeco-da-noite', 'noite']) {
+    for (const estilos of [[], ['house-disco'], ['funk']]) for (const bairros of [[], ['pinheiros', 'centro'], ['vila-mariana']]) {
+      for (const teto of [50, 80]) {
+        const r = motor.escolher({ dia, janela, idade: { min: 28, max: 35 }, teto, estilos, bairros }, base);
+        const blocosVistos = r.opcoes.map((o) => o.bloco);
+        assert.deepEqual(blocosVistos, [...blocosVistos].sort((a, b) => ordem.indexOf(a) - ordem.indexOf(b)), `${dia} ${janela} ${estilos} ${bairros} ${teto}`);
+        for (const o of r.opcoes) if (o.bloco === 'pedido') assert.equal(o.aviso, null, `${o.festa.id} no pedido com "${o.aviso}"`);
+      }
+    }
+  }
+});
+
+test('o porquê não soa a conta: "sobra R$ X" vira o quanto cabe no teto', () => {
+  const c = motor.completar(motor.sanearCriterios(pedidoNovo({ teto: 80 })));
+  const barata = motor.opcao(festa('b', { preco: 40 }), c).motivos.join(' · ');
+  const quase = motor.opcao(festa('q', { preco: 65 }), c).motivos.join(' · ');
+  assert.doesNotMatch(barata + quase, /sobra R\$/);
+  assert.match(barata, /bem abaixo do seu teto/);
+  assert.match(quase, /dentro do seu teto/);
 });

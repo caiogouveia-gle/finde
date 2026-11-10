@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="dia">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Saindo do finde.</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#EADCD2">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fontes/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fontes/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/tema.js"></script>
+  <script src="/comum.js" defer></script>
+  <script src="/fora.js" defer></script>
+</head>
+<body data-tela="fora">
+  <div class="moldura">
+    <aside class="lado lado-esq" aria-hidden="true">
+      <p class="relogio" id="relogio"></p>
+      <p class="rotulo" id="relogio-rotulo"></p>
+    </aside>
+    <div class="app">
+      <main id="tela" class="tela">
+        <div class="tela-fora">
+          <header class="topo"><p class="marca">finde<span class="ponto" aria-hidden="true">.</span></p></header>
+          <section class="cabeca">
+            <p class="rotulo" id="fora-rotulo">Fora do finde</p>
+            <h1 class="titulo titulo--pergunta" id="fora-titulo" tabindex="-1">Aqui você <em>sairia</em> do finde.</h1>
+            <hr class="fio">
+            <p class="texto" id="fora-texto">As festas deste protótipo são inventadas. O link termina aqui.</p>
+            <p class="fora-destino" id="fora-destino"></p>
+          </section>
+          <div class="pe pe--junto">
+            <button type="button" class="botao botao--largo" id="fora-voltar">Voltar pra festa</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

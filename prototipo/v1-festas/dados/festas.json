@@ -1,5 +1,7 @@
 {
   "aviso": "Base fictícia do protótipo do Finde. Festas, produtoras, casas e a origem da média de idade são inventadas; nenhuma existe.",
+  "ficticia": true,
+  "referencia": "2026-11-10T15:00:00-03:00",
   "fimDeSemana": "sexta, sábado e domingo",
   "festas": [
     {
@@ -26,7 +28,114 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Clarice Vasconcelos Prado, 1.658",
+        "bairro": "pinheiros",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 60,
+          "disponivel": true,
+          "taxa": 6
+        },
+        {
+          "nome": "2º lote",
+          "preco": 75,
+          "disponivel": true,
+          "taxa": 7.5
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.ingresse.com/sexta-sem-pressa",
+      "linkEvento": "https://coletivoexpediente.com.br/agenda/sexta-sem-pressa",
+      "instagram": "https://www.instagram.com/coletivoexpediente/",
+      "cartaz": "/cartazes/sexta-sem-pressa.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital",
+        "lista": "Nome na lista até as 19h, pelo Instagram da produtora"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-08T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "disco-do-poente",
@@ -54,7 +163,119 @@
       "distanciaMin": 5,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua da Cantareira Pequena, 207",
+        "bairro": "bela-vista",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 50,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 65,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/306455",
+      "linkEvento": "https://ra.co/events/2106455",
+      "instagram": "https://www.instagram.com/selomormaco/",
+      "cartaz": "/cartazes/disco-do-poente.webp",
+      "lineup": [
+        "Nando Claraboia",
+        "Duda Maré",
+        "Tati Varanda"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T14:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-07T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "roda-de-sexta",
@@ -82,7 +303,106 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 42
-      }
+      },
+      "endereco": {
+        "texto": "Rua Coronel Bento Arraes, 1.475",
+        "bairro": "vila-mariana",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [],
+      "entradaNaPorta": {
+        "preco": 30
+      },
+      "linkCompra": null,
+      "linkEvento": null,
+      "instagram": "https://www.instagram.com/sambadaesquinatorta/",
+      "cartaz": "/cartazes/roda-de-sexta.webp",
+      "lineup": [
+        "Lu Tamborim",
+        "Roda do Seu Jaime",
+        "Grupo Sete Cordas Tortas"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "entradaNaPorta": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-01T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T11:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "pop-arquivo",
@@ -109,7 +429,113 @@
       "distanciaMin": 7,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua dos Trilhos Velhos, 1.044",
+        "bairro": "barra-funda",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 70,
+          "disponivel": true,
+          "taxa": 7
+        },
+        {
+          "nome": "2º lote",
+          "preco": 85,
+          "disponivel": true,
+          "taxa": 8.5
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.sympla.com.br/evento/pop-arquivo/2886980",
+      "linkEvento": "https://fitacasseteproducoes.com.br/agenda/pop-arquivo",
+      "instagram": "https://www.instagram.com/fitacasseteproducoes/",
+      "cartaz": "/cartazes/pop-arquivo.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "guitarra-molhada",
@@ -135,7 +561,124 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Largo da Cigarra Branca, 325",
+        "bairro": "centro",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 40,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 55,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://shotgun.live/pt-br/events/guitarra-molhada",
+      "linkEvento": "https://coletivoladob.com.br/agenda/guitarra-molhada",
+      "instagram": "https://www.instagram.com/coletivoladob/",
+      "cartaz": "/cartazes/guitarra-molhada.webp",
+      "lineup": [
+        "Os Retrovisores",
+        "Ana Feedback (DJ set)"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://coletivoladob.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T12:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T14:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "baile-da-firma",
@@ -162,7 +705,110 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 18
-      }
+      },
+      "endereco": {
+        "texto": "Rua Conselheiro Otaviano Leme, 290",
+        "bairro": "centro",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [],
+      "entradaNaPorta": {
+        "preco": 50
+      },
+      "linkCompra": null,
+      "linkEvento": "https://quebradafina.com.br/agenda/baile-da-firma",
+      "instagram": "https://www.instagram.com/quebradafina/",
+      "cartaz": "/cartazes/baile-da-firma.webp",
+      "lineup": [
+        "DJ Peixinho da Laje",
+        "MC Lírio",
+        "Baile Cedo Sound"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "entradaNaPorta": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-01T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "pulso",
@@ -189,7 +835,123 @@
       "distanciaMin": 6,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Engenheiro Ataliba Correia, 1.059",
+        "bairro": "barra-funda",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 70,
+          "disponivel": false
+        },
+        {
+          "nome": "2º lote",
+          "preco": 90,
+          "disponivel": true
+        },
+        {
+          "nome": "3º lote",
+          "preco": 110,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/379305",
+      "linkEvento": "https://ra.co/events/2179305",
+      "instagram": "https://www.instagram.com/nucleofrequencia/",
+      "cartaz": "/cartazes/pulso.webp",
+      "lineup": [
+        "Rê Tungstênio"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital",
+        "lista": "Nome na lista até a meia-noite"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T12:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-03T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T12:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "jantar-dancante",
@@ -216,7 +978,110 @@
       "distanciaMin": 3,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Alameda Josefina Barcellos, 1.288",
+        "bairro": "jardins",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 120,
+          "disponivel": true,
+          "taxa": 12
+        },
+        {
+          "nome": "2º lote",
+          "preco": 150,
+          "disponivel": true,
+          "taxa": 15
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.sympla.com.br/evento/jantar-dancante/2833133",
+      "linkEvento": "https://casaalameda.com.br/agenda/jantar-dancante",
+      "instagram": null,
+      "cartaz": "/cartazes/jantar-dancante.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital",
+        "vestimenta": "Esporte fino"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "sexta-brasileira",
@@ -243,7 +1108,120 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 67
-      }
+      },
+      "endereco": {
+        "texto": "Travessa Celina Moura, 1.859",
+        "bairro": "vila-madalena",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "Até as 20h",
+          "preco": 45,
+          "disponivel": true,
+          "ate": "20:00"
+        },
+        {
+          "nome": "Depois das 20h",
+          "preco": 60,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/379337",
+      "linkEvento": "https://coletivopedeserra.com.br/agenda/sexta-brasileira",
+      "instagram": "https://www.instagram.com/coletivopedeserra/",
+      "cartaz": "/cartazes/sexta-brasileira.webp",
+      "lineup": [
+        "Trio Calçada",
+        "Dona Cuíca e Regional",
+        "Zeca do Cavaco Torto"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-07T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "primeira-rodada",
@@ -270,7 +1248,120 @@
       "distanciaMin": 5,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua das Tipuanas Floridas, 1.692",
+        "bairro": "vila-madalena",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 30,
+          "disponivel": true,
+          "taxa": 3
+        },
+        {
+          "nome": "2º lote",
+          "preco": 45,
+          "disponivel": true,
+          "taxa": 4.5
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.sympla.com.br/evento/primeira-rodada/2832821",
+      "linkEvento": "https://calouradalivre.com.br/agenda/primeira-rodada",
+      "instagram": "https://www.instagram.com/calouradalivre/",
+      "cartaz": "/cartazes/primeira-rodada.webp",
+      "lineup": [
+        "Bruno Toque Polifônico",
+        "Dani Flog"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T17:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-02T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T14:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "clube-varanda",
@@ -297,7 +1388,118 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Alameda Josefina Barcellos, 1.727",
+        "bairro": "jardins",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 80,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 110,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/325912",
+      "linkEvento": "https://ra.co/events/2125912",
+      "instagram": "https://www.instagram.com/varandaeventos/",
+      "cartaz": "/cartazes/clube-varanda.webp",
+      "lineup": [
+        "Otto Calçadão",
+        "Ju Marquise"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-08T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "madrugada-leve",
@@ -324,7 +1526,111 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 31
-      }
+      },
+      "endereco": {
+        "texto": "Rua Clarice Vasconcelos Prado, 1.735",
+        "bairro": "pinheiros",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 70,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 85,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/357400",
+      "linkEvento": "https://ra.co/events/2157400",
+      "instagram": "https://www.instagram.com/selomormaco/",
+      "cartaz": "/cartazes/madrugada-leve.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-02T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T14:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "sabado-groove",
@@ -350,7 +1656,124 @@
       "distanciaMin": 3,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Clarice Vasconcelos Prado, 601",
+        "bairro": "pinheiros",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 60,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 75,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://shotgun.live/pt-br/events/sabado-groove",
+      "linkEvento": "https://ra.co/events/2175859",
+      "instagram": "https://www.instagram.com/coletivomeialuz/",
+      "cartaz": "/cartazes/sabado-groove.webp",
+      "lineup": [
+        "Tati Varanda",
+        "Caio Lume b2b Nina Teixo"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://coletivomeialuz.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-02T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T14:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "noite-pop-2000",
@@ -377,7 +1800,126 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Aurélio Bentes Lacerda, 1.594",
+        "bairro": "vila-madalena",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 50,
+          "disponivel": false,
+          "taxa": 5
+        },
+        {
+          "nome": "2º lote",
+          "preco": 70,
+          "disponivel": true,
+          "taxa": 7
+        },
+        {
+          "nome": "3º lote",
+          "preco": 90,
+          "disponivel": true,
+          "taxa": 9
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.ingresse.com/noite-pop-2000",
+      "linkEvento": "https://fitacasseteproducoes.com.br/agenda/noite-pop-2000",
+      "instagram": "https://www.instagram.com/fitacasseteproducoes/",
+      "cartaz": "/cartazes/noite-pop-2000.webp",
+      "lineup": [
+        "DJ Fita K7"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital",
+        "lista": "Lista de aniversariante: entra grátis até as 21h"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-03T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "terraco-mpb",
@@ -405,7 +1947,111 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 124
-      }
+      },
+      "endereco": {
+        "texto": "Rua Conselheiro Otaviano Leme, 791",
+        "bairro": "centro",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 50,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 65,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/302771",
+      "linkEvento": "https://sambadaesquinatorta.com.br/agenda/terraco-mpb",
+      "instagram": "https://www.instagram.com/sambadaesquinatorta/",
+      "cartaz": "/cartazes/terraco-mpb.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-01T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T11:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "disco-ao-por-do-sol",
@@ -432,7 +2078,125 @@
       "distanciaMin": 5,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua dos Tamboris Altos, 1.409",
+        "bairro": "pinheiros",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 80,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 110,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://shotgun.live/pt-br/events/disco-ao-por-do-sol",
+      "linkEvento": "https://ra.co/events/2196368",
+      "instagram": "https://www.instagram.com/selomormaco/",
+      "cartaz": "/cartazes/disco-ao-por-do-sol.webp",
+      "lineup": [
+        "Rafa Quintal",
+        "Lia Persiana",
+        "Otto Calçadão"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://selomormaco.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-04T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T11:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "feijoada-sonora",
@@ -459,7 +2223,105 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua das Quaresmeiras Roxas, 1.009",
+        "bairro": "vila-mariana",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [],
+      "entradaNaPorta": {
+        "preco": 40
+      },
+      "linkCompra": null,
+      "linkEvento": null,
+      "instagram": "https://www.instagram.com/coletivopanela/",
+      "cartaz": "/cartazes/feijoada-sonora.webp",
+      "lineup": [
+        "Zeca do Cavaco Torto",
+        "Coro da Esquina"
+      ],
+      "idadeMinima": null,
+      "regras": {},
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://coletivopanela.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "entradaNaPorta": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T16:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "matine-eletronica",
@@ -488,7 +2350,121 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 25
-      }
+      },
+      "endereco": {
+        "texto": "Avenida Ernestina Quaresma, 1.910",
+        "bairro": "barra-funda",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 70,
+          "disponivel": true,
+          "taxa": 7
+        },
+        {
+          "nome": "2º lote",
+          "preco": 85,
+          "disponivel": true,
+          "taxa": 8.5
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.ingresse.com/matine-eletronica",
+      "linkEvento": "https://nucleofrequencia.com.br/agenda/matine-eletronica",
+      "instagram": "https://www.instagram.com/nucleofrequencia/",
+      "cartaz": "/cartazes/matine-eletronica.webp",
+      "lineup": [
+        "Duo Contrapeso",
+        "Rê Tungstênio",
+        "Lua Ferrugem"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-07T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "baile-do-sabado",
@@ -514,7 +2490,121 @@
       "distanciaMin": 5,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Conselheiro Otaviano Leme, 1.346",
+        "bairro": "centro",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 40,
+          "disponivel": true,
+          "taxa": 4
+        },
+        {
+          "nome": "2º lote",
+          "preco": 55,
+          "disponivel": true,
+          "taxa": 5.5
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.ingresse.com/baile-do-sabado",
+      "linkEvento": "https://quebradafina.com.br/agenda/baile-do-sabado",
+      "instagram": "https://www.instagram.com/quebradafina/",
+      "cartaz": "/cartazes/baile-do-sabado.webp",
+      "lineup": [
+        "MC Lírio",
+        "Baile Cedo Sound",
+        "DJ Tia Neném"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T03:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-04T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T12:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "funk-ao-entardecer",
@@ -542,7 +2632,118 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua dos Trilhos Velhos, 347",
+        "bairro": "barra-funda",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 50,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 65,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/398575",
+      "linkEvento": "https://bailecedo.com.br/agenda/funk-ao-entardecer",
+      "instagram": "https://www.instagram.com/bailecedo/",
+      "cartaz": "/cartazes/funk-ao-entardecer.webp",
+      "lineup": [
+        "DJ Tia Neném",
+        "MC Garoa"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T10:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-02T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "sala-de-estar",
@@ -569,7 +2770,121 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 53
-      }
+      },
+      "endereco": {
+        "texto": "Rua das Tipuanas Floridas, 920",
+        "bairro": "vila-madalena",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 50,
+          "disponivel": true,
+          "taxa": 5
+        },
+        {
+          "nome": "2º lote",
+          "preco": 65,
+          "disponivel": true,
+          "taxa": 6.5
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.sympla.com.br/evento/sala-de-estar/2833478",
+      "linkEvento": "https://coletivoladob.com.br/agenda/sala-de-estar",
+      "instagram": "https://www.instagram.com/coletivoladob/",
+      "cartaz": "/cartazes/sala-de-estar.webp",
+      "lineup": [
+        "Pedal Torto",
+        "As Persianas"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital",
+        "lista": "Capacidade de 80 pessoas; lista pelo direct da produtora"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-02T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "vinil-e-vinho",
@@ -597,7 +2912,125 @@
       "distanciaMin": 3,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Alameda Josefina Barcellos, 621",
+        "bairro": "jardins",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 110,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 140,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://shotgun.live/pt-br/events/vinil-e-vinho",
+      "linkEvento": "https://ra.co/events/2171878",
+      "instagram": "https://www.instagram.com/casaalameda/",
+      "cartaz": "/cartazes/vinil-e-vinho.webp",
+      "lineup": [
+        "Coro da Esquina",
+        "Lu Tamborim"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital",
+        "vestimenta": "Esporte fino"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://casaalameda.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T20:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "segunda-juventude",
@@ -624,7 +3057,113 @@
       "distanciaMin": 5,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua das Quaresmeiras Roxas, 872",
+        "bairro": "vila-mariana",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 90,
+          "disponivel": true,
+          "taxa": 9
+        },
+        {
+          "nome": "2º lote",
+          "preco": 120,
+          "disponivel": true,
+          "taxa": 12
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.sympla.com.br/evento/segunda-juventude/2876453",
+      "linkEvento": "https://pistamadura.com.br/agenda/segunda-juventude",
+      "instagram": "https://www.instagram.com/pistamadura/",
+      "cartaz": "/cartazes/segunda-juventude.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T13:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-02T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T11:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "galpao-aberto",
@@ -651,7 +3190,121 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 88
-      }
+      },
+      "endereco": {
+        "texto": "Rua dos Trilhos Velhos, 434",
+        "bairro": "barra-funda",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 120,
+          "disponivel": true,
+          "taxa": 12
+        },
+        {
+          "nome": "2º lote",
+          "preco": 150,
+          "disponivel": true,
+          "taxa": 15
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.ingresse.com/galpao-aberto",
+      "linkEvento": "https://nucleofrequencia.com.br/agenda/galpao-aberto",
+      "instagram": "https://www.instagram.com/nucleofrequencia/",
+      "cartaz": "/cartazes/galpao-aberto.webp",
+      "lineup": [
+        "Sinal Verde (ao vivo)",
+        "Mari Pólvora"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital",
+        "vestimenta": "Sem fantasia e sem salto fino no galpão"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T11:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-08T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "rock-na-laje",
@@ -677,7 +3330,120 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua da Cantareira Pequena, 511",
+        "bairro": "bela-vista",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "Até as 21h",
+          "preco": 35,
+          "disponivel": true,
+          "ate": "21:00"
+        },
+        {
+          "nome": "Depois das 21h",
+          "preco": 50,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/323465",
+      "linkEvento": "https://coletivogaragem.com.br/agenda/rock-na-laje",
+      "instagram": "https://www.instagram.com/coletivogaragem/",
+      "cartaz": "/cartazes/rock-na-laje.webp",
+      "lineup": [
+        "As Persianas",
+        "Banda Sala de Espera",
+        "Os Retrovisores"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-07T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "noite-aurora",
@@ -704,7 +3470,119 @@
       "distanciaMin": 3,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Embaixador Teles Fonseca, 139",
+        "bairro": "jardins",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 80,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 110,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/376163",
+      "linkEvento": "https://ra.co/events/2176163",
+      "instagram": "https://www.instagram.com/auroraeventos/",
+      "cartaz": "/cartazes/noite-aurora.webp",
+      "lineup": [
+        "Nando Claraboia",
+        "Duda Maré",
+        "Caio Lume b2b Nina Teixo"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T12:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T22:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-04T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T12:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "gafieira-moderna",
@@ -732,7 +3610,108 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 36
-      }
+      },
+      "endereco": {
+        "texto": "Rua Major Firmino Abreu, 246",
+        "bairro": "centro",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [],
+      "entradaNaPorta": {
+        "preco": 40
+      },
+      "linkCompra": null,
+      "linkEvento": "https://coletivopedeserra.com.br/agenda/gafieira-moderna",
+      "instagram": "https://www.instagram.com/coletivopedeserra/",
+      "cartaz": "/cartazes/gafieira-moderna.webp",
+      "lineup": [
+        "Nana Pandeiro"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "entradaNaPorta": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-03T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "domingo-no-terraco",
@@ -758,7 +3737,118 @@
       "distanciaMin": 3,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Clarice Vasconcelos Prado, 1.459",
+        "bairro": "pinheiros",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 50,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 65,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/396100",
+      "linkEvento": "https://ra.co/events/2196100",
+      "instagram": "https://www.instagram.com/coletivomeialuz/",
+      "cartaz": "/cartazes/domingo-no-terraco.webp",
+      "lineup": [
+        "Ju Marquise",
+        "Dom Teresina"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T02:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-02T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "samba-de-domingo",
@@ -785,7 +3875,102 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Professora Nair Toledo, 679",
+        "bairro": "bela-vista",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "Entrada",
+          "preco": 0,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": null,
+      "linkEvento": "https://sambadaesquinatorta.com.br/agenda/samba-de-domingo",
+      "instagram": "https://www.instagram.com/sambadaesquinatorta/",
+      "cartaz": "/cartazes/samba-de-domingo.webp",
+      "lineup": [
+        "Trio Calçada"
+      ],
+      "idadeMinima": null,
+      "regras": {},
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T06:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-03T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "matine-pop",
@@ -813,7 +3998,124 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 140
-      }
+      },
+      "endereco": {
+        "texto": "Rua das Tipuanas Floridas, 765",
+        "bairro": "vila-madalena",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 40,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 55,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://shotgun.live/pt-br/events/matine-pop",
+      "linkEvento": "https://fitacasseteproducoes.com.br/agenda/matine-pop",
+      "instagram": "https://www.instagram.com/fitacasseteproducoes/",
+      "cartaz": "/cartazes/matine-pop.webp",
+      "lineup": [
+        "Gabi Refrão",
+        "Os Disquetes"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://fitacasseteproducoes.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T14:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T00:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T14:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "domingo-eletronico",
@@ -839,7 +4141,125 @@
       "distanciaMin": 6,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Engenheiro Ataliba Correia, 320",
+        "bairro": "barra-funda",
+        "regiao": "oeste",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 40,
+          "disponivel": false,
+          "taxa": 4
+        },
+        {
+          "nome": "2º lote",
+          "preco": 60,
+          "disponivel": true,
+          "taxa": 6
+        },
+        {
+          "nome": "3º lote",
+          "preco": 80,
+          "disponivel": true,
+          "taxa": 8
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.sympla.com.br/evento/domingo-eletronico/2836918",
+      "linkEvento": "https://nucleofrequencia.com.br/agenda/domingo-eletronico",
+      "instagram": "https://www.instagram.com/nucleofrequencia/",
+      "cartaz": "/cartazes/domingo-eletronico.webp",
+      "lineup": [
+        "Teo Batente"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T05:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "ultimo-disco",
@@ -866,7 +4286,118 @@
       "distanciaMin": 4,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Alameda Josefina Barcellos, 1.523",
+        "bairro": "jardins",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 70,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 85,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://feverup.com/m/307753",
+      "linkEvento": "https://ra.co/events/2107753",
+      "instagram": "https://www.instagram.com/casaalameda/",
+      "cartaz": "/cartazes/ultimo-disco.webp",
+      "lineup": [
+        "Dom Teresina",
+        "Vivi Sacada"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T13:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T18:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "funk-de-domingo",
@@ -894,7 +4425,114 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 22
-      }
+      },
+      "endereco": {
+        "texto": "Largo da Cigarra Branca, 674",
+        "bairro": "centro",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "Até as 18h",
+          "preco": 20,
+          "disponivel": true,
+          "ate": "18:00",
+          "taxa": 2
+        },
+        {
+          "nome": "Depois das 18h",
+          "preco": 30,
+          "disponivel": true,
+          "taxa": 3
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://www.ingresse.com/funk-de-domingo",
+      "linkEvento": "https://bailecedo.com.br/agenda/funk-de-domingo",
+      "instagram": "https://www.instagram.com/bailecedo/",
+      "cartaz": "/cartazes/funk-de-domingo.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-09T23:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T10:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "indie-dominical",
@@ -920,7 +4558,117 @@
       "distanciaMin": 5,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Coronel Bento Arraes, 1.057",
+        "bairro": "vila-mariana",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 30,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 45,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://shotgun.live/pt-br/events/indie-dominical",
+      "linkEvento": "https://coletivogaragem.com.br/agenda/indie-dominical",
+      "instagram": "https://www.instagram.com/coletivogaragem/",
+      "cartaz": "/cartazes/indie-dominical.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://coletivogaragem.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T09:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T09:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T09:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T09:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T10:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-04T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T12:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "pagode-do-fim",
@@ -946,7 +4694,109 @@
       "distanciaMin": 6,
       "origemIdade": {
         "tipo": "edicoes"
-      }
+      },
+      "endereco": {
+        "texto": "Rua das Quaresmeiras Roxas, 744",
+        "bairro": "vila-mariana",
+        "regiao": "centro-sul",
+        "cidade": "São Paulo"
+      },
+      "lotes": [],
+      "entradaNaPorta": {
+        "preco": 30
+      },
+      "linkCompra": null,
+      "linkEvento": "https://sambadaesquinatorta.com.br/agenda/pagode-do-fim",
+      "instagram": "https://www.instagram.com/sambadaesquinatorta/",
+      "cartaz": "/cartazes/pagode-do-fim.webp",
+      "lineup": [
+        "Dona Cuíca e Regional",
+        "Roda do Seu Jaime"
+      ],
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "RG ou CNH, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T14:30:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T14:30:00-03:00"
+        },
+        "entradaNaPorta": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T14:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T01:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-05T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T14:30:00-03:00",
+      "exemplo": true
     },
     {
       "id": "disco-na-praca",
@@ -975,7 +4825,104 @@
       "origemIdade": {
         "tipo": "avaliacoes",
         "avaliacoes": 71
-      }
+      },
+      "endereco": {
+        "texto": "Rua Conselheiro Otaviano Leme, 686",
+        "bairro": "centro",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "Entrada",
+          "preco": 0,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": null,
+      "linkEvento": "https://selomormaco.com.br/agenda/disco-na-praca",
+      "instagram": "https://www.instagram.com/selomormaco/",
+      "cartaz": "/cartazes/disco-na-praca.webp",
+      "lineup": [
+        "Marcelo Orvalho",
+        "Bia Fortuna",
+        "Rafa Quintal"
+      ],
+      "idadeMinima": null,
+      "regras": {},
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T12:00:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "lineup": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T07:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-01T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T12:00:00-03:00",
+      "exemplo": true
     },
     {
       "id": "domingueira",
@@ -1002,7 +4949,117 @@
       "distanciaMin": 5,
       "origemIdade": {
         "tipo": "produtora"
-      }
+      },
+      "endereco": {
+        "texto": "Rua Cônego Bernardo Arruda, 909",
+        "bairro": "bela-vista",
+        "regiao": "centro",
+        "cidade": "São Paulo"
+      },
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 60,
+          "disponivel": true
+        },
+        {
+          "nome": "2º lote",
+          "preco": 75,
+          "disponivel": true
+        }
+      ],
+      "entradaNaPorta": null,
+      "linkCompra": "https://shotgun.live/pt-br/events/domingueira",
+      "linkEvento": "https://coletivogaragem.com.br/agenda/domingueira",
+      "instagram": "https://www.instagram.com/coletivogaragem/",
+      "cartaz": "/cartazes/domingueira.webp",
+      "lineup": null,
+      "idadeMinima": 18,
+      "regras": {
+        "documento": "Documento com foto, original ou digital"
+      },
+      "fontes": [
+        {
+          "id": "envio",
+          "nome": "Enviado pela produtora",
+          "url": null,
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        {
+          "id": "ical",
+          "nome": "Agenda da produtora",
+          "url": "https://coletivogaragem.com.br/agenda.ics",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        }
+      ],
+      "campos": {
+        "nome": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "produtora": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "pistaCheia": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "fim": {
+          "fonte": "ical",
+          "conferidoEm": "2026-11-10T13:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T11:30:00-03:00"
+        },
+        "linkEvento": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "instagram": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "cartaz": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "estilos": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "idadeMinima": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "regras": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-10T04:00:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "envio",
+          "conferidoEm": "2026-11-08T15:00:00-03:00"
+        }
+      },
+      "coletadoEm": "2026-11-10T13:00:00-03:00",
+      "exemplo": true
     }
   ]
 }

@@ -5,7 +5,7 @@
 // com ela oculta; uma leitura velha nunca desfaz a resposta da própria pessoa.
 
 (() => {
-  const { el, titulo, chamar, marca, rodape, quandoGrande, anunciar, mediaFalada } = window.Finde;
+  const { el, titulo, chamar, marca, rodape, quandoGrande, anunciar, mediaFalada, cartaz, blocoOnde, blocoIngresso, blocoLinks } = window.Finde;
   const $tela = document.getElementById('tela');
   const id = decodeURIComponent(window.location.pathname.split('/')[2] || '');
 
@@ -202,20 +202,42 @@
         titulo('h1', 'titulo titulo--pergunta', `Bora ${NA[f.dia]} `, `${DIA[f.dia]}?`),
         el('hr', { class: 'fio' })),
       el('article', { class: 'festa-convite', 'aria-labelledby': 'nome-festa' },
-        el('p', { class: 'vh', texto: `${o.linha}, ${mediaFalada(f)}` }),
+        el('p', { class: 'vh', texto: `${o.linha.replace(/ · média \d+ anos$/, '')}, ${mediaFalada(f)}` }),
         quandoGrande(o),
         el('h2', { class: 'nome', id: 'nome-festa', texto: f.nome }),
-        el('p', { class: 'onde', texto: `${f.casa} · ${o.preco} · ${f.produtora}` }),
-        el('p', { class: 'sobre', texto: `${o.horario} ${f.frase}` })),
+        el('p', { class: 'onde', texto: `${f.casa} · ${window.FindeTexto.precoNaLista(f)} · ${f.produtora}` }),
+        el('p', { class: 'sobre', texto: [o.horario, f.frase].filter(Boolean).join(' ') })),
       form,
       dom.status,
       el('section', { class: 'quem', 'aria-label': 'Quem vai' },
         el('div', { class: 'quem-bloco' }, dom.rotuloDentro, dom.nomesDentro),
         el('div', { class: 'quem-bloco' }, dom.rotuloFora, dom.nomesFora)),
+      detalhes(o),
       el('a', { class: 'link', href: '/', texto: 'Ver outras festas do fim de semana' }),
       rodape());
     $tela.replaceChildren(dom.tela);
     dom.montado = true;
+  }
+
+  // O essencial do detalhe da festa (R13), abaixo da resposta: a resposta
+  // continua à vista sem rolar. Convite antigo, sem esses campos, mostra o
+  // que tem. Os links seguem a marca de exemplo gravada com a festa.
+  function detalhes(o) {
+    const f = o.festa;
+    if (!f.endereco && !Array.isArray(f.lotes) && !f.instagram && !f.linkEvento && !f.cartaz) return null;
+    // Base fictícia por padrão: só sai direto quem diz que não é exemplo.
+    const ex = f.exemplo !== false;
+    return el('section', { class: 'convite-detalhes', 'aria-label': 'Detalhes da festa' },
+      el('div', { class: 'convite-onde' },
+        el('p', { class: 'rotulo', texto: 'Onde' }),
+        cartaz(f, 'cartaz cartaz--convite'),
+        el('div', { class: 'convite-onde-texto' }, blocoOnde(f, o.bairro, ex))),
+      el('div', { class: 'convite-bloco' },
+        el('p', { class: 'rotulo', texto: 'Ingresso' }),
+        blocoIngresso(f, ex, { comprar: true })),
+      el('div', { class: 'convite-bloco' },
+        el('p', { class: 'rotulo', texto: 'Da produtora' }),
+        blocoLinks(f, ex)));
   }
 
   function minhaResposta() {
@@ -267,7 +289,7 @@
       outro.textContent = minha === 'dentro' ? 'Mudar pra não rola' : 'Mudar pra tô dentro';
       outro.setAttribute('aria-pressed', 'false');
     }
-    const situacao = minha ? 'Dá pra mudar quando quiser.' : 'A lista se atualiza sozinha.';
+    const situacao = minha ? 'Dá pra mudar quando quiser.' : '';
     if (dom.status.textContent !== situacao && dom.status.textContent !== SEM_REDE) dom.status.textContent = situacao;
   }
 
@@ -337,6 +359,9 @@
       return;
     }
     if (!r || !r.ok || !r.dados) {
+      // A resposta pode ter se perdido na volta com a escrita feita: o nome
+      // fica lembrado, e o próximo toque confirma sem perguntar "É você?".
+      if (!r) guardar(nome);
       dom.erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toca de novo.';
       agendar();
       return;

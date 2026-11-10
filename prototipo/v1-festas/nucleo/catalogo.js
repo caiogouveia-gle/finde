@@ -60,13 +60,13 @@ const REGIOES = { oeste: 'Zona Oeste', centro: 'Centro', 'centro-sul': 'Centro-S
 
 // Os sete bairros da base, com a preposição certa para "a 8 min de ___".
 const BAIRROS = {
-  pinheiros: { nome: 'Pinheiros', de: 'de Pinheiros', regiao: 'oeste' },
-  'vila-madalena': { nome: 'Vila Madalena', de: 'da Vila Madalena', regiao: 'oeste' },
-  'barra-funda': { nome: 'Barra Funda', de: 'da Barra Funda', regiao: 'oeste' },
-  centro: { nome: 'Centro', de: 'do Centro', regiao: 'centro' },
-  'bela-vista': { nome: 'Bela Vista', de: 'da Bela Vista', regiao: 'centro' },
-  jardins: { nome: 'Jardins', de: 'dos Jardins', regiao: 'centro-sul' },
-  'vila-mariana': { nome: 'Vila Mariana', de: 'da Vila Mariana', regiao: 'centro-sul' },
+  pinheiros: { nome: 'Pinheiros', de: 'de Pinheiros', em: 'em Pinheiros', regiao: 'oeste' },
+  'vila-madalena': { nome: 'Vila Madalena', de: 'da Vila Madalena', em: 'na Vila Madalena', regiao: 'oeste' },
+  'barra-funda': { nome: 'Barra Funda', de: 'da Barra Funda', em: 'na Barra Funda', regiao: 'oeste' },
+  centro: { nome: 'Centro', de: 'do Centro', em: 'no Centro', regiao: 'centro' },
+  'bela-vista': { nome: 'Bela Vista', de: 'da Bela Vista', em: 'na Bela Vista', regiao: 'centro' },
+  jardins: { nome: 'Jardins', de: 'dos Jardins', em: 'nos Jardins', regiao: 'centro-sul' },
+  'vila-mariana': { nome: 'Vila Mariana', de: 'da Vila Mariana', em: 'na Vila Mariana', regiao: 'centro-sul' },
 };
 
 // Minutos de carro, à noite, entre os pontos de referência de cada bairro
