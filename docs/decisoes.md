@@ -4,6 +4,8 @@ Mais recente primeiro.
 
 | Data | Decisão | Origem |
 |---|---|---|
+| 10/11/2026 | Faixa de idade como preferência num seletor de dois pontos (padrão 28 a 35), sem excluir festas; escolha múltipla de bairros, dia continua único; o que fica fora do pedido aparece num bloco à parte | Caio, conferido com benchmark (`docs/pesquisa/2026-11-10-faixa-de-idade-e-lugares.md`) |
+| 10/11/2026 | Protótipo visual, não funcional; tocar na festa abre o detalhe com Instagram, página do evento e onde comprar; "Mandar pro grupo" só a partir do detalhe | Caio |
 | 10/11/2026 | Só "still going out. just differently." como assinatura; "a pista abre antes" e "dança cedo, dorme bem" não foram aprovados e saem do produto | Caio |
 | 10/11/2026 | Protótipo v1 sob o manual de marca do grupo, com acabamento de estúdio de ponta e sem tiques de IA; o manual é a base, inclusive os botões em pílula | Caio |
 | 10/11/2026 | Repositório do projeto no GitHub, com conceito, plano, entregas, vídeo e protótipo | Caio |
