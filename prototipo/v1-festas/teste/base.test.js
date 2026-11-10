@@ -84,6 +84,15 @@ test('a terceira patrocinada é ignorada com aviso', () => {
   assert.match(r.avisos[0], /"p3".*2 patrocinadas/);
 });
 
+test('origem da média: objeto na base, texto na saída; sem origem, a linha cai', () => {
+  for (const f of base) assert.match(f.origemIdade, /^(informada pela produtora|estimada pelo público das edições anteriores|a partir de \d+ avaliações de quem foi)$/);
+  const sem = { ...bruto.festas[0], id: 'sem-origem' };
+  delete sem.origemIdade;
+  const r = prepararBase([sem, { ...bruto.festas[0], id: 'origem-torta', origemIdade: { tipo: 'chute' } }]);
+  assert.equal(r.base.length, 0);
+  assert.match(r.avisos.join('\n'), /"sem-origem": origemIdade/);
+});
+
 test('validarFesta aceita a forma documentada e devolve os campos ruins', () => {
   assert.deepEqual(validarFesta(bruto.festas[0]), []);
   assert.deepEqual(validarFesta({}).slice(0, 3), ['id', 'nome', 'produtora']);

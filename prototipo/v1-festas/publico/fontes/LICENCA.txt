@@ -1,0 +1,4 @@
+Fraunces, Instrument Serif e DM Sans: SIL Open Font License 1.1.
+Subconjunto latino, baixado do Google Fonts em 10/11/2026 e servido daqui
+para a página não depender de outra origem nem pular quando a fonte chega.
+https://openfontlicense.org

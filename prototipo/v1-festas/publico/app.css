@@ -2,8 +2,60 @@
    O manual de identidade visual é a base: paleta, as três famílias, a voz,
    o botão em pílula, o pré-quiz com fios rosé, as boas-vindas com fio.
    O acabamento é editorial: hierarquia por tamanho, peso e itálico; fios no
-   lugar de caixas; resultados como programação; números tabulares; o ponto
-   rosé como gesto de acento. Sem sombra, degradê, ícone ou emoji. */
+   lugar de caixas; resultados como programação; o ponto rosé como gesto de
+   acento. Sem sombra, degradê, ícone ou emoji. */
+
+/* ---------------------------------------------------------------- fontes */
+
+/* Servidas daqui (subconjunto latino, OFL), com preload no HTML. As reservas
+   têm a métrica ajustada para a quebra de linha não mudar quando a fonte chega. */
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fontes/instrument-serif.woff2') format('woff2');
+  font-style: normal; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fontes/instrument-serif-italico.woff2') format('woff2');
+  font-style: italic; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fontes/dm-sans.woff2') format('woff2');
+  font-style: normal; font-weight: 100 1000; font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fontes/fraunces-italico-300.woff2') format('woff2');
+  font-style: italic; font-weight: 300; font-display: block;
+}
+/* Reservas com a métrica da fonte servida (medidas no Chrome contra os
+   arquivos de fontes/): a quebra de linha e a altura de cada linha ficam
+   iguais, e nada pula quando a fonte chega. Instrument Serif não tem opsz;
+   DM Sans tem, então a razão foi medida em 15 px, não em tamanho de cartaz. */
+@font-face {
+  font-family: 'Serifa Reserva';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Times');
+  font-style: normal;
+  size-adjust: 83%; ascent-override: 119.3%; descent-override: 37.3%; line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Serifa Reserva';
+  src: local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'), local('Times Italic');
+  font-style: italic;
+  size-adjust: 86%; ascent-override: 115.1%; descent-override: 36%; line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Sans Reserva';
+  src: local('Helvetica Neue'), local('HelveticaNeue'), local('Arial'), local('ArialMT');
+  size-adjust: 101%; ascent-override: 98.2%; descent-override: 30.7%; line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Marca Reserva';
+  src: local('Georgia Italic'), local('Georgia-Italic');
+  font-style: italic;
+  size-adjust: 77%; ascent-override: 127%; descent-override: 33.1%; line-gap-override: 0%;
+}
 
 :root {
   --bordo: #4E1222;
@@ -20,13 +72,14 @@
   --fio-off: #D7BFB4;
   --acao: var(--bordo);
   --acao-tinta: var(--nude);
+  --acao-hover: var(--grafite);
   --ponto: var(--rose);
-  --marcado: var(--rose);
+  --marcado: var(--bordo);
   --foco: var(--bordo);
 
-  --marca: 'Fraunces', Georgia, serif;
-  --serifa: 'Instrument Serif', 'Times New Roman', serif;
-  --sans: 'DM Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --marca: 'Fraunces', 'Marca Reserva', Georgia, serif;
+  --serifa: 'Instrument Serif', 'Serifa Reserva', 'Times New Roman', serif;
+  --sans: 'DM Sans', 'Sans Reserva', -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   /* escala de espaço */
   --e1: 4px; --e2: 8px; --e3: 12px; --e4: 16px;
@@ -45,13 +98,18 @@
   --corrido: #D7BFB4;
   --rotulo: var(--rose);
   --fio: var(--rose);
-  --fio-off: rgba(201, 143, 138, .35);
+  --fio-off: rgba(201, 143, 138, .5);
   --acao: var(--nude);
   --acao-tinta: var(--bordo);
+  --acao-hover: #F4EBE4;
   --marcado: var(--nude);
   --foco: var(--nude);
   color-scheme: dark;
 }
+
+/* Troca de tema: nenhuma transição de cor no body nem nos textos. O tema.js
+   apaga o main por opacidade, troca as cores de uma vez e o traz de volta;
+   fundo e texto nunca atravessam o mesmo tom. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -71,17 +129,18 @@ body {
   font-kerning: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 400ms var(--curva), color 400ms var(--curva);
 }
-
-/* Na troca de tema, nada de botão atravessando a cor do fundo. */
-.trocando .botao, .trocando .link, .trocando .botao-texto, .trocando .campo { transition: none !important; }
 
 p, h1, h2, h3, ol, ul { margin: 0; }
 ol, ul { padding: 0; list-style: none; }
 button, input { font: inherit; color: inherit; border-radius: 0; }
 a { color: inherit; }
 ::selection { background: var(--tinta); color: var(--fundo); }
+
+/* Sem o realce azul do toque: o retorno é o :active de cada controle. */
+button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+.oculto { display: none !important; }
 
 .vh {
   position: absolute !important;
@@ -91,10 +150,16 @@ a { color: inherit; }
   white-space: nowrap;
 }
 
-:focus-visible { outline: 1.5px solid var(--foco); outline-offset: 4px; }
+:focus-visible { outline: 1.5px solid var(--foco); outline-offset: 3px; }
 [tabindex="-1"]:focus { outline: none; }
 
-.hora, .rotulo, .media, .num { font-variant-numeric: tabular-nums lining-nums; }
+/* As fontes não trazem números tabulares (tnum). Cada dígito da hora vem
+   num .d, e todos ocupam a mesma caixa: .9ch da Instrument Serif (o 0, o mais
+   largo, mede 1ch, e o 1 só .54ch). "19h00" e "20h00" medem o mesmo, e a
+   hora de um dígito encosta à direita, no lugar da dezena. */
+.hora .d { display: inline-block; width: .9ch; text-align: center; }
+.hora .hh { display: inline-block; min-width: 1.8ch; text-align: right; }
+.relogio .h { font-style: italic; }
 
 /* ---------------------------------------------------------------- coluna */
 
@@ -120,8 +185,8 @@ a { color: inherit; }
 
 .lado { display: none; }
 
-/* Desktop: a coluna do app no meio; à esquerda o relógio e o lockup; à
-   direita, o endereço para abrir no celular. */
+/* Desktop: a coluna do app no meio; à esquerda, a hora; à direita, o
+   endereço para abrir no celular (só num endereço público). */
 @media (min-width: 1024px) {
   .moldura {
     display: grid;
@@ -136,22 +201,29 @@ a { color: inherit; }
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    gap: var(--e3);
-    padding: var(--e7);
+    gap: var(--e2);
+    /* O rótulo do relógio fecha na mesma linha do rodapé da coluna: o
+       rodapé centra o texto em 44 px, o rótulo tem 18. */
+    padding: var(--e7) var(--e7) calc(max(var(--e5), env(safe-area-inset-bottom)) + 13px);
   }
   .lado-esq { align-items: flex-start; }
   .lado-dir { align-items: flex-end; text-align: right; }
+  .lado-dir[hidden], .lado.oculto { display: none; }
   .relogio {
     font-family: var(--serifa);
     font-size: 88px;
     line-height: .9;
-    letter-spacing: -.03em;
-    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
   }
-  .lado .lockup { margin-top: var(--e7); align-items: flex-start; }
-  .lado .lockup .assinatura-lockup { text-align: left; }
-  body[data-tela="inicio"] .lado .lockup { visibility: hidden; }
+  .relogio .h { font-style: italic; font-size: .6em; margin: 0 .04em; }
   .endereco-pagina { font-size: 15px; color: var(--corrido); overflow-wrap: anywhere; max-width: 22ch; }
+}
+
+/* A 1440, a coluna abre para 480 e a boas-vindas ganha escala de cartaz. */
+@media (min-width: 1400px) {
+  .moldura { grid-template-columns: 1fr 480px 1fr; }
+  .app { max-width: 480px; }
+  .tela-inicio .titulo--abre { font-size: 64px; }
 }
 
 /* ---------------------------------------------------------------- marca */
@@ -180,14 +252,8 @@ a { color: inherit; }
 .marca .ponto { color: var(--ponto); }
 
 /* Lockup oficial: wordmark e assinatura centralizada embaixo. */
-.lockup {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--e3);
-}
+.lockup { display: flex; flex-direction: column; align-items: center; gap: var(--e3); }
 .lockup .marca { font-size: 84px; padding: 0; }
-.lockup--grande .marca { font-size: 96px; }
 .assinatura-lockup {
   font-size: 12px;
   font-weight: 500;
@@ -214,31 +280,17 @@ a { color: inherit; }
   color: var(--tinta);
   text-wrap: balance;
 }
-.titulo em { font-style: italic; letter-spacing: -.01em; }
-.titulo--abre { font-size: 56px; line-height: .96; letter-spacing: -.02em; }
-.titulo--pergunta { font-size: 44px; line-height: .98; letter-spacing: -.018em; }
-.titulo--resultado { font-size: 40px; line-height: 1; letter-spacing: -.016em; }
-.titulo--secao { font-size: 28px; line-height: 1.05; letter-spacing: -.01em; }
+.titulo em { font-style: italic; letter-spacing: inherit; }
+.titulo--abre { font-size: clamp(48px, 13.6vw, 56px); line-height: .98; letter-spacing: -.008em; word-spacing: .04em; }
+.titulo--pergunta { font-size: 44px; line-height: 1; letter-spacing: -.006em; word-spacing: .05em; }
+.titulo--resultado { font-size: 40px; line-height: 1.02; letter-spacing: -.005em; word-spacing: .04em; }
+.titulo--secao { font-size: 28px; line-height: 1.05; letter-spacing: -.004em; word-spacing: .04em; }
 
-.fio {
-  width: 36px;
-  height: 0;
-  margin: 0;
-  border: 0;
-  border-top: .5px solid var(--fio);
-}
+.fio { width: 36px; height: 0; margin: 0; border: 0; border-top: .5px solid var(--fio); }
 
-.texto {
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--corrido);
-  max-width: 28ch;
-  text-wrap: pretty;
-}
-
+.texto { font-size: 16px; line-height: 1.55; color: var(--corrido); max-width: 28ch; text-wrap: pretty; }
 .dica { font-size: 14px; line-height: 1.5; color: var(--corrido); }
-
-.nota { font-size: 13px; color: var(--rotulo); }
+.nota { font-size: 13px; color: var(--rotulo); white-space: nowrap; }
 
 /* Ação secundária: texto sublinhado por um fio. */
 .link {
@@ -257,9 +309,9 @@ a { color: inherit; }
   text-underline-offset: 5px;
   text-decoration-color: var(--fio);
   cursor: pointer;
-  transition: text-decoration-color 200ms var(--curva);
 }
 .link:active { opacity: .85; }
+.link[aria-busy="true"] { text-decoration-color: var(--tinta); }
 
 .botao-texto {
   min-height: 44px;
@@ -292,34 +344,62 @@ a { color: inherit; }
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 .botao:active { opacity: .85; }
 .botao--largo { width: 100%; }
-.botao--vazado {
-  background: transparent;
-  color: var(--tinta);
-  border-color: var(--tinta);
-  font-weight: 400;
-}
+.botao--vazado { background: transparent; color: var(--tinta); border-color: var(--tinta); font-weight: 400; }
 .botao:disabled { background: transparent; border-color: var(--fio-off); color: var(--rotulo); cursor: default; }
+/* Esperando a rede: sem ícone girando. O rótulo esmaece e um fio corre
+   sob ele, da esquerda para a direita, como uma linha sendo escrita. Com o
+   movimento reduzido, o fio fica parado, inteiro. */
+.botao.carregando, .link.carregando { position: relative; cursor: progress; }
+.botao.carregando { color: color-mix(in srgb, var(--acao-tinta) 64%, var(--acao)); }
+.botao--vazado.carregando, .link.carregando { color: color-mix(in srgb, var(--tinta) 62%, var(--fundo)); }
+.link.carregando { text-decoration-color: transparent; }
+.botao.carregando::before, .link.carregando::before {
+  content: '';
+  position: absolute;
+  left: calc(50% - 2.4em);
+  right: calc(50% - 2.4em);
+  bottom: calc(50% - 12px);
+  height: 1px;
+  background: var(--acao-tinta);
+  transform-origin: left center;
+  animation: correr 1100ms var(--curva) infinite;
+}
+.botao--vazado.carregando::before, .link.carregando::before { background: var(--tinta); }
+.link.carregando::before { left: 0; right: 0; bottom: calc(50% - 11px); }
+.festa .link.carregando::before, .pedido .link.carregando::before { bottom: -6px; }
+@keyframes correr {
+  0% { transform: scaleX(0); transform-origin: left center; }
+  50% { transform: scaleX(1); transform-origin: left center; }
+  50.01% { transform: scaleX(1); transform-origin: right center; }
+  100% { transform: scaleX(0); transform-origin: right center; }
+}
+/* A página abrindo (convite): uma linha de rótulo, no meio da coluna. */
+p.carregando {
+  flex: 0 0 auto;
+  margin: auto 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--rotulo);
+}
 
 @media (hover: hover) and (pointer: fine) {
-  .link:hover { text-decoration-color: var(--tinta); }
+  .link:hover { text-decoration-thickness: 1px; text-decoration-color: var(--tinta); }
   .botao-texto:hover { color: var(--tinta); }
+  .botao:not(.botao--vazado):not(:disabled):hover { background: var(--acao-hover); border-color: var(--acao-hover); }
   .botao--vazado:hover { background: var(--tinta); color: var(--fundo); }
-  .botao, .botao-texto { transition: background-color 200ms var(--curva), color 200ms var(--curva); }
-  .opcao:hover .opcao-nome { color: var(--tinta); }
+  .opcao:hover { border-bottom-color: var(--tinta); }
+  .convite--sem-resposta .par .botao:not(.carregando):hover { background: var(--tinta); color: var(--fundo); }
+  .convite--respondido .par .link:hover { color: var(--tinta); text-decoration-color: var(--tinta); }
 }
 
 /* ---------------------------------------------------------------- cabeças */
 
-.cabeca {
-  display: flex;
-  flex-direction: column;
-  gap: var(--e4);
-  padding: var(--e5) 0;
-}
+.cabeca { display: flex; flex-direction: column; gap: var(--e4); padding: var(--e5) 0 var(--e6); }
 
 /* ---------------------------------------------------------------- boas-vindas */
 
@@ -336,37 +416,42 @@ a { color: inherit; }
   display: flex;
   flex-direction: column;
   gap: var(--e1);
+  min-height: 92px;
   padding: var(--e4) 0 var(--e5);
   border-top: .5px solid var(--fio);
 }
 .proxima-nome { font-size: 17px; font-weight: 500; line-height: 1.3; }
+.proxima-origem { font-size: 13px; color: var(--rotulo); }
 
-/* À noite, a boas-vindas é o splash negativo: o lockup no centro. */
-.tela-inicio--noite .lockup { flex: 1; justify-content: center; padding: 0; }
-.tela-inicio--noite .lockup .marca { font-size: 92px; }
+@media (max-height: 700px) {
+  .tela-inicio .abre { padding: var(--e6) 0 var(--e5); }
+}
+@media (max-height: 620px) {
+  .tela-inicio .lockup { padding-top: 0; }
+  .lockup .marca { font-size: 64px; }
+  .titulo--pergunta { font-size: 36px; }
+}
 
 /* ---------------------------------------------------------------- formulário */
 
-.progresso {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: var(--e1);
-  margin-top: var(--e2);
-}
+.progresso { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--e1); margin-top: var(--e2); align-items: start; }
 .progresso span { height: 2px; background: var(--fio-off); }
 .progresso span.feito { background: var(--tinta); }
+.progresso span.atual { background: var(--tinta); height: 1px; margin-top: .5px; }
 
-.espaco { flex: 1; min-height: var(--e6); }
-
+/* O título fica na mesma altura nas cinco perguntas: o vão de cima é fixo, e
+   a lista é que cresce. */
+.espaco { flex: 0 0 clamp(48px, 14vh, 128px); }
 .cabeca-pergunta { display: flex; flex-direction: column; gap: var(--e4); }
 
-/* Pré-quiz do manual: lista com fios rosé; a escolhida em 500, com o fio de
-   baixo na cor da tinta e o ponto na calha da esquerda. Nada se move. */
-.opcoes { margin-top: var(--e6); }
+/* Pré-quiz do manual: lista com fios rosé, alinhada à margem do título; a
+   escolhida em 500, com o fio de baixo na cor da tinta e um marcador
+   pendurado na margem (círculo na única, quadrado na múltipla). */
+.opcoes { margin-top: var(--e6); border-top: .5px solid var(--fio); }
 .opcao {
   position: relative;
   display: grid;
-  grid-template-columns: 16px 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: baseline;
   min-height: 52px;
   padding: 15px 0;
@@ -375,29 +460,32 @@ a { color: inherit; }
   line-height: 1.3;
   color: var(--tinta);
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
-.opcao input {
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-.marcador { font-size: 10px; line-height: 1; color: var(--marcado); transform: translateY(-2px); }
+.opcao input { position: absolute; left: 0; top: 50%; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+.marcador { position: absolute; left: -14px; top: 50%; width: 6px; height: 6px; margin-top: -3px; }
+.opcao input:checked ~ .marcador { background: var(--marcado); border-radius: 50%; }
+.opcao--varios input:checked ~ .marcador { border-radius: 0; }
 .opcao-detalhe { font-size: 14px; color: var(--rotulo); text-align: right; padding-left: var(--e3); }
-.opcao input:checked ~ .marcador::before { content: '●'; }
 .opcao:has(input:checked) { border-bottom-color: var(--tinta); }
 .opcao input:checked ~ .opcao-nome { font-weight: 500; }
-.opcao:has(input:focus-visible) { outline: 1.5px solid var(--foco); outline-offset: 4px; }
+/* Foco de teclado: um sublinhado, não uma caixa sobre os fios. */
+.opcao:has(input:focus-visible) { border-bottom: 1.5px solid var(--foco); }
+.opcao:has(input:focus-visible) .opcao-nome { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 6px; }
 
-.pe { display: flex; flex-direction: column; gap: var(--e3); padding-top: var(--e5); }
-.continuar[data-oculto] { display: none; }
-.tela-pergunta:has(input:focus-visible) .continuar[data-oculto],
-.tela-pergunta:has(.continuar:focus-visible) .continuar[data-oculto] { display: inline-flex; }
+/* No visor do Safari (664 px), a pergunta mais longa (o som, seis opções)
+   cabe com o botão: o vão de cima encolhe igual nas cinco, e o título
+   continua na mesma altura em todas. */
+@media (max-height: 700px) {
+  .espaco { flex-basis: var(--e7); }
+  .opcao { min-height: 48px; padding: 13px 0; }
+}
+
+.pe { display: flex; flex-direction: column; gap: var(--e3); padding-top: var(--e5); margin-top: auto; }
+/* "Continuar" não aparece no toque (o toque já avança). Pelo teclado, entra no
+   foco e aparece; nada pisca. */
+.continuar[data-oculto] { opacity: 0; pointer-events: none; }
+.continuar[data-oculto]:focus-visible,
+.tela-pergunta:has(input:focus-visible) .continuar[data-oculto] { opacity: 1; pointer-events: auto; }
 
 .aviso-erro { font-size: 14px; color: var(--tinta); }
 .aviso-erro:empty { display: none; }
@@ -405,63 +493,60 @@ a { color: inherit; }
 /* ---------------------------------------------------------------- resultado */
 
 /* O pedido como frase: cada trecho reabre a pergunta dele. */
-.pedido { font-size: 15px; line-height: 1.5; color: var(--corrido); text-wrap: pretty; }
+.pedido { font-size: 15px; line-height: 1.9; color: var(--corrido); text-wrap: pretty; }
 .pedido .parte { white-space: nowrap; }
-.pedido .link { display: inline; min-height: 0; font-size: inherit; line-height: inherit; color: var(--tinta); padding: 10px 0; margin: -10px 0; }
+/* Trechos de uma frase que quebra em linhas: a área de toque de cada um vai
+   até a metade do vão entre as linhas, nunca por cima da linha vizinha (com
+   44 px de altura, o toque em "Sábado" abria o preço, da linha de baixo).
+   Na horizontal, nenhum trecho fica abaixo de 44 px. */
+.pedido .link { display: inline-block; min-height: 0; min-width: 44px; font-size: inherit; line-height: 1.3; color: var(--tinta); padding: 4px 0; margin: -4px 0; text-align: center; }
 
 .conversa { display: flex; flex-direction: column; gap: var(--e2); scroll-margin-top: var(--e5); }
 .conversa:empty { display: none; }
 .fala-voce { font-size: 14px; color: var(--rotulo); }
 .fala-voce::before { content: '— '; }
-.fala-finde { font-size: 17px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
-.oferta { align-self: flex-start; }
+.fala-finde { font-size: 16px; line-height: 1.5; color: var(--tinta); text-wrap: pretty; }
+.conversa[aria-busy="true"] .fala-finde { color: var(--rotulo); }
+.oferta { align-self: flex-start; margin-top: var(--e1); }
 
-/* A régua da noite: 17h às 3h, um traço por festa (começo ao fim) e uma
-   marca no esquenta. */
-.regua { margin: 0 0 var(--e2); }
-.regua-trilhos { position: relative; display: grid; gap: 3px; }
-.trilho { position: relative; height: 3px; }
-.trilho::before { content: ''; position: absolute; inset: 1px 0 auto; height: .5px; background: var(--fio-off); }
-.trilho-festa { position: absolute; top: 1px; height: .5px; background: var(--tinta); }
-.trilho-esquenta { position: absolute; top: -2px; width: 1.5px; height: 7px; background: var(--tinta); }
-.regua-horas {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 6px;
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: .06em;
-  color: var(--rotulo);
-  font-variant-numeric: tabular-nums;
-}
 
 /* A lista como programação: hora à esquerda, festa à direita, fio entre elas. */
-.festas { border-top: .5px solid var(--tinta); }
+.festas { border-top: .5px solid var(--tinta); transition: opacity 160ms var(--curva); }
+.tela-resultado[aria-busy="true"] .festas { opacity: .45; }
 .festa {
   display: grid;
-  grid-template-columns: 84px 1fr;
+  grid-template-columns: 92px 1fr;
   column-gap: var(--e4);
-  padding: var(--e3) 0;
+  padding: 20px 0 24px;
   border-bottom: .5px solid var(--fio);
 }
 .festa:last-child { border-bottom-color: var(--tinta); }
-.festa-quando { display: flex; flex-direction: column; gap: var(--e1); }
-.festa .hora {
-  font-family: var(--serifa);
-  font-size: 40px;
-  line-height: .9;
-  letter-spacing: -.02em;
-  color: var(--tinta);
-}
-.media { font-size: 13px; color: var(--rotulo); }
-.marca-lateral { font-size: 13px; color: var(--tinta); }
+.festa-quando { display: flex; flex-direction: column; gap: 2px; }
+.festa .hora { font-family: var(--serifa); font-size: 38px; line-height: .9; letter-spacing: 0; color: var(--tinta); white-space: nowrap; }
+.media { margin-top: var(--e1); font-size: 13px; color: var(--tinta); }
+.idade-origem { margin-top: 2px; font-size: 12px; line-height: 1.35; color: var(--rotulo); text-wrap: balance; }
+.marca-lateral { margin-top: var(--e2); font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
 .festa-o-que { display: flex; flex-direction: column; min-width: 0; }
 .festa .nome { font: 500 19px/1.2 var(--sans); letter-spacing: -.01em; color: var(--tinta); }
+/* Quando a festa fura o pedido: uma nota de margem, como num impresso
+   anotado. Na cor da tinta, para ser lida; um fio rosé curto pendurado à
+   esquerda, sem caixa, sem ícone, sem cor de erro. */
+.festa-aviso {
+  position: relative;
+  margin-top: var(--e2);
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--tinta);
+  text-wrap: pretty;
+}
+.festa-aviso::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
+.festa-aviso + .onde { margin-top: var(--e2); }
 .onde { margin-top: 2px; font-size: 14px; line-height: 1.4; color: var(--rotulo); }
 .festa .frase {
   margin-top: var(--e2);
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--corrido);
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -469,19 +554,40 @@ a { color: inherit; }
   line-clamp: 2;
   overflow: hidden;
 }
-.porque { margin-top: var(--e1); font-size: 13px; line-height: 1.45; color: var(--tinta); }
-/* Alvo de toque de 44 px num link que ocupa uma linha só. */
-.festa .link { position: relative; align-self: flex-start; min-height: 0; margin-top: 6px; font-size: 14px; }
+@media (max-width: 340px) { .festa .frase { -webkit-line-clamp: 3; line-clamp: 3; } }
+/* O porquê: o que distingue a festa, na cor do rótulo. */
+.porque { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--rotulo); }
+.porque .item { white-space: nowrap; }
+.festa .link { position: relative; align-self: flex-start; min-height: 0; margin-top: var(--e2); font-size: 14px; }
 .festa .link::after { content: ''; position: absolute; inset: -12px -4px; }
-.nota-pago { margin-top: 2px; font-size: 13px; line-height: 1.45; color: var(--rotulo); }
 
-.vazio { padding: 0 0 var(--e6); }
+/* Linha do tempo de cada festa, num eixo comum das 17h às 3h (left e width
+   em % vêm do app). De cima para baixo: o eixo apagado; a festa, um traço
+   bordô do começo ao fim; a pista cheia, um bloco de 5 px sobre o traço; a
+   janela pedida, um colchete em fio rosé logo abaixo, aberto para cima, que
+   abraça (ou não) a festa; e só duas horas, começo e fim, presas às pontas
+   da festa por dentro, para nunca colidirem. Lê-se de relance onde a festa
+   cai na noite: cedo e curta fica à esquerda. */
+.linha-tempo { position: relative; height: 34px; margin-top: var(--e4); }
+.linha-tempo::before { content: ''; position: absolute; left: 0; right: 0; top: 8px; border-top: .5px solid var(--fio-off); }
+.lt-janela { position: absolute; top: 11px; height: 5px; border: 1.5px solid var(--fio); border-top: 0; }
+.lt-festa { position: absolute; top: 7px; height: 1.5px; min-width: 1px; background: var(--tinta); }
+.lt-pico { position: absolute; top: 5.5px; width: 5px; height: 5px; margin-left: -2.5px; background: var(--tinta); }
+.lt-rotulo { position: absolute; top: 20px; transform: translateX(0); font-size: 11px; font-weight: 500; line-height: 1; letter-spacing: .02em; color: var(--rotulo); white-space: nowrap; }
+.lt-rotulo--fim { transform: translateX(-100%); }
+
+/* A legenda usa as mesmas peças, em miniatura. */
+.legenda { display: flex; align-items: center; flex-wrap: wrap; column-gap: 6px; font-size: 12px; line-height: 1.5; color: var(--rotulo); margin-bottom: var(--e3); }
+.legenda .amostra-janela { display: inline-block; width: 16px; height: 4px; border: 1px solid var(--fio); border-top: 0; margin-top: 3px; }
+.legenda .amostra-pista { display: inline-block; width: 5px; height: 5px; background: var(--tinta); }
 
 /* ---------------------------------------------------------------- ajuste */
 
 .ajuste { display: flex; flex-direction: column; gap: var(--e4); padding-top: var(--e7); }
 .atalhos { display: flex; flex-wrap: wrap; column-gap: 20px; }
-.ajuste-form { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: var(--e3); }
+.ajuste-form { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: var(--e3); scroll-margin-bottom: var(--e5); }
+.resposta-local { font-size: 15px; line-height: 1.5; color: var(--tinta); }
+.resposta-local:empty { display: none; }
 
 /* Campo editorial: só o fio de baixo. */
 .campo {
@@ -500,102 +606,116 @@ a { color: inherit; }
 
 /* ---------------------------------------------------------------- convite */
 
-.de-quem { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--e2); }
-.de-quem .campo-nome {
+.de-quem { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: var(--e2); }
+.de-quem .campo-nome,
+.de-quem .nome-fixo {
+  display: inline-block;
   width: 13ch;
-  height: 30px;
-  padding: 0;
+  height: 44px;
+  padding: 14px 0 0;
   border: 0;
   border-bottom: .5px solid var(--tinta);
   background: transparent;
   color: var(--tinta);
   font-size: 15px;
+  line-height: 30px;
 }
+.de-quem .nome-fixo { width: auto; border-bottom-color: transparent; }
 .de-quem .campo-nome::placeholder { color: var(--rotulo); opacity: 1; }
 .de-quem .campo-nome:focus { outline: none; border-bottom: 1.5px solid var(--foco); }
+.dica-nome { font-size: 13px; color: var(--rotulo); margin-top: calc(-1 * var(--e1)); }
 
-.festa-convite { display: flex; flex-direction: column; padding-bottom: var(--e6); }
-/* "18h00 · média 31" na mesma linha de base. */
-.quando-grande { display: flex; align-items: baseline; gap: var(--e3); flex-wrap: wrap; }
-.quando-grande .hora { font-family: var(--serifa); font-size: 56px; line-height: .9; letter-spacing: -.025em; }
-.quando-grande .media-grande { font-family: var(--serifa); font-style: italic; font-size: 32px; line-height: 1; color: var(--tinta); }
-.festa-convite .nome { margin-top: var(--e4); font: 500 21px/1.2 var(--sans); letter-spacing: -.01em; }
-.festa-convite .sobre { margin-top: var(--e3); font-size: 15px; line-height: 1.55; color: var(--corrido); text-wrap: pretty; }
-
-.bloco {
+/* A festa do convite numa faixa grafite de borda a borda: é a peça que
+   circula no WhatsApp. Não é cartão: não tem canto, nem borda. */
+.festa-convite {
   display: flex;
   flex-direction: column;
-  gap: var(--e3);
-  padding-top: var(--e5);
-  border-top: .5px solid var(--fio);
+  margin: 0 calc(-1 * var(--lateral));
+  padding: var(--e6) var(--lateral);
+  background: var(--grafite);
+  color: var(--nude);
 }
+.festa-convite .rotulo, .festa-convite .onde, .festa-convite .idade-origem { color: var(--rose); }
+.quando-grande { display: flex; align-items: baseline; gap: var(--e3); flex-wrap: wrap; }
+.quando-grande .hora { font-family: var(--serifa); font-size: 56px; line-height: .9; letter-spacing: 0; }
+.quando-grande .media-grande { font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rose); }
+.quando-grande .idade-origem { flex-basis: 100%; margin-top: var(--e1); font-size: 13px; text-transform: none; letter-spacing: 0; }
+.festa-convite .nome { margin-top: var(--e4); font: 500 21px/1.2 var(--sans); letter-spacing: -.01em; color: var(--nude); }
+.festa-convite .sobre { margin-top: var(--e3); font-size: 15px; line-height: 1.55; color: #D7BFB4; text-wrap: pretty; }
+
+.bloco { display: flex; flex-direction: column; gap: var(--e3); padding-top: var(--e5); }
+.bloco + .bloco { border-top: .5px solid var(--fio); }
 
 /* A prévia da mensagem que vai pro WhatsApp, com um fio à esquerda. */
-.previa {
-  padding-left: var(--e4);
-  border-left: 1px solid var(--fio);
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--corrido);
-  white-space: pre-line;
-}
+.previa { padding-left: var(--e4); border-left: 1px solid var(--fio); font-size: 15px; line-height: 1.5; color: var(--corrido); white-space: pre-line; }
 .links { display: flex; flex-wrap: wrap; column-gap: var(--e5); }
 
 .par { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e3); margin-top: var(--e2); }
+.par .link { justify-self: center; }
+
+/* Sem resposta: os dois convidam igual, vazados, com o fio da tinta mais
+   firme. Respondido: o escolhido cheio; o outro recua para um link na cor
+   do rótulo. A festa que passou vira registro: sem botões, a faixa grafite
+   dá lugar a fios, e tudo baixa um tom. */
+.convite--sem-resposta .par .botao { border-width: 1px; background: transparent; color: var(--tinta); font-weight: 500; }
+.convite--sem-resposta .par .botao.carregando { color: color-mix(in srgb, var(--tinta) 62%, var(--fundo)); }
+.convite--respondido .par .botao[aria-pressed="true"] { background: var(--acao); border-color: var(--acao); color: var(--acao-tinta); font-weight: 500; }
+.convite--respondido .par .link { color: var(--rotulo); font-size: 14px; text-decoration-color: var(--fio-off); }
+.convite--passou .festa-convite { background: transparent; color: var(--corrido); border-top: .5px solid var(--fio); border-bottom: .5px solid var(--fio); margin: 0; padding: var(--e5) 0; }
+.convite--passou .festa-convite .hora,
+.convite--passou .festa-convite .nome { color: var(--corrido); }
+.convite--passou .festa-convite .media-grande,
+.convite--passou .festa-convite .onde,
+.convite--passou .festa-convite .idade-origem { color: var(--rotulo); }
+.convite--passou .festa-convite .sobre { color: var(--corrido); }
+.convite--passou .form-resposta .texto { font-size: 15px; color: var(--rotulo); max-width: none; }
+.convite--passou .quem-nomes { color: var(--corrido); }
+.convite--passou .cabeca .fio { display: none; }
 
 .status { font-size: 13px; line-height: 1.5; color: var(--rotulo); min-height: 1.5em; }
 
-.quem {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--e5);
-  padding: var(--e5) 0 var(--e6);
-  border-top: .5px solid var(--fio);
-}
+.quem { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e5); padding: var(--e5) 0 var(--e6); margin-top: var(--e6); border-top: .5px solid var(--fio); }
 .quem-bloco { display: flex; flex-direction: column; gap: var(--e2); }
-.quem-nomes {
-  font-family: var(--serifa);
-  font-size: 26px;
-  line-height: 1.08;
-  letter-spacing: -.01em;
-  color: var(--tinta);
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-}
-.quem-nomes.vazio-quem { font-family: var(--sans); font-size: 14px; line-height: 1.5; letter-spacing: 0; color: var(--corrido); }
+.quem-nomes { font-family: var(--serifa); font-size: 26px; line-height: 1.08; letter-spacing: 0; color: var(--tinta); text-wrap: balance; overflow-wrap: anywhere; }
+.quem-nomes.vazio-quem { font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--corrido); }
 
 .confirmar { display: flex; flex-wrap: wrap; column-gap: var(--e5); }
 .confirmar:empty { display: none; }
 
-.tela-plano .link { white-space: normal; }
+.tela-plano > .status { padding-top: var(--e3); }
+
+/* Convite e envio no visor do Safari do iPhone (390×664): as ações cabem sem
+   rolar. O ritmo aperta um passo da escala onde a tela tem uma tarefa só. */
+.tela-plano .cabeca, .tela-mandar .cabeca { padding: var(--e4) 0 var(--e5); gap: var(--e3); }
+.tela-plano .festa-convite, .tela-mandar .festa-convite { padding-block: var(--e5); }
+.tela-plano .festa-convite .nome, .tela-mandar .festa-convite .nome { margin-top: var(--e3); }
+.tela-plano .bloco { padding-top: var(--e4); gap: var(--e2); }
+
+/* No desktop, a faixa grafite atravessa a página de lado a lado, como no
+   celular. Presa à coluna, viraria um cartão. */
+@media (min-width: 1024px) {
+  .moldura { overflow-x: clip; }
+  .festa-convite { margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50% + var(--lateral)); }
+  .convite--passou .festa-convite { margin-inline: 0; padding-inline: 0; }
+}
+.tela-plano > .link { margin-top: var(--e6); white-space: normal; }
 
 /* ---------------------------------------------------------------- rodapé */
 
-.rodape {
-  margin-top: auto;
-  padding-top: var(--e8);
-}
+.rodape { margin-top: auto; padding-top: var(--e7); }
 .tela-inicio .rodape { padding-top: var(--e4); }
-.rodape-linha {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--e3);
-  border-top: .5px solid var(--fio);
-}
-.tema-botao { font-variant-numeric: tabular-nums; }
+.rodape-linha { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: var(--e3); border-top: .5px solid var(--fio); }
+.tema-botao { font-size: 13px; white-space: nowrap; }
 
 /* ---------------------------------------------------------------- movimento */
 
-/* Troca de tela: só opacidade, curta. Depois de um ajuste, só as festas novas. */
-@keyframes surgir { from { opacity: 0; } to { opacity: 1; } }
-.entra { animation: surgir 160ms var(--curva) both; }
+/* Troca de tela: só o que muda, por opacidade, curta. O topo e o progresso
+   ficam firmes. Depois de um ajuste, só as festas novas. */
+@keyframes surgir { from { opacity: .35; } to { opacity: 1; } }
+.entra .cabeca, .entra .cabeca-pergunta, .entra .opcoes, .entra .abre, .entra .lockup,
+.entra .festas, .entra .festa-convite, .entra .bloco { animation: surgir 160ms var(--curva) both; }
 .festa.nova, .marca-lateral.nova-marca { animation: surgir 320ms var(--curva) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 1ms !important;
-    transition-duration: 1ms !important;
-    scroll-behavior: auto !important;
-  }
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }

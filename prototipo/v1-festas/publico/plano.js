@@ -1,22 +1,28 @@
 'use strict';
 // A página do convite: quem recebe vê a festa e responde "tô dentro" ou
-// "não rola" com o nome. Atualiza a cada 4 s com a aba visível; pausa com ela
-// oculta. Nome repetido pergunta "É você?" antes de trocar a resposta.
+// "não rola" com o nome. A resposta fica logo abaixo da festa, à vista sem
+// rolar; quem vai vem depois. Atualiza a cada 4 s com a aba visível e pausa
+// com ela oculta; uma leitura velha nunca desfaz a resposta da própria pessoa.
 
 (() => {
-  const { el, titulo, chamar, marca, rodape, quandoGrande } = window.Finde;
+  const { el, titulo, chamar, marca, rodape, quandoGrande, anunciar, mediaFalada } = window.Finde;
   const $tela = document.getElementById('tela');
   const id = decodeURIComponent(window.location.pathname.split('/')[2] || '');
 
   const INTERVALO = 4000;
   const DIA = { sex: 'sexta', sab: 'sábado', dom: 'domingo' };
+  const CURTO = { sex: 'sex', sab: 'sáb', dom: 'dom' };
   const NA = { sex: 'na', sab: 'no', dom: 'no' };
   const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const SEM_REDE = 'Sem conexão agora. Tento de novo em instantes.';
 
   let plano = null;
   let assinatura = '';
   let timer = null;
   let ocupado = false;
+  // Cada resposta enviada aumenta a geração; leitura de polling de uma geração
+  // anterior chega velha e é descartada.
+  let geracao = 0;
   const dom = {};
 
   function lerNome() {
@@ -52,22 +58,30 @@
     return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
   }
 
-  function data(iso) {
-    const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? '' : `${d.getDate()} ${MESES[d.getMonth()]}`;
+  // "sáb, 14 nov": a data da festa, gravada quando o convite foi criado.
+  function dataDaFesta(p) {
+    if (!p.data) return '';
+    const [, m, d] = p.data.split('-').map(Number);
+    return `${CURTO[p.festa.festa.dia]}, ${d} ${MESES[m - 1]}`;
   }
 
   // ------------------------------------------------------------ busca e polling
 
+  // Uma leitura só vale se nenhuma resposta foi escrita desde que ela saiu:
+  // uma leitura que sai antes (ou durante) a escrita chega velha e é descartada.
   async function buscar() {
+    if (ocupado) return;
+    const g = geracao;
     let r;
     try {
       r = await chamar(`/api/planos/${encodeURIComponent(id)}`);
     } catch {
+      if (g !== geracao) return;
       if (!plano) estado('Não consegui abrir o convite.', 'Parece que a conexão caiu. Confira a internet e tente de novo.', true);
-      else if (dom.status) dom.status.textContent = 'Sem conexão agora. Tento de novo em instantes.';
+      else if (dom.status) dom.status.textContent = SEM_REDE;
       return;
     }
+    if (g !== geracao || ocupado) return;
     if (r.status === 404) {
       clearTimeout(timer);
       plano = null;
@@ -78,7 +92,12 @@
       if (!plano) estado('Não consegui abrir o convite.', 'O servidor não respondeu direito. Tente de novo.', true);
       return;
     }
-    if (r.texto === assinatura) return;
+    // A rede voltou: some o aviso de conexão, mesmo sem nada novo.
+    if (dom.status && dom.status.textContent === SEM_REDE) dom.status.textContent = '';
+    if (r.texto === assinatura) {
+      if (dom.montado) desenhar();
+      return;
+    }
     assinatura = r.texto;
     plano = r.dados;
     desenhar();
@@ -86,12 +105,21 @@
 
   function agendar() {
     clearTimeout(timer);
-    if (document.hidden || !plano) return;
+    if (document.hidden || !plano || plano.passou) return;
     timer = setTimeout(async () => {
       if (!ocupado) await buscar();
       agendar();
     }, INTERVALO);
   }
+
+  // A rede voltou: lê na hora, e o aviso some. Caiu: avisa na hora.
+  window.addEventListener('online', () => {
+    if (document.hidden) return;
+    buscar().then(agendar);
+  });
+  window.addEventListener('offline', () => {
+    if (plano && dom.status) dom.status.textContent = SEM_REDE;
+  });
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -132,17 +160,14 @@
       id: 'seu-nome', class: 'campo', type: 'text', maxlength: '24', autocomplete: 'given-name',
       placeholder: 'como o grupo te chama', value: meuNomeAqui() || lerNome(), enterkeyhint: 'done',
     });
-    const dentro = el('button', { type: 'submit', class: 'botao', value: 'dentro' });
-    const fora = el('button', { type: 'submit', class: 'botao', value: 'fora' });
-    // Trocar o nome no campo muda qual resposta aparece marcada.
+    dom.dentro = el('button', { type: 'submit', class: 'botao botao--vazado', value: 'dentro' });
+    dom.fora = el('button', { type: 'submit', class: 'botao botao--vazado', value: 'fora' });
     nome.addEventListener('input', () => {
       dom.confirmar.replaceChildren();
       dom.erro.textContent = '';
       desenhar();
     });
     dom.nome = nome;
-    dom.dentro = dentro;
-    dom.fora = fora;
     dom.status = el('p', { class: 'status', role: 'status' });
     dom.erro = el('p', { class: 'aviso-erro', role: 'alert' });
     dom.confirmar = el('div', { class: 'confirmar' });
@@ -150,11 +175,12 @@
     dom.nomesFora = el('p', { class: 'quem-nomes' });
     dom.rotuloDentro = el('p', { class: 'rotulo' });
     dom.rotuloFora = el('p', { class: 'rotulo' });
+    dom.par = el('div', { class: 'par' }, dom.dentro, dom.fora);
 
     const form = el('form', { class: 'bloco form-resposta' },
       el('label', { class: 'rotulo', for: 'seu-nome', texto: 'Seu nome' }),
       nome,
-      el('div', { class: 'par' }, dentro, fora),
+      dom.par,
       dom.erro,
       dom.confirmar);
     form.addEventListener('submit', (e) => {
@@ -162,37 +188,39 @@
       const escolha = e.submitter && e.submitter.value === 'fora' ? 'fora' : 'dentro';
       responder(escolha, false);
     });
+    dom.form = form;
 
-    const quando = data(plano.criadoEm);
+    const quando = dataDaFesta(plano);
     const de = plano.autor ? `Convite de ${plano.autor}` : 'Convite';
     document.title = `${f.nome} · finde.`;
 
     $tela.setAttribute('aria-busy', 'false');
-    $tela.replaceChildren(el('div', { class: 'tela-plano entra' },
+    dom.tela = el('div', { class: 'tela-plano convite convite--sem-resposta entra' },
       el('header', { class: 'topo' }, marca('/')),
       el('section', { class: 'cabeca' },
         el('p', { class: 'rotulo', texto: quando ? `${de} · ${quando}` : de }),
         titulo('h1', 'titulo titulo--pergunta', `Bora ${NA[f.dia]} `, `${DIA[f.dia]}?`),
         el('hr', { class: 'fio' })),
       el('article', { class: 'festa-convite', 'aria-labelledby': 'nome-festa' },
-        el('p', { class: 'vh', texto: o.linha }),
+        el('p', { class: 'vh', texto: `${o.linha}, ${mediaFalada(f)}` }),
         quandoGrande(o),
         el('h2', { class: 'nome', id: 'nome-festa', texto: f.nome }),
         el('p', { class: 'onde', texto: `${f.casa} · ${o.preco} · ${f.produtora}` }),
         el('p', { class: 'sobre', texto: `${o.horario} ${f.frase}` })),
+      form,
+      dom.status,
       el('section', { class: 'quem', 'aria-label': 'Quem vai' },
         el('div', { class: 'quem-bloco' }, dom.rotuloDentro, dom.nomesDentro),
         el('div', { class: 'quem-bloco' }, dom.rotuloFora, dom.nomesFora)),
-      form,
-      dom.status,
       el('a', { class: 'link', href: '/', texto: 'Ver outras festas do fim de semana' }),
-      rodape()));
+      rodape());
+    $tela.replaceChildren(dom.tela);
     dom.montado = true;
   }
 
   function minhaResposta() {
     const nome = dom.nome.value.trim();
-    if (!nome) return null;
+    if (!nome || !meuNomeAqui() || !mesmo(meuNomeAqui(), nome)) return null;
     if (plano.dentro.some((n) => mesmo(n, nome))) return 'dentro';
     if (plano.fora.some((n) => mesmo(n, nome))) return 'fora';
     return null;
@@ -201,22 +229,55 @@
   function desenhar() {
     if (!dom.montado) montar();
     dom.rotuloDentro.textContent = `Tô dentro · ${plano.dentro.length}`;
-    dom.nomesDentro.textContent = plano.dentro.length ? juntar(plano.dentro) : 'Ninguém ainda. Seja o primeiro.';
+    dom.nomesDentro.textContent = plano.dentro.length ? juntar(plano.dentro) : 'Ninguém ainda. Abre a lista.';
     dom.nomesDentro.classList.toggle('vazio-quem', !plano.dentro.length);
     dom.rotuloFora.textContent = `Não rola · ${plano.fora.length}`;
     dom.nomesFora.textContent = plano.fora.length ? juntar(plano.fora) : 'Ninguém.';
     dom.nomesFora.classList.toggle('vazio-quem', !plano.fora.length);
 
-    // A resposta marcada fica cheia e muda de texto; a outra, vazada.
-    const minha = meuNomeAqui() && mesmo(meuNomeAqui(), dom.nome.value.trim()) ? minhaResposta() : null;
-    dom.dentro.textContent = minha === 'dentro' ? 'Você tá dentro' : 'Tô dentro';
-    dom.fora.textContent = minha === 'fora' ? 'Anotado' : 'Não rola';
-    dom.dentro.classList.toggle('botao--vazado', minha === 'fora');
-    dom.fora.classList.toggle('botao--vazado', minha !== 'fora');
-    dom.dentro.setAttribute('aria-pressed', String(minha === 'dentro'));
-    dom.fora.setAttribute('aria-pressed', String(minha === 'fora'));
+    if (plano.passou) {
+      // A festa já foi: o convite vira lembrança, sem resposta, sem campo e sem botões.
+      marcar(null, true);
+      if (!dom.form.classList.contains('passou')) {
+        dom.form.classList.add('passou');
+        dom.form.replaceChildren(el('p', { class: 'texto', texto: 'Essa já foi. O convite não aceita mais resposta.' }));
+        if (dom.status.textContent) dom.status.textContent = '';
+      }
+      clearTimeout(timer);
+      return;
+    }
+
+    // Sem resposta, os dois iguais e vazados. Com resposta, a escolhida fica
+    // cheia e muda de texto; a outra vira um link pra mudar.
+    const minha = minhaResposta();
+    marcar(minha, false);
+    const { dentro, fora } = dom;
+    if (!minha) {
+      for (const [b, texto] of [[dentro, 'Tô dentro'], [fora, 'Não rola']]) {
+        b.className = 'botao botao--vazado';
+        b.textContent = texto;
+        b.setAttribute('aria-pressed', 'false');
+      }
+    } else {
+      const [eu, outro] = minha === 'dentro' ? [dentro, fora] : [fora, dentro];
+      eu.className = 'botao';
+      eu.textContent = minha === 'dentro' ? 'Você tá dentro' : 'Anotado: não rola';
+      eu.setAttribute('aria-pressed', 'true');
+      outro.className = 'link';
+      outro.textContent = minha === 'dentro' ? 'Mudar pra não rola' : 'Mudar pra tô dentro';
+      outro.setAttribute('aria-pressed', 'false');
+    }
     const situacao = minha ? 'Dá pra mudar quando quiser.' : 'A lista se atualiza sozinha.';
-    if (dom.status.textContent !== situacao) dom.status.textContent = situacao;
+    if (dom.status.textContent !== situacao && dom.status.textContent !== SEM_REDE) dom.status.textContent = situacao;
+  }
+
+  // O estado do convite, para o desenho: sem resposta, respondido, passou.
+  function marcar(minha, passou) {
+    const t = dom.tela;
+    if (!t) return;
+    t.classList.toggle('convite--sem-resposta', !passou && !minha);
+    t.classList.toggle('convite--respondido', !passou && Boolean(minha));
+    t.classList.toggle('convite--passou', passou);
   }
 
   async function responder(resposta, confirmar) {
@@ -230,8 +291,15 @@
     }
     if (ocupado) return;
     ocupado = true;
-    dom.dentro.disabled = true;
-    dom.fora.disabled = true;
+    geracao += 1;
+    clearTimeout(timer);
+    const botao = resposta === 'dentro' ? dom.dentro : dom.fora;
+    const antes = botao.textContent;
+    // Retorno no mesmo quadro do toque; sem disabled, o foco fica no botão.
+    botao.textContent = 'Anotando…';
+    botao.classList.add('carregando');
+    botao.setAttribute('aria-busy', 'true');
+    for (const b of [dom.dentro, dom.fora]) b.setAttribute('aria-disabled', 'true');
     const jaEra = meuNomeAqui() && mesmo(meuNomeAqui(), nome);
     let r;
     try {
@@ -239,9 +307,20 @@
     } catch {
       r = null;
     }
+    // Leituras que saíram durante a escrita também são velhas.
+    geracao += 1;
     ocupado = false;
-    dom.dentro.disabled = false;
-    dom.fora.disabled = false;
+    botao.classList.remove('carregando');
+    botao.removeAttribute('aria-busy');
+    botao.textContent = antes;
+    for (const b of [dom.dentro, dom.fora]) b.removeAttribute('aria-disabled');
+    if (r && r.status === 410) {
+      // A festa passou enquanto a pessoa olhava: o convite vira lembrança.
+      plano = { ...plano, passou: true };
+      desenhar();
+      anunciar('Essa já foi. O convite não aceita mais resposta.');
+      return;
+    }
     if (r && r.status === 409 && r.dados && r.dados.duplicado) {
       // "Já tem Ju na lista. É você?"
       dom.erro.textContent = r.dados.erro;
@@ -254,16 +333,19 @@
         dom.nome.focus();
       });
       dom.confirmar.replaceChildren(sou, outro);
+      agendar();
       return;
     }
     if (!r || !r.ok || !r.dados) {
-      dom.erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'Não consegui anotar. Tente de novo.';
+      dom.erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toca de novo.';
+      agendar();
       return;
     }
     guardar(nome);
     assinatura = r.texto;
     plano = r.dados;
     desenhar();
+    anunciar(resposta === 'dentro' ? 'Você está dentro.' : 'Anotado: não rola.');
     agendar();
   }
 

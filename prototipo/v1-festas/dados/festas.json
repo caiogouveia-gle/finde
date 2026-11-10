@@ -1,5 +1,5 @@
 {
-  "aviso": "Base fictícia do protótipo do Finde. Festas, produtoras e casas inventadas; nenhuma existe.",
+  "aviso": "Base fictícia do protótipo do Finde. Festas, produtoras, casas e a origem da média de idade são inventadas; nenhuma existe.",
   "fimDeSemana": "sexta, sábado e domingo",
   "festas": [
     {
@@ -23,7 +23,10 @@
       ],
       "frase": "Sai do trabalho direto pra pista. O crachá fica na bolsa.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "disco-do-poente",
@@ -48,7 +51,10 @@
       ],
       "frase": "O sol vai embora às seis. A pista fica.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "roda-de-sexta",
@@ -60,7 +66,7 @@
       "dia": "sex",
       "inicio": 18,
       "esquenta": 20,
-      "fim": 24,
+      "fim": 23,
       "mediaIdade": 35,
       "faixas": [
         "30-35",
@@ -72,7 +78,11 @@
       ],
       "frase": "Samba de roda no quintal, cerveja gelada e cadeira pra quem pedir.",
       "selo": "editorial",
-      "distanciaMin": 6
+      "distanciaMin": 6,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 42
+      }
     },
     {
       "id": "pop-arquivo",
@@ -96,7 +106,10 @@
       ],
       "frase": "Os hits de 2003, com o coro inteiro sabendo a letra.",
       "selo": "editorial",
-      "distanciaMin": 7
+      "distanciaMin": 7,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "guitarra-molhada",
@@ -119,7 +132,10 @@
       ],
       "frase": "Porão, guitarra e aquela banda que você jurava que tinha acabado.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "baile-da-firma",
@@ -142,7 +158,11 @@
       ],
       "frase": "Começa quando a sua festa já estaria acabando.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 18
+      }
     },
     {
       "id": "pulso",
@@ -166,7 +186,10 @@
       ],
       "frase": "Techno até o sol nascer. Planeje o sábado de acordo.",
       "selo": "editorial",
-      "distanciaMin": 6
+      "distanciaMin": 6,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "jantar-dancante",
@@ -190,7 +213,10 @@
       ],
       "frase": "Janta às oito, dança às dez. Ninguém precisa escolher.",
       "selo": "editorial",
-      "distanciaMin": 3
+      "distanciaMin": 3,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "sexta-brasileira",
@@ -213,7 +239,11 @@
       ],
       "frase": "Forró, samba e MPB, nessa ordem. Sapato confortável ajuda.",
       "selo": "editorial",
-      "distanciaMin": 3
+      "distanciaMin": 3,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 67
+      }
     },
     {
       "id": "primeira-rodada",
@@ -237,7 +267,10 @@
       ],
       "frase": "Público de faculdade. Se a sua formatura foi há dez anos, fica a dica.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "clube-varanda",
@@ -261,7 +294,10 @@
       ],
       "frase": "Espumante por conta da casa até as 21h para quem chega cedo.",
       "selo": "patrocinado",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "madrugada-leve",
@@ -284,7 +320,11 @@
       ],
       "frase": "Pra quem ainda topa a noite, mas sem fila na porta.",
       "selo": "editorial",
-      "distanciaMin": 6
+      "distanciaMin": 6,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 31
+      }
     },
     {
       "id": "sabado-groove",
@@ -307,7 +347,10 @@
       ],
       "frase": "House no terraço, pista cheia às 21h e a volta ainda com metrô.",
       "selo": "editorial",
-      "distanciaMin": 3
+      "distanciaMin": 3,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "noite-pop-2000",
@@ -331,7 +374,10 @@
       ],
       "frase": "Todo mundo aqui já teve um fotolog. Ninguém toca no assunto.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "terraco-mpb",
@@ -343,7 +389,7 @@
       "dia": "sab",
       "inicio": 18,
       "esquenta": 20,
-      "fim": 24,
+      "fim": 23,
       "mediaIdade": 34,
       "faixas": [
         "30-35",
@@ -355,7 +401,11 @@
       ],
       "frase": "MPB com vista pro Centro. Dá pra conversar sem gritar.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 124
+      }
     },
     {
       "id": "disco-ao-por-do-sol",
@@ -379,7 +429,10 @@
       ],
       "frase": "Disco com o céu ainda claro. Boa hora pra chegar e pra voltar.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "feijoada-sonora",
@@ -403,7 +456,10 @@
       ],
       "frase": "Feijoada às três, samba às seis, cama às onze.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "matine-eletronica",
@@ -428,7 +484,11 @@
       ],
       "frase": "O mesmo techno da madrugada, só que você lembra de tudo depois.",
       "selo": "editorial",
-      "distanciaMin": 6
+      "distanciaMin": 6,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 25
+      }
     },
     {
       "id": "baile-do-sabado",
@@ -451,7 +511,10 @@
       ],
       "frase": "Baile cheio, e a pista só pega depois da 1h.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "funk-ao-entardecer",
@@ -463,7 +526,7 @@
       "dia": "sab",
       "inicio": 18,
       "esquenta": 20,
-      "fim": 24,
+      "fim": 23,
       "mediaIdade": 31,
       "faixas": [
         "25-29",
@@ -476,7 +539,10 @@
       ],
       "frase": "Os funks que você sabia de cor em 2012, com hora pra acabar.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "sala-de-estar",
@@ -499,7 +565,11 @@
       ],
       "frase": "Indie num sobrado com cara de casa de amigo.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 53
+      }
     },
     {
       "id": "vinil-e-vinho",
@@ -524,7 +594,10 @@
       ],
       "frase": "Disco de vinil, taça de vinho e pista pequena. Ninguém derruba nada.",
       "selo": "editorial",
-      "distanciaMin": 3
+      "distanciaMin": 3,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "segunda-juventude",
@@ -548,7 +621,10 @@
       ],
       "frase": "Os hits que você dançava no casamento dos outros.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "galpao-aberto",
@@ -571,7 +647,11 @@
       ],
       "frase": "A noite do jeito tradicional: começa tarde e acaba de dia.",
       "selo": "editorial",
-      "distanciaMin": 8
+      "distanciaMin": 8,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 88
+      }
     },
     {
       "id": "rock-na-laje",
@@ -594,7 +674,10 @@
       ],
       "frase": "Rock na laje do Bixiga. Os joelhos agradecem a escada curta.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "noite-aurora",
@@ -618,7 +701,10 @@
       ],
       "frase": "Open bar até as 21h para quem chega cedo.",
       "selo": "patrocinado",
-      "distanciaMin": 3
+      "distanciaMin": 3,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "gafieira-moderna",
@@ -642,7 +728,11 @@
       ],
       "frase": "Gafieira com meia hora de aula pra quem chega cedo.",
       "selo": "editorial",
-      "distanciaMin": 6
+      "distanciaMin": 6,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 36
+      }
     },
     {
       "id": "domingo-no-terraco",
@@ -665,7 +755,10 @@
       ],
       "frase": "Acaba às 22h. A segunda nem percebe.",
       "selo": "editorial",
-      "distanciaMin": 3
+      "distanciaMin": 3,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "samba-de-domingo",
@@ -689,7 +782,10 @@
       ],
       "frase": "Roda na praça, de graça. Leve uma canga e um amigo.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "matine-pop",
@@ -713,7 +809,11 @@
       ],
       "frase": "A matinê que você ia aos 15, agora com bar.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 140
+      }
     },
     {
       "id": "domingo-eletronico",
@@ -736,7 +836,10 @@
       ],
       "frase": "Techno de domingo com luz de fim de tarde.",
       "selo": "editorial",
-      "distanciaMin": 6
+      "distanciaMin": 6,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "ultimo-disco",
@@ -760,7 +863,10 @@
       ],
       "frase": "O último disco do fim de semana toca às 23h50, pontual.",
       "selo": "editorial",
-      "distanciaMin": 4
+      "distanciaMin": 4,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "funk-de-domingo",
@@ -784,7 +890,11 @@
       ],
       "frase": "Baile de fim de tarde, público de faculdade.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 22
+      }
     },
     {
       "id": "indie-dominical",
@@ -807,7 +917,10 @@
       ],
       "frase": "Banda ao vivo às oito, discotecagem até as onze.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     },
     {
       "id": "pagode-do-fim",
@@ -830,7 +943,10 @@
       ],
       "frase": "Pagode dos anos 90 pra quem estava lá.",
       "selo": "editorial",
-      "distanciaMin": 6
+      "distanciaMin": 6,
+      "origemIdade": {
+        "tipo": "edicoes"
+      }
     },
     {
       "id": "disco-na-praca",
@@ -855,7 +971,11 @@
       ],
       "frase": "Grátis, ao ar livre e acaba antes do jantar.",
       "selo": "editorial",
-      "distanciaMin": 3
+      "distanciaMin": 3,
+      "origemIdade": {
+        "tipo": "avaliacoes",
+        "avaliacoes": 71
+      }
     },
     {
       "id": "domingueira",
@@ -879,7 +999,10 @@
       ],
       "frase": "Pra quem emendou a segunda de folga. Ou finge que emendou.",
       "selo": "editorial",
-      "distanciaMin": 5
+      "distanciaMin": 5,
+      "origemIdade": {
+        "tipo": "produtora"
+      }
     }
   ]
 }

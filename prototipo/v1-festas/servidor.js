@@ -26,15 +26,16 @@ const TIPOS_ARQUIVO = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
 };
 
-// Fora de self, só as fontes do Google.
+// Tudo vem daqui: scripts, estilos e fontes (servidas de publico/fontes).
 const CSP = [
   "default-src 'self'",
   "script-src 'self'",
-  "style-src 'self' https://fonts.googleapis.com",
-  "font-src https://fonts.gstatic.com",
+  "style-src 'self'",
+  "font-src 'self'",
   "img-src 'self' data:",
   "connect-src 'self'",
   "base-uri 'none'",
@@ -109,10 +110,12 @@ function origem(req) {
 }
 
 // Páginas HTML com as metas de compartilhamento preenchidas.
-function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao } = {}) {
+function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dados } = {}) {
   fs.readFile(arquivo, 'utf8', (e, html) => {
     if (e) return erro(res, 404, 'Não achei essa página.');
     let pagina = html.replaceAll('__ORIGEM__', escapar(origem(req)));
+    // JSON dentro de <script type="application/json">: "<" escapado, nada executa.
+    pagina = pagina.replace('__DADOS__', () => (dados ? JSON.stringify(dados).replace(/</g, '\\u003c') : 'null'));
     if (titulo) {
       pagina = pagina
         .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${escapar(titulo)}$2`)
@@ -139,7 +142,8 @@ function enviarArquivo(req, res, caminho) {
       ...CABECALHOS,
       'Content-Type': tipo,
       'Content-Length': st.size,
-      'Cache-Control': 'no-cache',
+      // Fontes não mudam: guardam por um ano. O resto revalida.
+      'Cache-Control': tipo === 'font/woff2' ? 'public, max-age=31536000, immutable' : 'no-cache',
     });
     if (req.method === 'HEAD') return res.end();
     fs.createReadStream(caminho).pipe(res);
@@ -192,7 +196,7 @@ function lerCorpo(req) {
 function exigirCriterios(bruto) {
   const c = motor.sanearCriterios(bruto);
   const faltam = motor.falta(c);
-  if (faltam.length) throw new ErroPlano(400, `Faltam respostas do formulário: ${faltam.join(', ')}.`);
+  if (faltam.length) throw new ErroPlano(400, 'Faltou responder umas perguntas. Vamos do começo?', { faltam });
   return motor.completar(c);
 }
 
@@ -202,6 +206,22 @@ function idsNaTela(bruto) {
     throw new ErroPlano(400, 'A lista de festas na tela veio estranha.');
   }
   return bruto;
+}
+
+// A data da festa: o próximo dia da semana dela que ainda não acabou.
+// Devolve { data: 'AAAA-MM-DD', ate: ISO do fim da festa }.
+function dataDaFesta(f, agora) {
+  const alvo = { sex: 5, sab: 6, dom: 0 }[f.dia];
+  for (let i = 0; i < 8; i++) {
+    const d = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + i);
+    if (d.getDay() !== alvo) continue;
+    const fim = new Date(d.getTime() + f.fim * 3600 * 1000);
+    if (fim > agora) {
+      const dia = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return { data: dia, ate: fim.toISOString() };
+    }
+  }
+  return null;
 }
 
 // A próxima pista que abre, pelo relógio: no fim de semana, a próxima do dia
@@ -221,7 +241,7 @@ function proximaPista(base, agora = new Date()) {
     for (const d of resto) f = f || primeira(d);
   }
   f = f || primeira('sex');
-  return f ? { linha: C.linhaDaFesta(f), nome: f.nome } : null;
+  return f ? { linha: C.linhaDaFesta(f), nome: f.nome, origem: f.origemIdade } : null;
 }
 
 function formulario(base) {
@@ -284,27 +304,38 @@ function criarServidor({
         precosMostrados: naTela.map((f) => f.preco),
       };
 
-      let { mudar, pedidos } = entender(corpo.texto, contexto);
+      let { mudar, pedidos, duvida, diaRecusado } = entender(corpo.texto, contexto);
       // "sim" aceita a oferta da resposta anterior.
       if (pedidos.length === 1 && pedidos[0] === 'aceitar' && antes.oferta) {
-        ({ mudar, pedidos } = entender(antes.oferta, contexto));
+        ({ mudar, pedidos, duvida, diaRecusado } = entender(antes.oferta, contexto));
       }
       const depois = motor.completar({ ...antes, ...motor.sanearCriterios(mudar) });
       delete depois.oferta;
       depois.firmes = conversa.firmesDe(antes, depois);
-      const r = resultado(depois);
+      let r = resultado(depois);
       const anterior = () => resultado(antes);
       const nomeDe = (id) => (porId.get(id) ? porId.get(id).nome : id);
 
+      // "mais barato" para no preço mais baixo que ainda tem festa.
+      let piso = false;
+      if (pedidos.includes('mais-barato') && !r.opcoes.length && depois.teto !== antes.teto) {
+        const minimo = motor.precoMinimo(depois, base);
+        if (minimo !== null && minimo < (antes.teto === 'sem-limite' ? Infinity : antes.teto)) {
+          depois.teto = minimo;
+          r = resultado(depois);
+          piso = true;
+        }
+      }
+
       // "outras": se nada novo cabe de verdade no pedido, avisa e mantém a lista.
       if (pedidos.includes('outras')) {
-        const novaQueCabe = r.opcoes.some((o) => !antesIds.includes(o.festa.id)
-          && motor.foraDoPedido(o.festa, depois).length === 0 && (!depois.estilos.length || o.casaComEstilo));
+        const novaQueCabe = r.opcoes.some((o) => !antesIds.includes(o.festa.id) && o.atende);
         if (!novaQueCabe) {
           const a = anterior();
+          const { oferta: _, ...semOferta } = antes;
           return [200, {
-            criterios: { ...antes, oferta: undefined }, pedido: motor.resumoDoPedido(antes), pedidoPartes: motor.pedidoEmPartes(antes),
-            ...a, aviso: undefined, resposta: 'Já mostrei tudo que cabe nesse pedido.', entendeu: true, entraram: [], sairam: [],
+            criterios: semOferta, pedido: motor.resumoDoPedido(antes), pedidoPartes: motor.pedidoEmPartes(antes),
+            ...a, aviso: undefined, oferta: undefined, resposta: 'Já mostrei tudo que cabe nesse pedido.', entendeu: true, entraram: [], sairam: [],
           }];
         }
       }
@@ -313,17 +344,25 @@ function criarServidor({
       if (pedidos.includes('estilo') && r.casam === 0 && depois.estilos.length) {
         impedimento = motor.impedimentoDoEstilo(depois, base, depois.estilos[depois.estilos.length - 1]);
       }
-      const fala = conversa.responder({ pedidos, antes, depois, antesIds, resultado: r, nomeDe, impedimento });
+      const fala = conversa.responder({ pedidos, antes, depois, antesIds, resultado: r, nomeDe, impedimento, duvida, piso, diaRecusado });
       // Não entendeu: a lista e os critérios ficam como estavam.
-      const criterios = fala.entendeu ? depois : antes;
+      const { oferta: _velha, ...antesSemOferta } = antes;
+      const criterios = fala.entendeu ? depois : antesSemOferta;
       const final = fala.entendeu ? r : anterior();
-      if (fala.entendeu && r.oferta) criterios.oferta = r.oferta.frase;
+      // A oferta vale só para a próxima frase: a do motor, ou a dúvida sobre o dia.
+      let oferta = fala.entendeu ? r.oferta : undefined;
+      if (duvida && duvida.dia) {
+        const nome = C.DIAS[duvida.dia].frase;
+        oferta = { frase: nome, rotulo: `Mudar ${duvida.dia === 'sex' ? 'pra' : 'pro'} ${nome}` };
+      }
+      if (oferta) criterios.oferta = oferta.frase;
       return [200, {
         criterios,
         pedido: motor.resumoDoPedido(criterios),
         pedidoPartes: motor.pedidoEmPartes(criterios),
         ...final,
         aviso: fala.entendeu ? final.aviso : undefined,
+        oferta,
         resposta: fala.texto,
         entendeu: fala.entendeu,
         entraram: fala.entraram,
@@ -336,8 +375,11 @@ function criarServidor({
       if (typeof corpo.festa !== 'string' || !FORMATO_ID_FESTA.test(corpo.festa)) throw new ErroPlano(400, 'Diga qual festa mandar.');
       const festa = fonte.base().find((f) => f.id === corpo.festa);
       if (!festa) throw new ErroPlano(400, 'Essa festa não está mais na lista.');
-      const plano = planos.criar({ festa: motor.opcao(festa, criterios), pedido: motor.resumoDoPedido(criterios), autor: corpo.autor });
-      return [201, { id: plano.id, url: `/p/${plano.id}` }];
+      const plano = planos.criar({
+        festa: motor.opcao(festa, criterios), pedido: motor.resumoDoPedido(criterios), autor: corpo.autor,
+        quando: dataDaFesta(festa, new Date()),
+      });
+      return [201, { id: plano.id, url: `/p/${plano.id}`, data: plano.data }];
     },
   };
 
@@ -385,7 +427,10 @@ function criarServidor({
     try {
       if (pathname.startsWith('/api/')) return await api(req, res, pathname);
       if (req.method !== 'GET' && req.method !== 'HEAD') return erro(res, 405, 'Esse caminho não aceita esse método.');
-      if (pathname === '/' || pathname === '/index.html') return enviarPagina(req, res, path.join(PUBLICO, 'index.html'));
+      if (pathname === '/' || pathname === '/index.html') {
+        // Os dados da primeira tela vão junto com o HTML: uma ida e volta a menos.
+        return enviarPagina(req, res, path.join(PUBLICO, 'index.html'), { dados: formulario(fonte.base()) });
+      }
       const convite = pathname.match(/^\/p\/([^/]+)\/?$/);
       if (convite) return paginaDoConvite(req, res, convite[1]);
       if (pathname === '/plano.html') return erro(res, 404, 'Não achei essa página.');
@@ -404,4 +449,4 @@ if (require.main === module) {
   servidor.listen(porta, () => console.log(`[finde] no ar em http://localhost:${porta}`));
 }
 
-module.exports = { criarServidor, proximaPista };
+module.exports = { criarServidor, proximaPista, dataDaFesta };

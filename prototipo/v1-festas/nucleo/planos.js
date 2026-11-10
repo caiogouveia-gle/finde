@@ -43,8 +43,8 @@ function novoId(existe) {
   }
 }
 
-// O que vai para fora.
-function vista(plano) {
+// O que vai para fora. `passou`: a festa já acabou, e o convite não aceita mais resposta.
+function vista(plano, agora) {
   const nomes = (r) => plano.respostas.filter((x) => x.resposta === r).map((x) => x.nome);
   return {
     id: plano.id,
@@ -52,6 +52,8 @@ function vista(plano) {
     criadoEm: plano.criadoEm,
     festa: plano.festa,
     pedido: plano.pedido,
+    data: plano.data || null,
+    passou: Boolean(plano.ate && agora && new Date(agora) > new Date(plano.ate)),
     dentro: nomes('dentro'),
     fora: nomes('fora'),
   };
@@ -103,22 +105,25 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
   return {
     // festa: o retrato da opção no momento do envio (sobrevive a mudanças na base).
     // autor: opcional; quando vem, já entra como "tô dentro".
-    criar({ festa, pedido, autor }) {
+    criar({ festa, pedido, autor, quando }) {
       let nome = null;
       if (autor !== undefined && autor !== null && !(typeof autor === 'string' && autor.trim() === '')) {
         nome = limparNome(autor);
         if (!nome) throw new ErroPlano(400, 'O nome precisa ser texto, com até 24 letras.');
       }
       const id = novoId((x) => Object.hasOwn(planos, x));
-      const plano = { id, criadoEm: agora(), autor: nome, festa, pedido: pedido || null, respostas: [] };
+      const plano = {
+        id, criadoEm: agora(), autor: nome, festa, pedido: pedido || null, respostas: [],
+        data: quando ? quando.data : null, ate: quando ? quando.ate : null,
+      };
       if (nome) registrar(plano, nome, 'dentro');
       planos[id] = plano;
       gravar();
-      return vista(plano);
+      return vista(plano, agora());
     },
 
     ler(id) {
-      return vista(pegar(id));
+      return vista(pegar(id), agora());
     },
 
     existe(id) {
@@ -130,9 +135,10 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
       const plano = pegar(id);
       const limpo = exigirNome(nome);
       if (!RESPOSTAS.includes(resposta)) throw new ErroPlano(400, 'Responda "dentro" ou "fora".');
+      if (vista(plano, agora()).passou) throw new ErroPlano(410, 'Essa já foi. O convite não aceita mais resposta.');
       registrar(plano, limpo, resposta, confirmar === true);
       gravar();
-      return vista(plano);
+      return vista(plano, agora());
     },
   };
 }

@@ -66,32 +66,41 @@ test('GET /api/formulario traz as cinco perguntas e a contagem, sem cache', asyn
   assert.equal(r.cabecalhos.get('cache-control'), 'no-store');
 });
 
-test('CSP: só self e as fontes do Google; sem script inline', async () => {
+test('CSP: tudo daqui, fontes incluídas; sem script inline', async () => {
   const r = await chamar('GET', '/');
   const csp = r.cabecalhos.get('content-security-policy');
   assert.match(csp, /script-src 'self'(;|$)/);
-  assert.match(csp, /style-src 'self' https:\/\/fonts\.googleapis\.com(;|$)/);
-  assert.match(csp, /font-src https:\/\/fonts\.gstatic\.com(;|$)/);
+  assert.match(csp, /style-src 'self'(;|$)/);
+  assert.match(csp, /font-src 'self'(;|$)/);
+  assert.doesNotMatch(csp, /googleapis|gstatic/);
+  assert.doesNotMatch(r.corpo, /googleapis|gstatic/);
+  const fonte = await fetch(`${raiz}/fontes/instrument-serif.woff2`);
+  assert.equal(fonte.headers.get('content-type'), 'font/woff2');
+  assert.match(fonte.headers.get('cache-control'), /immutable/);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
   assert.equal(r.cabecalhos.get('x-content-type-options'), 'nosniff');
-  assert.doesNotMatch(r.corpo, /<script>(?!<\/script>)|<script(?![^>]*\bsrc=)[^>]*>/);
+  assert.doesNotMatch(r.corpo, /<script(?![^>]*\b(src=|type="application\/json"))[^>]*>/);
   assert.doesNotMatch(r.corpo, /style=/);
 });
 
 test('POST /api/festas: três festas com linha, motivos e a fala de abertura', async () => {
   const r = await chamar('POST', '/api/festas', { criterios: PEDIDO });
   assert.equal(r.status, 200);
-  assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), ['sabado-groove', 'noite-pop-2000', 'noite-aurora']);
+  assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), ['funk-ao-entardecer', 'sabado-groove', 'noite-aurora']);
   assert.equal(r.corpo.resposta, 'A primeira enche antes e custa menos.');
+  assert.equal(r.corpo.atendem, 3);
+  assert.ok(r.corpo.opcoes.every((o) => o.origem && o.origem.longa));
   assert.deepEqual(r.corpo.pedidoPartes.map((x) => x.texto), ['Sábado', 'das 19h à 1h', 'gente de 30 a 35', 'até R$ 80', 'house ou pop 2000']);
   assert.match(r.corpo.pedido, /^Sáb · 19h à 1h · 30 a 35 · até R\$ 80/);
   assert.equal(r.corpo.opcoes[2].patrocinada, true);
+  assert.equal(r.corpo.opcoes[0].patrocinada, false);
 });
 
 test('POST /api/festas sem as quatro respostas devolve 400 dizendo o que falta', async () => {
   const r = await chamar('POST', '/api/festas', { criterios: { dia: 'sab' } });
   assert.equal(r.status, 400);
-  assert.match(r.corpo.erro, /janela, faixa, teto/);
+  assert.equal(r.corpo.erro, 'Faltou responder umas perguntas. Vamos do começo?');
+  assert.deepEqual(r.corpo.faltam, ['janela', 'faixa', 'teto']);
 });
 
 test('conversa: "mais perto de Pinheiros" responde com minutos', async () => {
@@ -100,7 +109,7 @@ test('conversa: "mais perto de Pinheiros" responde com minutos', async () => {
   const r = await conversar(inicio.corpo.criterios, atuais, 'tem alguma mais perto de Pinheiros?');
   assert.equal(r.status, 200);
   assert.equal(r.corpo.criterios.perto, 'pinheiros');
-  assert.match(r.corpo.resposta, /^Duas ficam a até 10 min de Pinheiros\./);
+  assert.match(r.corpo.resposta, /^(Duas|Todas) ficam a até \d+ min de Pinheiros\./);
   assert.equal(r.corpo.entendeu, true);
 });
 
@@ -110,7 +119,7 @@ test('conversa: "mais barato" diz o teto e o que entrou e saiu', async () => {
   const r = await conversar(inicio.corpo.criterios, atuais, 'mais barato');
   assert.equal(r.corpo.criterios.teto, 50);
   assert.deepEqual(r.corpo.criterios.firmes, ['preco']);
-  assert.match(r.corpo.resposta, /^Teto em R\$ 50\. /);
+  assert.match(r.corpo.resposta, /^Até R\$ 50, então\./);
   assert.ok(r.corpo.entraram.length > 0);
   assert.ok(r.corpo.opcoes.every((o) => o.festa.preco <= 50));
 });
@@ -121,10 +130,10 @@ test('conversa: o slogan só vem quando tudo acaba até a meia-noite; "domingo" 
   const cedo = await conversar(inicio.corpo.criterios, atuais, 'mais cedo');
   assert.match(cedo.corpo.resposta, /^Puxei pro fim de tarde, das 17h às 23h\./);
   const dormeBem = cedo.corpo.opcoes.every((o) => o.festa.fim <= 24);
-  assert.equal(/Dança cedo, dorme bem/.test(cedo.corpo.resposta), dormeBem);
+  assert.equal(/Dança cedo, dorme bem/.test(cedo.corpo.resposta), false);
   const volta = await conversar(inicio.corpo.criterios, atuais, 'quero voltar até as 23h');
   assert.ok(volta.corpo.opcoes.every((o) => o.festa.fim <= 23));
-  assert.match(volta.corpo.resposta, /^Voltando até as 23h\. Dança cedo, dorme bem\./);
+  assert.match(volta.corpo.resposta, /^Voltando até as 23h\./);
   const dom = await conversar(inicio.corpo.criterios, atuais, 'domingo');
   assert.ok(dom.corpo.opcoes.every((o) => o.festa.dia === 'dom'));
   assert.match(dom.corpo.resposta, /^Domingo, então\./);
@@ -136,7 +145,7 @@ test('conversa: frase que não entende mantém a lista e diz como pedir', async 
   const r = await conversar(inicio.corpo.criterios, atuais, 'qual o sentido da vida');
   assert.equal(r.corpo.entendeu, false);
   assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), atuais);
-  assert.match(r.corpo.resposta, /Não peguei essa/);
+  assert.match(r.corpo.resposta, /^Não peguei\. Dá pra pedir/);
 });
 
 test('conversa: texto vazio, longo demais ou lista estranha dão 400', async () => {
@@ -190,6 +199,36 @@ test('planos: nome repetido pergunta antes de trocar', async () => {
   assert.equal(r.corpo.duplicado, 'Ju');
   const ok = await chamar('POST', caminho, { nome: 'ju', resposta: 'fora', confirmar: true });
   assert.deepEqual(ok.corpo.fora, ['ju']);
+});
+
+test('convite: guarda a data da festa e diz quando já foi', async () => {
+  const criado = await chamar('POST', '/api/planos', { criterios: PEDIDO, festa: 'sabado-groove', autor: 'Bruna' });
+  const lido = await chamar('GET', `/api/planos/${criado.corpo.id}`);
+  assert.match(lido.corpo.data, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(new Date(`${lido.corpo.data}T12:00:00`).getDay(), 6);
+  assert.equal(lido.corpo.passou, false);
+});
+
+test('convite vencido não aceita resposta', () => {
+  const { criarPlanos } = require('../nucleo/planos');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'finde-vencido-'));
+  let hoje = '2026-11-10T12:00:00.000Z';
+  const planos = criarPlanos(dir, { agora: () => hoje, log: mudo });
+  const p = planos.criar({ festa: { festa: { id: 'x' } }, quando: { data: '2026-11-14', ate: '2026-11-15T04:00:00.000Z' } });
+  assert.equal(planos.ler(p.id).passou, false);
+  hoje = '2026-11-16T12:00:00.000Z';
+  assert.equal(planos.ler(p.id).passou, true);
+  assert.throws(() => planos.responder(p.id, 'Ju', 'dentro'), (e) => e.status === 410);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('a página inicial já vem com os dados da primeira tela', async () => {
+  const r = await chamar('GET', '/');
+  const m = r.corpo.match(/<script type="application\/json" id="dados-iniciais">([^<]*)<\/script>/);
+  assert.ok(m, 'sem dados iniciais');
+  const dados = JSON.parse(m[1]);
+  assert.equal(dados.total, 37);
+  assert.ok(dados.proxima && dados.proxima.nome);
 });
 
 test('/p/:id: 404 quando não existe; quando existe, as metas de compartilhamento dizem a festa', async () => {

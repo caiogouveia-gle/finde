@@ -42,7 +42,7 @@ Exemplo de evento: `QUI · 19H00 · PINHEIROS · MÉDIA 30 ANOS` / **Disco ao p�
 
 ## Voz
 
-- Assinatura: *still going out. just differently.* Linha funcional (loja, splash): *a pista abre antes.* Campanha (push, stories): *dança cedo, dorme bem.*
+- Assinatura: *still going out. just differently.* É a única linha aprovada pelo grupo. As linhas "a pista abre antes" e "dança cedo, dorme bem", que o manual propõe para loja e campanha, não foram aprovadas e ficam fora do produto (decisão de 10/11/2026).
 1. Como um amigo de 30 anos que sabe onde está a festa boa. Direto, próximo, sem gíria forçada.
 2. Humor leve, sobre a vida de quem trabalha no dia seguinte. A piada é com a gente, sempre cúmplice.
 3. Horário primeiro. Toda comunicação de evento abre com a hora de início e a média de idade do público.

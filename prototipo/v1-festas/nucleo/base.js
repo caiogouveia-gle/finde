@@ -2,7 +2,7 @@
 // Validação da base de festas. Cada linha inválida sai com um aviso que diz
 // qual campo falhou; o resto da base segue valendo.
 
-const { DIAS, FAIXAS, ID_ESTILOS, BAIRROS } = require('./catalogo');
+const { DIAS, FAIXAS, ID_ESTILOS, BAIRROS, ORIGENS, origemLonga, origemCurta } = require('./catalogo');
 
 const MAX_PATROCINADAS = 2;
 const ID_FAIXAS = FAIXAS.map((f) => f.id);
@@ -47,6 +47,11 @@ function validarFesta(f) {
   if (!texto(f.frase, 160)) p.push('frase');
   if (f.selo !== 'editorial' && f.selo !== 'patrocinado') p.push('selo');
   if (!Number.isInteger(f.distanciaMin) || f.distanciaMin < 0 || f.distanciaMin > 30) p.push('distanciaMin');
+  const o = f.origemIdade;
+  if (!o || typeof o !== 'object' || !ORIGENS.includes(o.tipo)
+    || (o.tipo === 'avaliacoes' && !(Number.isInteger(o.avaliacoes) && o.avaliacoes >= 5 && o.avaliacoes <= 10000))) {
+    p.push('origemIdade');
+  }
   return p;
 }
 
@@ -58,6 +63,10 @@ function limpar(f) {
     inicio: f.inicio, esquenta: f.esquenta, fim: f.fim,
     mediaIdade: f.mediaIdade, faixas: Object.freeze([...f.faixas]), preco: f.preco,
     estilos: Object.freeze([...f.estilos]), frase: f.frase.trim(), selo: f.selo, distanciaMin: f.distanciaMin,
+    // Na base, a origem da média é um objeto ({ tipo, avaliacoes? }); daqui
+    // pra fora, é texto: "informada pela produtora".
+    origemIdade: origemLonga(f.origemIdade),
+    origemIdadeCurta: origemCurta(f.origemIdade),
   });
 }
 

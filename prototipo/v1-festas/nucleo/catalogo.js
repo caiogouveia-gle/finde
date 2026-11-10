@@ -112,6 +112,15 @@ const REFERENCIAS = {
   ibirapuera: { bairro: 'vila-mariana', nome: 'Ibirapuera', de: 'do Ibirapuera' },
 };
 
+// Tipos de casa que dá para recusar ("nada de rooftop"). Casam com o texto de
+// `casa` da festa, sem acento.
+const CASAS = {
+  rooftop: 'rooftop', terraco: 'terraço', galpao: 'galpão', porao: 'porão', quintal: 'quintal',
+  praca: 'praça', laje: 'laje', salao: 'salão', clube: 'clube', sobrado: 'sobrado', varanda: 'varanda',
+  quadra: 'quadra', 'casa noturna': 'casa noturna', bar: 'bar',
+};
+const semAcento = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
 // ---------------------------------------------------------------- escrita
 
 // 19 -> "19h00"; 24.5 -> "0h30"; 25 -> "1h00". Para a linha de rótulo.
@@ -168,9 +177,23 @@ function linhaDaFesta(f) {
   return `${DIAS[f.dia].curto} · ${horaCheia(f.inicio)} · ${BAIRROS[f.bairro].nome} · média ${f.mediaIdade} anos`;
 }
 
-// "Começa às 19h, esquenta às 21h e acaba às 23h."
+// "Começa às 19h, a pista enche às 21h e acaba à 1h." Um nome só para o
+// melhor momento da festa: a pista cheia.
 function fraseDoHorario(f) {
-  return `Começa ${asHoras(f.inicio)}, esquenta ${asHoras(f.esquenta)} e acaba ${asHoras(f.fim)}.`;
+  return `Começa ${asHoras(f.inicio)}, a pista enche ${asHoras(f.esquenta)} e acaba ${asHoras(f.fim)}.`;
+}
+
+// De onde vem a média de idade. O número nunca aparece sem a origem.
+const ORIGENS = ['produtora', 'edicoes', 'avaliacoes'];
+function origemLonga(o) {
+  if (o.tipo === 'produtora') return 'informada pela produtora';
+  if (o.tipo === 'edicoes') return 'estimada pelo público das edições anteriores';
+  return `a partir de ${o.avaliacoes} avaliações de quem foi`;
+}
+function origemCurta(o) {
+  if (o.tipo === 'produtora') return 'pela produtora';
+  if (o.tipo === 'edicoes') return 'edições passadas';
+  return `${o.avaliacoes} avaliações`;
 }
 
 // "house", "house ou pop 2000", "funk, indie ou MPB"
@@ -181,6 +204,8 @@ function listaDeEstilos(ids, conjuncao = 'ou') {
 }
 
 module.exports = {
+  CASAS, semAcento,
+  ORIGENS, origemLonga, origemCurta,
   DIAS, ORDEM_DIAS, JANELAS, FAIXAS, TETOS, DEGRAUS_TETO, DEGRAUS_BARATO, ESTILOS, ID_ESTILOS, AFINIDADE, REGIOES, BAIRROS, REFERENCIAS, listaDeEstilos,
   minutosEntre, horaCheia, hora, asHoras, ateAs, reais, rotuloTeto, nomeFaixa, nomeEstilo, linhaDaFesta, fraseDoHorario,
 };

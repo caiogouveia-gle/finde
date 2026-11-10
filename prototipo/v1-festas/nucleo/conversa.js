@@ -1,8 +1,8 @@
 'use strict';
 // A fala do Finde: curta, horário primeiro, humor leve e cúmplice.
 // Puro: recebe o pedido, os critérios de antes e de depois e as duas listas,
-// e devolve a resposta com o que mudou. No máximo uma frase de afrouxamento
-// por turno, e o slogan só quando é verdade.
+// e devolve a resposta. No máximo duas frases (mais uma pergunta, quando há):
+// o que a lista mostra, a fala não repete.
 
 const C = require('./catalogo');
 
@@ -10,6 +10,8 @@ const PERTO_MIN = 10;
 const POSICAO = ['A primeira', 'A segunda', 'A terceira'];
 const janela = (id) => C.JANELAS.find((j) => j.id === id);
 const maiuscula = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+const noDia = (d) => `${d === 'sex' ? 'na' : 'no'} ${C.DIAS[d].frase}`;
+const proDia = (d) => `${d === 'sex' ? 'pra' : 'pro'} ${C.DIAS[d].frase}`;
 
 function juntar(nomes, conjuncao = 'e') {
   if (nomes.length <= 1) return nomes.join('');
@@ -48,11 +50,21 @@ function sobreTeto(teto, antes) {
   if (teto === antes && teto === 0) return 'Mais barato que de graça, só ficando em casa.';
   if (teto === 0) return 'Só as de graça, então.';
   if (teto === 'sem-limite') return 'Sem teto, então.';
-  return `Teto em R$ ${teto}.`;
+  return `Até R$ ${teto}, então.`;
 }
 
 // "Dança cedo, dorme bem." só quando tudo na tela acaba até a meia-noite.
 const dormeBem = (opcoes) => opcoes.length > 0 && opcoes.every((o) => o.festa.fim <= 24);
+
+function sobreIdade(faixa, opcoes) {
+  if (!opcoes.length) return '';
+  const fora = opcoes.filter((o) => o.fora.some((m) => /^média/.test(m))).length;
+  const nome = C.nomeFaixa(faixa);
+  if (!fora) return `Sim: todas com média de ${nome}.`;
+  const dentro = opcoes.length - fora;
+  if (!dentro) return `Nenhuma com média de ${nome} nesse pedido.`;
+  return `${dentro === 1 ? 'Uma' : 'Duas'} com média de ${nome}; ${fora === 1 ? 'a outra' : 'as outras'}, não.`;
+}
 
 function reagir(pedidos, antes, depois, resultado, extra) {
   const f = [];
@@ -61,17 +73,21 @@ function reagir(pedidos, antes, depois, resultado, extra) {
   const usarSlogan = () => {
     if (slogan || !dormeBem(resultado.opcoes)) return '';
     slogan = true;
-    return ' Dança cedo, dorme bem.';
+    return '';
   };
   for (const p of pedidos) {
     switch (p) {
       case 'dia':
-        if (depois.dia === antes.dia) f.push(`Já estamos ${depois.dia === 'sex' ? 'na' : 'no'} ${C.DIAS[depois.dia].frase}.`);
+        if (depois.dia === antes.dia) f.push(`Já estamos ${noDia(depois.dia)}.`);
         else if (depois.dia === 'dom') f.push('Domingo, então. A segunda agradece.');
         else f.push(`${C.DIAS[depois.dia].nome}, então.`);
         break;
+      case 'sem-dia':
+        if (depois.dia !== antes.dia) f.push(`Sem ${C.DIAS[antes.dia].frase}, então. Fui ${proDia(depois.dia)}.`);
+        else f.push(`${extra.diaRecusado ? C.DIAS[extra.diaRecusado].nome : 'Esse dia'} já está fora.`);
+        break;
       case 'fim':
-        f.push(`Voltando ${C.ateAs(depois.fimMax)}.${depois.fimMax <= 24 ? usarSlogan() : ''}`);
+        f.push(`Voltando ${C.ateAs(depois.voltaMax)}.${depois.voltaMax <= 24 ? usarSlogan() : ''}`);
         break;
       case 'mais-cedo':
         if (depois.janela === antes.janela) f.push(`Mais cedo que ${C.hora(j.inicio)}, só almoço. Fiquei ${j.no}.`);
@@ -89,10 +105,7 @@ function reagir(pedidos, antes, depois, resultado, extra) {
       case 'mais-caro':
       case 'sem-limite':
       case 'teto':
-        // Quando nada cabe, a oferta já diz o teto; não repete.
-        if (!(resultado.opcoes.length === 0 && resultado.oferta && /^Fixei o teto/.test(resultado.aviso || ''))) {
-          f.push(sobreTeto(depois.teto, antes.teto));
-        }
+        f.push(extra.piso ? `R$ ${depois.teto} é o mais barato ${noDia(depois.dia)} nesse pedido.` : sobreTeto(depois.teto, antes.teto));
         break;
       case 'mais-velho':
         f.push(depois.faixa === antes.faixa ? 'Essa já é a faixa mais velha.' : `Gente de ${C.nomeFaixa(depois.faixa)}, então.`);
@@ -103,9 +116,22 @@ function reagir(pedidos, antes, depois, resultado, extra) {
       case 'faixa':
         f.push(depois.faixa === antes.faixa ? `Já é gente de ${C.nomeFaixa(depois.faixa)}.` : `Gente de ${C.nomeFaixa(depois.faixa)}, então.`);
         break;
+      case 'minha-idade':
+        f.push(sobreIdade(depois.faixa, resultado.opcoes));
+        break;
       case 'sem-estilo': {
         const novos = depois.evitarEstilos.filter((e) => !antes.evitarEstilos.includes(e));
         f.push(`Sem ${C.listaDeEstilos(novos.length ? novos : depois.evitarEstilos, 'nem')}.`);
+        break;
+      }
+      case 'sem-casa': {
+        const novas = depois.evitarCasas.filter((k) => !antes.evitarCasas.includes(k));
+        f.push(`Sem ${juntar((novas.length ? novas : depois.evitarCasas).map((k) => C.CASAS[k]), 'nem')}.`);
+        break;
+      }
+      case 'sem-bairro': {
+        const novos = depois.evitarBairros.filter((b) => !antes.evitarBairros.includes(b));
+        f.push(`Longe ${juntar((novos.length ? novos : depois.evitarBairros).map((b) => C.BAIRROS[b].de))}, então.`);
         break;
       }
       case 'estilo':
@@ -130,6 +156,9 @@ function reagir(pedidos, antes, depois, resultado, extra) {
       case 'outras':
         f.push('Deixei essas de lado.');
         break;
+      case 'surpresa':
+        f.push(resultado.opcoes.length ? 'Então vai na primeira: é a que enche antes.' : 'Então tenta outro dia.');
+        break;
       default:
         break;
     }
@@ -145,40 +174,59 @@ function diferenca(antesIds, opcoes, nomeDe) {
   if (!depoisIds.length) frase = '';
   else if (!entraram.length && !sairam.length) frase = 'A lista fica como estava.';
   else if (entraram.length === depoisIds.length && depoisIds.length > 1) frase = 'Lista nova.';
-  else {
-    const partes = [];
-    if (entraram.length) partes.push(`${entraram.length > 1 ? 'Entraram' : 'Entrou'} ${juntar(entraram.map(nomeDe))}`);
-    if (sairam.length) partes.push(`${sairam.length > 1 ? 'saíram' : 'saiu'} ${juntar(sairam.map(nomeDe))}`);
-    frase = maiuscula(`${partes.join('; ')}.`);
-  }
+  else frase = `${entraram.length > 1 ? 'Entraram' : 'Entrou'} ${juntar(entraram.map(nomeDe))}.`;
+  if (!entraram.length && sairam.length) frase = `${sairam.length > 1 ? 'Saíram' : 'Saiu'} ${juntar(sairam.map(nomeDe))}.`;
   return { entraram, sairam, frase };
 }
 
-const NAO_PEGUEI = 'Não peguei essa. Tente “mais barato”, “mais cedo”, “sem funk” ou o nome de um bairro.';
-const FORA_DO_ALCANCE = 'Clima e tipo de casa eu ainda não filtro. Entendo dia, horário, preço, idade, bairro e som.';
+const O_QUE_DA = 'Dá pra pedir mais cedo, mais barato, outro dia, um bairro ou um som.';
+const NAO_PEGUEI = `Não peguei. ${O_QUE_DA}`;
+const AINDA_NAO = {
+  'fora-do-alcance': 'Clima eu ainda não sei ler.',
+  'fora-transporte': 'Metrô e estacionamento eu ainda não sei.',
+  'fora-seguranca': 'Segurança eu ainda não sei dizer.',
+  'casa-positiva': 'Tipo de casa eu só sei tirar, tipo “nada de rooftop”.',
+};
+const SO_PERGUNTA = ['perto-sem-lugar', 'aceitar', 'contradicao-volta', 'contradicao-hora', ...Object.keys(AINDA_NAO)];
 
-// responder({ pedidos, antes, depois, antesIds, resultado, nomeDe, impedimento? })
+// responder({ pedidos, antes, depois, antesIds, resultado, nomeDe, impedimento?, duvida?, piso? })
 //   -> { texto, entraram, sairam, entendeu }
-function responder({ pedidos, antes, depois, antesIds, resultado, nomeDe, impedimento }) {
-  const reais = pedidos.filter((p) => !['perto-sem-lugar', 'fora-do-alcance', 'aceitar'].includes(p));
+function responder({ pedidos, antes, depois, antesIds, resultado, nomeDe, impedimento, duvida, piso, diaRecusado }) {
+  const reais = pedidos.filter((p) => !SO_PERGUNTA.includes(p));
+  const naoSei = pedidos.filter((p) => AINDA_NAO[p]).map((p) => AINDA_NAO[p]);
+  const pergunta = duvida && duvida.dia ? `Muda ${proDia(duvida.dia)}?` : '';
+
   if (!reais.length) {
-    let texto = NAO_PEGUEI;
-    if (pedidos.includes('perto-sem-lugar')) texto = 'Perto de onde? Me diz o bairro.';
-    else if (pedidos.includes('fora-do-alcance')) texto = FORA_DO_ALCANCE;
-    else if (pedidos.includes('aceitar')) texto = 'Sim pra quê? Tente “mais barato”, “mais cedo” ou o nome de um bairro.';
+    let texto;
+    if (pedidos.includes('contradicao-volta')) texto = 'Até amanhecer ou voltar cedo? Os dois eu não consigo.';
+    else if (pedidos.includes('contradicao-hora')) texto = 'Mais cedo ou mais tarde? Os dois eu não consigo.';
+    else if (pedidos.includes('perto-sem-lugar')) texto = 'Perto de onde? Me diz o bairro.';
+    else if (pergunta) texto = pergunta;
+    else if (naoSei.length) texto = `${naoSei[0]} ${O_QUE_DA.replace('Dá pra', 'Sei')}`.replace('Sei pedir', 'Sei ajustar');
+    else if (pedidos.includes('aceitar')) texto = `Sim pra quê? ${O_QUE_DA}`;
+    else texto = NAO_PEGUEI;
     return { texto, entraram: [], sairam: [], entendeu: false };
   }
+
   const d = diferenca(antesIds, resultado.opcoes, nomeDe);
-  const frases = reagir(reais, antes, depois, resultado, { impedimento });
-  if (d.frase) frases.push(d.frase);
-  // O aviso do motor fala do som que faltou; se o impedimento já falou, não repete.
-  if (resultado.aviso && !(impedimento && reais.includes('estilo') && resultado.casam === 0 && !resultado.afrouxou.length && resultado.opcoes.length)) {
-    frases.push(resultado.aviso);
-  } else if (impedimento && reais.includes('estilo') && resultado.casam === 0 && resultado.opcoes.length) {
-    frases.push('Entraram as mais perto do seu som.');
+  // Lista vazia: a oferta já diz o que travou. Não repete o pedido.
+  if (!resultado.opcoes.length) {
+    const frases = [resultado.aviso || 'Nada cabe nesse pedido.'];
+    if (pedidos.includes('perto-sem-lugar')) frases.push('Perto de onde?');
+    return { texto: frases.join(' '), entraram: [], sairam: d.sairam, entendeu: true };
   }
+  const reacoes = reagir(reais, antes, depois, resultado, { impedimento, piso, diaRecusado });
+  let frases;
+  if (resultado.aviso) {
+    // O aviso já diz o que não cabe (e o que barra o som): uma reação e ele.
+    frases = [...reacoes.filter((r) => r !== impedimento).slice(0, 1), resultado.aviso];
+  } else {
+    frases = reacoes.slice(0, 2);
+    if (frases.length < 2 && d.frase) frases.push(d.frase);
+  }
+  if (naoSei.length) frases.push(naoSei[0]);
   if (pedidos.includes('perto-sem-lugar')) frases.push('Perto de onde?');
-  if (pedidos.includes('fora-do-alcance')) frases.push(FORA_DO_ALCANCE);
+  if (pergunta) frases.push(pergunta);
   return { texto: frases.join(' '), entraram: d.entraram, sairam: d.sairam, entendeu: true };
 }
 
@@ -187,7 +235,7 @@ function responder({ pedidos, antes, depois, antesIds, resultado, nomeDe, impedi
 function firmesDe(antes, depois) {
   const novos = [];
   if (antes.teto !== depois.teto) novos.push('preco');
-  if (antes.janela !== depois.janela || antes.fimMax !== depois.fimMax) novos.push('horario');
+  if (antes.janela !== depois.janela || antes.voltaMax !== depois.voltaMax) novos.push('horario');
   if (antes.faixa !== depois.faixa) novos.push('idade');
   return [...new Set([...(antes.firmes || []), ...novos])];
 }

@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>finde. a pista abre antes</title>
+  <title>finde. still going out. just differently.</title>
   <meta name="description" content="Festas do fim de semana em São Paulo para quem tem de 28 a 35 anos, filtradas pela idade do público, pelo horário e pelo preço.">
   <meta name="theme-color" content="#EADCD2">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="finde. a pista abre antes">
+  <meta property="og:title" content="finde. still going out. just differently.">
   <meta property="og:description" content="Festas com gente da sua fase, num horário que cabe na sua rotina.">
   <meta property="og:image" content="__ORIGEM__/compartilhar.png">
   <meta property="og:image:width" content="1200">
@@ -15,10 +15,12 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icone-180.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@1,9..144,300,100,1&amp;family=Instrument+Serif:ital@0;1&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500&amp;display=swap">
+  <link rel="preload" href="/fontes/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fontes/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fontes/fraunces-italico-300.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fontes/instrument-serif-italico.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/app.css">
+  <script type="application/json" id="dados-iniciais">__DADOS__</script>
   <script src="/tema.js"></script>
   <script src="/comum.js" defer></script>
   <script src="/app.js" defer></script>
@@ -28,10 +30,6 @@
     <aside class="lado lado-esq" aria-hidden="true">
       <p class="relogio" id="relogio"></p>
       <p class="rotulo" id="relogio-rotulo"></p>
-      <div class="lockup lockup--grande">
-        <p class="marca">finde<span class="ponto">.</span></p>
-        <p class="assinatura-lockup">Still going out. Just differently.</p>
-      </div>
     </aside>
     <div class="app">
       <main id="tela" class="tela"></main>
@@ -39,10 +37,11 @@
         <p class="texto">O finde precisa de JavaScript ligado para mostrar as festas. Ligue e recarregue a página.</p>
       </noscript>
     </div>
-    <aside class="lado lado-dir">
+    <aside class="lado lado-dir oculto" id="lado-dir" hidden>
       <p class="rotulo">Abra no celular</p>
       <p class="endereco-pagina" id="endereco-pagina"></p>
     </aside>
+  <p id="anuncio" class="vh" role="status" aria-live="polite"></p>
   </div>
 </body>
 </html>
