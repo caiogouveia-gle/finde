@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finde, mesa de cartas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#fff3df; --folha:#fff9ed; --tinta:#203f77; --suave:#4b638f;
+  --acao:#c77222; --acao-txt:#b55e18; --sombra:rgba(112,90,59,.15);
+  --mao:"Patrick Hand","Chalkboard SE","Comic Neue",cursive;
+  --sans:-apple-system,"Segoe UI",Roboto,sans-serif;
+  --dur:200ms;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--papel);color:var(--tinta);font:16px/1.5 var(--sans);min-height:100vh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--tinta);outline-offset:3px;box-shadow:0 0 0 6px var(--folha)}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* seletor de avaliação */
+.pular{display:flex;align-items:center;gap:2px;padding:6px 8px 0;border-bottom:2px dashed rgba(32,63,119,.35);font-size:13px}
+.pular button{flex:1;min-height:44px;background:none;border:0;border-bottom:3px solid transparent;color:var(--suave);padding:0 2px;letter-spacing:.01em}
+.pular button b{font-weight:600;margin-right:3px}
+.pular button[aria-current=step]{color:var(--tinta);border-bottom-color:var(--tinta);font-weight:600}
+
+.topo{padding:20px 20px 4px;display:flex;align-items:baseline;justify-content:space-between}
+.marca{font-family:var(--mao);font-size:34px;line-height:1;letter-spacing:.01em}
+.marca small{font-family:var(--sans);font-size:13px;color:var(--suave);margin-left:8px;letter-spacing:.02em}
+
+main{flex:1;padding:8px 16px 32px;overflow-x:clip}
+h1,h2{font-family:var(--mao);font-weight:400;margin:0}
+h1{font-size:32px;line-height:1.1;margin:12px 4px 6px}
+.fala{font-family:var(--mao);font-size:21px;line-height:1.3;margin:0 4px 16px;color:var(--tinta)}
+.nota{font-size:13px;line-height:1.45;color:var(--suave);margin:16px 4px 0}
+
+/* botões */
+.btn{min-height:48px;padding:0 20px;border:2px solid var(--tinta);border-radius:14px;background:var(--folha);color:var(--tinta);font-family:var(--mao);font-size:21px;box-shadow:0 3px 0 var(--sombra);transition:transform var(--dur),box-shadow var(--dur)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--sombra)}
+.btn.acao{background:var(--acao-txt);border-color:var(--tinta);color:#fff;box-shadow:0 3px 0 var(--tinta)}
+.btn.acao:active{box-shadow:0 1px 0 var(--tinta)}
+.btn[aria-disabled=true]{background:transparent;color:var(--suave);border-style:dashed;box-shadow:none;cursor:default}
+.btn.mini{min-height:44px;padding:0 14px;font-size:19px}
+.barra{position:sticky;bottom:0;z-index:5;background:var(--papel);border-top:2px solid var(--tinta);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}
+.barra .btn{flex:1}
+.barra .btn.sec{flex:0 0 auto}
+
+/* tela 1: bilhete */
+.bilhete{position:relative;background:var(--folha);border:2px solid var(--tinta);border-radius:18px;box-shadow:0 4px 0 var(--sombra);padding:0 18px 8px;transform:rotate(-.5deg);margin-top:4px}
+.bilhete .cab{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0 12px;border-bottom:2px dashed var(--tinta);position:relative}
+.bilhete .cab h2{font-size:28px;line-height:1.1;flex:1}
+.bilhete .cab span{font-size:13px;color:var(--suave);white-space:nowrap;margin-left:8px}
+.bilhete .cab::before,.bilhete .cab::after{content:"";position:absolute;bottom:-11px;width:20px;height:20px;border-radius:50%;background:var(--papel);border:2px solid var(--tinta)}
+.bilhete .cab::before{left:-30px;clip-path:inset(0 0 0 50%)}
+.bilhete .cab::after{right:-30px;clip-path:inset(0 50% 0 0)}
+fieldset{border:0;margin:0;padding:16px 0 14px;min-width:0}
+fieldset+fieldset{border-top:1px solid rgba(32,63,119,.25)}
+legend{font-family:var(--mao);font-size:24px;padding:0;margin-bottom:8px;float:left;width:100%}
+fieldset .fichas{clear:both;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+fieldset .fichas .chip:last-child:nth-child(odd){grid-column:1/-1}
+.chip{min-height:48px;padding:0 10px;border:2px solid var(--tinta);border-radius:14px;background:var(--folha);font-family:var(--mao);font-size:20px;line-height:1.1;box-shadow:0 2px 0 var(--sombra);transition:transform var(--dur)}
+.chip[aria-pressed=true]{background:var(--tinta);color:var(--folha);box-shadow:inset 0 0 0 2px var(--tinta),inset 0 0 0 4px var(--folha);transform:rotate(-1.6deg)}
+.chip[aria-pressed=true]:nth-child(even){transform:rotate(1.2deg)}
+.chip.carimbo{animation:carimbo 220ms ease-out}
+@keyframes carimbo{0%{transform:scale(1.28) rotate(-6deg);opacity:.5}100%{transform:scale(1) rotate(-1.6deg);opacity:1}}
+.quadrinhos{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--suave);margin:16px 4px 12px}
+.quadrinhos i{width:14px;height:14px;border:2px solid var(--tinta);border-radius:4px;background:transparent;display:block}
+.quadrinhos i.on{background:var(--tinta)}
+.quadrinhos span{margin-left:6px}
+
+/* tela 2: mesa */
+.mesa-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.monte{flex:0 0 auto;position:relative;width:74px;height:64px;margin-top:2px;font-size:12px;color:var(--suave);text-align:center}
+.monte i{position:absolute;left:8px;top:0;width:52px;height:44px;border:2px solid var(--tinta);border-radius:8px;background:var(--folha)}
+.monte i:nth-child(1){transform:rotate(-7deg)}
+.monte i:nth-child(2){transform:rotate(5deg);top:2px}
+.monte i:nth-child(3){transform:rotate(-1deg);top:4px}
+.monte span{position:absolute;left:0;right:0;bottom:0}
+.aviso{margin:0 4px 12px;padding:8px 12px;border:2px dashed var(--tinta);border-radius:12px;font-size:14px;background:var(--folha)}
+.cartas{display:flex;flex-direction:column;gap:16px;padding:6px 0 4px}
+.carta{position:relative;background:var(--folha);border:2px solid var(--tinta);border-radius:16px;box-shadow:0 4px 0 var(--sombra);padding:16px 16px 14px;transform:rotate(var(--giro,0deg));margin-left:var(--desl,0);margin-right:calc(8px - var(--desl,0px));touch-action:pan-y;user-select:none;-webkit-user-select:none;will-change:transform}
+.carta.cai{animation:cai 380ms cubic-bezier(.2,.8,.3,1) both;animation-delay:var(--atraso,0ms)}
+@keyframes cai{0%{transform:translate(110px,-150px) rotate(18deg) scale(.7);opacity:0}100%{transform:rotate(var(--giro,0deg));opacity:1}}
+.carta.solta{transition:transform var(--dur) ease-out}
+.carta.voa{transition:transform 240ms ease-in,opacity 240ms;opacity:0}
+.carta.virando{transform:rotate(var(--giro,0deg)) scaleX(.02);transition:transform 110ms ease-in}
+.carta .alca{position:absolute;left:50%;top:6px;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:rgba(32,63,119,.25)}
+.rotulo{display:inline-block;font-size:12px;line-height:1;letter-spacing:.04em;text-transform:uppercase;padding:5px 9px 5px;border:2px solid var(--tinta);border-radius:999px;margin-bottom:10px;font-weight:600}
+.rotulo.sob-medida{background:var(--tinta);color:var(--folha)}
+.rotulo.da-casa{border-style:dashed}
+.rotulo.patrocinado{border-style:dotted;color:var(--acao-txt);border-color:var(--acao-txt)}
+.carta h3{font-family:var(--mao);font-weight:400;font-size:28px;line-height:1.08;margin:0 0 4px}
+.meta{font-size:14px;color:var(--suave);margin:0 0 8px}
+.resumo{font-size:15px;line-height:1.5;margin:0 0 14px}
+.porque{font-family:var(--mao);font-size:21px;line-height:1.3;margin:0 0 12px;padding-left:12px;border-left:3px solid var(--tinta)}
+.motivos{margin:0 0 12px;padding:0;list-style:none;font-size:15px}
+.motivos li{padding-left:18px;position:relative;margin-bottom:4px}
+.motivos li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:7px;border:2px solid var(--tinta);border-radius:2px;transform:rotate(45deg)}
+.depois{font-size:14px;margin:0 0 14px;padding:8px 12px;background:var(--papel);border-radius:10px;border:1px dashed var(--tinta)}
+.depois b{font-weight:600}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.acoes .btn{flex:1 1 auto}
+.legenda{font-size:12.5px;line-height:1.5;color:var(--suave);margin:20px 4px 0}
+.legenda b{font-weight:600;color:var(--tinta)}
+.desfazer{margin:12px 4px 0;font-size:13px;color:var(--suave)}
+.desfazer button{background:none;border:0;border-bottom:1px solid var(--tinta);padding:12px 0 2px;color:var(--tinta);min-height:44px}
+
+/* tela 3: envelope */
+.envelope{width:100%;max-width:340px;display:block;margin:4px auto 8px;overflow:visible}
+.envelope .cart{transition:transform 700ms cubic-bezier(.5,0,.2,1)}
+.envelope .cart.c1{transform:translateY(-62px) rotate(-5deg)}
+.envelope .cart.c2{transform:translateY(-78px) rotate(1deg)}
+.envelope .cart.c3{transform:translateY(-58px) rotate(6deg)}
+.envelope.fechado .cart{transform:translateY(34px) rotate(0)}
+.envelope .aberta{transition:opacity 200ms 350ms}
+.envelope .fechada{opacity:0;transition:opacity 200ms 550ms}
+.envelope.fechado .aberta{opacity:0}
+.envelope.fechado .fechada{opacity:1}
+.campo{display:block;margin:0 4px 16px}
+.campo span{display:block;font-family:var(--mao);font-size:21px;margin-bottom:4px}
+.campo input{width:100%;min-height:48px;padding:0 14px;border:2px solid var(--tinta);border-radius:14px;background:var(--folha);font-size:17px}
+.link{display:flex;align-items:center;min-height:48px;padding:0 14px;margin:0 4px 12px;border:2px dashed var(--tinta);border-radius:14px;background:var(--folha);font:15px ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere}
+.duas{display:flex;gap:8px;margin:0 4px 20px}
+.duas .btn{flex:1}
+.recado{margin:0 4px;padding:14px 16px;background:var(--folha);border:2px solid var(--tinta);border-radius:14px;box-shadow:0 3px 0 var(--sombra);font-size:15px;transform:rotate(.5deg)}
+.recado small{display:block;font-size:12px;color:var(--suave);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+
+/* tela 4: grupo */
+.visao{display:inline-block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--suave);margin:12px 4px 0;border-bottom:1px solid var(--suave)}
+.adesivos{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-wrap:wrap;gap:8px;min-height:36px;align-items:center}
+.adesivos:empty::before{content:"nenhum nome ainda";font-size:13px;color:var(--suave);font-style:italic}
+.adesivo{font-family:var(--mao);font-size:20px;line-height:1;padding:7px 14px 8px;background:var(--folha);border:2px solid var(--tinta);border-radius:6px;box-shadow:0 2px 0 var(--sombra),2px 3px 0 var(--sombra);transform:rotate(var(--g,-2deg))}
+.adesivo.meu{box-shadow:inset 0 0 0 2px var(--folha),inset 0 0 0 3.5px var(--tinta),0 2px 0 var(--sombra)}
+.adesivo.nova{animation:cola 300ms cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes cola{0%{transform:translateY(-34px) rotate(14deg) scale(1.3);opacity:0}100%{transform:rotate(var(--g,-2deg));opacity:1}}
+.carta.fixa{transform:rotate(var(--giro,0deg))}
+.carta.lider{border-width:3px;padding:15px 15px 13px}
+.estado{margin:4px 4px 0;font-size:14px;min-height:22px}
+.fechar{margin-top:20px;padding:16px;border:2px dashed var(--tinta);border-radius:16px;text-align:center}
+.fechar p{margin:0 0 10px;font-size:14px;color:var(--suave)}
+.fechar .btn{width:100%}
+
+/* tela 5: programa */
+.passe{position:relative;background:var(--folha);border:2px solid var(--tinta);border-radius:18px;box-shadow:0 5px 0 var(--sombra);transform:rotate(-1deg);margin:8px 0 0;overflow:hidden}
+.passe .corpo{padding:22px 20px 18px}
+.passe .selo{position:absolute;right:14px;top:16px;font-family:var(--mao);font-size:22px;letter-spacing:.08em;padding:4px 12px;border:3px double var(--tinta);border-radius:8px;transform:rotate(8deg);background:var(--folha)}
+.passe.novo .selo{animation:batida 320ms cubic-bezier(.3,0,.2,1) both 250ms}
+@keyframes batida{0%{transform:rotate(8deg) scale(2.2);opacity:0}100%{transform:rotate(8deg) scale(1);opacity:1}}
+.passe small{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--suave)}
+.passe .corpo>small{padding-right:104px}
+.passe h2{font-size:38px;line-height:1.05;margin:4px 0 2px;padding-right:96px}
+.passe .onde{font-size:15px;margin:0 0 18px}
+.passe dl{margin:0;display:grid;grid-template-columns:96px 1fr;row-gap:12px;column-gap:10px;font-size:15px}
+.passe dt{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--suave);padding-top:3px}
+.passe dd{margin:0}
+.passe .picote{position:relative;border-top:2px dashed var(--tinta);margin:0}
+.passe .picote::before,.passe .picote::after{content:"";position:absolute;top:-12px;width:22px;height:22px;border-radius:50%;background:var(--papel);border:2px solid var(--tinta)}
+.passe .picote::before{left:-13px;clip-path:inset(0 0 0 50%)}
+.passe .picote::after{right:-13px;clip-path:inset(0 50% 0 0)}
+.passe .pe{padding:14px 20px 18px;font-size:13.5px;color:var(--suave)}
+.passe .pe b{font-weight:600;color:var(--tinta)}
+.fim{display:flex;flex-direction:column;gap:10px;margin:24px 4px 0}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="pular" aria-label="Pular entre as telas, para quem avalia">
+    <button data-ir="1"><b>1</b>Bilhete</button>
+    <button data-ir="2"><b>2</b>Mesa</button>
+    <button data-ir="3"><b>3</b>Envelope</button>
+    <button data-ir="4"><b>4</b>Grupo</button>
+    <button data-ir="5"><b>5</b>Programa</button>
+  </nav>
+  <header class="topo"><div class="marca">Finde<small>mesa de cartas</small></div></header>
+  <main id="palco" tabindex="-1"></main>
+  <div id="vivo" class="sr" aria-live="polite" role="status"></div>
+</div>
+
+<script>
+const DADOS = [{"id":"beco-do-batman","nome":"Beco do Batman","tipo":"passeio","regiao":"pinheiros-vila-madalena","bairro":"Vila Madalena","preco":0,"momentos":["manha","tarde"],"grupo":{"min":1,"max":20},"climas":["descobrir","conversar"],"arLivre":true,"comida":"nao","resumo":"Conjunto de becos e ruas da Vila Madalena cobertos de grafite e arte urbana, de acesso livre.","porque":"Cabe o grupo inteiro, rende foto e conversa em uma hora, e os murais mudam o bastante para valer a repetição.","depois":"Rua Harmonia e Rua Wisard a pé","selo":"editorial","conferido":false},{"id":"praca-por-do-sol","nome":"Praça do Pôr do Sol","tipo":"ar-livre","regiao":"pinheiros-vila-madalena","bairro":"Alto de Pinheiros","preco":0,"momentos":["tarde"],"grupo":{"min":1,"max":20},"climas":["relaxar","conversar"],"arLivre":true,"comida":"nao","resumo":"Praça elevada em Alto de Pinheiros, conhecida como ponto de ver o fim da tarde sobre a cidade.","porque":"Cada um leva sua bebida, senta na grama e ninguém precisa pedir mesa para uma turma grande.","depois":"Rua Fradique Coutinho","selo":"editorial","conferido":false},{"id":"pinacoteca-luz","nome":"Pinacoteca de São Paulo","tipo":"cultura","regiao":"centro","bairro":"Luz","preco":1,"momentos":["manha","tarde"],"grupo":{"min":1,"max":8},"climas":["descobrir","conversar"],"arLivre":false,"comida":"nao","resumo":"Museu de arte brasileira em prédio histórico de tijolo aparente, ao lado do Parque da Luz.","porque":"Duas horas bastam e o Parque da Luz fica na porta, para continuar a conversa ao ar livre.","depois":"Parque da Luz","selo":"editorial","conferido":false},{"id":"mercado-de-pinheiros","nome":"Mercado de Pinheiros","tipo":"feira","regiao":"pinheiros-vila-madalena","bairro":"Pinheiros","preco":2,"momentos":["manha","tarde"],"grupo":{"min":1,"max":8},"climas":["conversar","relaxar","comemorar"],"arLivre":false,"comida":"tem","resumo":"Mercado público de bairro com bancas, bares e restaurantes pequenos.","porque":"Cada um escolhe a sua banca e todo mundo senta junto, bom para grupo que não concorda no cardápio.","depois":"Feira da Praça Benedito Calixto","selo":"editorial","conferido":false},{"id":"bar-astor","nome":"Bar Astor","tipo":"bar","regiao":"pinheiros-vila-madalena","bairro":"Vila Madalena","preco":2,"momentos":["noite"],"grupo":{"min":2,"max":8},"climas":["conversar","agitar","comemorar"],"arLivre":false,"comida":"tem","resumo":"Bar tradicional da Vila Madalena, com mesas na calçada e salão.","porque":"Casa que já virou ponto de encontro: quem chega primeiro guarda lugar e o resto vai aparecendo.","depois":"Beco do Batman","selo":"editorial","conferido":false},{"id":"o-do-borogodo","nome":"Ó do Borogodó","tipo":"musica","regiao":"pinheiros-vila-madalena","bairro":"Vila Madalena","preco":1,"momentos":["noite"],"grupo":{"min":2,"max":10},"climas":["agitar","comemorar","descobrir"],"arLivre":false,"comida":"tem","resumo":"Casa de samba e choro na Vila Madalena, com música ao vivo.","porque":"Samba ao vivo num lugar pequeno, onde todo mundo acaba cantando junto, mesmo quem não sabe a letra.","depois":"Bares da Rua Aspicuelta","selo":"editorial","conferido":false},{"id":"sinuca-vila-madalena","nome":"Sinuca nos bares da Vila Madalena","tipo":"jogo","regiao":"pinheiros-vila-madalena","bairro":"Vila Madalena","preco":1,"momentos":["tarde","noite"],"grupo":{"min":2,"max":6},"climas":["agitar","conversar"],"arLivre":false,"comida":"tem","resumo":"Bares da Vila Madalena que têm mesa de sinuca; o programa é escolher um e jogar em duplas.","porque":"Quem joga enquanto espera a vez já está no programa, e quem não joga assiste e come petisco.","depois":"Bar Astor","selo":"editorial","conferido":false},{"id":"masp","nome":"MASP","tipo":"cultura","regiao":"paulista-ibirapuera","bairro":"Paulista","preco":2,"momentos":["manha","tarde"],"grupo":{"min":1,"max":8},"climas":["descobrir","conversar"],"arLivre":false,"comida":"nao","resumo":"Museu de arte com acervo europeu e brasileiro, em prédio de Lina Bo Bardi na Avenida Paulista.","porque":"Os quadros ficam sobre cavaletes de vidro, e olhar todo mundo ao redor da mesma tela rende conversa.","depois":"Parque Trianon","selo":"editorial","conferido":false},{"id":"parque-ibirapuera","nome":"Parque Ibirapuera","tipo":"ar-livre","regiao":"paulista-ibirapuera","bairro":"Ibirapuera","preco":0,"momentos":["manha","tarde"],"grupo":{"min":1,"max":20},"climas":["relaxar","conversar","descobrir"],"arLivre":true,"comida":"nao","resumo":"Maior parque urbano da cidade, com lago, marquise, museus e pistas, projeto de Niemeyer e Burle Marx.","porque":"Dá para ir com cinco pessoas ou vinte e ainda achar sombra, e cada um segue o ritmo que quiser.","depois":"Museu Afro Brasil","selo":"editorial","conferido":false},{"id":"cantina-speranza","nome":"Pizzaria Speranza","tipo":"comida","regiao":"paulista-ibirapuera","bairro":"Bixiga","preco":2,"momentos":["tarde","noite"],"grupo":{"min":2,"max":10},"climas":["conversar","comemorar","agitar"],"arLivre":false,"comida":"centro","resumo":"Pizzaria tradicional do Bixiga, aberta há décadas.","porque":"Pizza pedida por mesa e dividida no meio, de modo que ninguém precisa decidir sozinho.","depois":"Bixiga a pé","selo":"editorial","conferido":false},{"id":"casa-do-porco","nome":"A Casa do Porco","tipo":"comida","regiao":"centro","bairro":"República","preco":3,"momentos":["tarde","noite"],"grupo":{"min":2,"max":10},"climas":["comemorar","conversar"],"arLivre":false,"comida":"centro","resumo":"Restaurante de cozinha brasileira com foco em carne de porco, no centro, bastante procurado.","porque":"É o jantar que o grupo marca com antecedência para comemorar; reservem e peçam para dividir.","depois":"Bar Brahma","selo":"editorial","conferido":false},{"id":"bar-brahma","nome":"Bar Brahma","tipo":"bar","regiao":"centro","bairro":"República","preco":2,"momentos":["noite"],"grupo":{"min":2,"max":12},"climas":["agitar","comemorar","conversar"],"arLivre":false,"comida":"tem","resumo":"Bar histórico na esquina da Ipiranga com a São João, no centro.","porque":"A esquina mais citada da cidade; pedir mesa grande ali dá a noite um cenário por si só.","depois":"Bar da Dona Onça","selo":"editorial","conferido":false},{"id":"boliche-exemplo","nome":"Boliche Exemplo (parceiro fictício)","tipo":"jogo","regiao":"centro","bairro":"República","preco":1,"momentos":["noite"],"grupo":{"min":2,"max":10},"climas":["conversar","agitar"],"arLivre":false,"comida":"tem","resumo":"Lugar inventado para mostrar como o patrocínio aparece na lista; este boliche não existe.","porque":"Exemplo de como o selo de patrocinado aparece, sempre separado das escolhas da casa.","depois":null,"selo":"patrocinado","conferido":false}];
+
+const REGIOES = {"pinheiros-vila-madalena":"Pinheiros e Vila Madalena","centro":"Centro","paulista-ibirapuera":"Paulista e Ibirapuera"};
+const FAIXA = ["de graça","até R$ 50 por pessoa","de R$ 50 a R$ 120 por pessoa","acima de R$ 120 por pessoa"];
+const ROTULO = {"sob-medida":"sob medida para vocês","da-casa":"escolha da casa","patrocinado":"patrocinado"};
+const QUANDO_TXT = {"sex-noite":"Sexta à noite","sab-dia":"Sábado de dia","sab-noite":"Sábado à noite","dom":"Domingo"};
+const CAMPOS = [
+  {k:"quando",q:"Quando?",o:[["sex-noite","sexta à noite"],["sab-dia","sábado de dia"],["sab-noite","sábado à noite"],["dom","domingo"]]},
+  {k:"quem",q:"Quem vai?",o:[["so","só eu"],["casal","casal"],["amigos","3 a 5 amigos"],["turma","turma de 6 ou mais"]]},
+  {k:"onde",q:"Onde?",o:[["pinheiros-vila-madalena","Pinheiros e Vila"],["centro","Centro"],["paulista-ibirapuera","Paulista e Ibirapuera"],["qualquer","qualquer lugar"]]},
+  {k:"quanto",q:"Quanto?",o:[[0,"de graça"],[1,"até R$ 50"],[2,"até R$ 120"],[3,"sem teto"]]},
+  {k:"clima",q:"Que clima?",o:[["conversar","conversar"],["agitar","agitar"],["descobrir","descobrir algo"],["relaxar","relaxar"],["comemorar","comemorar"]]}
+];
+const PADRAO = {quando:"sab-noite",quem:"amigos",onde:"pinheiros-vila-madalena",quanto:2,clima:"conversar"};
+const GIROS = ["-1.3deg",".9deg","-.6deg"], DESLS = ["0px","8px","3px"];
+const reduz = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- estado ---------- */
+let S;
+function novoEstado(){ return {tela:1,crit:{},mao:null,monte:[],aviso:null,descartes:[],pilha:[],idPlano:null,autor:"Caio",eu:"",votos:{},fechado:null,simulou:false,recemColou:null,timers:[]}; }
+S = novoEstado();
+
+/* ---------- motor da maquete ---------- */
+function quemN(q){return {so:1,casal:2,amigos:4,turma:8}[q];}
+function escolher(c){
+  const n=quemN(c.quem), mom=c.quando.endsWith("noite")?["noite"]:["manha","tarde"];
+  const f=(t,sem)=>DADOS.filter(e=>(sem||e.momentos.some(m=>mom.includes(m)))&&e.preco<=t&&e.grupo.min<=n&&n<=e.grupo.max);
+  let teto=c.quanto, aviso=null, r=f(teto,false);
+  while(r.length<3&&teto<3){teto++;r=f(teto,false);aviso="Com esse teto só achei poucas. Subi um degrau no preço para fechar a mesa."}
+  if(r.length<3){r=f(3,true);aviso="Abri mão do horário para completar a mesa."}
+  const pont=e=>(e.climas.includes(c.clima)?3:0)+(c.onde!=="qualquer"&&e.regiao===c.onde?2:0)+(e.arLivre&&!c.quando.endsWith("noite")?1:0);
+  const rank=r.filter(e=>e.selo!=="patrocinado").map((e,i)=>({e,i,p:pont(e)})).sort((a,b)=>b.p-a.p||a.i-b.i).map(x=>x.e);
+  const spons=r.find(e=>e.selo==="patrocinado");
+  const mao=[];
+  while(mao.length<3&&rank.length){
+    const tipos=mao.map(e=>e.tipo);
+    let k=rank.findIndex(e=>!tipos.includes(e.tipo)); if(k<0)k=0;
+    mao.push(rank.splice(k,1)[0]);
+  }
+  if(spons&&mao.length===3){rank.unshift(mao[2]);mao[2]=spons;}
+  return {mao:mao.map(e=>carta(e,c)),monte:rank,aviso};
+}
+function rotuloDe(e,c){
+  if(e.selo==="patrocinado")return "patrocinado";
+  return e.climas.includes(c.clima)&&(c.onde==="qualquer"||e.regiao===c.onde)?"sob-medida":"da-casa";
+}
+function motivosDe(e,c){
+  const CL={conversar:"dá para conversar sem gritar",agitar:"tem energia para agitar",descobrir:"tem cara de descoberta",relaxar:"é lugar de desacelerar",comemorar:"serve para comemorar"};
+  const m=[];
+  if(e.climas.includes(c.clima))m.push(CL[c.clima]);
+  m.push(c.onde!=="qualquer"&&e.regiao===c.onde?`fica em ${e.bairro}, como você pediu`:`fica em ${e.bairro}`);
+  m.push(e.preco===0?"não pesa no bolso: faixa de graça":`faixa ${FAIXA[e.preco]}`);
+  if(m.length<3)m.push(c.quem==="turma"||c.quem==="amigos"?"cabe o grupo":"bom para ir em poucos");
+  return m.slice(0,3).map((t,i)=>i===0?t[0].toUpperCase()+t.slice(1):t);
+}
+function carta(e,c){return {e,rotulo:rotuloDe(e,c),motivos:motivosDe(e,c),virada:false};}
+function trocarSlot(i){
+  const outro=S.mao.filter((_,j)=>j!==i);
+  const temSp=outro.some(x=>x.e.selo==="patrocinado");
+  const cand=S.monte.filter(e=>!(temSp&&e.selo==="patrocinado"));
+  if(!cand.length)return null;
+  const tipos=outro.map(x=>x.e.tipo);
+  const e=cand.find(x=>!tipos.includes(x.tipo))||cand[0];
+  S.monte.splice(S.monte.indexOf(e),1);
+  const saiu=S.mao[i], entrou=carta(e,S.crit);
+  S.mao[i]=entrou; S.descartes.push(saiu); S.pilha.push({i,saiu,entrou});
+  return entrou;
+}
+function desfazer(){
+  const u=S.pilha.pop(); if(!u)return;
+  S.monte.unshift(u.entrou.e); S.descartes=S.descartes.filter(x=>x!==u.saiu);
+  S.mao[u.i]=u.saiu; renderMesa(true,u.i); falar(`${u.saiu.e.nome} voltou para a mesa.`);
+}
+
+/* ---------- utilitários ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+function h(tag,at={},...fil){
+  const el=document.createElement(tag);
+  for(const[k,v] of Object.entries(at)){
+    if(v==null||v===false)continue;
+    if(k==="class")el.className=v; else if(k.startsWith("on"))el.addEventListener(k.slice(2),v);
+    else if(k==="style")el.style.cssText=v; else el.setAttribute(k,v===true?"":v);
+  }
+  for(const f of fil.flat()){if(f==null||f===false)continue;el.append(f.nodeType?f:document.createTextNode(f));}
+  return el;
+}
+let tFala;
+function falar(t){const v=$("#vivo");v.textContent="";clearTimeout(tFala);tFala=setTimeout(()=>v.textContent=t,40);}
+const palco=$("#palco");
+const completo=()=>CAMPOS.every(c=>S.crit[c.k]!==undefined);
+
+/* ---------- navegação ---------- */
+function garantir(n){
+  if(n>=2&&!S.mao){S.crit={...PADRAO,...S.crit};const r=escolher(S.crit);S.mao=r.mao;S.monte=r.monte;S.aviso=r.aviso;S.descartes=[];S.pilha=[];}
+  if(n>=3&&!S.idPlano)S.idPlano=Array.from({length:8},()=> "abcdefghijkmnpqrstuvwxyz23456789"[Math.random()*32|0]).join("");
+  if(n>=4)iniciarSim(false);
+  if(n>=5&&!S.fechado){
+    iniciarSim(true);
+    S.fechado={idx:vencedora(),por:S.eu||S.autor,novo:true};
+  }
+}
+function ir(n){
+  garantir(n);
+  S.tela=n;
+  document.querySelectorAll(".pular button").forEach(b=>{if(+b.dataset.ir===n)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");});
+  [t1,t2,t3,t4,t5][n-1]();
+  palco.focus({preventScroll:true});
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".pular button").forEach(b=>b.addEventListener("click",()=>ir(+b.dataset.ir)));
+
+/* ---------- 1: bilhete ---------- */
+function t1(){
+  palco.replaceChildren();
+  const falta=()=>CAMPOS.filter(c=>S.crit[c.k]===undefined).length;
+  const quad=h("div",{class:"quadrinhos","aria-hidden":"true"});
+  const btn=h("button",{class:"btn acao",style:"width:100%",onclick:()=>{ if(!completo()){falar(`Faltam ${falta()} carimbos.`);return;} const r=escolher(S.crit);S.mao=r.mao;S.monte=r.monte;S.aviso=r.aviso;S.descartes=[];S.pilha=[];ir(2);}});
+  const atualiza=()=>{
+    quad.replaceChildren(...CAMPOS.map(c=>h("i",{class:S.crit[c.k]!==undefined?"on":""})),h("span",{},completo()?"bilhete completo":`${5-falta()} de 5 carimbados`));
+    btn.textContent=completo()?"Soltar as cartas na mesa":`Faltam ${falta()} carimbo${falta()>1?"s":""}`;
+    btn.setAttribute("aria-disabled",completo()?"false":"true");
+  };
+  const bil=h("form",{class:"bilhete",onsubmit:e=>e.preventDefault()},
+    h("div",{class:"cab"},h("h2",{},"Seu fim de semana")),
+    CAMPOS.map(c=>{
+      const fichas=h("div",{class:"fichas",role:"group","aria-labelledby":"l-"+c.k});
+      c.o.forEach(([v,t])=>{
+        const b=h("button",{type:"button",class:"chip","aria-pressed":S.crit[c.k]===v?"true":"false",onclick:()=>{
+          S.crit[c.k]=v;
+          fichas.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed","false"));
+          b.setAttribute("aria-pressed","true");
+          if(!reduz()){b.classList.remove("carimbo");void b.offsetWidth;b.classList.add("carimbo");}
+          atualiza();
+          if(completo())falar("Bilhete completo. Pode soltar as cartas.");
+        }},t);
+        fichas.append(b);
+      });
+      return h("fieldset",{},h("legend",{id:"l-"+c.k},c.q),fichas);
+    })
+  );
+  palco.append(
+    h("h1",{},"Carimbe o bilhete."),
+    h("p",{class:"fala"},"Toque em uma ficha de cada linha. Quando fechar, eu solto três cartas na mesa."),
+    bil,quad,btn,
+    h("p",{class:"nota"},"Sem login, sem pagamento. O Finde só junta as respostas para escolher.")
+  );
+  atualiza();
+}
+
+/* ---------- cartas (mesa e grupo) ---------- */
+function faceFrente(k,modo){
+  const e=k.e;
+  return h("div",{class:"frente"},
+    h("span",{class:"rotulo "+k.rotulo},ROTULO[k.rotulo]),
+    h("h3",{},e.nome),
+    h("p",{class:"meta"},`${e.bairro} · ${e.preco===0?"de graça":"faixa "+FAIXA[e.preco]}`),
+    h("p",{class:"resumo"},e.resumo)
+  );
+}
+function faceVerso(k){
+  const e=k.e;
+  return h("div",{class:"verso"},
+    h("span",{class:"rotulo "+k.rotulo},ROTULO[k.rotulo]),
+    h("h3",{},e.nome),
+    h("p",{class:"porque"},e.porque),
+    h("ul",{class:"motivos"},k.motivos.map(m=>h("li",{},m))),
+    e.depois&&h("p",{class:"depois"},h("b",{},"Depois: "),e.depois+"."),
+    !e.conferido&&h("p",{class:"meta",style:"margin:-4px 0 12px"},"Ainda não conferimos este lugar. Horário e preço, só na hora de sair.")
+  );
+}
+function virar(el,k,refazBotoes){
+  const troca=()=>{k.virada=!k.virada;refazBotoes();};
+  if(reduz()){troca();return;}
+  el.classList.add("virando");
+  setTimeout(()=>{troca();el.classList.remove("virando");},110);
+}
+
+/* ---------- 2: mesa ---------- */
+function montaCartaMesa(k,i,entrada,atraso){
+  const el=h("article",{class:"carta"+(entrada&&!reduz()?" cai":""),style:`--giro:${GIROS[i]};--desl:${DESLS[i]};--atraso:${atraso||0}ms`,"data-i":i,"aria-label":`Carta ${i+1}: ${k.e.nome}`});
+  const corpo=h("div");
+  const acoes=h("div",{class:"acoes"});
+  const refaz=()=>{
+    corpo.replaceChildren(k.virada?faceVerso(k):faceFrente(k));
+    acoes.replaceChildren(
+      h("button",{class:"btn mini","aria-expanded":k.virada?"true":"false",onclick:()=>virar(el,k,refaz)},k.virada?"Voltar à frente":"Virar e ler o porquê"),
+      h("button",{class:"btn mini",onclick:()=>descartar(i)},"Trocar")
+    );
+  };
+  refaz();
+  el.append(h("span",{class:"alca","aria-hidden":"true"}),corpo,acoes);
+  arrastavel(el,i);
+  return el;
+}
+function arrastavel(el,i){
+  let x0=null,dx=0,ativo=false;
+  el.addEventListener("pointerdown",ev=>{
+    if(ev.target.closest("button")||ev.button>0)return;
+    x0=ev.clientX;dx=0;ativo=false;
+  });
+  el.addEventListener("pointermove",ev=>{
+    if(x0==null)return;
+    dx=ev.clientX-x0;
+    if(!ativo&&Math.abs(dx)>8){ativo=true;el.setPointerCapture(ev.pointerId);el.classList.remove("solta","cai");}
+    if(ativo)el.style.transform=`translateX(${dx}px) rotate(calc(${GIROS[i]} + ${dx/22}deg))`;
+  });
+  const fim=()=>{
+    if(x0==null)return;
+    const d=dx,a=ativo;x0=null;ativo=false;
+    if(!a)return;
+    if(Math.abs(d)>90){
+      if(reduz()){descartar(i);return;}
+      el.classList.add("voa");el.style.transform=`translateX(${d>0?420:-420}px) rotate(${d>0?24:-24}deg)`;
+      setTimeout(()=>descartar(i),230);
+    }else{
+      el.classList.add("solta");el.style.transform="";
+    }
+  };
+  el.addEventListener("pointerup",fim);
+  el.addEventListener("pointercancel",fim);
+}
+function descartar(i){
+  const antes=S.mao[i].e.nome;
+  const nova=trocarSlot(i);
+  if(!nova){renderMesa(false);falar("O monte acabou. Não tem mais carta para puxar.");const m=$(".estado");if(m)m.textContent="O monte acabou. Esta fica na mesa.";return;}
+  renderMesa(true,i);
+  falar(`${antes} foi para o descarte. Nova carta na posição ${i+1}: ${nova.e.nome}.`);
+}
+function renderMesa(entrada,so){
+  const antigas=$(".cartas");
+  const lista=h("div",{class:"cartas"});
+  S.mao.forEach((k,i)=>{
+    const quer=entrada&&(so==null||so===i);
+    lista.append(montaCartaMesa(k,i,quer,so==null?i*150:0));
+  });
+  if(antigas)antigas.replaceWith(lista);
+  const mn=$(".monte span");if(mn)mn.textContent=`monte: ${S.monte.length}`;
+  const dz=$(".desfazer");
+  if(dz){dz.replaceChildren();if(S.pilha.length){dz.append(`Descartada: ${S.descartes[S.descartes.length-1].e.nome}. `,h("button",{onclick:desfazer},"Desfazer"));}}
+}
+function t2(){
+  palco.replaceChildren();
+  palco.append(
+    h("div",{class:"mesa-top"},
+      h("div",{},h("h1",{style:"margin-left:0"},"Achei três."),h("p",{class:"fala",style:"margin-left:0"},"A primeira é a que eu levaria vocês.")),
+      h("div",{class:"monte","aria-hidden":"false"},h("i"),h("i"),h("i"),h("span",{},`monte: ${S.monte.length}`))
+    ),
+    S.aviso&&h("p",{class:"aviso",role:"note"},S.aviso),
+    h("div",{class:"cartas"}),
+    h("p",{class:"estado","aria-hidden":"true"}),
+    h("div",{class:"desfazer"}),
+    h("p",{class:"nota",style:"margin-top:12px"},"Arraste uma carta para o lado ou toque em Trocar: eu puxo outra do monte."),
+    h("p",{class:"legenda"},h("b",{},"Sob medida para vocês:")," bateu com o bilhete. ",h("b",{},"Escolha da casa:")," entrou pela nossa curadoria. ",h("b",{},"Patrocinado:")," o lugar paga para aparecer, depois de passar nos mesmos filtros."),
+  );
+  renderMesa(true);
+  palco.append(h("div",{class:"barra",style:"margin:24px -16px -32px"},
+    h("button",{class:"btn sec",onclick:()=>ir(1)},"Mexer no bilhete"),
+    h("button",{class:"btn acao",onclick:()=>ir(3)},"Mandar pro grupo")
+  ));
+}
+
+/* ---------- 3: envelope ---------- */
+function t3(){
+  palco.replaceChildren();
+  const link=`finde.app/p/${S.idPlano}`;
+  const msg=`Fechei três opções para ${QUANDO_TXT[S.crit.quando].toLowerCase()}. Cola seu nome na que você quer: https://${link}`;
+  const nomes=S.mao.map(k=>k.e.nome);
+  const T=(x,y,t)=>`<text x="${x}" y="${y}" font-family="Patrick Hand, cursive" font-size="14" fill="#203f77">${t.length>22?t.slice(0,21)+"…":t}</text>`;
+  const cart=(cl,x,y,nome)=>`<g class="cart ${cl}" style="transform-origin:${x+95}px ${y+60}px"><rect x="${x}" y="${y}" width="190" height="118" rx="10" fill="#fff9ed" stroke="#203f77" stroke-width="2.5"/>${T(x+12,y+26,nome)}<rect x="${x+12}" y="${y+40}" width="130" height="5" rx="2.5" fill="#203f77" opacity=".25"/><rect x="${x+12}" y="${y+54}" width="100" height="5" rx="2.5" fill="#203f77" opacity=".25"/></g>`;
+  const svg=h("div");
+  svg.innerHTML=`<svg class="envelope${reduz()?" fechado":""}" viewBox="0 -30 300 240" role="img" aria-label="Envelope com as três cartas dentro">
+    <polygon class="aberta" points="20,60 150,-20 280,60" fill="#fff3df" stroke="#203f77" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="20" y="60" width="260" height="140" rx="10" fill="#fff3df" stroke="#203f77" stroke-width="3"/>
+    ${cart("c1",30,50,nomes[0])}${cart("c2",55,40,nomes[1])}${cart("c3",80,52,nomes[2])}
+    <path d="M20 200 L20 70 Q20 60 30 60 L150 135 L270 60 Q280 60 280 70 L280 200 Q280 200 270 200 Z" fill="#fff9ed" stroke="#203f77" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M20 200 L120 128 M280 200 L180 128" stroke="#203f77" stroke-width="2" fill="none" opacity=".5"/>
+    <g class="fechada"><path d="M20 62 Q20 58 30 60 L150 135 L270 60 Q280 58 280 62 L150 -2 Z" fill="none"/><circle cx="150" cy="128" r="17" fill="#203f77"/><text x="150" y="135" text-anchor="middle" font-family="Patrick Hand, cursive" font-size="22" fill="#fff9ed">F</text></g>
+  </svg>`;
+  const env=svg.firstChild;
+  const copiar=h("button",{class:"btn",onclick:async()=>{
+    try{await navigator.clipboard.writeText("https://"+link);}catch(e){}
+    copiar.textContent="Link copiado";falar("Link copiado.");
+    setTimeout(()=>copiar.textContent="Copiar link",2200);
+  }},"Copiar link");
+  palco.append(
+    h("h1",{},"Pronto, é só mandar."),
+    h("p",{class:"fala"},"As três cartas vão juntas num envelope, com um link."),
+    env,
+    h("label",{class:"campo"},h("span",{},"Quem manda?"),h("input",{type:"text",maxlength:"24",value:S.autor,autocomplete:"given-name",oninput:e=>{S.autor=e.target.value.trim()||"Caio";}})),
+    h("div",{class:"link"},link),
+    h("div",{class:"duas"},copiar,h("a",{class:"btn acao",style:"display:flex;align-items:center;justify-content:center;text-decoration:none",href:"https://wa.me/?text="+encodeURIComponent(msg),target:"_blank",rel:"noopener"},"Mandar no WhatsApp")),
+    h("div",{class:"recado"},h("small",{},"Recado que vai junto"),msg),
+    h("div",{class:"fim"},h("button",{class:"btn",onclick:()=>ir(4)},"Ver como o grupo recebe")),
+    h("p",{class:"nota"},"Nesta maquete o WhatsApp só abre a mensagem pronta.")
+  );
+  if(!reduz())setTimeout(()=>{if(S.tela===3)env.classList.add("fechado");},450);
+}
+
+/* ---------- 4: grupo ---------- */
+function contagem(){const c=[0,0,0];Object.values(S.votos).forEach(i=>c[i]++);return c;}
+function vencedora(){const c=contagem();let m=0;c.forEach((v,i)=>{if(v>c[m])m=i;});return m;}
+const GA=["-2.5deg","1.8deg","-1deg","2.4deg","-1.8deg"];
+function iniciarSim(rapido){
+  if(S.simulou&&!rapido)return;
+  const eventos=[[1800,"Bia",1],[3500,"Théo",1],[5400,"Lu",2]];
+  if(rapido){S.timers.forEach(clearTimeout);S.timers=[];eventos.forEach(([,n,i])=>{if(S.votos[n]==null)S.votos[n]=i;});S.simulou=true;return;}
+  S.simulou=true;
+  eventos.forEach(([t,n,i])=>S.timers.push(setTimeout(()=>{
+    S.votos[n]=i;S.recemColou=n;
+    falar(`${n} colou o nome em ${S.mao[i].e.nome}.`);
+    if(S.tela===4)renderGrupo();
+  },t)));
+}
+function colar(i){
+  const nome=S.eu.trim();
+  const campo=$("#meunome");
+  if(!nome){$(".estado").textContent="Escreva seu nome antes de colar.";campo.focus();falar("Escreva seu nome antes de colar.");return;}
+  if(S.votos[nome]===i){delete S.votos[nome];S.recemColou=null;}
+  else{S.votos[nome]=i;S.recemColou=nome;}
+  renderGrupo();
+  falar(S.votos[nome]===i?`Seu nome está em ${S.mao[i].e.nome}.`:"Seu nome saiu da carta.");
+}
+function cartaGrupo(k,i){
+  const el=h("article",{class:"carta fixa"+(contagem()[i]&&i===vencedora()&&Object.keys(S.votos).length>=2?" lider":""),style:`--giro:${GIROS[i]};--desl:${DESLS[i]}`,"aria-label":`Carta ${i+1}: ${k.e.nome}`});
+  const corpo=h("div"),acoes=h("div",{class:"acoes"});
+  const nome=S.eu.trim();
+  const meu=nome&&S.votos[nome]===i;
+  const refaz=()=>{
+    corpo.replaceChildren(k.virada?faceVerso(k):faceFrente(k));
+    acoes.replaceChildren(
+      h("button",{class:"btn mini","aria-expanded":k.virada?"true":"false",onclick:()=>virar(el,k,refaz)},k.virada?"Voltar à frente":"Ler o porquê"),
+      h("button",{class:"btn mini"+(meu?"":" acao"),onclick:()=>colar(i)},meu?"Tirar meu nome":"Colar meu nome")
+    );
+  };
+  refaz();
+  const ad=h("ul",{class:"adesivos","aria-label":`Nomes colados em ${k.e.nome}`},
+    Object.entries(S.votos).filter(([,v])=>v===i).map(([n],j)=>h("li",{class:"adesivo"+(n===nome?" meu":"")+(n===S.recemColou&&!reduz()?" nova":""),style:`--g:${GA[(n.length+j)%5]}`},n)));
+  el.append(corpo,ad,acoes);
+  return el;
+}
+function renderGrupo(){
+  const lista=$(".cartas");
+  const nv=Object.keys(S.votos).length;
+  const nova=h("div",{class:"cartas"},S.mao.map(cartaGrupo));
+  lista.replaceWith(nova);
+  S.recemColou=null;
+  const f=$(".fechar");
+  f.replaceChildren(
+    nv>=2?h("p",{},`${nv} nomes colados. Dá para fechar.`):h("p",{},"O botão de fechar aparece depois de dois nomes colados."),
+    h("button",{class:"btn acao","aria-disabled":nv>=2?"false":"true",onclick:()=>{
+      if(nv<2)return;
+      S.timers.forEach(clearTimeout);S.timers=[];
+      S.fechado={idx:vencedora(),por:S.eu.trim()||S.autor,novo:true};ir(5);
+    }},"Fechar o programa")
+  );
+}
+function t4(){
+  palco.replaceChildren(
+    h("span",{class:"visao"},"Assim o grupo vê"),
+    h("h1",{style:"margin-top:8px"},`${S.autor} separou três para ${QUANDO_TXT[S.crit.quando].toLowerCase()}.`),
+    h("p",{class:"fala"},"Cole seu nome na carta que você quer. Pode mudar de ideia."),
+    h("label",{class:"campo"},h("span",{},"Seu nome"),h("input",{id:"meunome",type:"text",maxlength:"24",value:S.eu,placeholder:"como o grupo te chama",autocomplete:"given-name",oninput:e=>{S.eu=e.target.value;}})),
+    h("p",{class:"estado",role:"status"}),
+    h("div",{class:"cartas"}),
+    h("div",{class:"fechar"}),
+    h("p",{class:"legenda"},h("b",{},"Sob medida para vocês:")," bateu com o bilhete de quem mandou. ",h("b",{},"Escolha da casa:")," curadoria do Finde. ",h("b",{},"Patrocinado:")," o lugar paga para aparecer.")
+  );
+  renderGrupo();
+}
+
+/* ---------- 5: programa ---------- */
+function t5(){
+  const f=S.fechado,k=S.mao[f.idx],e=k.e;
+  const vao=Object.entries(S.votos).filter(([,v])=>v===f.idx).map(([n])=>n);
+  const outros=Object.entries(S.votos).filter(([,v])=>v!==f.idx).map(([n])=>n);
+  const passe=h("article",{class:"passe"+(f.novo&&!reduz()?" novo":""),"aria-label":"Bilhete do programa"},
+    h("span",{class:"selo"},"FECHADO"),
+    h("div",{class:"corpo"},
+      h("small",{},"Programa do fim de semana"),
+      h("h2",{},e.nome),
+      h("p",{class:"onde"},`${e.bairro}, ${REGIOES[e.regiao]}`),
+      h("dl",{},
+        h("dt",{},"Quando"),h("dd",{},QUANDO_TXT[S.crit.quando]),
+        h("dt",{},"Quem vai"),h("dd",{},vao.join(", ")||"a combinar"),
+        e.depois&&h("dt",{},"Depois"),e.depois&&h("dd",{},e.depois),
+        h("dt",{},"Faixa"),h("dd",{},e.preco===0?"de graça":FAIXA[e.preco])
+      )
+    ),
+    h("div",{class:"picote"}),
+    h("div",{class:"pe"},
+      h("b",{},`${vao.length} de ${Object.keys(S.votos).length} nomes`)," ficaram nesta carta."+(outros.length?` ${outros.join(", ")} colou${outros.length>1?"ram":""} em outra e topa o que fechou.`:""),
+      !e.conferido&&h("p",{style:"margin:8px 0 0"},"Ainda não conferimos este lugar. Horário e preço exatos, só na hora de sair.")
+    )
+  );
+  f.novo=false;
+  palco.replaceChildren(
+    h("h1",{},"Programa fechado."),
+    h("p",{class:"fala"},`Fechado por ${f.por}. Agora é só aparecer.`),
+    passe,
+    h("div",{class:"fim"},
+      h("button",{class:"btn",onclick:()=>{ if(navigator.share){navigator.share({title:"Programa do fim de semana",text:`${e.nome}, ${QUANDO_TXT[S.crit.quando].toLowerCase()}`}).catch(()=>{});} else falar("Compartilhar não está disponível neste navegador.");}},"Mandar o bilhete"),
+      h("button",{class:"btn",onclick:()=>{S.timers.forEach(clearTimeout);S=novoEstado();ir(1);}},"Começar outro fim de semana")
+    )
+  );
+  falar(`Programa fechado: ${e.nome}.`);
+}
+
+ir(1);
+</script>
+</body>
+</html>

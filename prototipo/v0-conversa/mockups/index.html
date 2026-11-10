@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finde · abordagens de interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root { --papel: #fff3df; --folha: #fff9ed; --traco: #203f77; --acao: #b55e18; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--papel); color: var(--traco); font: 16px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 480px; margin: 0 auto; padding: 28px 16px 48px; }
+  h1 { font: 400 34px/1.1 "Patrick Hand", "Chalkboard SE", cursive; margin: 0 0 6px; }
+  p.sub { margin: 0 0 24px; }
+  ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  a.cartao { display: block; text-decoration: none; color: inherit; background: var(--folha); border: 2px solid var(--traco); border-radius: 16px; padding: 16px 18px; box-shadow: 0 3px 0 rgba(112, 90, 59, .15); }
+  a.cartao:focus-visible { outline: 3px solid var(--acao); outline-offset: 3px; }
+  a.cartao h2 { font: 400 24px/1.15 "Patrick Hand", "Chalkboard SE", cursive; margin: 0 0 4px; }
+  a.cartao p { margin: 0; font-size: 15px; }
+  a.cartao span { display: inline-block; margin-top: 10px; color: var(--acao); font-weight: 600; font-size: 14px; }
+  footer { margin-top: 24px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>finde · quatro jeitos de fechar o programa</h1>
+  <p class="sub">A mesma ideia em quatro interfaces. Abra cada uma no celular e veja qual o grupo levaria para a banca.</p>
+  <ol>
+    <li><a class="cartao" href="http://localhost:8760/">
+      <h2>Conversa</h2>
+      <p>O Finde pergunta, você responde tocando ou escrevendo. É a versão funcional, com a base de 75 experiências e a votação de verdade.</p>
+      <span>abrir a versão funcional</span></a></li>
+    <li><a class="cartao" href="mesa/">
+      <h2>Mesa de cartas</h2>
+      <p>Um bilhete com cinco carimbos, três cartas na mesa que viram para mostrar o porquê, adesivos com o nome de quem votou.</p>
+      <span>abrir o mockup</span></a></li>
+    <li><a class="cartao" href="roteiro/">
+      <h2>Roteiro pronto</h2>
+      <p>Três programas inteiros, cada um com dois ou três tempos numa linha. Dá para trocar um tempo sem desmontar o resto.</p>
+      <span>abrir o mockup</span></a></li>
+    <li><a class="cartao" href="grupo/">
+      <h2>Grupo primeiro</h2>
+      <p>Ninguém responde pelo grupo. Cada amigo marca o que é dele em dez segundos e as opções se ajustam a todos.</p>
+      <span>abrir o mockup</span></a></li>
+  </ol>
+  <footer>Os três mockups rodam sozinhos, com dados de exemplo e amigos fictícios. A versão funcional precisa do servidor do Finde no ar.</footer>
+</main>
+</body>
+</html>

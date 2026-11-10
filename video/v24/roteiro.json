@@ -1,0 +1,148 @@
+{
+ "duracao": 75.5,
+ "fpsMovimento": 24,
+ "persona": [
+  "Bruna",
+  "30 anos",
+  "Mora em São Paulo",
+  "Quer sair\nno sábado"
+ ],
+ "abertura": "Quero sair no sábado.\nMas pra onde?",
+ "cards": [
+  {
+   "cabecalho": "Busca · São Paulo",
+   "titulo": "Calourada da Atlética",
+   "detalhe": "Festa universitária",
+   "reacao": "Não é o meu perfil."
+  },
+  {
+   "cabecalho": "Busca · São Paulo",
+   "titulo": "A festa da vez",
+   "detalhe": "Abre à 1h da manhã",
+   "reacao": "Tarde demais pra mim."
+  },
+  {
+   "cabecalho": "Mensagem · Ju",
+   "titulo": "“Fui nessa. Só tinha\ngente muito nova.”",
+   "detalhe": "",
+   "reacao": "Também não."
+  }
+ ],
+ "busca": "Toda festa parece feita\npra outra pessoa.",
+ "fontes": [
+  "Instagram",
+  "TikTok",
+  "Google Maps",
+  "Chat de IA"
+ ],
+ "lembranca": "A Ju falou de um app\nque filtra festa.",
+ "marca": "Finde",
+ "formulario": [
+  {
+   "pergunta": "Quando?",
+   "opcoes": [
+    "Sexta",
+    "Sábado",
+    "Domingo"
+   ],
+   "escolhas": [
+    1
+   ]
+  },
+  {
+   "pergunta": "Que horas chegar\ne ir embora?",
+   "opcoes": [
+    "20h às 1h",
+    "22h às 3h",
+    "0h às 5h"
+   ],
+   "escolhas": [
+    1
+   ]
+  },
+  {
+   "pergunta": "Público de\nque idade?",
+   "opcoes": [
+    "18 a 24",
+    "25 a 29",
+    "30 a 35",
+    "36 ou mais"
+   ],
+   "escolhas": [
+    2
+   ]
+  },
+  {
+   "pergunta": "Até quanto\nvocê paga?",
+   "opcoes": [
+    "R$ 50",
+    "R$ 80",
+    "R$ 150"
+   ],
+   "escolhas": [
+    1
+   ]
+  },
+  {
+   "pergunta": "Estilo\n(opcional)",
+   "opcoes": [
+    "House",
+    "Pop anos 2000",
+    "MPB",
+    "Funk"
+   ],
+   "escolhas": [
+    0,
+    1
+   ]
+  }
+ ],
+ "legendas": [
+  "1 · Formulário:\ncinco toques",
+  "2 · Conversa:\najuste com uma frase",
+  "3 · Decisão\ncom o grupo"
+ ],
+ "festas": [
+  {
+   "nome": "Sábado Groove",
+   "linha": "Pinheiros · 22h · R$ 60",
+   "porque": "Público de 30 a 35 · house"
+  },
+  {
+   "nome": "Noite Pop 2000",
+   "linha": "Vila Madalena · 23h · R$ 70",
+   "porque": "Público de 30 a 35 · pop"
+  },
+  {
+   "nome": "Terraço MPB",
+   "linha": "Centro · 21h · R$ 50",
+   "porque": "Público de 30 a 40 · MPB"
+  }
+ ],
+ "chatResposta": "Achei 3 festas pra você.",
+ "chatPergunta": "Tem alguma mais\nperto de Pinheiros?",
+ "chatAjuste": "Essas duas ficam\na 10 min de você.",
+ "reacaoApp": "Todas na minha idade\ne no meu bolso.",
+ "grupo": [
+  "Bruna: Achei essa, bora?",
+  "Ju: Fechou!",
+  "Léo: Tô dentro."
+ ],
+ "falasEvento": [
+  "Gente da minha idade.",
+  "Que noite boa."
+ ],
+ "final": "Still going out,\njust differently.",
+ "rodape": "Protótipo em teste · Start · Grupo 1",
+ "nota": "Nomes de festas fictícios. Desenhos da personagem reaproveitados da v21.",
+ "grupoInicio": [
+  "Ju: E aí, sábado?",
+  "Léo: Bora sair!",
+  "Bruna: Festa? Bar? Show?",
+  "Ju: Mandei uns 10 links aqui",
+  "Léo: Vi mais umas no Insta",
+  "Bruna: Vixe, preciso filtrar aqui."
+ ],
+ "legendaInicio": "Sexta, 19h.\nO grupo quer sair.",
+ "legendaDor": "Muitas opções,\nnenhum filtro."
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Finde</title>
+  <meta name="description" content="O Finde fecha o programa do fim de semana do seu grupo: três opções com o porquê de cada uma, e os amigos votam.">
+  <meta name="theme-color" content="#fff3df">
+  <meta property="og:title" content="Finde">
+  <meta property="og:description" content="O programa do fim de semana do grupo, fechado.">
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&amp;display=swap">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body class="tela-conversa">
+  <div class="app">
+    <header class="topo">
+      <div>
+        <p class="marca">finde</p>
+        <p class="marca-sub">o programa do fim de semana, fechado</p>
+      </div>
+      <button type="button" class="recomecar" id="recomecar" hidden>começar de novo</button>
+    </header>
+
+    <main>
+      <ol class="conversa" id="conversa" aria-live="polite" aria-label="Conversa com o Finde"></ol>
+      <noscript>
+        <p class="fala fala-finde">Eu preciso de JavaScript ligado para conversar. Ligue e recarregue a página.</p>
+      </noscript>
+    </main>
+  </div>
+
+  <form class="campo" id="campo-form" autocomplete="off">
+    <div class="campo-dentro">
+      <label class="vh" for="campo">Escreva para o Finde</label>
+      <input id="campo" name="texto" type="text" maxlength="300" enterkeyhint="send"
+             placeholder="ou escreva do seu jeito" autocapitalize="sentences">
+      <button type="submit" class="enviar">enviar</button>
+    </div>
+  </form>
+</body>
+</html>

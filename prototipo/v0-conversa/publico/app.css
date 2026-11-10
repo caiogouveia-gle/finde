@@ -1,0 +1,925 @@
+/* Finde: teatro de papel. Papel creme, traço azul-marinho, laranja só na ação. */
+
+:root {
+  --papel: #fff3df;
+  --folha: #fff9ed;
+  --traco: #203f77;
+  --traco-2: #3d5584;          /* texto secundário: 6,7:1 sobre o papel */
+  --traco-fino: rgba(32, 63, 119, 0.28);
+  --acao: #c77222;
+  --acao-texto: #b55e18;
+  --acao-funda: #a8561a;
+  --sombra: rgba(112, 90, 59, 0.15);
+
+  --mao: "Patrick Hand", "Chalkboard SE", "Comic Neue", cursive;
+  --texto: -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --borda: 2px solid var(--traco);
+  --raio-p: 14px;
+  --raio: 16px;
+  --raio-g: 18px;
+  --assenta: 200ms cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--papel);
+  color: var(--traco);
+  font: 400 1rem/1.45 var(--texto);
+  -webkit-font-smoothing: antialiased;
+}
+
+body.tela-conversa {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+:focus-visible {
+  outline: 3px solid var(--traco);
+  outline-offset: 3px;
+}
+
+a {
+  color: var(--traco);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+}
+
+.vh {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ coluna */
+
+.app {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.topo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 0 16px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid var(--traco);
+}
+
+.marca {
+  font: 400 2.25rem/0.9 var(--mao);
+  letter-spacing: 0.01em;
+  color: var(--traco);
+  text-decoration: none;
+}
+
+.marca-sub {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--traco-2);
+}
+
+.recomecar {
+  min-height: 44px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  font: 400 1.0625rem var(--mao);
+  color: var(--traco);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* ------------------------------------------------------------ conversa */
+
+.conversa {
+  list-style: none;
+  margin: 0;
+  padding: 12px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conversa > li {
+  scroll-margin-top: 16px;
+  scroll-margin-bottom: calc(104px + env(safe-area-inset-bottom));
+  animation: assenta var(--assenta) both;
+}
+
+@keyframes assenta {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) rotate(-0.4deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fala {
+  max-width: 86%;
+}
+
+.fala-finde {
+  align-self: flex-start;
+  padding: 10px 16px 12px;
+  background: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio) var(--raio) var(--raio) 4px;
+  box-shadow: 0 3px 0 var(--sombra);
+  font: 400 1.3125rem/1.25 var(--mao);
+}
+
+/* Fala com formulário ou botão ocupa a coluna toda, para o campo respirar. */
+.fala-finde:has(form),
+.fala-finde:has(.linha-botoes) {
+  max-width: 100%;
+}
+
+.fala-pessoa {
+  align-self: flex-end;
+  padding: 10px 14px;
+  background: var(--traco);
+  color: var(--folha);
+  border-radius: var(--raio) var(--raio) 4px var(--raio);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.dica {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px dashed var(--traco-fino);
+  font: 400 0.875rem/1.4 var(--texto);
+  color: var(--traco-2);
+}
+
+.pensando {
+  display: flex;
+  gap: 6px;
+  padding: 16px 18px;
+}
+
+.pensando span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--traco);
+  animation: pisca 900ms ease-in-out infinite;
+}
+
+.pensando span:nth-child(2) { animation-delay: 150ms; }
+.pensando span:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes pisca {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+/* Respostas de toque: tiras de papel. */
+.papeis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 8px;
+  padding: 2px 0 4px;
+}
+
+.papel {
+  min-height: 44px;
+  padding: 6px 14px 7px;
+  background: var(--folha);
+  color: var(--traco);
+  border: var(--borda);
+  border-radius: var(--raio-p);
+  box-shadow: 0 3px 0 var(--sombra);
+  font: 400 1.1875rem/1.1 var(--mao);
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out;
+}
+
+/* Inclinação com `rotate`, que soma com o `transform` do toque e da entrada. */
+.papel:nth-child(3n + 1) { rotate: -0.8deg; }
+.papel:nth-child(3n + 2) { rotate: 0.5deg; }
+
+.papel:hover {
+  background: #fff;
+}
+
+.papel:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--sombra);
+}
+
+.ocupado .papel,
+.ocupado .trocar {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.linha-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 10px;
+}
+
+/* ------------------------------------------------------------ cartões */
+
+.mesa {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px 0 4px;
+}
+
+.cartoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+
+.cartao {
+  position: relative;
+  padding: 16px 18px 6px;
+  background: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio-g);
+  box-shadow: 0 5px 0 var(--sombra);
+  animation: assenta var(--assenta) both;
+}
+
+.cartoes > li:nth-child(2) .cartao { rotate: 0.35deg; }
+.cartoes > li:nth-child(3) .cartao { rotate: -0.3deg; }
+
+.cartao-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ordem {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: var(--borda);
+  border-radius: 50%;
+  font: 400 1.25rem/1 var(--mao);
+  padding-top: 1px;
+}
+
+/* Rótulo: etiqueta de papel colada torta. */
+.etiqueta {
+  display: inline-block;
+  padding: 3px 10px 4px;
+  border: var(--borda);
+  border-radius: 6px;
+  background: var(--papel);
+  font: 400 1rem/1.1 var(--mao);
+  rotate: 2deg;
+  white-space: nowrap;
+}
+
+.etiqueta-da-casa {
+  background: var(--traco);
+  color: var(--folha);
+}
+
+.etiqueta-patrocinado {
+  border-style: dashed;
+  background: transparent;
+}
+
+.cartao-nome {
+  font: 400 2rem/1.02 var(--mao);
+  letter-spacing: 0.005em;
+  overflow-wrap: anywhere;
+}
+
+.cartao-nome:focus {
+  outline: none;
+}
+
+.cartao-nome:focus-visible {
+  outline: 3px solid var(--traco);
+}
+
+.cartao-meta {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.cartao-resumo {
+  margin-top: 8px;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--traco-2);
+}
+
+.cartao-nota {
+  margin: -2px 0 12px;
+  padding: 8px 10px;
+  border: 2px dashed var(--traco-fino);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: var(--traco-2);
+}
+
+.motivos {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 0.9375rem;
+}
+
+.motivos li {
+  position: relative;
+  padding-left: 20px;
+}
+
+/* Um risco curto à mão, em vez de marcador. */
+.motivos li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.72em;
+  width: 10px;
+  border-top: 2px solid var(--traco);
+  transform: rotate(-8deg);
+}
+
+.porque {
+  margin-top: 14px;
+  padding: 10px 12px 11px;
+  background: var(--papel);
+  border-radius: 12px;
+  font: 400 1.1875rem/1.25 var(--mao);
+  color: var(--traco-2);
+}
+
+.porque-quem {
+  display: block;
+  margin-bottom: 2px;
+  font: 600 0.75rem/1.2 var(--texto);
+  letter-spacing: 0.02em;
+  color: var(--traco-2);
+}
+
+.depois {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 2px dashed var(--traco-fino);
+  font-size: 0.9375rem;
+}
+
+.depois-rotulo {
+  font: 400 1.0625rem var(--mao);
+}
+
+.cartao-pe {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.trocar {
+  min-height: 44px;
+  padding: 0 2px;
+  background: none;
+  border: 0;
+  font: 400 1.1875rem var(--mao);
+  color: var(--traco);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.legenda {
+  display: grid;
+  gap: 4px;
+  padding: 0 4px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--traco-2);
+}
+
+.legenda strong {
+  font-weight: 600;
+  color: var(--traco);
+}
+
+/* ------------------------------------------------------------ botões */
+
+/* Ação: o único laranja da tela. Texto grande (24 px) para o contraste AA de texto grande. */
+.acao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 6px 20px 8px;
+  background: var(--acao);
+  color: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio);
+  box-shadow: 0 4px 0 var(--sombra);
+  font: 400 1.5rem/1.1 var(--mao);
+  text-align: center;
+  text-decoration: none;
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out, background-color 150ms ease-out;
+}
+
+.acao:hover {
+  background: var(--acao-funda);
+}
+
+.acao:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--sombra);
+}
+
+.acao-pequena {
+  width: auto;
+  min-height: 48px;
+  flex: none;
+}
+
+.secundario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 6px 18px 8px;
+  background: var(--folha);
+  color: var(--traco);
+  border: var(--borda);
+  border-radius: var(--raio-p);
+  box-shadow: 0 3px 0 var(--sombra);
+  font: 400 1.3125rem/1.1 var(--mao);
+  text-decoration: none;
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.secundario:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--sombra);
+}
+
+.secundario-cheio {
+  background: var(--traco);
+  color: var(--folha);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: 400 1.125rem var(--mao);
+  color: var(--traco);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* ------------------------------------------------------------ mandar */
+
+.mini-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  font-family: var(--texto);
+}
+
+.mini-form input,
+.envio-link,
+.nome-bloco input {
+  min-width: 0;
+  flex: 1;
+  min-height: 48px;
+  padding: 0 14px;
+  background: #fff;
+  border: var(--borda);
+  border-radius: var(--raio-p);
+  font: 400 1rem var(--texto);
+}
+
+.envio {
+  display: grid;
+  gap: 8px;
+  padding: 16px 16px 10px;
+  background: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio-g);
+  box-shadow: 0 5px 0 var(--sombra);
+}
+
+.envio-rotulo {
+  font: 600 0.75rem/1.2 var(--texto);
+  letter-spacing: 0.02em;
+  color: var(--traco-2);
+}
+
+.envio-msg {
+  margin-bottom: 6px;
+  padding: 12px 14px;
+  background: var(--papel);
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.envio-link {
+  width: 100%;
+  background: var(--papel);
+  font-size: 0.9375rem;
+}
+
+.envio-botoes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.envio .link {
+  justify-self: center;
+}
+
+/* ------------------------------------------------------------ campo fixo */
+
+.campo {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--papel);
+  border-top: 2px solid var(--traco);
+}
+
+.campo-dentro {
+  display: flex;
+  gap: 8px;
+  max-width: 448px;
+  margin: 0 auto;
+}
+
+.campo input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  background: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio-p);
+  font-size: 1rem; /* 16 px: o iOS não dá zoom no foco */
+}
+
+.campo input::placeholder,
+.mini-form input::placeholder,
+.nome-bloco input::placeholder {
+  color: var(--traco-2);
+  opacity: 0.85;
+}
+
+.enviar {
+  flex: none;
+  min-width: 76px;
+  min-height: 48px;
+  padding: 0 14px 2px;
+  background: var(--traco);
+  color: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio-p);
+  font: 400 1.25rem var(--mao);
+}
+
+/* ------------------------------------------------------------ plano */
+
+.tela-plano {
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+}
+
+.topo-plano {
+  padding-bottom: 12px;
+}
+
+.carregando {
+  padding: 40px 0;
+  font: 400 1.375rem var(--mao);
+  text-align: center;
+}
+
+.abertura-plano {
+  padding: 16px 0 20px;
+}
+
+.titulo-plano {
+  font: 400 2rem/1.08 var(--mao);
+  text-wrap: balance;
+}
+
+.sub-plano {
+  margin-top: 10px;
+  font-size: 0.9375rem;
+  color: var(--traco-2);
+}
+
+.nome-bloco {
+  display: grid;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 12px 14px 14px;
+  background: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio);
+  box-shadow: 0 3px 0 var(--sombra);
+}
+
+.nome-bloco label {
+  font: 400 1.1875rem/1 var(--mao);
+}
+
+.nome-aviso:empty {
+  display: none;
+}
+
+.nome-aviso {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tela-plano .cartoes {
+  margin-bottom: 24px;
+}
+
+.cartao-meu {
+  box-shadow: 0 5px 0 var(--sombra), inset 0 0 0 2px var(--traco);
+}
+
+.votacao {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 12px;
+}
+
+.votar {
+  min-height: 52px;
+}
+
+.votar-meu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  background: var(--traco);
+  color: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio);
+  font: 400 1.5rem/1.1 var(--mao);
+  cursor: default;
+}
+
+.votantes {
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.fechar-bloco {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 14px 16px 16px;
+  border: 2px dashed var(--traco-fino);
+  border-radius: var(--raio);
+}
+
+.fechar-dica {
+  font-size: 0.9375rem;
+}
+
+.fechar-bloco .linha-botoes {
+  margin-top: 0;
+}
+
+.rodape {
+  margin-top: 20px;
+  font-size: 0.875rem;
+  color: var(--traco-2);
+}
+
+.status {
+  min-height: 1.5em;
+  margin-top: 16px;
+  font-size: 0.8125rem;
+  color: var(--traco-2);
+  text-align: center;
+}
+
+.estado {
+  display: grid;
+  gap: 14px;
+  padding: 32px 0;
+}
+
+.estado p {
+  font-size: 1rem;
+}
+
+.nota {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: var(--traco-2);
+}
+
+.tela-plano > .app > main > .secundario {
+  margin-top: 20px;
+}
+
+/* Bilhete: o programa fechado, com canhoto picotado. */
+.bilhete {
+  position: relative;
+  margin: 4px 0 20px;
+  background: var(--folha);
+  border: var(--borda);
+  border-radius: var(--raio-g);
+  box-shadow: 0 6px 0 var(--sombra);
+  rotate: -0.6deg;
+  animation: assenta var(--assenta) both;
+}
+
+.bilhete-corpo {
+  padding: 20px 20px 16px;
+}
+
+.carimbo {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 2px 10px 3px;
+  border: var(--borda);
+  border-radius: 8px;
+  font: 400 1.125rem/1.1 var(--mao);
+  letter-spacing: 0.03em;
+  rotate: -4deg;
+}
+
+.bilhete-nome {
+  font: 400 2.375rem/1 var(--mao);
+  overflow-wrap: anywhere;
+}
+
+.bilhete-resumo {
+  margin-top: 8px;
+  font-size: 0.9375rem;
+  color: var(--traco-2);
+}
+
+.bilhete-dados {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  align-items: baseline;
+  margin: 16px 0 0;
+}
+
+.bilhete-dados dt {
+  font: 600 0.75rem/1.2 var(--texto);
+  letter-spacing: 0.02em;
+  color: var(--traco-2);
+}
+
+.bilhete-dados dd {
+  margin: 0;
+  font: 400 1.3125rem/1.2 var(--mao);
+}
+
+.bilhete-canhoto {
+  position: relative;
+  padding: 14px 20px 18px;
+  border-top: 2px dashed var(--traco);
+}
+
+.bilhete-canhoto .bilhete-dados {
+  margin-top: 0;
+}
+
+/* Os dois recortes do picote. */
+.bilhete-canhoto::before,
+.bilhete-canhoto::after {
+  content: "";
+  position: absolute;
+  top: -13px;
+  width: 24px;
+  height: 24px;
+  background: var(--papel);
+  border: var(--borda);
+  border-radius: 50%;
+}
+
+.bilhete-canhoto::before {
+  left: -13px;
+  clip-path: inset(0 0 0 50%);
+}
+
+.bilhete-canhoto::after {
+  right: -13px;
+  clip-path: inset(0 50% 0 0);
+}
+
+.bilhete-por {
+  margin-top: 10px;
+  font-size: 0.8125rem;
+  color: var(--traco-2);
+}
+
+/* ------------------------------------------------------------ telas largas */
+
+@media (min-width: 720px) {
+  .topo {
+    padding-top: 40px;
+  }
+
+  .conversa {
+    padding-top: 20px;
+  }
+
+  .tela-plano .abertura-plano {
+    padding-top: 28px;
+  }
+}
+
+/* ------------------------------------------------------------ movimento */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

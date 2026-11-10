@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finde, grupo primeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#fff3df; --folha:#fff9ed; --tinta:#203f77; --soft:#4b5f8d;
+  --acao:#c77222; --acao-fill:#b55e18; --sombra:rgba(112,90,59,.15);
+  --hand:"Patrick Hand","Chalkboard SE","Comic Neue",cursive;
+  --sans:-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--papel);color:var(--tinta);font-family:var(--sans);font-size:16px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:3px solid var(--tinta);outline-offset:3px}
+.avaliar{border-bottom:1.5px dashed var(--soft);padding:6px 16px;font-size:12px;color:var(--soft);display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.avaliar select{background:var(--folha);border:1.5px solid var(--soft);border-radius:10px;min-height:44px;padding:0 10px;font-size:13px;max-width:70vw}
+.col{max-width:480px;margin:0 auto;padding:0 16px 56px}
+.top{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0 6px}
+.logo{font-family:var(--hand);font-size:30px;line-height:1;letter-spacing:.5px}
+.passo{font-size:12px;color:var(--soft)}
+h1,h2,h3,.hand{font-family:var(--hand);font-weight:400}
+h1{font-size:36px;line-height:1.08;margin:10px 0 8px}
+h2{font-size:26px;line-height:1.15;margin:0 0 6px}
+h3{font-size:25px;line-height:1.15;margin:0}
+p{margin:0 0 12px}
+.lead{font-size:17px;max-width:38ch}
+.eyebrow{font-size:12.5px;color:var(--soft);margin:18px 0 0;letter-spacing:.2px}
+.soft{color:var(--soft)}
+.small{font-size:13.5px}
+.pg{animation:assenta .22s ease-out both}
+@keyframes assenta{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.folha{background:var(--folha);border:2px solid var(--tinta);border-radius:var(--r);box-shadow:0 4px 0 var(--sombra);padding:16px}
+.rot-a{transform:rotate(-.5deg)}.rot-b{transform:rotate(.6deg)}.rot-c{transform:rotate(-.3deg)}
+fieldset{border:0;padding:0;margin:22px 0 0;min-width:0}
+legend{font-family:var(--hand);font-size:23px;padding:0;margin-bottom:8px;line-height:1.1}
+.hint{font-size:13.5px;color:var(--soft);margin:6px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips.g2{display:grid;grid-template-columns:1fr 1fr}
+.chip{position:relative;display:block}
+.chip input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.chip span{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:8px 14px;border:2px solid var(--tinta);border-radius:14px;background:var(--folha);box-shadow:0 3px 0 var(--sombra);font-size:15px;transition:transform .15s,background .15s}
+.chip input:checked+span{background:var(--tinta);color:var(--folha)}
+.chip input:focus-visible+span{outline:3px solid var(--tinta);outline-offset:3px}
+.chip input:active+span{transform:translateY(2px)}
+.chips.big .chip span{min-height:56px;font-family:var(--hand);font-size:22px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 20px;border:2px solid var(--tinta);border-radius:14px;background:var(--acao-fill);color:#fffdf6;font-weight:600;font-size:16px;cursor:pointer;box-shadow:0 4px 0 var(--tinta);transition:transform .15s,box-shadow .15s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tinta)}
+.btn.block{display:flex;width:100%}
+.btn.sec{background:var(--folha);color:var(--tinta);box-shadow:0 3px 0 var(--sombra)}
+.btn.sec:active{box-shadow:0 0 0 var(--sombra)}
+.btn.min{min-height:44px;padding:8px 14px;font-size:14.5px}
+.btn[aria-disabled="true"]{background:var(--papel);color:var(--soft);border-style:dashed;box-shadow:none;cursor:default}
+.btn.on{background:var(--tinta);color:var(--folha);box-shadow:0 4px 0 var(--sombra)}
+.link{background:none;border:0;padding:10px 4px;min-height:44px;color:var(--tinta);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:14.5px}
+input[type=text]{width:100%;min-height:50px;border:2px solid var(--tinta);border-radius:14px;background:var(--folha);padding:8px 14px;font-size:18px;box-shadow:inset 0 2px 0 var(--sombra)}
+label.f{display:block;font-family:var(--hand);font-size:23px;margin:0 0 8px}
+.err{color:#8a2c0d;font-size:14px;margin:8px 0 0;min-height:20px}
+.stack>*+*{margin-top:12px}
+.linkbox{display:flex;align-items:center;gap:8px;border:2px dashed var(--tinta);border-radius:14px;padding:6px 6px 6px 14px;background:var(--folha);font-size:15px;word-break:break-all}
+.linkbox span{flex:1}
+.msg{white-space:pre-line;font-size:15px;border-left:3px solid var(--tinta);padding-left:12px;margin:0}
+.mini{border:2px solid var(--tinta);border-radius:14px;background:var(--papel);padding:12px;font-size:14px;transform:rotate(.6deg)}
+.mini b{font-family:var(--hand);font-weight:400;font-size:20px;display:block;margin-bottom:4px}
+.ghostbar{display:flex;gap:6px;margin-top:8px}
+.ghostbar i{display:block;height:20px;border:1.5px solid var(--tinta);border-radius:10px;flex:1;background:var(--folha)}
+/* mesa */
+.mesahead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.mesa{border:2px solid var(--tinta);border-radius:20px;padding:12px;background:var(--folha);box-shadow:0 4px 0 var(--sombra);display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seat{border:2px solid var(--tinta);border-radius:14px;background:var(--papel);padding:10px;min-height:96px;display:flex;flex-direction:column;gap:6px;box-shadow:0 3px 0 var(--sombra)}
+.seat.in{animation:senta .35s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes senta{from{opacity:0;transform:translateY(-18px) rotate(-6deg)}to{opacity:1}}
+.seat:nth-child(odd){transform:rotate(-.8deg)}.seat:nth-child(even){transform:rotate(.7deg)}
+.seat.vazia{border-style:dashed;background:transparent;box-shadow:none;color:var(--soft);justify-content:center;align-items:center;text-align:center;font-size:13px}
+.who{display:flex;align-items:center;gap:8px}
+.av{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:2px solid var(--tinta);background:var(--folha);font-family:var(--hand);font-size:19px;line-height:1;flex:none}
+.av.me{background:var(--tinta);color:var(--folha)}
+.av.s{width:26px;height:26px;font-size:15px;border-width:1.5px}
+.nm{font-family:var(--hand);font-size:22px;line-height:1.05;overflow-wrap:anywhere}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tags span{font-size:11.5px;border:1.5px solid var(--tinta);border-radius:8px;padding:1px 6px;background:var(--folha);line-height:1.5}
+.voz{border:2px solid var(--tinta);border-radius:18px 18px 18px 4px;background:var(--folha);padding:12px 14px;box-shadow:0 4px 0 var(--sombra)}
+.voz .now{font-family:var(--hand);font-size:23px;line-height:1.2;margin:0}
+.voz .old{font-size:13px;color:var(--soft);margin:6px 0 0}
+.voz .old p{margin:0 0 2px}
+.quem{font-size:12px;color:var(--soft);margin:0 0 4px}
+.funil{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;margin:0}
+.funil b{font-family:var(--hand);font-weight:400;font-size:21px;margin-left:4px}
+.funil .ar{color:var(--soft)}
+.funil .pt{border:1.5px solid var(--tinta);border-radius:10px;padding:2px 9px;background:var(--folha)}
+.mudou{border:2px dashed var(--tinta);border-radius:14px;padding:12px 14px;background:var(--papel);font-size:14.5px}
+.mudou h3{font-size:21px;margin-bottom:4px}
+.mudou ul{margin:4px 0 0;padding-left:18px}
+.opt{border:2px solid var(--tinta);border-radius:18px;background:var(--folha);padding:16px;box-shadow:0 5px 0 var(--sombra);display:block}
+.opt.in{animation:senta .4s ease-out both}
+.opt:nth-child(1){transform:rotate(-.4deg)}.opt:nth-child(2){transform:rotate(.5deg)}.opt:nth-child(3){transform:rotate(-.25deg)}
+.opt.leva{border-width:3px}
+.sel{display:inline-block;font-size:12px;border:1.5px solid var(--tinta);border-radius:8px;padding:2px 8px;margin-bottom:8px;background:var(--papel)}
+.sel.casa{background:var(--tinta);color:var(--folha)}
+.sel.pat{border-style:dashed}
+.meta{font-size:13.5px;color:var(--soft);margin:4px 0 8px}
+.cur{font-family:var(--hand);font-size:19px;line-height:1.25;margin:0 0 10px}
+.pq{list-style:none;margin:0 0 10px;padding:0;border-top:1.5px dashed var(--soft);padding-top:8px}
+.pq li{position:relative;padding-left:20px;margin:0 0 5px;font-size:15px}
+.pq li:before{content:"";position:absolute;left:3px;top:.55em;width:8px;height:8px;border:2px solid var(--tinta);border-radius:2px;transform:rotate(45deg)}
+.depois{font-size:13.5px;margin:0 0 12px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.votantes{display:flex;gap:4px;min-height:26px}
+.regra{font-size:13.5px;color:var(--soft)}
+.placeholder{border:2px dashed var(--tinta);border-radius:16px;padding:14px;color:var(--soft);font-size:14px}
+.grande{font-family:var(--hand);font-size:56px;line-height:1;margin:0}
+/* bilhete */
+.bilhete{position:relative;border:2px solid var(--tinta);border-radius:18px;background:var(--folha);box-shadow:0 5px 0 var(--sombra);overflow:hidden;transform:rotate(-.6deg)}
+.bilhete .alto{padding:20px 18px 18px}
+.bilhete .baixo{padding:16px 18px 20px;border-top:2.5px dashed var(--tinta);position:relative}
+.bilhete .baixo:before,.bilhete .baixo:after{content:"";position:absolute;top:-14px;width:24px;height:24px;border-radius:50%;background:var(--papel);border:2px solid var(--tinta)}
+.bilhete .baixo:before{left:-14px}.bilhete .baixo:after{right:-14px}
+.bilhete .big{font-family:var(--hand);font-size:34px;line-height:1.05;margin:2px 0 4px}
+.lista-vai{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.vai{display:flex;align-items:center;gap:6px;font-family:var(--hand);font-size:21px}
+.outro{opacity:.9}
+.selo-fecha{display:inline-block;transform:rotate(-3deg);border:2px solid var(--tinta);border-radius:8px;padding:0 10px;font-family:var(--hand);font-size:20px;margin-bottom:6px}
+
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.seat,.opt,.rot-a,.rot-b,.rot-c,.mini,.bilhete{transform:none!important}}
+</style>
+</head>
+<body>
+<div class="avaliar"><label for="pular">Para quem avalia: pular para</label>
+<select id="pular">
+<option value="criar">1. Começar (o quando)</option>
+<option value="link">2. Mandar o link</option>
+<option value="form">3. Sua parte</option>
+<option value="solo">4. Mesa, você sozinho</option>
+<option value="dois">5. Mesa, falta uma pessoa</option>
+<option value="opcoes">6. Mesa, três opções e voto</option>
+<option value="conflito">7. Mesa, restrições que não cabem</option>
+<option value="bilhete">8. Bilhete, programa fechado</option>
+</select></div>
+<main class="col">
+<header class="top"><span class="logo">finde</span><span class="passo" id="passo"></span></header>
+<div id="view"></div>
+</main>
+<script>
+const D={"exp": [{"id": "bar-astor", "nome": "Bar Astor", "tipo": "bar", "regiao": "pinheiros-vila-madalena", "bairro": "Vila Madalena", "preco": 2, "momentos": ["noite"], "grupo": {"min": 2, "max": 8}, "climas": ["conversar", "agitar", "comemorar"], "comida": "tem", "resumo": "Bar tradicional da Vila Madalena, com mesas na calçada e salão.", "porque": "Casa que já virou ponto de encontro: quem chega primeiro guarda lugar e o resto vai aparecendo.", "combina": ["beco-do-batman", "bares-rua-aspicuelta"], "selo": "editorial", "conferido": false}, {"id": "bar-filial", "nome": "Bar Filial", "tipo": "bar", "regiao": "pinheiros-vila-madalena", "bairro": "Vila Madalena", "preco": 2, "momentos": ["noite"], "grupo": {"min": 2, "max": 8}, "climas": ["conversar", "relaxar"], "comida": "tem", "resumo": "Bar de boteco e petiscos na Vila Madalena, com mesas na rua.", "porque": "Barulho moderado e mesa na calçada, dá para conversar sem levantar a voz.", "combina": ["rua-fradique-coutinho", "praca-por-do-sol"], "selo": "editorial", "conferido": false}, {"id": "o-do-borogodo", "nome": "Ó do Borogodó", "tipo": "musica", "regiao": "pinheiros-vila-madalena", "bairro": "Vila Madalena", "preco": 1, "momentos": ["noite"], "grupo": {"min": 2, "max": 10}, "climas": ["agitar", "comemorar", "descobrir"], "comida": "tem", "resumo": "Casa de samba e choro na Vila Madalena, com música ao vivo.", "porque": "Samba ao vivo num lugar pequeno, onde todo mundo acaba cantando junto, mesmo quem não sabe a letra.", "combina": ["bares-rua-aspicuelta", "grazie-a-dio"], "selo": "editorial", "conferido": false}, {"id": "sinuca-vila-madalena", "nome": "Sinuca nos bares da Vila Madalena", "tipo": "jogo", "regiao": "pinheiros-vila-madalena", "bairro": "Vila Madalena", "preco": 1, "momentos": ["tarde", "noite"], "grupo": {"min": 2, "max": 6}, "climas": ["agitar", "conversar"], "comida": "tem", "resumo": "Bares da Vila Madalena que têm mesa de sinuca; o programa é escolher um e jogar em duplas.", "porque": "Quem joga enquanto espera a vez já está no programa, e quem não joga assiste e come petisco.", "combina": ["bar-astor", "bares-rua-aspicuelta"], "selo": "editorial", "conferido": false}, {"id": "rua-fradique-coutinho", "nome": "Rua Fradique Coutinho", "tipo": "passeio", "regiao": "pinheiros-vila-madalena", "bairro": "Vila Madalena", "preco": 0, "momentos": ["tarde", "noite"], "grupo": {"min": 1, "max": 8}, "climas": ["conversar", "descobrir"], "comida": "tem", "resumo": "Rua comprida da Vila Madalena com bares, cafés, livraria e lojas pequenas.", "porque": "Dá para ir de loja em loja até bater a fome e escolher o bar mais próximo sem combinar nada.", "combina": ["bar-filial", "livraria-da-vila-fradique"], "selo": "editorial", "conferido": false}, {"id": "sesc-pompeia", "nome": "Sesc Pompeia", "tipo": "cultura", "regiao": "pinheiros-vila-madalena", "bairro": "Pompeia", "preco": 0, "momentos": ["tarde", "noite"], "grupo": {"min": 1, "max": 12}, "climas": ["descobrir", "agitar", "relaxar"], "comida": "tem", "resumo": "Centro de cultura e lazer num antigo galpão de fábrica, projeto de Lina Bo Bardi, com exposições, shows e deck.", "porque": "O prédio já vale a ida; sobra tempo para sentar no deque e decidir o resto da noite.", "combina": ["galerias-vila-madalena", "rua-harmonia-wisard"], "selo": "editorial", "conferido": false}, {"id": "bar-leo", "nome": "Bar Léo", "tipo": "bar", "regiao": "centro", "bairro": "Centro", "preco": 1, "momentos": ["tarde", "noite"], "grupo": {"min": 2, "max": 10}, "climas": ["conversar", "relaxar"], "comida": "tem", "resumo": "Bar de chope e petiscos no centro, aberto há muitas décadas.", "porque": "Chope gelado, mesa de boteco antigo e gente de todas as idades, sem pose nenhuma.", "combina": ["pinacoteca-luz", "dona-onca"], "selo": "editorial", "conferido": false}, {"id": "casa-de-francisca", "nome": "Casa de Francisca", "tipo": "musica", "regiao": "centro", "bairro": "Centro", "preco": 2, "momentos": ["noite"], "grupo": {"min": 2, "max": 8}, "climas": ["descobrir", "conversar", "comemorar"], "comida": "tem", "resumo": "Casa de música ao vivo em casarão no centro, com bar e palco pequeno.", "porque": "Palco perto da mesa, de modo que o grupo ouve bem sem precisar gritar para conversar.", "combina": ["dona-onca", "bar-brahma"], "selo": "editorial", "conferido": false}, {"id": "karaoke-liberdade", "nome": "Karaokê na Liberdade", "tipo": "jogo", "regiao": "centro", "bairro": "Liberdade", "preco": 1, "momentos": ["tarde", "noite"], "grupo": {"min": 2, "max": 10}, "climas": ["agitar", "comemorar", "conversar"], "comida": "tem", "resumo": "Casas de karaokê em cabines privativas na Liberdade, em que o grupo reserva uma sala.", "porque": "Sala só do grupo, ninguém assiste, e quem tem vergonha acaba cantando no refrão.", "combina": ["liberdade-passeio", "cine-joia"], "selo": "editorial", "conferido": false}, {"id": "dona-onca", "nome": "Bar da Dona Onça", "tipo": "comida", "regiao": "centro", "bairro": "República", "preco": 2, "momentos": ["tarde", "noite"], "grupo": {"min": 2, "max": 8}, "climas": ["conversar", "comemorar"], "comida": "centro", "resumo": "Bar e restaurante no térreo do Edifício Copan, com cozinha brasileira e mesas dentro e fora.", "porque": "Fica dentro do Copan, então já vale pelo prédio, e a mesa grande se arruma com facilidade.", "combina": ["bar-brahma", "galeria-do-rock"], "selo": "editorial", "conferido": false}, {"id": "anhangabau-viaduto-do-cha", "nome": "Vale do Anhangabaú e Viaduto do Chá", "tipo": "passeio", "regiao": "centro", "bairro": "Centro", "preco": 0, "momentos": ["tarde", "noite"], "grupo": {"min": 1, "max": 20}, "climas": ["descobrir", "conversar"], "comida": "nao", "resumo": "Passeio a pé pelo Vale do Anhangabaú e o Viaduto do Chá, com vista dos prédios do centro.", "porque": "Praça aberta e plana, boa para caminhar e conversar com gente no entorno sem ninguém se apertar.", "combina": ["farol-santander", "theatro-municipal"], "selo": "editorial", "conferido": false}, {"id": "cine-joia", "nome": "Cine Joia", "tipo": "musica", "regiao": "centro", "bairro": "Liberdade", "preco": 2, "momentos": ["noite"], "grupo": {"min": 1, "max": 20}, "climas": ["agitar", "comemorar"], "comida": "tem", "resumo": "Casa de shows num antigo cinema da Liberdade, com pista e palco.", "porque": "Show em pé, com bar no fundo; para grupo que quer sair dançando e não precisa de mesa.", "combina": ["karaoke-liberdade", "liberdade-passeio"], "selo": "editorial", "conferido": false}, {"id": "sinuca-augusta", "nome": "Sinuca e pebolim na Rua Augusta", "tipo": "jogo", "regiao": "paulista-ibirapuera", "bairro": "Consolação", "preco": 1, "momentos": ["noite"], "grupo": {"min": 2, "max": 8}, "climas": ["agitar", "conversar", "comemorar"], "comida": "tem", "resumo": "Bares da Rua Augusta com sinuca, pebolim ou fliperama, em que o programa é escolher o bar e jogar.", "porque": "Jogo em dupla enquanto o resto da mesa torce, e o bar já é a próxima parada sem sair de lá.", "combina": ["pizzaria-camelo", "bar-veloso"], "selo": "editorial", "conferido": false}, {"id": "bar-veloso", "nome": "Bar Veloso", "tipo": "bar", "regiao": "paulista-ibirapuera", "bairro": "Vila Mariana", "preco": 2, "momentos": ["noite"], "grupo": {"min": 2, "max": 10}, "climas": ["agitar", "conversar", "comemorar"], "comida": "tem", "resumo": "Boteco tradicional da Vila Mariana, com salão cheio e mesas na calçada.", "porque": "Boteco de bairro que já ficou famoso; vá em turma, peça petisco para a mesa e aceite a espera.", "combina": ["parque-ibirapuera", "tom-jazz"], "selo": "editorial", "conferido": false}, {"id": "tom-jazz", "nome": "Tom Jazz", "tipo": "musica", "regiao": "paulista-ibirapuera", "bairro": "Consolação", "preco": 2, "momentos": ["noite"], "grupo": {"min": 2, "max": 8}, "climas": ["conversar", "comemorar", "descobrir"], "comida": "tem", "resumo": "Casa de jazz e música instrumental na Avenida Angélica, com mesas e jantar.", "porque": "Música ao vivo sem berro, de modo que dá para ouvir e ainda comentar a música com o vizinho de mesa.", "combina": ["sinuca-augusta", "bar-veloso"], "selo": "editorial", "conferido": false}, {"id": "pizzaria-camelo", "nome": "Pizzaria Camelo", "tipo": "comida", "regiao": "paulista-ibirapuera", "bairro": "Jardins", "preco": 2, "momentos": ["noite"], "grupo": {"min": 2, "max": 10}, "climas": ["conversar", "comemorar", "agitar"], "comida": "centro", "resumo": "Pizzaria clássica nos Jardins, de fila longa nas noites de fim de semana.", "porque": "Pizza que o grupo já conhece de nome; cheguem cedo e esperem a mesa com cerveja na calçada.", "combina": ["sinuca-augusta", "paulista-aberta"], "selo": "editorial", "conferido": false}, {"id": "mirante-9-de-julho", "nome": "Mirante 9 de Julho", "tipo": "passeio", "regiao": "paulista-ibirapuera", "bairro": "Bela Vista", "preco": 0, "momentos": ["tarde", "noite"], "grupo": {"min": 1, "max": 12}, "climas": ["relaxar", "descobrir", "conversar"], "comida": "nao", "resumo": "Mirante público no alto do Viaduto Nove de Julho, com vista da cidade.", "porque": "Mirante sem ingresso, que serve de fim de tarde antes de uma pizza no Bixiga a poucos passos.", "combina": ["cantina-speranza", "estadao-bar-restaurante"], "selo": "editorial", "conferido": false}, {"id": "sesc-avenida-paulista", "nome": "Sesc Avenida Paulista", "tipo": "cultura", "regiao": "paulista-ibirapuera", "bairro": "Paulista", "preco": 0, "momentos": ["tarde", "noite"], "grupo": {"min": 1, "max": 12}, "climas": ["descobrir", "relaxar", "conversar"], "comida": "tem", "resumo": "Unidade do Sesc com exposições, teatro, oficinas e um terraço com vista, na Paulista.", "porque": "Vista do terraço, exposição de graça e um lugar para sentar entre o MASP e o jantar.", "combina": ["masp", "casa-das-rosas"], "selo": "editorial", "conferido": false}, {"id": "bixiga-passeio", "nome": "Bixiga a pé", "tipo": "passeio", "regiao": "paulista-ibirapuera", "bairro": "Bixiga", "preco": 0, "momentos": ["tarde", "noite"], "grupo": {"min": 1, "max": 12}, "climas": ["descobrir", "conversar", "agitar"], "comida": "tem", "resumo": "Bairro de tradição italiana e afro-brasileira, com ruas, cantinas, escolas de samba e teatros.", "porque": "Cantina, samba e teatro numa só região, para quem prefere trocar de cenário a ficar numa mesa só.", "combina": ["cantina-speranza", "mirante-9-de-julho"], "selo": "editorial", "conferido": false}, {"id": "restaurante-exemplo", "nome": "Restaurante Exemplo (parceiro fictício)", "tipo": "comida", "regiao": "paulista-ibirapuera", "bairro": "Jardins", "preco": 1, "momentos": ["noite"], "grupo": {"min": 2, "max": 10}, "climas": ["conversar", "agitar"], "comida": "tem", "resumo": "Lugar inventado para mostrar como o patrocínio aparece na lista; este restaurante não existe.", "porque": "Exemplo de como o selo de patrocinado aparece, sempre separado das escolhas da casa.", "combina": [], "selo": "patrocinado", "conferido": false}, {"id": "parque-ibirapuera", "nome": "Parque Ibirapuera", "tipo": "ar-livre", "regiao": "paulista-ibirapuera", "bairro": "Ibirapuera", "preco": 0, "momentos": ["manha", "tarde"], "grupo": {"min": 1, "max": 20}, "climas": ["relaxar", "conversar", "descobrir"], "comida": "nao", "resumo": "Maior parque urbano da cidade, com lago, marquise, museus e pistas, projeto de Niemeyer e Burle Marx.", "porque": "Dá para ir com cinco pessoas ou vinte e ainda achar sombra, e cada um segue o ritmo que quiser.", "combina": ["museu-afro-brasil", "auditorio-ibirapuera"], "selo": "editorial", "conferido": false}, {"id": "beco-do-batman", "nome": "Beco do Batman", "tipo": "passeio", "regiao": "pinheiros-vila-madalena", "bairro": "Vila Madalena", "preco": 0, "momentos": ["manha", "tarde"], "grupo": {"min": 1, "max": 20}, "climas": ["descobrir", "conversar"], "comida": "nao", "resumo": "Conjunto de becos e ruas da Vila Madalena cobertos de grafite e arte urbana, de acesso livre.", "porque": "Cabe o grupo inteiro, rende foto e conversa em uma hora, e os murais mudam o bastante para valer a repetição.", "combina": ["rua-harmonia-wisard", "bar-astor"], "selo": "editorial", "conferido": false}, {"id": "pinacoteca-luz", "nome": "Pinacoteca de São Paulo", "tipo": "cultura", "regiao": "centro", "bairro": "Luz", "preco": 1, "momentos": ["manha", "tarde"], "grupo": {"min": 1, "max": 8}, "climas": ["descobrir", "conversar"], "comida": "nao", "resumo": "Museu de arte brasileira em prédio histórico de tijolo aparente, ao lado do Parque da Luz.", "porque": "Duas horas bastam e o Parque da Luz fica na porta, para continuar a conversa ao ar livre.", "combina": ["parque-da-luz", "museu-de-arte-sacra"], "selo": "editorial", "conferido": false}, {"id": "masp", "nome": "MASP", "tipo": "cultura", "regiao": "paulista-ibirapuera", "bairro": "Paulista", "preco": 2, "momentos": ["manha", "tarde"], "grupo": {"min": 1, "max": 8}, "climas": ["descobrir", "conversar"], "comida": "nao", "resumo": "Museu de arte com acervo europeu e brasileiro, em prédio de Lina Bo Bardi na Avenida Paulista.", "porque": "Os quadros ficam sobre cavaletes de vidro, e olhar todo mundo ao redor da mesma tela rende conversa.", "combina": ["parque-trianon", "paulista-aberta"], "selo": "editorial", "conferido": false}, {"id": "mercado-municipal", "nome": "Mercado Municipal", "tipo": "feira", "regiao": "centro", "bairro": "Centro", "preco": 2, "momentos": ["manha", "tarde"], "grupo": {"min": 1, "max": 10}, "climas": ["conversar", "comemorar", "descobrir"], "comida": "tem", "resumo": "Mercado público de 1933, com bancas de comida, frutas e produtos importados.", "porque": "Cada um monta o seu prato numa banca diferente e dividem uma mesa no mezanino.", "combina": ["parque-da-aclimacao", "patio-do-colegio-se"], "selo": "editorial", "conferido": false}, {"id": "feira-do-bixiga", "nome": "Feira de antiguidades do Bixiga", "tipo": "feira", "regiao": "paulista-ibirapuera", "bairro": "Bixiga", "preco": 1, "momentos": ["manha", "tarde"], "grupo": {"min": 1, "max": 12}, "climas": ["descobrir", "conversar", "relaxar"], "comida": "tem", "resumo": "Feira de rua de antiguidades, artesanato e comida na Praça Dom Orione, no Bixiga.", "porque": "Passeio solto entre barracas de tudo, que acaba na cantina mais próxima sem plano nenhum.", "combina": ["cantina-speranza", "bixiga-passeio"], "selo": "editorial", "conferido": false}], "nomes": {"paulista-aberta": "Domingo na Paulista aberta", "bar-veloso": "Bar Veloso", "sinuca-augusta": "Sinuca e pebolim na Rua Augusta", "bar-filial": "Bar Filial", "bar-astor": "Bar Astor", "livraria-da-vila-fradique": "Livraria da Vila (Fradique Coutinho)", "theatro-municipal": "Theatro Municipal", "patio-do-colegio-se": "Pátio do Colégio e Praça da Sé", "parque-ibirapuera": "Parque Ibirapuera", "pizzaria-camelo": "Pizzaria Camelo", "mirante-9-de-julho": "Mirante 9 de Julho", "parque-trianon": "Parque Trianon", "casa-das-rosas": "Casa das Rosas", "dona-onca": "Bar da Dona Onça", "galeria-do-rock": "Galeria do Rock", "bixiga-passeio": "Bixiga a pé", "bar-brahma": "Bar Brahma", "beco-do-batman": "Beco do Batman", "rua-harmonia-wisard": "Rua Harmonia e Rua Wisard a pé", "rua-fradique-coutinho": "Rua Fradique Coutinho", "grazie-a-dio": "Grazie a Dio!", "cine-joia": "Cine Joia", "cantina-speranza": "Pizzaria Speranza", "tom-jazz": "Tom Jazz", "parque-da-aclimacao": "Parque da Aclimação", "karaoke-liberdade": "Karaokê na Liberdade", "liberdade-passeio": "Liberdade a pé", "museu-afro-brasil": "Museu Afro Brasil", "museu-de-arte-sacra": "Museu de Arte Sacra", "pinacoteca-luz": "Pinacoteca de São Paulo", "auditorio-ibirapuera": "Auditório Ibirapuera", "farol-santander": "Farol Santander", "galerias-vila-madalena": "Galerias e ateliês da Vila Madalena", "praca-por-do-sol": "Praça do Pôr do Sol", "masp": "MASP", "bares-rua-aspicuelta": "Bares da Rua Aspicuelta", "estadao-bar-restaurante": "Estadão", "parque-da-luz": "Parque da Luz"}};
+const EXP=D.exp, NOMES=D.nomes; EXP.forEach(e=>NOMES[e.id]=e.nome);
+const FILA=new Set(['cine-joia','casa-de-francisca','tom-jazz','sesc-pompeia','sesc-avenida-paulista','bixiga-passeio','dona-onca','pizzaria-camelo','masp','mercado-municipal','o-do-borogodo','bar-astor']);
+const BALADA=new Set(['o-do-borogodo','cine-joia','bar-brahma']);
+const QUANDO={'sex-noite':'sexta à noite','sab-dia':'sábado de dia','sab-noite':'sábado à noite','dom':'domingo'};
+const MOM={'sex-noite':['noite'],'sab-dia':['manha','tarde'],'sab-noite':['noite'],'dom':['manha','tarde']};
+const REGIOES={'pinheiros-vila-madalena':'Pinheiros e Vila Madalena','paulista-ibirapuera':'Paulista e Ibirapuera','centro':'Centro'};
+const REGCURTA={'pinheiros-vila-madalena':'Pinheiros','paulista-ibirapuera':'Paulista','centro':'Centro','qualquer':'qualquer lugar'};
+const RIDX={'pinheiros-vila-madalena':0,'paulista-ibirapuera':1,'centro':2};
+const TETO=['de graça','até R$ 50','até R$ 120','sem teto'];
+const FAIXA=['grátis','até R$ 50 por pessoa','R$ 50 a 120 por pessoa','acima de R$ 120 por pessoa'];
+const CLIMA={conversar:'conversa',agitar:'agito',descobrir:'algo novo',relaxar:'calma',comemorar:'comemoração'};
+const CLIMAV={conversar:'Conversar',agitar:'Agitar',descobrir:'Descobrir',relaxar:'Relaxar',comemorar:'Comemorar'};
+const TIPO={cultura:'cultura','ar-livre':'ar livre',comida:'comida',bar:'bar',musica:'música',feira:'feira',jogo:'jogo',passeio:'passeio'};
+const NAOS={comida:'sem comida',balada:'sem balada',fila:'sem fila'};
+const FR={
+ bia:{id:'bia',name:'Bia',art:'a Bia',de:'da Bia',teto:1,regiao:'pinheiros-vila-madalena',clima:'conversar',naos:[]},
+ leo:{id:'leo',name:'Léo',art:'o Léo',de:'do Léo',teto:2,regiao:'paulista-ibirapuera',clima:'agitar',naos:['fila']},
+ ju:{id:'ju',name:'Ju',art:'a Ju',de:'da Ju',teto:2,regiao:'qualquer',clima:'conversar',naos:['balada']}
+};
+const ENTRADAS=[{at:6000,id:'bia'},{at:11000,id:'ju'},{at:18000,id:'leo'}];
+const ATRASO_VOTO={bia:1800,ju:4200,leo:6500};
+const PRAZOS={'qui':'quinta, 20h','sex':'sexta, 12h'};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LINK='finde.exemplo/g/k7q2';
+
+/* ---------- motor ---------- */
+function falhas(e,people){
+  const out=[];
+  for(const p of people){
+    if(e.preco>p.teto) out.push({p,kind:'teto'});
+    if(p.regiao!=='qualquer' && Math.abs(RIDX[p.regiao]-RIDX[e.regiao])>1) out.push({p,kind:'regiao'});
+    for(const n of p.naos){
+      if(n==='comida'&&e.comida==='centro') out.push({p,kind:'comida'});
+      if(n==='balada'&&BALADA.has(e.id)) out.push({p,kind:'balada'});
+      if(n==='fila'&&FILA.has(e.id)) out.push({p,kind:'fila'});
+    }
+  }
+  return out;
+}
+function base(e,people){
+  return e.momentos.some(m=>MOM[S.quando].includes(m)) && e.grupo.max>=Math.max(people.length,3);
+}
+function elegiveis(people,skip){
+  return EXP.filter(e=>base(e,people)).filter(e=>falhas(e,people).filter(f=>!(skip&&skip.pid===f.p.id&&skip.kind===f.kind)).length===0);
+}
+function score(e,people){
+  let s=e.selo==='editorial'?.3:0;
+  for(const p of people){ if(e.climas.includes(p.clima)) s+=2; if(p.regiao===e.regiao) s+=1; }
+  return s;
+}
+function razoes(e,people){
+  const per={}; people.forEach(p=>per[p.id]=[]);
+  const baixo=people.reduce((a,p)=>p.teto<a.teto?p:a,people[0]);
+  if(baixo.teto<3) per[baixo.id].push(e.preco===0?`não pesa no bolso ${baixo.de}`:`cabe no teto ${baixo.de}`);
+  people.forEach(p=>{
+    if(p.regiao!=='qualquer'){ const d=Math.abs(RIDX[p.regiao]-RIDX[e.regiao]); per[p.id].push(d===0?`é no bairro ${p.de}`:`fica a uma corrida curta ${p.de}`); }
+    if(e.climas.includes(p.clima)) per[p.id].push(`${p.art} pediu ${CLIMA[p.clima]}`);
+    p.naos.forEach(n=>{
+      if(n==='balada') per[p.id].push(`sem balada, como ${p.art} pediu`);
+      if(n==='fila') per[p.id].push(`sem cara de fila, como ${p.art} pediu`);
+      if(n==='comida') per[p.id].push(`não gira em torno de comida, como ${p.art} pediu`);
+    });
+  });
+  const r=[]; const max=Math.max(...people.map(p=>per[p.id].length));
+  for(let k=0;k<max&&r.length<5;k++) people.forEach(p=>{ if(per[p.id][k]&&r.length<5) r.push(per[p.id][k]); });
+  return r.length?r:['cabe em todo mundo da mesa'];
+}
+function escolher(people){
+  const el=elegiveis(people);
+  const ed=el.filter(e=>e.selo==='editorial').map(e=>({e,s:score(e,people)})).sort((a,b)=>b.s-a.s||a.e.id.localeCompare(b.e.id));
+  const picks=[];
+  for(const c of ed){ if(picks.length<3 && !picks.some(p=>p.e.tipo===c.e.tipo)) picks.push(c); }
+  for(const c of ed){ if(picks.length<3 && !picks.includes(c)) picks.push(c); }
+  const sp=el.filter(e=>e.selo==='patrocinado').map(e=>({e,s:score(e,people)}))[0];
+  if(sp && picks.length===3 && sp.s>=picks[2].s-1) picks[2]=sp;
+  else if(sp && picks.length<3) picks.push(sp);
+  return {opts:picks.map((p,i)=>({e:p.e,casa:i===0&&p.e.selo!=='patrocinado',reasons:razoes(p.e,people)})),count:el.length};
+}
+function porque(f){
+  const p=f.p;
+  return {teto:`passa do teto ${p.de}`,regiao:`fica longe ${p.de}`,balada:`é de balada e ${p.art} pediu sem`,fila:`pode ter fila e ${p.art} pediu sem`,comida:`é comida como programa e ${p.art} pediu sem`}[f.kind];
+}
+function marcas(p){
+  const t=[TETO[p.teto],p.regiao==='qualquer'?'qualquer lugar':REGCURTA[p.regiao],CLIMAV[p.clima].toLowerCase()];
+  p.naos.forEach(n=>t.push(NAOS[n]));
+  return t;
+}
+function frase(p){
+  const n=p.naos.length?`, ${p.naos.map(x=>NAOS[x]).join(' e ')}`:'';
+  return `${TETO[p.teto]}, ${p.regiao==='qualquer'?'topa qualquer região':'sai de '+REGCURTA[p.regiao]}, quer ${CLIMA[p.clima]}${n}`;
+}
+
+/* ---------- estado ---------- */
+let S=null, tickerOn=false;
+function novo(){
+  return {screen:'criar',quando:'sab-noite',prazo:'qui',me:null,people:[],votes:{},closed:false,winner:null,
+    log:[],opts:[],count:0,hist:[],note:null,shown:new Set(),shownOpt:new Set(),t0:0,running:false,entrou:new Set(),userVotedAt:0,editing:false,
+    copiado:'',pending:null,vencedor:null};
+}
+S=novo();
+function meDefault(){return {id:'me',name:'Nina',art:'Nina',de:'de Nina',teto:2,regiao:'qualquer',clima:'conversar',naos:[]};}
+function nomeMe(p){p.art=p.name;p.de='de '+p.name;}
+function update(lead,newcomer){
+  const antes=S.opts.map(o=>o.e.id);
+  const r=escolher(S.people);
+  const depoisIds=r.opts.map(o=>o.e.id);
+  const primeira=antes.length===0;
+  S.opts=r.opts; S.count=r.count;
+  S.hist.push({label:newcomer?newcomer.name:'agora',n:S.people.length,count:r.count});
+  if(S.hist.length>6) S.hist.shift();
+  const dropped=[];
+  Object.keys(S.votes).forEach(pid=>{ if(!depoisIds.includes(S.votes[pid])){ const p=S.people.find(x=>x.id===pid); dropped.push(`${p?p.name:pid} tinha votado em ${NOMES[S.votes[pid]]}; o voto caiu, pode votar de novo`); delete S.votes[pid]; }});
+  if(S.people.length<3){ S.note=null; return; }
+  const out=[],inn=[];
+  if(!primeira){
+    antes.filter(id=>!depoisIds.includes(id)).forEach(id=>{
+      const e=EXP.find(x=>x.id===id); const f=falhas(e,S.people)[0];
+      const reg=newcomer&&newcomer.regiao!=='qualquer'&&newcomer.regiao!==e.regiao&&r.opts.some(o=>o.e.regiao===newcomer.regiao);
+      out.push(`${e.nome}: ${f?porque(f):reg?`${newcomer.art} sai de ${REGCURTA[newcomer.regiao]} e as opções de lá passaram na frente`:'ficou atrás de quem serve melhor'}`);
+    });
+    r.opts.filter(o=>!antes.includes(o.e.id)).forEach(o=>inn.push(`${o.e.nome}: ${o.reasons[0]}`));
+  }
+  S.note={lead,primeira,out,inn,dropped,semMudanca:!primeira&&!out.length&&!inn.length&&!dropped.length};
+}
+function logar(t){S.log.unshift(t); if(S.log.length>6)S.log.pop();}
+function entrar(id){
+  if(S.entrou.has(id))return; S.entrou.add(id);
+  const p={...FR[id],naos:[...FR[id].naos]};
+  S.people.push(p);
+  logar(`${p.name} entrou: ${frase(p)}.`);
+  update(`${p.art[0].toUpperCase()+p.art.slice(1)} entrou na mesa.`,p);
+}
+function votar(pid,oid){ if(S.closed)return; if(S.votes[pid]===oid) delete S.votes[pid]; else S.votes[pid]=oid; if(pid==='me'&&S.votes.me&&!S.userVotedAt) S.userVotedAt=Date.now(); }
+function placar(){
+  const c={}; Object.values(S.votes).forEach(o=>c[o]=(c[o]||0)+1);
+  const ordem=S.opts.map(o=>o.e.id);
+  let lider=null,max=0;
+  ordem.forEach(id=>{ if((c[id]||0)>max){max=c[id];lider=id;} });
+  const total=Object.keys(S.votes).length;
+  const maioria=max>S.people.length/2;
+  const todos=total===S.people.length&&S.people.length>=3;
+  return {c,lider,max,total,maioria,todos};
+}
+function melhorPara(p){
+  let best=null,bs=-1;
+  S.opts.forEach(o=>{let s=(o.e.climas.includes(p.clima)?2:0)+(o.e.regiao===p.regiao?1:0)+(o.casa?.1:0); if(s>bs){bs=s;best=o.e.id;}});
+  return best;
+}
+function tick(){
+  if(!S.running||S.closed)return;
+  const t=Date.now()-S.t0; let mudou=false;
+  for(const en of ENTRADAS){ if(t>=en.at&&!S.entrou.has(en.id)){ entrar(en.id); mudou=true; break; } }
+  if(S.userVotedAt&&S.opts.length&&S.votes.me){
+    for(const id of ['bia','leo','ju']){
+      if(S.entrou.has(id)&&!S.votes[id]&&Date.now()-S.userVotedAt>=ATRASO_VOTO[id]){
+        const p=S.people.find(x=>x.id===id);
+        const alvo=id==='leo'?melhorPara(p):S.votes.me;
+        if(S.opts.some(o=>o.e.id===alvo)){ S.votes[id]=alvo; logar(`${p.name} votou em ${NOMES[alvo]}.`); mudou=true; break; }
+      }
+    }
+  }
+  if(mudou&&S.screen==='mesa') pintaMesa();
+}
+setInterval(tick,600);
+
+/* ---------- semente para o seletor ---------- */
+function semear(nome){
+  const q=S.quando, pz=S.prazo;
+  S=novo(); S.quando=q; S.prazo=pz;
+  S.me=meDefault();
+  const add=id=>{S.entrou.add(id);S.people.push({...FR[id],naos:[...FR[id].naos]});};
+  if(nome==='criar'){S.screen='criar';S.me=null;return;}
+  if(nome==='link'){S.screen='link';S.me=null;return;}
+  if(nome==='form'){S.screen='form';return;}
+  S.people=[S.me];S.screen='mesa';
+  update('Você abriu a mesa.',S.me);logar(`${S.me.name} abriu a mesa: ${frase(S.me)}.`);
+  if(nome==='solo'){return;}
+  if(nome==='dois'){add('bia');logar(`Bia entrou: ${frase(FR.bia)}.`);update('Bia entrou na mesa.',FR.bia);return;}
+  if(nome==='conflito'){
+    S.me={...S.me,teto:1,regiao:'centro',clima:'conversar',naos:['fila']};S.people=[S.me];
+    S.hist=[];S.opts=[];update('Você abriu a mesa.',S.me);
+    S.people.push({...FR.bia,teto:0,clima:'relaxar',naos:['comida']});S.entrou.add('bia');
+    S.people.push({...FR.ju,teto:1});S.entrou.add('ju');
+    update('Com a Ju deu três.',FR.ju);
+    S.people.push({...FR.leo});S.entrou.add('leo');S.log=[];
+    logar('Léo entrou: até R$ 120, sai de Paulista, quer agito, sem fila.');
+    update('O Léo entrou na mesa.',FR.leo);
+    return;
+  }
+  add('bia');add('ju');
+  update('Com a Ju deu três.',FR.ju);
+  add('leo');S.log=[];
+  logar(`Léo entrou: ${frase(FR.leo)}.`);
+  update('O Léo entrou na mesa.',FR.leo);
+  if(nome==='opcoes'){S.running=false;return;}
+  if(nome==='bilhete'){
+    const o=S.opts[0].e.id;
+    S.votes={me:o,bia:o,ju:o,leo:S.opts[1]?S.opts[1].e.id:o};
+    S.closed=true;S.vencedor=o;S.screen='bilhete';
+  }
+}
+
+/* ---------- views ---------- */
+const view=$('#view');
+const PASSOS={criar:'1 de 4',link:'2 de 4',form:'3 de 4',mesa:'4 de 4',bilhete:'fechado'};
+function go(screen){
+  S.screen=screen;
+  $('#passo').textContent=PASSOS[screen]||'';
+  const sel=$('#pular');
+  if(screen==='criar')view.innerHTML=vCriar();
+  if(screen==='link')view.innerHTML=vLink();
+  if(screen==='form')view.innerHTML=vForm();
+  if(screen==='mesa'){view.innerHTML=vMesaShell();S.shownOpt=new Set(S.shownOpt);pintaMesa();}
+  if(screen==='bilhete')view.innerHTML=vBilhete();
+  window.scrollTo(0,0);
+  const h=view.querySelector('h1');if(h){h.setAttribute('tabindex','-1');}
+}
+function chip(name,val,txt,checked,type){
+  return `<label class="chip"><input type="${type||'radio'}" name="${name}" value="${val}"${checked?' checked':''}><span>${txt}</span></label>`;
+}
+function vCriar(){
+  return `<section class="pg">
+  <p class="eyebrow">Só o quando. O resto é do grupo.</p>
+  <h1>Quando vai ser?</h1>
+  <p class="lead">Você não responde por ninguém. Escolhe o dia, pega um link e joga no grupo.</p>
+  <fieldset><legend>O dia</legend><div class="chips g2 big">
+   ${Object.keys(QUANDO).map(k=>chip('quando',k,QUANDO[k],S.quando===k)).join('')}
+  </div></fieldset>
+  <fieldset><legend>O grupo decide até</legend><div class="chips">
+   ${chip('prazo','qui','quinta, 20h',S.prazo==='qui')}${chip('prazo','sex','sexta, 12h',S.prazo==='sex')}
+  </div><p class="hint">Se ninguém fechar antes, vale a opção mais votada nessa hora.</p></fieldset>
+  <div class="folha rot-a" style="margin-top:24px">
+   <h2>Como funciona</h2>
+   <p class="small" style="margin:0 0 6px">1. Cada amigo abre o link e marca o que é dele, em dez segundos.</p>
+   <p class="small" style="margin:0 0 6px">2. A mesa vai enchendo e eu acho o que cabe em todo mundo.</p>
+   <p class="small" style="margin:0">3. Todo mundo vota. Fecha quem tem a maioria, não quem criou.</p>
+  </div>
+  <div style="margin-top:24px"><button class="btn block" data-act="gerar">Gerar o link do grupo</button></div>
+  </section>`;
+}
+function msgWa(){return `Bora ${QUANDO[S.quando]}? Marca o que é seu aqui (leva 10 segundos) e o Finde acha o que cabe em todo mundo: https://${LINK}`;}
+function vLink(){
+  return `<section class="pg">
+  <p class="eyebrow">${esc(QUANDO[S.quando])} · decidimos até ${PRAZOS[S.prazo]}</p>
+  <h1>Joga no grupo.</h1>
+  <p class="lead">Não precisa conta nem instalar nada. Quem abrir marca o seu e já aparece na mesa.</p>
+  <div class="stack">
+   <div class="linkbox"><span>${LINK}</span><button class="btn sec min" data-act="copiar" data-what="link">${S.copiado==='link'?'Copiado':'Copiar link'}</button></div>
+   <p class="msg">${esc(msgWa())}</p>
+   <a class="btn block" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(msgWa())}">Mandar no WhatsApp</a>
+  </div>
+  <div class="mini" style="margin-top:26px"><b>O que seu amigo vê ao abrir</b>
+   Uma tela só: nome, até quanto topa gastar, de onde sai, o clima e um “hoje não” se quiser. Nada de cadastro.
+   <div class="ghostbar"><i></i><i></i><i></i><i></i></div></div>
+  <div style="margin-top:26px"><button class="btn block" data-act="paraform">Já mandei, vou marcar o meu</button>
+  <p class="hint" style="text-align:center">Você é só mais uma pessoa da mesa.</p></div>
+  </section>`;
+}
+function vForm(){
+  const m=S.me||meDefault();
+  return `<section class="pg">
+  <p class="eyebrow">${S.editing?'Mudou a conta? As opções se ajustam e a mesa vê o que mudou.':'Esta é a tela que cada amigo vê. Dez segundos.'}</p>
+  <h1>${S.editing?'Seu jeito, de novo':'O que é seu'}</h1>
+  <form id="f" novalidate>
+  <fieldset style="margin-top:14px"><label class="f" for="nome">Seu nome</label>
+   <input type="text" id="nome" maxlength="14" autocomplete="off" value="${S.me?esc(m.name):''}" placeholder="como o grupo te chama"></fieldset>
+  <fieldset><legend>Até quanto topa gastar</legend><div class="chips g2">
+   ${TETO.map((t,i)=>chip('teto',i,t,m.teto===i)).join('')}</div>
+   <p class="hint">Por pessoa. Valeu o menor teto da mesa.</p></fieldset>
+  <fieldset><legend>De onde sai, ou que região prefere</legend><div class="chips g2">
+   ${Object.keys(REGIOES).map(k=>chip('regiao',k,REGIOES[k],m.regiao===k)).join('')}${chip('regiao','qualquer','Qualquer uma',m.regiao==='qualquer')}</div></fieldset>
+  <fieldset><legend>O clima que quer</legend><div class="chips">
+   ${Object.keys(CLIMAV).map(k=>chip('clima',k,CLIMAV[k],m.clima===k)).join('')}</div></fieldset>
+  <fieldset><legend>Hoje não <span class="soft small" style="font-family:var(--sans)">(se quiser)</span></legend><div class="chips">
+   ${Object.keys(NAOS).map(k=>chip('naos',k,NAOS[k],m.naos.includes(k),'checkbox')).join('')}</div>
+   <p class="hint">Vazio quer dizer que topa tudo. Só você vê o motivo.</p></fieldset>
+  <p class="err" id="err" role="alert"></p>
+  <button class="btn block" type="submit">${S.editing?'Atualizar a mesa':'Entrar na mesa'}</button>
+  </form></section>`;
+}
+function vMesaShell(){
+  return `<section class="pg stack" style="margin-top:6px">
+  <div class="mesahead"><div><p class="eyebrow" style="margin:0">Decidimos até ${PRAZOS[S.prazo]}</p><h1 style="margin:4px 0 0">${esc(cap(QUANDO[S.quando]))}</h1></div>
+  <button class="btn sec min" data-act="copiar" data-what="mesa" id="cpmesa">Copiar link</button></div>
+  <div id="m-seats"></div>
+  <div id="m-voz"></div>
+  <div id="m-corpo" class="stack"></div>
+  </section>`;
+}
+function cap(s){return s[0].toUpperCase()+s.slice(1);}
+function seatHtml(p){
+  const novoSeat=!S.shown.has(p.id);
+  return `<div class="seat${novoSeat?' in':''}"><div class="who"><span class="av${p.id==='me'?' me':''}" aria-hidden="true">${esc(p.name[0].toUpperCase())}</span><span class="nm">${esc(p.name)}${p.id==='me'?' <span class="soft small" style="font-family:var(--sans)">(você)</span>':''}</span></div>
+  <div class="tags">${marcas(p).map(t=>`<span>${esc(t)}</span>`).join('')}</div>
+  ${p.id==='me'&&!S.closed?`<button class="link" data-act="editar" style="align-self:flex-start;padding:10px 0 2px">mudar o meu</button>`:''}</div>`;
+}
+function pintaMesa(){
+  if(S.screen!=='mesa')return;
+  const ae=document.activeElement; const foco=ae&&ae.dataset?{act:ae.dataset.act,opt:ae.dataset.opt,id:ae.id}:null;
+  const seats=$('#m-seats');
+  const n=S.people.length, total=Math.max(4,n+(n>=4?1:0));
+  let h=`<div class="mesa" role="list" aria-label="A mesa">`;
+  S.people.forEach(p=>h+=seatHtml(p));
+  for(let i=n;i<total;i++) h+=`<div class="seat vazia" role="listitem">cadeira vazia<br>espera quem abrir o link</div>`;
+  h+='</div>';
+  seats.innerHTML=h;
+  S.people.forEach(p=>S.shown.add(p.id));
+  // voz do finde
+  const msgs=S.log;
+  $('#m-voz').innerHTML=`<p class="quem">O Finde diz</p><div class="voz" aria-live="polite"><p class="now">${esc(vozAtual())}</p>${msgs.length>1?`<div class="old">${msgs.slice(0,3).map(m=>`<p>${esc(m)}</p>`).join('')}</div>`:''}</div>`;
+  // corpo
+  $('#m-corpo').innerHTML=corpo();
+  S.opts.forEach(o=>S.shownOpt.add(o.e.id));
+  const cp=$('#cpmesa'); if(cp&&S.copiado==='mesa') cp.textContent='Copiado';
+  if(foco){
+    let el=null;
+    if(foco.opt) el=document.querySelector(`[data-opt="${foco.opt}"]`);
+    else if(foco.act) el=document.querySelector(`[data-act="${foco.act}"]`);
+    if(el) el.focus({preventScroll:true});
+  }
+}
+function vozAtual(){
+  const n=S.people.length;
+  if(S.closed) return 'Fechou. O bilhete está pronto.';
+  if(n===1) return 'A mesa está aberta. Assim que o link chegar no grupo, os nomes começam a sentar.';
+  if(n===2) return `${S.people[1].name} sentou. Falta mais uma pessoa para eu mostrar o que cabe em todo mundo.`;
+  if(S.opts.length<3) return `Com ${S.people[n-1].name} ficou apertado: ${S.opts.length===0?'nada cabe':'só '+S.opts.length+' cabe'} em todo mundo. Logo abaixo está o que pesa.`;
+  if(S.note&&S.note.primeira) return `Achei três que cabem em ${S.people.map(p=>p.name).slice(0,-1).join(', ')} e ${S.people[n-1].name}. A primeira é a que eu levaria vocês.`;
+  if(S.note) return S.note.semMudanca?`${S.note.lead} As três continuam valendo para todos.`:`${S.note.lead} A lista mudou, o que mudou está logo abaixo.`;
+  return 'Tudo certo por aqui.';
+}
+function funilHtml(){
+  if(!S.hist.length)return '';
+  return `<p class="funil"><span class="soft">Cabem em todos:</span>${S.hist.map((h,i)=>`${i?'<span class="ar" aria-hidden="true">›</span>':''}<span class="pt">${esc(i===0?'só '+h.label:'com '+h.label)}<b>${h.count}</b></span>`).join('')}</p>`;
+}
+function corpo(){
+  const n=S.people.length;
+  let h=funilHtml();
+  if(n<3){
+    const falta=3-n;
+    h+=`<div class="placeholder"><p class="hand" style="font-size:22px;margin:0 0 4px;color:var(--tinta)">${n===1?'Enquanto você espera':'Quase'}</p>
+    ${n===1?`Hoje cabem ${S.count} lugares só em você. Esse número cai conforme o grupo entra, e é aí que as três opções aparecem. Elas só saem com ${falta} pessoa${falta>1?'s':''} a mais, para não parecer que você decidiu por todo mundo.`
+    :`Já são dois. Com mais ${falta} pessoa eu mostro as três que cabem em todos.`}
+    </div>
+    <div class="folha rot-b"><h2>Lembrar o grupo</h2><p class="small">Ninguém abriu ainda? Um empurrão curto costuma bastar.</p>
+    <p class="msg small">Falta só marcar o seu aqui: https://${LINK}</p>
+    <div style="margin-top:12px"><button class="btn sec min" data-act="copiar" data-what="lembrete">${S.copiado==='lembrete'?'Copiado':'Copiar lembrete'}</button></div></div>
+    <p class="regra">Pode fechar esta tela. O Finde avisa por aqui quando o terceiro entrar.</p>`;
+    return h;
+  }
+  if(S.note&&!S.note.primeira){
+    const nn=S.note;
+    h+=`<div class="mudou"><h3>O que mudou</h3><p style="margin:0">${esc(nn.lead)}${nn.semMudanca&&S.opts.length>=3?' As três opções continuam servindo a todos.':''}</p>
+    ${nn.out.length?`<ul>${nn.out.map(x=>`<li><b>Saiu</b> ${esc(x)}</li>`).join('')}</ul>`:''}
+    ${nn.inn.length?`<ul>${nn.inn.map(x=>`<li><b>Entrou</b> ${esc(x)}</li>`).join('')}</ul>`:''}
+    ${nn.dropped.length?`<ul>${nn.dropped.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</div>`;
+  }
+  if(S.opts.length<3) h+=conflito();
+  if(S.opts.length){
+    h+=`<div><h2>${S.opts.length===3?'Três que cabem em todo mundo':'O que ainda cabe em todo mundo'}</h2><p class="regra" style="margin:0 0 12px">Toque para votar. Dá para trocar o voto até fechar.</p>
+    <div class="stack">${S.opts.map((o,i)=>optHtml(o,i)).join('')}</div>
+    <p class="regra" style="margin-top:12px"><b>escolha da casa</b>: a que o Finde levaria. <b>sob medida para vocês</b>: bate com as marcas da mesa. <b>patrocinado</b>: anúncio, sempre avisado. Preço é faixa estimada; confira horário e valor no lugar antes de sair.</p></div>`;
+    h+=fechar();
+  }
+  return h;
+}
+function optHtml(o,i){
+  const e=o.e, pat=e.selo==='patrocinado', novoO=!S.shownOpt.has(e.id);
+  const meu=S.votes.me===e.id;
+  const vs=S.people.filter(p=>S.votes[p.id]===e.id);
+  const dep=e.combina.map(c=>NOMES[c]).filter(Boolean)[0];
+  return `<article class="opt${novoO?' in':''}${o.casa?' leva':''}" aria-label="${esc(e.nome)}">
+  <span class="sel ${pat?'pat':o.casa?'casa':''}">${pat?'patrocinado':o.casa?'escolha da casa':'sob medida para vocês'}</span>
+  <h3>${esc(e.nome)}</h3>
+  <p class="meta">${esc(e.bairro)} · ${TIPO[e.tipo]} · ${FAIXA[e.preco]}</p>
+  <p class="cur">${esc(e.porque)}</p>
+  <ul class="pq" aria-label="Por que serve">${o.reasons.map(r=>`<li>${esc(cap(r))}</li>`).join('')}</ul>
+  ${dep?`<p class="depois"><span class="soft">Depois:</span> ${esc(dep)}</p>`:''}
+  <div class="foot"><div class="votantes" aria-label="${vs.length?'Votaram: '+vs.map(p=>p.name).join(', '):'Sem votos'}">${vs.map(p=>`<span class="av s${p.id==='me'?' me':''}" title="${esc(p.name)}">${esc(p.name[0].toUpperCase())}</span>`).join('')}</div>
+  <button class="btn min${meu?' on':''}" data-act="votar" data-opt="${e.id}" aria-pressed="${meu}">${meu?'Seu voto está aqui':'Votar nesta'}</button></div></article>`;
+}
+function fechar(){
+  const pl=placar(); const n=S.people.length;
+  const lider=pl.lider&&S.opts.find(o=>o.e.id===pl.lider);
+  const casa=S.opts.find(o=>o.casa)||S.opts[0];
+  let btn='',txt='';
+  if(pl.total<2){ txt='Sem votos suficientes. Fecha quando mais da metade da mesa escolher a mesma.'; btn=`<button class="btn block" aria-disabled="true" data-act="nada">Ainda sem maioria</button>`; }
+  else if(pl.maioria){ txt=`${pl.max} de ${n} escolheram ${lider.e.nome}. Qualquer pessoa da mesa pode fechar, não só quem criou.`; btn=`<button class="btn block" data-act="fechar" data-opt="${lider.e.id}">Fechar com ${esc(lider.e.nome)}</button>`; }
+  else if(pl.todos){ txt='Empate. Pela regra, vale a escolha da casa.'; btn=`<button class="btn block" data-act="fechar" data-opt="${casa.e.id}">Fechar com ${esc(casa.e.nome)}</button>`; }
+  else { const falta=Math.floor(n/2)+1-pl.max; txt=`${lider?lider.e.nome+' tem '+pl.max:'Nenhuma opção tem maioria'}. Falta${falta>1?'m':''} ${falta} voto${falta>1?'s':''} para fechar.`; btn=`<button class="btn block" aria-disabled="true" data-act="nada">Faltam ${falta} voto${falta>1?'s':''}</button>`; }
+  return `<div class="folha rot-c"><h2>Quem fecha?</h2><p class="small">${esc(txt)}</p>${btn}
+  <p class="regra" style="margin:12px 0 0">Regra da mesa: mais da metade na mesma opção fecha na hora. Se chegar ${PRAZOS[S.prazo]} sem maioria, vale a mais votada; empate fica com a escolha da casa.</p></div>`;
+}
+function conflito(){
+  const el=S.count; const people=S.people;
+  const ganhos=[];
+  people.forEach(p=>{
+    const kinds=[]; if(p.teto<3)kinds.push('teto'); if(p.regiao!=='qualquer')kinds.push('regiao'); p.naos.forEach(n=>kinds.push(n));
+    kinds.forEach(k=>{const g=elegiveis(people,{pid:p.id,kind:k}).length-el; if(g>0)ganhos.push({p,k,g});});
+  });
+  ganhos.sort((a,b)=>b.g-a.g);
+  const top=[]; ganhos.forEach(x=>{ if(top.length<2&&!top.some(y=>y.p===x.p&&y.k===x.k)) top.push(x); });
+  const pesos=falhas_resumo(people);
+  const txt=(x)=>({teto:`aceitar ${TETO[Math.min(3,x.p.teto+1)]}`,regiao:'aceitar qualquer região',comida:'abrir mão do “sem comida”',balada:'abrir mão do “sem balada”',fila:'abrir mão do “sem fila”'}[x.k]);
+  return `<div class="folha rot-b"><h2>${el===0?'Nada cabe em todo mundo':'Só '+el+' cabe em todo mundo'}</h2>
+  <p class="small">As marcas da mesa se atropelam. ${esc(pesos)}</p>
+  ${top.length?`<p class="small" style="margin-bottom:8px">Eu não escolho quem cede. Dá para perguntar a quem tem a marca que mais pesa:</p><div class="stack">
+  ${top.map(x=>`<div><button class="btn sec block" data-act="ceder" data-pid="${x.p.id}" data-k="${x.k}">${x.p.id==='me'?'Ceder o meu: ':'Perguntar '+(x.p.art==='a Ju'||x.p.art==='a Bia'?'à ':'ao ')+x.p.name+': '}${esc(txt(x))}</button><p class="hint" style="margin:4px 0 0">Voltam ${x.g} lugar${x.g>1?'es':''} para a lista.</p></div>`).join('')}</div>`:''}
+  </div>`;
+}
+function falhas_resumo(people){
+  const b=EXP.filter(e=>base(e,people)); const c={};
+  b.forEach(e=>falhas(e,people).forEach(f=>{const k=f.p.name+'|'+f.kind;c[k]=(c[k]||0)+1;}));
+  const arr=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([k,v])=>{const [n,kind]=k.split('|');const L={teto:'o teto',regiao:'a região',comida:'o “sem comida”',balada:'o “sem balada”',fila:'o “sem fila”'}[kind];return `${L} de ${n} tira ${v}`;});
+  return arr.length?'O que mais pesa: '+arr.join('; ')+'.':'';
+}
+function vBilhete(){
+  const e=EXP.find(x=>x.id===S.vencedor)||S.opts[0].e;
+  const vai=S.people.filter(p=>S.votes[p.id]===e.id), fora=S.people.filter(p=>S.votes[p.id]!==e.id);
+  const dep=e.combina.map(c=>NOMES[c]).filter(Boolean)[0];
+  const av=(p,c)=>`<span class="vai ${c||''}"><span class="av${p.id==='me'?' me':''}" aria-hidden="true">${esc(p.name[0].toUpperCase())}</span>${esc(p.name)}</span>`;
+  return `<section class="pg" style="margin-top:6px">
+  <p class="eyebrow">Programa fechado pela maioria da mesa</p>
+  <h1 style="margin-bottom:16px">Está combinado.</h1>
+  <div class="bilhete"><div class="alto"><span class="selo-fecha">fechado</span>
+   <p class="small soft" style="margin:0">${esc(cap(QUANDO[S.quando]))}</p>
+   <p class="big">${esc(e.nome)}</p>
+   <p class="meta" style="margin:0 0 8px">${esc(e.bairro)} · ${TIPO[e.tipo]} · ${FAIXA[e.preco]} (faixa estimada)</p>
+   ${dep?`<p class="small" style="margin:0"><span class="soft">Depois:</span> ${esc(dep)}</p>`:''}</div>
+   <div class="baixo"><p class="small soft" style="margin:0">Quem vai</p>
+   <div class="lista-vai">${vai.map(p=>av(p)).join('')}</div>
+   ${fora.length?`<p class="small soft" style="margin:8px 0 4px">Votou em outra. Entra se quiser; a conta cabe nesta também</p><div class="lista-vai">${fora.map(p=>av(p,'outro')).join('')}</div>`:''}
+   <p class="small soft" style="margin:10px 0 0">Horário e valor: confirmem no lugar antes de sair. O Finde não garante nenhum dos dois.</p></div></div>
+  <div class="stack" style="margin-top:22px">
+   <a class="btn block" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Fechou: ${QUANDO[S.quando]}, ${e.nome} (${e.bairro}). Vão: ${vai.map(p=>p.name).join(', ')}. Horário e valor, vale conferir lá.`)}">Mandar o bilhete no grupo</a>
+   <button class="btn sec block" data-act="copiar" data-what="bilhete">${S.copiado==='bilhete'?'Copiado':'Copiar o bilhete'}</button>
+   <button class="link" data-act="reabrir">Reabrir a votação</button></div>
+  </section>`;
+}
+
+/* ---------- eventos ---------- */
+function copiar(t,what){
+  const ok=()=>{S.copiado=what;setTimeout(()=>{S.copiado='';},2200);};
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(()=>{});} }catch(_){}
+  ok();
+}
+function feedbackCopy(btn,what,def){btn.textContent='Copiado';setTimeout(()=>{ if(btn.isConnected) btn.textContent=def; },2200);}
+view.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]'); if(!b)return;
+  const a=b.dataset.act;
+  if(a==='gerar'){ S.quando=(view.querySelector('input[name=quando]:checked')||{}).value||S.quando; S.prazo=(view.querySelector('input[name=prazo]:checked')||{}).value||S.prazo; go('link'); }
+  else if(a==='copiar'){
+    const w=b.dataset.what; const def=b.textContent;
+    const txt=w==='lembrete'?`Falta só marcar o seu aqui: https://${LINK}`:w==='bilhete'?`Fechou: ${QUANDO[S.quando]}, ${(EXP.find(x=>x.id===S.vencedor)||{}).nome}`:`https://${LINK}`;
+    try{navigator.clipboard&&navigator.clipboard.writeText(txt).catch(()=>{});}catch(_){}
+    feedbackCopy(b,w,def);
+  }
+  else if(a==='paraform'){ go('form'); }
+  else if(a==='editar'){ S.editing=true; go('form'); }
+  else if(a==='votar'){ votar('me',b.dataset.opt); pintaMesa(); }
+  else if(a==='fechar'){ S.closed=true; S.vencedor=b.dataset.opt; go('bilhete'); syncSel(); }
+  else if(a==='reabrir'){ S.closed=false; S.vencedor=null; S.running=true; go('mesa'); syncSel(); }
+  else if(a==='ceder'){
+    const p=S.people.find(x=>x.id===b.dataset.pid), k=b.dataset.k;
+    const aplicar=()=>{
+      let t='';
+      if(k==='teto'){p.teto=Math.min(3,p.teto+1);t=`aceita ${TETO[p.teto]}`;}
+      else if(k==='regiao'){p.regiao='qualquer';t='aceita qualquer região';}
+      else {p.naos=p.naos.filter(x=>x!==k);t=`abriu mão do “${NAOS[k]}”`;}
+      if(p.id==='me'){ logar(`${p.name} cedeu: ${t}.`); update(`${p.name} cedeu: ${t}.`); }
+      else { logar(`${p.name} topou: ${t}.`); update(`${p.name} topou: ${t}.`); }
+      pintaMesa();
+    };
+    if(p.id==='me') aplicar();
+    else { b.textContent='Perguntando…'; b.setAttribute('aria-disabled','true'); setTimeout(aplicar,1400); }
+  }
+});
+view.addEventListener('submit',ev=>{
+  if(ev.target.id!=='f')return; ev.preventDefault();
+  const nome=$('#nome').value.trim(); const err=$('#err');
+  if(!nome){err.textContent='Falta o seu nome. É assim que o grupo vai te ver na mesa.';$('#nome').focus();return;}
+  const f=new FormData(ev.target);
+  const m=S.me||meDefault();
+  m.name=nome; m.teto=+f.get('teto'); m.regiao=f.get('regiao'); m.clima=f.get('clima'); m.naos=f.getAll('naos'); nomeMe(m);
+  S.me=m;
+  if(S.editing){
+    S.editing=false; if(!S.people.includes(m))S.people[0]=m;
+    logar(`${m.name} mudou a conta: ${frase(m)}.`);
+    update(`${m.name} mudou a conta.`);
+  } else {
+    S.people=[m]; S.t0=Date.now(); S.running=true; S.hist=[]; S.opts=[]; S.entrou=new Set(); S.votes={};
+    logar(`${m.name} abriu a mesa: ${frase(m)}.`);
+    update('Você abriu a mesa.',m);
+  }
+  go('mesa'); syncSel();
+});
+const sel=$('#pular');
+function syncSel(){
+  const v=S.screen==='mesa'?(S.people.length<2?'solo':S.people.length<3?'dois':'opcoes'):S.screen==='bilhete'?'bilhete':S.screen;
+  sel.value=v;
+}
+sel.addEventListener('change',()=>{
+  const v=sel.value; semear(v);
+  S.userVotedAt=0;
+  if(v!=='criar'&&v!=='link'&&v!=='form'&&v!=='bilhete'){
+    S.running=true;
+    S.t0=Date.now()-(v==='dois'?8000:v==='solo'?0:99999);
+  }
+  go(S.screen);
+});
+go('criar');
+</script>
+</body>
+</html>

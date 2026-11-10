@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finde, roteiro pronto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#fff3df; --folha:#fff9ed; --tinta:#203f77; --suave:#4a6396;
+  --acao:#a85514; --sombra:rgba(112,90,59,.15); --risco:rgba(32,63,119,.35);
+  --mao:"Patrick Hand","Chalkboard SE","Comic Neue",cursive;
+  --sans:-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--papel);color:var(--tinta);font:16px/1.45 var(--sans)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus{outline:none}
+:focus-visible{outline:3px solid var(--tinta);outline-offset:3px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.col{max-width:480px;margin:0 auto;min-height:100vh;background:var(--papel)}
+@media (min-width:520px){.col{border-left:2px dashed var(--risco);border-right:2px dashed var(--risco)}}
+
+/* topo */
+.topo{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:8px 16px;background:var(--papel);border-bottom:2px solid var(--tinta)}
+.marca{font:30px/1 var(--mao);letter-spacing:.01em}
+.avalia{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--suave);letter-spacing:.04em;text-transform:uppercase}
+.avalia select{min-height:44px;max-width:176px;padding:0 8px;background:var(--folha);border:2px dashed var(--tinta);
+  border-radius:12px;font-size:14px;text-transform:none;letter-spacing:0}
+
+/* telas */
+.tela{padding:24px 16px 0}
+.tela[hidden]{display:none}
+.entra{animation:assenta .22s ease-out}
+@keyframes assenta{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.passo{margin:0 0 8px;font-size:13px;letter-spacing:.05em;color:var(--suave);text-transform:uppercase}
+h1.mao{margin:0 0 8px;font:400 36px/1.08 var(--mao)}
+h1.mao:focus{outline:none}
+.sub{margin:0 0 24px;color:var(--suave);font-size:16px}
+.mao{font-family:var(--mao);font-weight:400}
+
+/* botões */
+.acao{display:block;width:100%;min-height:56px;padding:8px 16px;background:var(--acao);color:var(--folha);
+  font:400 25px/1.1 var(--mao);letter-spacing:.01em;border:2px solid var(--tinta);border-radius:14px 17px 14px 16px;
+  box-shadow:0 4px 0 var(--sombra);transition:transform .15s,box-shadow .15s}
+.acao:active{transform:translateY(3px);box-shadow:0 1px 0 var(--sombra)}
+.acao[disabled]{opacity:.5;cursor:default}
+.bt{min-height:44px;padding:6px 16px;background:var(--folha);border:2px solid var(--tinta);border-radius:12px 14px 12px 15px;
+  font-size:15px;font-weight:600;box-shadow:0 3px 0 var(--sombra);transition:transform .15s}
+.bt:active{transform:translateY(2px)}
+.bt[aria-pressed="true"],.bt.on{background:var(--tinta);color:var(--folha)}
+
+/* tela 1: a frase */
+.frase{margin:0 0 16px;font:400 27px/2.05 var(--mao)}
+.chip{display:inline-flex;align-items:center;min-height:44px;margin:2px 0;padding:0 12px;font:inherit;
+  background:var(--folha);border:2px solid var(--tinta);border-radius:12px 14px 12px 15px;box-shadow:0 3px 0 var(--sombra)}
+.chip[aria-expanded="true"]{background:var(--tinta);color:var(--folha)}
+.painel{margin:0 0 24px;padding:16px;background:var(--folha);border:2px solid var(--tinta);
+  border-radius:16px 18px 15px 17px;box-shadow:0 4px 0 var(--sombra)}
+.painel[hidden]{display:none}
+.painel h2{margin:0 0 12px;font:400 23px/1.1 var(--mao)}
+.ops{display:flex;flex-wrap:wrap;gap:8px}
+.ops .bt{min-width:48px}
+.nota{margin:16px 0 0;font-size:13.5px;color:var(--suave)}
+
+/* cartão de roteiro */
+.cartao{margin:0 0 16px;padding:16px;background:var(--folha);border:2px solid var(--tinta);
+  border-radius:16px 18px 15px 17px;box-shadow:0 4px 0 var(--sombra)}
+.cab{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.tag{display:inline-block;padding:5px 10px 6px;font-size:12.5px;font-weight:600;line-height:1;letter-spacing:.03em;
+  border:2px solid var(--tinta);border-radius:999px;background:var(--folha)}
+.t-sob{background:var(--tinta);color:var(--folha)}
+.t-pat{border-style:dashed;background:var(--papel)}
+.votos-n{font:400 22px/1 var(--mao)}
+.nome{margin:4px 0 8px;font:400 30px/1.05 var(--mao)}
+.pq{margin:0 0 12px;font-size:15.5px}
+.rodape{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.cm{margin:0;font-size:14px;color:var(--suave);max-width:60%}
+.cm b{color:var(--tinta);font-weight:600}
+
+/* a linha desenhada à mão */
+.linha{position:relative;display:grid;grid-template-columns:repeat(var(--n),1fr);gap:4px;margin:8px 0 14px}
+.linha svg{position:absolute;left:0;top:8px;width:100%;height:20px;color:var(--tinta);z-index:0;overflow:visible}
+.ponto{position:relative;z-index:1;text-align:center}
+.no{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 4px;background:var(--folha);
+  border:2px solid var(--tinta);border-radius:50%;font:400 20px/1 var(--mao)}
+.pn{display:block;padding:0 2px;font:400 18px/1.15 var(--mao);overflow-wrap:anywhere}
+.pv{display:block;font-size:12px;color:var(--suave)}
+.vetado .pn{text-decoration:line-through;text-decoration-thickness:2px}
+
+/* detalhe do roteiro */
+.detalhe{margin-top:16px;padding-top:16px;border-top:2px dashed var(--risco)}
+.detalhe[hidden]{display:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;padding:0;list-style:none}
+.chips li{padding:4px 10px;font-size:13px;background:var(--papel);border:2px solid var(--tinta);border-radius:999px}
+.tempo{position:relative;margin:0 0 8px}
+.tempo>svg{position:absolute;left:8px;top:18px;width:20px;height:calc(100% - 36px);color:var(--tinta);overflow:visible}
+.item{position:relative;padding-left:52px}
+.item .no{position:absolute;left:0;top:0;margin:0}
+.item h3{margin:0 0 2px;padding-top:4px;font:400 23px/1.1 var(--mao)}
+.item .meta{margin:0 0 4px;font-size:13.5px;color:var(--suave)}
+.item .pq{margin:0 0 8px;font-size:15px}
+.trajeto{padding:14px 0 14px 52px;font-size:14px;font-style:italic;color:var(--suave)}
+.alts{margin:8px 0 8px}
+.alt{display:block;width:100%;min-height:44px;margin:0 0 8px;padding:8px 12px;text-align:left;background:var(--papel);
+  border:2px dashed var(--tinta);border-radius:12px}
+.alt strong{display:block;font:400 19px/1.15 var(--mao)}
+.alt span{font-size:13px;color:var(--suave)}
+.alt:active{background:var(--folha)}
+.pat-mini{margin-left:6px;vertical-align:middle;font-size:11px}
+
+.aviso{margin:0 0 16px;padding:12px 16px;font-size:14.5px;background:var(--folha);border:2px dashed var(--tinta);border-radius:12px}
+.legenda{margin:0 0 16px;font-size:12.5px;color:var(--suave)}
+.recap{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px}
+.recap p{margin:0;font-size:15px}
+
+/* barra fixa embaixo */
+.barra{position:sticky;bottom:0;z-index:10;margin:16px -16px 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:var(--papel);border-top:2px solid var(--tinta)}
+.barra p{margin:0 0 8px;font-size:14px;color:var(--suave);text-align:center}
+.barra[hidden]{display:none}
+
+/* formulários */
+.campo{display:block;margin:0 0 16px}
+.campo span{display:block;margin:0 0 4px;font-size:14px;font-weight:600}
+.campo input{display:block;width:100%;min-height:48px;padding:0 12px;background:var(--folha);border:2px solid var(--tinta);
+  border-radius:12px;font-size:17px}
+.erro{margin:-8px 0 16px;font-size:14px;font-weight:600}
+.erro[hidden]{display:none}
+.msg{margin:0 0 16px;padding:16px;font-size:15px;white-space:pre-wrap;background:var(--folha);
+  border:2px dashed var(--tinta);border-radius:14px}
+.linkrow{display:flex;gap:8px;margin:0 0 8px}
+.link{flex:1;min-width:0;min-height:44px;display:flex;align-items:center;padding:0 12px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-size:14px;background:var(--folha);border:2px solid var(--tinta);border-radius:12px}
+.par{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}
+.par .bt{flex:1;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;text-align:center}
+
+/* votação */
+.status{margin:0 0 16px;font-size:14.5px}
+.chip-v{display:inline-block;margin:0 4px 4px 0;padding:3px 10px;font-size:13px;background:var(--papel);border:2px solid var(--tinta);border-radius:999px}
+.quem{min-height:28px;margin:0 0 12px}
+.votar{width:100%;margin-bottom:8px}
+.vetar-lista{margin:8px 0 0;padding:12px;background:var(--papel);border:2px dashed var(--tinta);border-radius:12px}
+.vetar-lista[hidden]{display:none}
+.vl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+.vl:last-child{margin:0}
+.vl span{font:400 19px/1.15 var(--mao)}
+
+/* bilhete */
+.bilhete{position:relative;margin:0 0 24px;background:var(--folha);border:2px solid var(--tinta);
+  border-radius:18px 20px 17px 19px;box-shadow:0 4px 0 var(--sombra)}
+.b-topo{padding:24px 24px 20px}
+.b-topo h1{margin:4px 0 4px;font:400 38px/1.05 var(--mao)}
+.b-topo .passo{margin:0}
+.corte{position:relative;height:0;border-top:2px dashed var(--tinta)}
+.corte::before,.corte::after{content:"";position:absolute;top:-13px;width:24px;height:24px;background:var(--papel);
+  border:2px solid var(--tinta);border-radius:50%}
+.corte::before{left:-14px;border-left-color:transparent;transform:rotate(0deg)}
+.corte::after{right:-14px;border-right-color:transparent}
+.b-meio{padding:20px 24px 4px}
+.b-base{padding:4px 24px 24px}
+.b-base h2{margin:16px 0 4px;font:400 21px/1.1 var(--mao)}
+.b-base p{margin:0 0 4px;font-size:15px}
+.troca-nota{margin:4px 0 0;padding:8px 12px;font-size:13.5px;background:var(--papel);border:2px dashed var(--tinta);border-radius:10px}
+.fim{padding-bottom:32px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media (max-width:359px){h1.mao{font-size:32px}.frase{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="col">
+  <header class="topo">
+    <div class="marca">finde</div>
+    <label class="avalia"><span>Ver tela</span>
+      <select id="pula" aria-label="Pular para uma tela (para quem avalia)">
+        <option value="1">1 · A frase</option>
+        <option value="2">2 · Três roteiros</option>
+        <option value="3">3 · Mandar</option>
+        <option value="4">4 · Votação</option>
+        <option value="5">5 · Bilhete</option>
+      </select>
+    </label>
+  </header>
+
+  <main>
+    <!-- 1 -->
+    <section id="t1" class="tela" aria-labelledby="h1-1">
+      <p class="passo">Passo 1 de 5 · a frase</p>
+      <h1 class="mao" id="h1-1" tabindex="-1">Me conta o finde de vocês.</h1>
+      <p class="sub">Toque nas lacunas. Eu devolvo três roteiros inteiros, com o que vem depois de cada coisa.</p>
+      <p class="frase" id="frase"></p>
+      <div class="painel" id="painel" role="group" hidden></div>
+      <button class="acao" id="montar" type="button">Montar três roteiros</button>
+      <p class="nota">A base de exemplo cobre Pinheiros e Vila Madalena. Faixas de preço e tempos são estimativas, sem horário de funcionamento.</p>
+    </section>
+
+    <!-- 2 -->
+    <section id="t2" class="tela" aria-labelledby="h1-2" hidden>
+      <p class="passo">Passo 2 de 5 · roteiros</p>
+      <h1 class="mao" id="h1-2" tabindex="-1">Achei três. O primeiro é o que eu levaria vocês.</h1>
+      <div class="recap"><p id="recap"></p><button class="bt" id="mudar" type="button">Mudar a frase</button></div>
+      <div id="aviso" class="aviso" hidden></div>
+      <p class="legenda">Sob medida para vocês: bateu no que você pediu. Escolha da casa: entrou pela curadoria. Patrocinado: o parceiro paga para aparecer. Deslocamentos são aproximados.</p>
+      <div id="lista2"></div>
+      <div class="barra"><button class="acao" id="mandar" type="button">Mandar pro grupo</button></div>
+    </section>
+
+    <!-- 3 -->
+    <section id="t3" class="tela" aria-labelledby="h1-3" hidden>
+      <p class="passo">Passo 3 de 5 · mandar</p>
+      <h1 class="mao" id="h1-3" tabindex="-1">Os três vão juntos.</h1>
+      <p class="sub">O grupo vê os roteiros, vota em um e pode vetar um tempo que já conhece.</p>
+      <label class="campo"><span>Seu nome</span><input id="autor" maxlength="24" autocomplete="off" placeholder="Como o grupo te chama"></label>
+      <p class="erro" id="erro-autor" role="alert" hidden>Diga seu nome para os amigos saberem quem mandou.</p>
+      <div class="msg" id="msg"></div>
+      <div class="linkrow"><div class="link" id="link">finde.exemplo/r/k3m9x2qa</div><button class="bt" id="copiar" type="button">Copiar</button></div>
+      <div class="par"><a class="bt" id="zap" target="_blank" rel="noopener" href="https://wa.me/">Abrir no WhatsApp</a></div>
+      <button class="acao" id="enviei" type="button">Já mandei, ver a votação</button>
+      <div class="fim"></div>
+    </section>
+
+    <!-- 4 -->
+    <section id="t4" class="tela" aria-labelledby="h1-4" hidden>
+      <p class="passo">Passo 4 de 5 · votação do grupo</p>
+      <h1 class="mao" id="h1-4" tabindex="-1">Qual roteiro vocês querem?</h1>
+      <p class="sub" id="sub4"></p>
+      <label class="campo"><span>Você vota como</span><input id="voter" maxlength="24" autocomplete="off" value="Você"></label>
+      <p class="status" id="status4"></p>
+      <div id="lista4"></div>
+      <div class="barra" id="barra4"></div>
+    </section>
+
+    <!-- 5 -->
+    <section id="t5" class="tela fim" aria-labelledby="h1-5" hidden>
+      <div class="bilhete" id="bilhete">
+        <div class="b-topo">
+          <p class="passo">Programa fechado</p>
+          <h1 id="h1-5" tabindex="-1"></h1>
+          <p id="b-sub" class="sub" style="margin:0"></p>
+        </div>
+        <div class="corte" aria-hidden="true"></div>
+        <div class="b-meio" id="b-meio"></div>
+        <div class="corte" aria-hidden="true"></div>
+        <div class="b-base" id="b-base"></div>
+      </div>
+      <div class="par">
+        <button class="bt" id="copiar-b" type="button">Copiar bilhete</button>
+        <button class="bt" id="outro" type="button">Montar outro finde</button>
+      </div>
+    </section>
+  </main>
+  <div id="vivo" class="sr" aria-live="polite"></div>
+</div>
+
+<script>
+(()=>{
+"use strict";
+
+/* ---------- dados de exemplo (copiados de dados/experiencias.json) ---------- */
+const EXP=[
+ {id:"beco-do-batman",nome:"Beco do Batman",curto:"Beco do Batman",bairro:"Vila Madalena",tipo:"passeio",preco:0,mom:["manha","tarde"],grupo:[1,20],combina:["rua-harmonia-wisard","bar-astor"],porque:"Cabe o grupo inteiro, rende foto e conversa em uma hora, e os murais mudam o bastante para valer a repetição."},
+ {id:"rua-harmonia-wisard",nome:"Rua Harmonia e Rua Wisard a pé",curto:"Rua Harmonia e Wisard",bairro:"Vila Madalena",tipo:"passeio",preco:0,mom:["manha","tarde"],grupo:[1,10],combina:["beco-do-batman","galerias-vila-madalena"],porque:"Caminhada de uma hora com café no meio, boa para quem veio de fora."},
+ {id:"rua-fradique-coutinho",nome:"Rua Fradique Coutinho",curto:"Rua Fradique Coutinho",bairro:"Vila Madalena",tipo:"passeio",preco:0,mom:["tarde","noite"],grupo:[1,8],combina:["bar-filial","livraria-da-vila-fradique"],porque:"Dá para ir de loja em loja até bater a fome e escolher o bar mais próximo sem combinar nada."},
+ {id:"praca-por-do-sol",nome:"Praça do Pôr do Sol",curto:"Praça do Pôr do Sol",bairro:"Alto de Pinheiros",tipo:"ar-livre",preco:0,mom:["tarde"],grupo:[1,20],combina:["rua-fradique-coutinho","bar-filial"],porque:"Cada um leva sua bebida, senta na grama e ninguém precisa pedir mesa para uma turma grande."},
+ {id:"bar-filial",nome:"Bar Filial",curto:"Bar Filial",bairro:"Vila Madalena",tipo:"bar",preco:2,mom:["noite"],grupo:[2,8],combina:["rua-fradique-coutinho","praca-por-do-sol"],porque:"Barulho moderado e mesa na calçada, dá para conversar sem levantar a voz."},
+ {id:"bar-astor",nome:"Bar Astor",curto:"Bar Astor",bairro:"Vila Madalena",tipo:"bar",preco:2,mom:["noite"],grupo:[2,8],combina:["beco-do-batman","bares-rua-aspicuelta"],porque:"Casa que já virou ponto de encontro: quem chega primeiro guarda lugar e o resto vai aparecendo."},
+ {id:"bares-rua-aspicuelta",nome:"Bares da Rua Aspicuelta",curto:"Bares da Aspicuelta",bairro:"Vila Madalena",tipo:"bar",preco:2,mom:["noite"],grupo:[2,12],combina:["beco-do-batman","o-do-borogodo"],porque:"Roteiro de bar em bar: se um estiver lotado, o vizinho resolve, e a turma se divide sem se perder."},
+ {id:"o-do-borogodo",nome:"Ó do Borogodó",curto:"Ó do Borogodó",bairro:"Vila Madalena",tipo:"musica",preco:1,mom:["noite"],grupo:[2,10],combina:["bares-rua-aspicuelta","grazie-a-dio"],porque:"Samba ao vivo num lugar pequeno, onde todo mundo acaba cantando junto, mesmo quem não sabe a letra."},
+ {id:"largo-da-batata",nome:"Largo da Batata",curto:"Largo da Batata",bairro:"Pinheiros",tipo:"passeio",preco:0,mom:["tarde","noite"],grupo:[1,20],combina:["bares-rua-aspicuelta","sesc-pinheiros"],porque:"Ponto fácil de marcar: quem está atrasado acha o grupo e dali todo mundo escolhe para onde ir."},
+ {id:"instituto-tomie-ohtake",nome:"Instituto Tomie Ohtake",curto:"Instituto Tomie Ohtake",bairro:"Pinheiros",tipo:"cultura",preco:0,mom:["tarde"],grupo:[1,8],combina:["largo-da-batata","museu-da-casa-brasileira"],porque:"Em uma hora e meia o grupo já tem assunto para a mesa do bar logo depois, ali perto."},
+ {id:"sesc-pinheiros",nome:"Sesc Pinheiros",curto:"Sesc Pinheiros",bairro:"Pinheiros",tipo:"cultura",preco:0,mom:["tarde","noite"],grupo:[1,12],combina:["largo-da-batata","instituto-tomie-ohtake"],porque:"Programa grátis ou barato que aguenta grupo grande e muda com o que estiver em cartaz."},
+ {id:"livraria-da-vila-fradique",nome:"Livraria da Vila (Fradique Coutinho)",curto:"Livraria da Vila",bairro:"Vila Madalena",tipo:"cultura",preco:0,mom:["manha","tarde"],grupo:[1,4],combina:["rua-fradique-coutinho","praca-por-do-sol"],porque:"Meia hora entre estantes e um café resolvem a espera de quem chegou cedo."},
+ {id:"almoco-rua-mourato-coelho",nome:"Almoço na Rua Mourato Coelho",curto:"Almoço na Mourato Coelho",bairro:"Pinheiros",tipo:"comida",preco:2,mom:["manha","tarde"],grupo:[2,8],combina:["rua-fradique-coutinho","beco-do-batman"],porque:"Se ninguém decide, caminhem a rua e escolham na porta: sempre tem mesa para quatro em algum lugar."},
+ {id:"bar-exemplo",nome:"Bar Exemplo (parceiro fictício)",curto:"Bar Exemplo",bairro:"Vila Madalena",tipo:"bar",preco:1,mom:["noite"],grupo:[2,10],combina:[],porque:"Lugar inventado para mostrar como o patrocínio aparece; este bar não existe.",spon:true}
+];
+const X=Object.fromEntries(EXP.map(e=>[e.id,e]));
+const TIPO={passeio:"passeio",cultura:"cultura",comida:"comida",bar:"bar",musica:"música","ar-livre":"ar livre",jogo:"jogo"};
+const MIN={passeio:60,cultura:90,comida:90,bar:120,musica:120,"ar-livre":60,jogo:90};
+const PRECO={0:[0,0],1:[15,50],2:[40,90]};
+
+/* roteiros prontos (programas com nome próprio) */
+const TPL=[
+ {id:"n1",nome:"Calçada na Vila",noite:true,slots:["rua-fradique-coutinho","bar-filial"],tags:["conversar","relaxar"],
+  why:"Uma rua para andar até a fome bater e um bar de mesa na calçada: dá para conversar sem levantar a voz.",
+  casa:"Mais calmo do que vocês pediram, mas a conversa rende e ninguém corre."},
+ {id:"n2",nome:"Do Sesc ao boteco",noite:true,slots:["sesc-pinheiros","largo-da-batata","bares-rua-aspicuelta"],tags:["descobrir","conversar"],
+  why:"Começa com o que estiver em cartaz no Sesc, passa pelo ponto de encontro de Pinheiros e termina no bar que a turma escolher a pé.",
+  casa:"Traz algo para descobrir antes do bar, mesmo que o pedido tenha sido outro."},
+ {id:"n3",nome:"Samba e rua cheia",noite:true,slots:["largo-da-batata","bares-rua-aspicuelta","o-do-borogodo"],tags:["agitar","comemorar"],
+  why:"Sai do largo, escolhe o bar a pé e fecha com samba ao vivo, onde todo mundo acaba cantando.",
+  casa:"Mais agitado do que vocês pediram. Guardem para quando a energia estiver alta."},
+ {id:"n4",nome:"Rua e petisco do parceiro",noite:true,spon:true,slots:["rua-fradique-coutinho","bar-exemplo"],tags:["conversar","agitar"],
+  why:"Uma rua para caminhar e um bar de exemplo, aqui só para mostrar como o patrocínio aparece.",casa:""},
+ {id:"d1",nome:"Tarde de arte e papo",noite:false,slots:["instituto-tomie-ohtake","largo-da-batata","sesc-pinheiros"],tags:["descobrir","conversar"],
+  why:"Uma hora e meia de exposição dá assunto para o resto; o largo e o Sesc deixam o grupo decidir o que vem depois.",
+  casa:"Tem arte no meio, mesmo que o pedido tenha sido outro. Dá para pular o museu."},
+ {id:"d2",nome:"Almoço e murais",noite:false,slots:["almoco-rua-mourato-coelho","beco-do-batman","rua-harmonia-wisard"],tags:["conversar","descobrir","comemorar"],
+  why:"Resolve o e depois: almoço sem pressa e dois passeios a pé por grafite, ateliês e café.",
+  casa:"Mais andado do que vocês pediram, mas o almoço no começo segura o grupo."},
+ {id:"d3",nome:"Fim de tarde sem pressa",noite:false,slots:["rua-fradique-coutinho","praca-por-do-sol"],tags:["relaxar","conversar"],
+  why:"Caminham a rua até a tarde baixar e levam a bebida para a grama. Ninguém precisa de mesa.",
+  casa:"Mais parado do que vocês pediram, ótimo para recomeçar a semana de cabeça leve."}
+];
+
+/* ---------- estado em memória ---------- */
+const AMIGOS=["Bia","Théo","Lu"];
+const CAMPOS={
+ quando:{pre:"",q:"Quando?",ops:[["sex-noite","Sexta à noite"],["sab-dia","Sábado de dia"],["sab-noite","Sábado à noite"],["dom","Domingo"]]},
+ n:{pre:", somos ",q:"Quantos vão?",ops:[2,3,4,5,6,7,8].map(v=>[v,String(v)])},
+ onde:{pre:", por ",q:"Onde?",ops:[["pinheiros","Pinheiros"],["vila","Vila Madalena"],["qualquer","qualquer lugar"]]},
+ teto:{pre:", até ",q:"Quanto por pessoa?",ops:[[30,"R$ 30"],[50,"R$ 50"],[80,"R$ 80"],[120,"R$ 120"]]},
+ clima:{pre:", querendo ",q:"O que vocês querem?",ops:[["conversar","conversar"],["agitar","agitar"],["descobrir","descobrir"],["relaxar","relaxar"],["comemorar","comemorar"]]}
+};
+const ROT={"sob-medida":"sob medida para vocês","da-casa":"escolha da casa","patrocinado":"patrocinado"};
+const LINK="https://finde.exemplo/r/k3m9x2qa";
+const S={quando:"sab-noite",n:4,onde:"pinheiros",teto:80,clima:"conversar",
+  rot:[],aviso:"",aberto:-1,troca:null,painel:null,
+  autor:"",enviado:false,votos:{},vetos:{},vetoAberto:null,fechado:null,simOn:false,timers:[]};
+
+/* ---------- utilitários ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+function h(tag,attrs,...kids){
+  const el=document.createElement(tag);
+  if(attrs)for(const k in attrs){const v=attrs[k];if(v===false||v==null)continue;
+    if(k==="class")el.className=v;else if(k.startsWith("on"))el.addEventListener(k.slice(2),v);
+    else el.setAttribute(k,v===true?"":v);}
+  for(const kid of kids.flat(Infinity)){if(kid==null||kid===false)continue;el.append(kid.nodeType?kid:document.createTextNode(kid));}
+  return el;
+}
+function sv(tag,attrs){const el=document.createElementNS("http://www.w3.org/2000/svg",tag);for(const k in attrs)el.setAttribute(k,attrs[k]);return el}
+function rng(str){let a=0;for(const c of str)a=(a*31+c.charCodeAt(0))|0;
+  return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function say(m){const v=$("#vivo");v.textContent="";setTimeout(()=>{v.textContent=m},60)}
+const lab=c=>CAMPOS[c].ops.find(o=>o[0]===S[c])[1];
+const isNoite=()=>S.quando==="sex-noite"||S.quando==="sab-noite";
+const quandoTxt=()=>lab("quando").toLowerCase();
+const ondeTxt=()=>S.onde==="qualquer"?"qualquer lugar":lab("onde");
+const reduz=()=>matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function dur(m){return m===60?"1 h":m===90?"1h30":m===120?"2 h":m+" min"}
+function total(m){let h2=Math.floor(m/60),r=m%60;if(r<15)r=0;else if(r<45)r=30;else{r=0;h2++}return"cerca de "+h2+(r?"h30":" h")}
+function viagem(a,b){
+  if(a.bairro===b.bairro)return{t:"uns cinco minutos a pé",m:5};
+  if(a.bairro==="Alto de Pinheiros"||b.bairro==="Alto de Pinheiros")return{t:"uns dez minutos de carro ou de aplicativo",m:10};
+  return{t:"uns quinze minutos a pé",m:15};
+}
+function precoTxt(p){const[a,b]=PRECO[p];return p===0?"de graça":"R$ "+a+" a "+b}
+function faixa(r){let lo=0,hi=0,min=0;
+  r.slots.forEach((id,i)=>{const e=X[id];lo+=PRECO[e.preco][0];hi+=PRECO[e.preco][1];min+=MIN[e.tipo];if(i)min+=viagem(X[r.slots[i-1]],e).m});
+  return{lo,hi,min};}
+function faixaTxt(f){return f.hi===0?"de graça":f.lo===0?"até R$ "+f.hi:"R$ "+f.lo+" a "+f.hi}
+function tetoFlag(f){return f.hi<=S.teto?"cabe no teto de R$ "+S.teto:f.lo<=S.teto?"pode passar de R$ "+S.teto+" se pedirem muito":"acima de R$ "+S.teto}
+function rotulo(r){if(r.slots.some(id=>X[id].spon))return"patrocinado";return r.tags.includes(S.clima)?"sob-medida":"da-casa"}
+function porque(r){return rotulo(r)==="da-casa"&&r.casa?r.casa:r.why}
+const vetosDe=(ri,si)=>S.vetos[ri+":"+si]||[];
+function bairros(r){return[...new Set(r.slots.map(id=>X[id].bairro))].join(" e ")}
+
+/* ---------- motor: três roteiros ---------- */
+function gerar(){
+  S.timers.forEach(clearTimeout);S.timers=[];
+  Object.assign(S,{aberto:-1,troca:null,enviado:false,votos:{},vetos:{},vetoAberto:null,fechado:null,simOn:false,aviso:""});
+  const noite=isNoite();
+  const fica=t=>t.slots.every(id=>{const g=X[id].grupo;return S.n>=g[0]&&S.n<=g[1]});
+  const cost=t=>faixa(t);
+  const cand=TPL.filter(t=>t.noite===noite&&fica(t));
+  const edit=cand.filter(t=>!t.spon),pat=cand.filter(t=>t.spon&&cost(t).lo<=S.teto);
+  const casam=t=>t.tags.includes(S.clima)?0:1;
+  const ord=edit.map((t,i)=>({t,i})).sort((a,b)=>casam(a.t)-casam(b.t)||a.i-b.i).map(o=>o.t);
+  const dentro=ord.filter(t=>cost(t).lo<=S.teto),fora=ord.filter(t=>cost(t).lo>S.teto).sort((a,b)=>cost(a).lo-cost(b).lo);
+  const quer=noite&&pat.length?2:3;
+  let esc=dentro.slice(0,quer);
+  if(esc.length<quer){esc=esc.concat(fora.slice(0,quer-esc.length));
+    S.aviso="O teto de R$ "+S.teto+" ficou apertado para "+quandoTxt()+". Afrouxei um degrau e mostrei as faixas mais baratas que achei."}
+  if(noite&&pat.length)esc.push(pat[0]);
+  S.rot=esc.map(t=>({tid:t.id,nome:t.nome,slots:t.slots.slice(),tags:t.tags,why:t.why,casa:t.casa}));
+}
+
+/* trocar um tempo sem desmontar o resto */
+function alts(ri,si){
+  const r=S.rot[ri],cur=r.slots.map(id=>X[id]),here=cur[si],prev=cur[si-1],next=cur[si+1];
+  const noite=isNoite();
+  const vetados=Object.keys(S.vetos).filter(k=>S.vetos[k].length).map(k=>{const[a,b]=k.split(":");return S.rot[a].slots[b]});
+  const liga=(o,c)=>o&&(o.combina.includes(c.id)||c.combina.includes(o.id));
+  return EXP.filter(c=>!c.spon&&!r.slots.includes(c.id)&&!vetados.includes(c.id)
+      &&(noite?c.mom.includes("noite"):(c.mom.includes("manha")||c.mom.includes("tarde")))
+      &&S.n>=c.grupo[0]&&S.n<=c.grupo[1])
+    .map(c=>({e:c,s:(liga(prev,c)?3:0)+(liga(next,c)?3:0)+(c.tipo===here.tipo?1:0)-c.preco*.1,
+      hint:liga(prev,c)?"combina com o tempo anterior":liga(next,c)?"combina com o tempo seguinte":c.bairro+" · "+TIPO[c.tipo]}))
+    .sort((a,b)=>b.s-a.s).slice(0,3);
+}
+
+/* ---------- peças de desenho ---------- */
+function svgLinha(seed,n){
+  const R=rng(seed),x0=100/(2*n),x1=100-x0,k=n*2;let d="M"+x0+",10";
+  for(let i=1;i<=k;i++){const x=x0+(x1-x0)*i/k,y=10+(R()-.5)*7,cx=x0+(x1-x0)*(i-.5)/k,cy=10+(R()-.5)*13;
+    d+=" Q"+cx.toFixed(1)+","+cy.toFixed(1)+" "+x.toFixed(1)+","+y.toFixed(1)}
+  const s=sv("svg",{viewBox:"0 0 100 20",preserveAspectRatio:"none","aria-hidden":"true"});
+  s.append(sv("path",{d,fill:"none",stroke:"currentColor","stroke-width":"2.5","stroke-linecap":"round","vector-effect":"non-scaling-stroke"}));
+  return s;}
+function svgTrilho(seed){
+  const R=rng(seed);let d="M10,0";
+  for(let i=1;i<=8;i++){const y=i*12.5,x=10+(R()-.5)*5,cx=10+(R()-.5)*10;d+=" Q"+cx.toFixed(1)+","+(y-6.25)+" "+x.toFixed(1)+","+y}
+  const s=sv("svg",{viewBox:"0 0 20 100",preserveAspectRatio:"none","aria-hidden":"true"});
+  s.append(sv("path",{d,fill:"none",stroke:"currentColor","stroke-width":"2.5","stroke-linecap":"round","vector-effect":"non-scaling-stroke"}));
+  return s;}
+function tag(r){const k=rotulo(r);return h("span",{class:"tag "+(k==="sob-medida"?"t-sob":k==="patrocinado"?"t-pat":"t-casa")},ROT[k])}
+function linha(r,ri,vetoVis){
+  const n=r.slots.length,w=h("div",{class:"linha",role:"list",style:"--n:"+n});
+  w.append(svgLinha(r.nome,n));
+  r.slots.forEach((id,si)=>{const e=X[id],v=vetosDe(ri,si);
+    const c=h("div",{class:"ponto"+(v.length?" vetado":""),role:"listitem"},
+      h("span",{class:"no","aria-hidden":"true"},String(si+1)),h("span",{class:"pn"},e.curto));
+    if(vetoVis&&v.length)c.append(h("span",{class:"pv"},"já foi: "+v.join(", ")));
+    w.append(c)});
+  return w;}
+function rodapeCusto(r){const f=faixa(r);
+  return h("p",{class:"cm"},h("b",null,faixaTxt(f)),f.hi?" por pessoa":" por pessoa",h("br"),total(f.min))}
+
+/* ---------- tela 1 ---------- */
+function render1(){
+  const fr=$("#frase");fr.textContent="";
+  Object.keys(CAMPOS).forEach(c=>{
+    if(CAMPOS[c].pre)fr.append(CAMPOS[c].pre);
+    fr.append(h("button",{class:"chip",type:"button","data-c":c,"aria-expanded":String(S.painel===c),"aria-controls":"painel",
+      onclick:()=>{S.painel=S.painel===c?null:c;render1();$('[data-c="'+c+'"]').focus()}},String(lab(c))));
+  });
+  fr.append(".");
+  const p=$("#painel");
+  if(!S.painel){p.hidden=true;return}
+  const c=S.painel;p.hidden=false;p.textContent="";p.setAttribute("aria-label",CAMPOS[c].q);
+  p.append(h("h2",{class:"mao"},CAMPOS[c].q));
+  const o=h("div",{class:"ops"});
+  CAMPOS[c].ops.forEach(([v,t])=>o.append(h("button",{class:"bt",type:"button","aria-pressed":String(S[c]===v),
+    onclick:()=>{S[c]=v;S.painel=null;render1();$('[data-c="'+c+'"]').focus()}},t)));
+  p.append(o);
+}
+
+/* ---------- tela 2 ---------- */
+function detalhe(r,ri){
+  const f=faixa(r),d=h("div",{class:"detalhe",id:"det"+ri});
+  d.append(h("ul",{class:"chips"},
+    h("li",null,"cabe "+S.n+" pessoas"),h("li",null,tetoFlag(f)),h("li",null,"fica em "+bairros(r))));
+  const t=h("div",{class:"tempo",role:"list"});
+  t.append(svgTrilho(r.nome+"v"));
+  r.slots.forEach((id,si)=>{
+    const e=X[id];
+    if(si)t.append(h("div",{class:"trajeto",role:"listitem"},"Depois, "+viagem(X[r.slots[si-1]],e).t+"."));
+    const key=ri+":"+si,aberta=S.troca===key;
+    const it=h("div",{class:"item",role:"listitem"},
+      h("span",{class:"no","aria-hidden":"true"},String(si+1)),
+      h("h3",null,e.nome,e.spon&&h("span",{class:"tag t-pat pat-mini"},"patrocinado")),
+      h("p",{class:"meta"},e.bairro+" · "+TIPO[e.tipo]+" · "+precoTxt(e.preco)+" · sugestão de "+dur(MIN[e.tipo])),
+      h("p",{class:"pq"},e.porque),
+      h("button",{class:"bt",type:"button","data-k":"tr"+key,"aria-expanded":String(aberta),
+        onclick:()=>{S.troca=aberta?null:key;render2("tr"+key)}},aberta?"Fechar opções":"Trocar este tempo"));
+    if(aberta){const a=h("div",{class:"alts"});
+      alts(ri,si).forEach(({e:c,hint})=>a.append(h("button",{class:"alt",type:"button",onclick:()=>{
+        S.rot[ri].slots[si]=c.id;S.troca=null;say("Troquei "+e.curto+" por "+c.curto+". O resto do roteiro ficou como estava.");render2("tr"+key)}},
+        h("strong",null,c.nome),h("span",null,hint+" · "+precoTxt(c.preco)))));
+      it.append(a)}
+    t.append(it);
+  });
+  d.append(t);
+  return d;}
+function render2(foco){
+  $("#recap").textContent=S.quando&&(lab("quando")+", "+S.n+" pessoas, "+ondeTxt()+", até R$ "+S.teto+", para "+S.clima+".");
+  const av=$("#aviso");av.hidden=!S.aviso;av.textContent=S.aviso;
+  const L=$("#lista2");L.textContent="";
+  S.rot.forEach((r,ri)=>{
+    const aberto=S.aberto===ri;
+    const c=h("article",{class:"cartao","aria-labelledby":"rn"+ri},
+      h("div",{class:"cab"},tag(r),h("span",{class:"votos-n","aria-hidden":"true"},(ri+1)+" de "+S.rot.length)),
+      h("h2",{class:"nome",id:"rn"+ri},r.nome),
+      linha(r,ri,false),
+      h("p",{class:"pq"},porque(r)),
+      h("div",{class:"rodape"},rodapeCusto(r),
+        h("button",{class:"bt",type:"button","data-k":"t"+ri,"aria-expanded":String(aberto),"aria-controls":"det"+ri,
+          onclick:()=>{S.aberto=aberto?-1:ri;render2("t"+ri)}},aberto?"Fechar":"Ver o roteiro")));
+    if(aberto)c.append(detalhe(r,ri));
+    L.append(c);
+  });
+  if(foco){const el=$('[data-k="'+foco+'"]');el&&el.focus()}
+}
+
+/* ---------- tela 3 ---------- */
+function msgGrupo(){
+  const nome=(S.autor||"").trim()||"Alguém";
+  const l=S.rot.map((r,i)=>(i+1)+". "+r.nome+": "+r.slots.map(id=>X[id].curto).join(", depois ")+" ("+faixaTxt(faixa(r))+" por pessoa)").join("\n");
+  return nome+" montou o finde ("+quandoTxt()+", "+S.n+" pessoas, "+ondeTxt()+", até R$ "+S.teto+"). Três roteiros:\n"+l+
+    "\n\nVote no que preferir e vete o tempo que vocês já conhecem:\n"+LINK;
+}
+function render3(){
+  $("#autor").value=S.autor;
+  const m=msgGrupo();$("#msg").textContent=m;
+  $("#zap").href="https://wa.me/?text="+encodeURIComponent(m);
+  $("#erro-autor").hidden=true;
+}
+
+/* ---------- tela 4 ---------- */
+const voter=()=>($("#voter").value.trim().slice(0,24))||"Você";
+function contagem(){return S.rot.map((_,i)=>Object.keys(S.votos).filter(n=>S.votos[n]===i))}
+function render4(foco){
+  const ci=contagem(),eu=voter(),tot=Object.keys(S.votos).length;
+  $("#sub4").textContent=(S.autor||"Ana")+" mandou três roteiros para "+quandoTxt()+", "+S.n+" pessoas.";
+  const falta=AMIGOS.filter(a=>!(a in S.votos));
+  $("#status4").textContent=tot+(tot===1?" voto. ":" votos. ")+(falta.length?"Esperando "+falta.join(", ").replace(/, ([^,]*)$/," e $1")+".":"Todo mundo que mandei já votou.");
+  const L=$("#lista4");L.textContent="";
+  S.rot.forEach((r,ri)=>{
+    const meu=S.votos[eu]===ri,vAb=S.vetoAberto===ri;
+    const c=h("article",{class:"cartao","aria-labelledby":"vn"+ri},
+      h("div",{class:"cab"},tag(r),h("span",{class:"votos-n"},ci[ri].length+(ci[ri].length===1?" voto":" votos"))),
+      h("h2",{class:"nome",id:"vn"+ri},r.nome),
+      linha(r,ri,true),
+      h("p",{class:"pq"},porque(r)),
+      h("div",{class:"quem"},ci[ri].map(n=>h("span",{class:"chip-v"},n))),
+      h("button",{class:"bt votar","data-k":"v"+ri,"aria-pressed":String(meu),
+        onclick:()=>{S.votos[eu]=ri;say("Voto de "+eu+" em "+r.nome);render4("v"+ri)}},meu?"Seu voto":"Votar neste"),
+      h("button",{class:"bt votar","data-k":"x"+ri,"aria-expanded":String(vAb),
+        onclick:()=>{S.vetoAberto=vAb?null:ri;render4("x"+ri)}},vAb?"Fechar vetos":"Vetar um tempo"));
+    if(vAb){const l=h("div",{class:"vetar-lista"});
+      r.slots.forEach((id,si)=>{const k=ri+":"+si,v=vetosDe(ri,si),meuV=v.includes(eu);
+        l.append(h("div",{class:"vl"},h("span",null,X[id].curto),
+          h("button",{class:"bt","data-k":"vv"+k,"aria-pressed":String(meuV),onclick:()=>{
+            const a=S.vetos[k]||[];S.vetos[k]=meuV?a.filter(n=>n!==eu):a.concat(eu);
+            say(meuV?eu+" tirou o veto de "+X[id].curto:eu+" vetou "+X[id].curto+": já foi");render4("vv"+k)}},meuV?"Desfazer":"Esse eu já fui")))});
+      c.append(l)}
+    L.append(c);
+  });
+  const b=$("#barra4");b.textContent="";
+  if(tot>=2){b.append(h("button",{class:"acao",type:"button",onclick:()=>{fechar(eu);go(5)}},"Fechar o programa"))}
+  else b.append(h("p",null,"O programa fecha depois de dois votos."));
+  if(foco){const el=$('[data-k="'+foco+'"]');el&&el.focus()}
+}
+function startSim(){
+  if(S.simOn)return;S.simOn=true;
+  const plano=[[1800,"Bia",0],[3600,"Théo",1],[5600,"Lu",0]];
+  plano.forEach(([ms,nome,ri])=>S.timers.push(setTimeout(()=>{
+    if(!S.rot[ri])return;S.votos[nome]=ri;say(nome+" votou em "+S.rot[ri].nome);
+    if(nome==="Lu"&&S.rot[0].slots.length>1){const k="0:1";S.vetos[k]=(S.vetos[k]||[]).concat("Lu");say("Lu vetou "+X[S.rot[0].slots[1]].curto+": já foi")}
+    if(atual===4)render4();
+  },ms)));
+}
+function fechar(por){
+  const c=contagem().map(a=>a.length);let w=0;c.forEach((x,i)=>{if(x>c[w])w=i});
+  const r=S.rot[w],trocas=[];
+  r.slots.forEach((id,si)=>{const v=vetosDe(w,si);if(!v.length)return;
+    const a=alts(w,si)[0];
+    if(a){r.slots[si]=a.e.id;delete S.vetos[w+":"+si];trocas.push({antes:id,depois:a.e.id,quem:v.slice(),si})}
+    else trocas.push({antes:id,depois:null,quem:v.slice(),si})});
+  S.fechado={ri:w,por,trocas,votos:c[w],todos:Object.keys(S.votos).length};
+}
+function seedFechado(){
+  S.timers.forEach(clearTimeout);S.timers=[];S.simOn=true;
+  S.votos={Bia:0,"Théo":1,Lu:0};S.vetos={"0:1":["Lu"]};
+  fechar(S.autor||"Ana");
+}
+
+/* ---------- tela 5 ---------- */
+function bilheteTexto(){
+  const f=S.fechado,r=S.rot[f.ri];
+  return r.nome+" ("+quandoTxt()+", "+S.n+" pessoas)\n"+r.slots.map((id,i)=>(i+1)+". "+X[id].nome+(i<r.slots.length-1?" (depois, "+viagem(X[id],X[r.slots[i+1]]).t+")":"")).join("\n")+
+    "\n"+faixaTxt(faixa(r))+" por pessoa, "+total(faixa(r).min)+".\nConfiram horário e preço direto no lugar.";
+}
+function render5(){
+  const f=S.fechado,r=S.rot[f.ri],fx=faixa(r);
+  $("#h1-5").textContent=r.nome;
+  $("#b-sub").textContent=lab("quando")+" · "+S.n+" pessoas · "+bairros(r);
+  const m=$("#b-meio");m.textContent="";
+  const t=h("div",{class:"tempo",role:"list"});t.append(svgTrilho(r.nome+"b"));
+  r.slots.forEach((id,si)=>{const e=X[id];
+    if(si)t.append(h("div",{class:"trajeto",role:"listitem"},"Depois, "+viagem(X[r.slots[si-1]],e).t+"."));
+    const it=h("div",{class:"item",role:"listitem"},h("span",{class:"no","aria-hidden":"true"},String(si+1)),
+      h("h3",null,e.nome),h("p",{class:"meta"},e.bairro+" · "+TIPO[e.tipo]+" · sugestão de "+dur(MIN[e.tipo])));
+    const tr=f.trocas.find(x=>x.si===si);
+    if(tr)it.append(h("p",{class:"troca-nota"},tr.depois?"Entrou no lugar de "+X[tr.antes].curto+", que "+tr.quem.join(" e ")+" já conhece.":X[tr.antes].curto+" ficou, mas "+tr.quem.join(" e ")+" já conhece. Vale combinar outro."));
+    t.append(it)});
+  m.append(t);
+  const b=$("#b-base");b.textContent="";
+  const quem=[...new Set([S.autor||"Ana",...Object.keys(S.votos)])];
+  b.append(h("h2",null,"Quem vai"),h("p",null,quem.join(", ").replace(/, ([^,]*)$/," e $1")+"."),
+    h("h2",null,"Por pessoa"),h("p",null,faixaTxt(fx)+", "+total(fx.min)+" no total."),
+    h("h2",null,"Como fechou"),h("p",null,"Venceu com "+f.votos+" de "+f.todos+" votos. Fechado por "+f.por+"."),
+    h("p",{class:"nota"},"Ainda não conferimos os lugares: horário e preço, confirmem direto com cada um."));
+}
+
+/* ---------- navegação ---------- */
+let atual=1;
+function seed(n){
+  if(n>=2&&!S.rot.length)gerar();
+  if(n>=4&&!S.enviado){if(!S.autor)S.autor="Ana";S.enviado=true}
+  if(n===5&&!S.fechado)seedFechado();
+}
+function go(n){
+  seed(n);atual=n;
+  for(let i=1;i<=5;i++){const el=$("#t"+i);el.hidden=i!==n;if(i===n){el.classList.remove("entra");void el.offsetWidth;el.classList.add("entra")}}
+  $("#pula").value=String(n);
+  ({1:render1,2:render2,3:render3,4:()=>{startSim();render4()},5:render5})[n]();
+  window.scrollTo(0,0);
+  $("#t"+n+" h1").focus({preventScroll:true});
+}
+async function copiar(txt,btn){
+  const o=btn.textContent;
+  try{await navigator.clipboard.writeText(txt)}catch(e){
+    const ta=h("textarea",{style:"position:fixed;opacity:0"});ta.value=txt;document.body.append(ta);ta.select();
+    try{document.execCommand("copy")}catch(_){}ta.remove()}
+  btn.textContent="Copiado";say("Copiado");setTimeout(()=>{btn.textContent=o},1800);
+}
+
+/* ---------- ligações ---------- */
+$("#pula").addEventListener("change",e=>go(+e.target.value));
+$("#montar").addEventListener("click",()=>{gerar();go(2)});
+$("#mudar").addEventListener("click",()=>go(1));
+$("#mandar").addEventListener("click",()=>go(3));
+$("#autor").addEventListener("input",e=>{S.autor=e.target.value.slice(0,24);$("#erro-autor").hidden=true;
+  const m=msgGrupo();$("#msg").textContent=m;$("#zap").href="https://wa.me/?text="+encodeURIComponent(m)});
+$("#copiar").addEventListener("click",e=>copiar(msgGrupo(),e.currentTarget));
+$("#enviei").addEventListener("click",()=>{
+  if(!S.autor.trim()){$("#erro-autor").hidden=false;$("#autor").focus();return}
+  S.enviado=true;go(4)});
+$("#voter").addEventListener("input",()=>render4());
+$("#copiar-b").addEventListener("click",e=>copiar(bilheteTexto(),e.currentTarget));
+$("#outro").addEventListener("click",()=>{S.rot=[];S.autor="";S.painel=null;S.timers.forEach(clearTimeout);S.timers=[];S.fechado=null;S.enviado=false;S.simOn=false;S.votos={};S.vetos={};go(1)});
+$("#painel").addEventListener("keydown",e=>{if(e.key==="Escape"){const c=S.painel;S.painel=null;render1();$('[data-c="'+c+'"]').focus()}});
+
+render1();
+})();
+</script>
+</body>
+</html>

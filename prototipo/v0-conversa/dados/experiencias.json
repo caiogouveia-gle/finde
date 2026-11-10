@@ -1,0 +1,2244 @@
+[
+  {
+    "id": "beco-do-batman",
+    "nome": "Beco do Batman",
+    "tipo": "passeio",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Conjunto de becos e ruas da Vila Madalena cobertos de grafite e arte urbana, de acesso livre.",
+    "porque": "Cabe o grupo inteiro, rende foto e conversa em uma hora, e os murais mudam o bastante para valer a repetição.",
+    "combina": [
+      "rua-harmonia-wisard",
+      "bar-astor"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "praca-por-do-sol",
+    "nome": "Praça do Pôr do Sol",
+    "tipo": "ar-livre",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Alto de Pinheiros",
+    "preco": 0,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Praça elevada em Alto de Pinheiros, conhecida como ponto de ver o fim da tarde sobre a cidade.",
+    "porque": "Cada um leva sua bebida, senta na grama e ninguém precisa pedir mesa para uma turma grande.",
+    "combina": [
+      "rua-fradique-coutinho",
+      "bar-filial"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "parque-villa-lobos",
+    "nome": "Parque Villa-Lobos",
+    "tipo": "ar-livre",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Alto de Pinheiros",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Parque urbano grande, com gramados, ciclovia, quadras e áreas de piquenique, na zona oeste.",
+    "porque": "Espaço de sobra para uma turma de oito e um piquenique, e dá para andar de bicicleta ou só deitar.",
+    "combina": [
+      "ciclovia-rio-pinheiros",
+      "largo-da-batata"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "instituto-tomie-ohtake",
+    "nome": "Instituto Tomie Ohtake",
+    "tipo": "cultura",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 0,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Centro cultural de arte contemporânea em prédio projetado por Ruy Ohtake, com exposições temporárias.",
+    "porque": "Em uma hora e meia o grupo já tem assunto para a mesa do bar logo depois, ali perto.",
+    "combina": [
+      "largo-da-batata",
+      "museu-da-casa-brasileira"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "museu-da-casa-brasileira",
+    "nome": "Museu da Casa Brasileira",
+    "tipo": "cultura",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Museu de design e arquitetura doméstica brasileira, numa casa com jardim perto da Avenida Faria Lima.",
+    "porque": "Visita curta e tranquila, boa para quem quer começar a tarde sem pressa e sem barulho.",
+    "combina": [
+      "instituto-tomie-ohtake",
+      "largo-da-batata"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "sesc-pinheiros",
+    "nome": "Sesc Pinheiros",
+    "tipo": "cultura",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Unidade do Sesc com exposições, teatro, oficinas, convivência e lanchonete.",
+    "porque": "Programa grátis ou barato que aguenta grupo grande e muda com o que estiver em cartaz.",
+    "combina": [
+      "largo-da-batata",
+      "instituto-tomie-ohtake"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "sesc-pompeia",
+    "nome": "Sesc Pompeia",
+    "tipo": "cultura",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pompeia",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "agitar",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Centro de cultura e lazer num antigo galpão de fábrica, projeto de Lina Bo Bardi, com exposições, shows e deck.",
+    "porque": "O prédio já vale a ida; sobra tempo para sentar no deque e decidir o resto da noite.",
+    "combina": [
+      "galerias-vila-madalena",
+      "rua-harmonia-wisard"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "feira-benedito-calixto",
+    "nome": "Feira da Praça Benedito Calixto",
+    "tipo": "feira",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Feira de rua de antiguidades, artesanato e comida na Praça Benedito Calixto.",
+    "porque": "Dá para circular em grupo sem rumo, comer em pé e fechar o almoço no restaurante da praça.",
+    "combina": [
+      "consulado-mineiro",
+      "mercado-de-pinheiros"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "mercado-de-pinheiros",
+    "nome": "Mercado de Pinheiros",
+    "tipo": "feira",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 2,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "relaxar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Mercado público de bairro com bancas, bares e restaurantes pequenos.",
+    "porque": "Cada um escolhe a sua banca e todo mundo senta junto, bom para grupo que não concorda no cardápio.",
+    "combina": [
+      "feira-benedito-calixto",
+      "largo-da-batata"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "consulado-mineiro",
+    "nome": "Consulado Mineiro",
+    "tipo": "comida",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 2,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "comemorar",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Restaurante de comida mineira de longa data, na Praça Benedito Calixto.",
+    "porque": "Comida de almoço longo, em porção para dividir, e depois a feira da praça fica a poucos passos.",
+    "combina": [
+      "feira-benedito-calixto",
+      "praca-por-do-sol"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "almoco-rua-mourato-coelho",
+    "nome": "Almoço na Rua Mourato Coelho",
+    "tipo": "comida",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 2,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Trecho de rua entre Pinheiros e a Vila Madalena com vários restaurantes casuais lado a lado.",
+    "porque": "Se ninguém decide, caminhem a rua e escolham na porta: sempre tem mesa para quatro em algum lugar.",
+    "combina": [
+      "rua-fradique-coutinho",
+      "beco-do-batman"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bar-astor",
+    "nome": "Bar Astor",
+    "tipo": "bar",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "agitar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Bar tradicional da Vila Madalena, com mesas na calçada e salão.",
+    "porque": "Casa que já virou ponto de encontro: quem chega primeiro guarda lugar e o resto vai aparecendo.",
+    "combina": [
+      "beco-do-batman",
+      "bares-rua-aspicuelta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bar-filial",
+    "nome": "Bar Filial",
+    "tipo": "bar",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Bar de boteco e petiscos na Vila Madalena, com mesas na rua.",
+    "porque": "Barulho moderado e mesa na calçada, dá para conversar sem levantar a voz.",
+    "combina": [
+      "rua-fradique-coutinho",
+      "praca-por-do-sol"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bares-rua-aspicuelta",
+    "nome": "Bares da Rua Aspicuelta",
+    "tipo": "bar",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 12
+    },
+    "climas": [
+      "agitar",
+      "comemorar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Rua da Vila Madalena com vários bares lado a lado, onde o roteiro é escolher o bar a pé.",
+    "porque": "Roteiro de bar em bar: se um estiver lotado, o vizinho resolve, e a turma se divide sem se perder.",
+    "combina": [
+      "beco-do-batman",
+      "o-do-borogodo"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "o-do-borogodo",
+    "nome": "Ó do Borogodó",
+    "tipo": "musica",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 1,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "agitar",
+      "comemorar",
+      "descobrir"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Casa de samba e choro na Vila Madalena, com música ao vivo.",
+    "porque": "Samba ao vivo num lugar pequeno, onde todo mundo acaba cantando junto, mesmo quem não sabe a letra.",
+    "combina": [
+      "bares-rua-aspicuelta",
+      "grazie-a-dio"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "grazie-a-dio",
+    "nome": "Grazie a Dio!",
+    "tipo": "musica",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "agitar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Casa de shows e balada na Vila Madalena, com música ao vivo e pista.",
+    "porque": "Para quando o grupo quer sair do bar e dançar; entram juntos e se espalham pela pista.",
+    "combina": [
+      "o-do-borogodo",
+      "bares-rua-aspicuelta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "sinuca-vila-madalena",
+    "nome": "Sinuca nos bares da Vila Madalena",
+    "tipo": "jogo",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 1,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 6
+    },
+    "climas": [
+      "agitar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Bares da Vila Madalena que têm mesa de sinuca; o programa é escolher um e jogar em duplas.",
+    "porque": "Quem joga enquanto espera a vez já está no programa, e quem não joga assiste e come petisco.",
+    "combina": [
+      "bar-astor",
+      "bares-rua-aspicuelta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "galerias-vila-madalena",
+    "nome": "Galerias e ateliês da Vila Madalena",
+    "tipo": "cultura",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 0,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 6
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Roteiro a pé por galerias de arte e ateliês espalhados pelas ruas da Vila Madalena.",
+    "porque": "Entrada livre e ritmo de quem folheia: entra, olha cinco minutos, sai, e dá o que comentar.",
+    "combina": [
+      "beco-do-batman",
+      "rua-harmonia-wisard"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "livraria-da-vila-fradique",
+    "nome": "Livraria da Vila (Fradique Coutinho)",
+    "tipo": "cultura",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 4
+    },
+    "climas": [
+      "relaxar",
+      "descobrir"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Livraria de bairro na Rua Fradique Coutinho, com café.",
+    "porque": "Meia hora entre estantes e um café resolvem a espera de quem chegou cedo.",
+    "combina": [
+      "rua-fradique-coutinho",
+      "praca-por-do-sol"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "ciclovia-rio-pinheiros",
+    "nome": "Ciclovia do Rio Pinheiros",
+    "tipo": "ar-livre",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 0,
+    "momentos": [
+      "manha"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "relaxar",
+      "descobrir"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Ciclovia à margem do Rio Pinheiros, que liga a região de Pinheiros a outros bairros da zona oeste.",
+    "porque": "Pedal plano e reto, para manhã de quem acorda cedo; dá para parar no Villa-Lobos no meio do caminho.",
+    "combina": [
+      "parque-villa-lobos",
+      "mercado-de-pinheiros"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "largo-da-batata",
+    "nome": "Largo da Batata",
+    "tipo": "passeio",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Pinheiros",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "agitar",
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Praça ampla em Pinheiros, ponto de passagem e de encontro, cercada de bares e comércio.",
+    "porque": "Ponto fácil de marcar: quem está atrasado acha o grupo e dali todo mundo escolhe para onde ir.",
+    "combina": [
+      "bares-rua-aspicuelta",
+      "sesc-pinheiros"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "rua-harmonia-wisard",
+    "nome": "Rua Harmonia e Rua Wisard a pé",
+    "tipo": "passeio",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 10
+    },
+    "climas": [
+      "descobrir",
+      "conversar",
+      "relaxar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Caminhada pelas ruas Harmonia e Wisard, na Vila Madalena, com grafites, ateliês e cafés.",
+    "porque": "Caminhada de uma hora com café no meio, boa para domingo de manhã com quem veio de fora.",
+    "combina": [
+      "beco-do-batman",
+      "galerias-vila-madalena"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "rua-fradique-coutinho",
+    "nome": "Rua Fradique Coutinho",
+    "tipo": "passeio",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "descobrir"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Rua comprida da Vila Madalena com bares, cafés, livraria e lojas pequenas.",
+    "porque": "Dá para ir de loja em loja até bater a fome e escolher o bar mais próximo sem combinar nada.",
+    "combina": [
+      "bar-filial",
+      "livraria-da-vila-fradique"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "rua-girassol",
+    "nome": "Rua Girassol",
+    "tipo": "passeio",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "agitar",
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Rua da Vila Madalena conhecida pelos bares, murais e movimento de calçada.",
+    "porque": "Quem quer ver gente passar escolhe uma mesa na calçada; quem quer andar, segue a rua inteira.",
+    "combina": [
+      "bares-rua-aspicuelta",
+      "bar-astor"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "pinacoteca-luz",
+    "nome": "Pinacoteca de São Paulo",
+    "tipo": "cultura",
+    "regiao": "centro",
+    "bairro": "Luz",
+    "preco": 1,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Museu de arte brasileira em prédio histórico de tijolo aparente, ao lado do Parque da Luz.",
+    "porque": "Duas horas bastam e o Parque da Luz fica na porta, para continuar a conversa ao ar livre.",
+    "combina": [
+      "parque-da-luz",
+      "museu-de-arte-sacra"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "parque-da-luz",
+    "nome": "Parque da Luz",
+    "tipo": "ar-livre",
+    "regiao": "centro",
+    "bairro": "Luz",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Parque público do século XIX no bairro da Luz, com alamedas, esculturas e lagos.",
+    "porque": "Dá para sentar em círculo no gramado e conversar com a Pinacoteca ao lado como plano B.",
+    "combina": [
+      "pinacoteca-luz",
+      "museu-da-lingua-portuguesa"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "museu-da-lingua-portuguesa",
+    "nome": "Museu da Língua Portuguesa",
+    "tipo": "cultura",
+    "regiao": "centro",
+    "bairro": "Luz",
+    "preco": 1,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Museu interativo na Estação da Luz, sobre a história e os usos do português.",
+    "porque": "Museu para ir em grupo mesmo: tem tela, som e jogo de palavra, e ninguém fica só olhando parede.",
+    "combina": [
+      "parque-da-luz",
+      "pinacoteca-luz"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "theatro-municipal",
+    "nome": "Theatro Municipal",
+    "tipo": "cultura",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 1,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "comemorar",
+      "descobrir"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Casa de ópera, concertos e balé no centro, em prédio histórico de 1911.",
+    "porque": "Combina com uma saída maior: arrumar-se, entrar no saguão e fazer disso a ocasião da noite.",
+    "combina": [
+      "dona-onca",
+      "bar-brahma"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "mercado-municipal",
+    "nome": "Mercado Municipal",
+    "tipo": "feira",
+    "regiao": "centro",
+    "bairro": "Centro",
+    "preco": 2,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "comemorar",
+      "descobrir"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Mercado público de 1933, com bancas de comida, frutas e produtos importados.",
+    "porque": "Cada um monta o seu prato numa banca diferente e dividem uma mesa no mezanino.",
+    "combina": [
+      "parque-da-aclimacao",
+      "patio-do-colegio-se"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "farol-santander",
+    "nome": "Farol Santander",
+    "tipo": "passeio",
+    "regiao": "centro",
+    "bairro": "Centro",
+    "preco": 1,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Antigo edifício Altino Arantes, com mirante no alto sobre o centro, exposições e restaurante.",
+    "porque": "Vista do centro de cima, rápida e fácil, boa para fechar a ida ao Vale do Anhangabaú.",
+    "combina": [
+      "anhangabau-viaduto-do-cha",
+      "patio-do-colegio-se"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "patio-do-colegio-se",
+    "nome": "Pátio do Colégio e Praça da Sé",
+    "tipo": "cultura",
+    "regiao": "centro",
+    "bairro": "Sé",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Local da fundação da cidade, com igreja, museu e a Catedral da Sé na praça ao lado.",
+    "porque": "O ponto de partida da cidade, grátis e perto do metrô, bom para quem nunca parou ali de verdade.",
+    "combina": [
+      "farol-santander",
+      "mercado-municipal"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "liberdade-passeio",
+    "nome": "Liberdade a pé",
+    "tipo": "passeio",
+    "regiao": "centro",
+    "bairro": "Liberdade",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "conversar",
+      "agitar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Bairro de tradição japonesa e oriental, com praça, lojas, mercadinhos e restaurantes.",
+    "porque": "Roteiro de lojinha e comida de rua, bom para quem quer sair de lá com uma sacola e a barriga cheia.",
+    "combina": [
+      "karaoke-liberdade",
+      "cine-joia"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "galeria-do-rock",
+    "nome": "Galeria do Rock",
+    "tipo": "passeio",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 0,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "agitar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Galeria comercial com lojas de discos, roupas e acessórios ligados ao rock, ao metal e à cultura alternativa.",
+    "porque": "Meia hora de loja em loja sai mais barata do que parece e todo mundo sai com uma ideia.",
+    "combina": [
+      "bar-brahma",
+      "dona-onca"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "ccbb-sao-paulo",
+    "nome": "CCBB São Paulo",
+    "tipo": "cultura",
+    "regiao": "centro",
+    "bairro": "Centro",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Centro cultural no centro histórico, com exposições, teatro, cinema e café.",
+    "porque": "Prédio bonito, exposição que costuma ter fila de gente curiosa e café para comparar impressões.",
+    "combina": [
+      "farol-santander",
+      "patio-do-colegio-se"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "sesc-24-de-maio",
+    "nome": "Sesc 24 de Maio",
+    "tipo": "cultura",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "relaxar",
+      "agitar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Unidade do Sesc com exposições, teatro, piscina no terraço e área de convivência.",
+    "porque": "Cabe grupo grande, tem lugar para sentar e sempre algo acontecendo por perto, de graça ou quase.",
+    "combina": [
+      "dona-onca",
+      "theatro-municipal"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "casa-de-francisca",
+    "nome": "Casa de Francisca",
+    "tipo": "musica",
+    "regiao": "centro",
+    "bairro": "Centro",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "conversar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Casa de música ao vivo em casarão no centro, com bar e palco pequeno.",
+    "porque": "Palco perto da mesa, de modo que o grupo ouve bem sem precisar gritar para conversar.",
+    "combina": [
+      "dona-onca",
+      "bar-brahma"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bar-brahma",
+    "nome": "Bar Brahma",
+    "tipo": "bar",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 12
+    },
+    "climas": [
+      "agitar",
+      "comemorar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Bar histórico na esquina da Ipiranga com a São João, no centro.",
+    "porque": "A esquina mais citada da cidade; pedir mesa grande ali dá a noite um cenário por si só.",
+    "combina": [
+      "dona-onca",
+      "theatro-municipal"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "dona-onca",
+    "nome": "Bar da Dona Onça",
+    "tipo": "comida",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 2,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Bar e restaurante no térreo do Edifício Copan, com cozinha brasileira e mesas dentro e fora.",
+    "porque": "Fica dentro do Copan, então já vale pelo prédio, e a mesa grande se arruma com facilidade.",
+    "combina": [
+      "bar-brahma",
+      "galeria-do-rock"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bar-leo",
+    "nome": "Bar Léo",
+    "tipo": "bar",
+    "regiao": "centro",
+    "bairro": "Centro",
+    "preco": 1,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Bar de chope e petiscos no centro, aberto há muitas décadas.",
+    "porque": "Chope gelado, mesa de boteco antigo e gente de todas as idades, sem pose nenhuma.",
+    "combina": [
+      "pinacoteca-luz",
+      "dona-onca"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "cine-joia",
+    "nome": "Cine Joia",
+    "tipo": "musica",
+    "regiao": "centro",
+    "bairro": "Liberdade",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "agitar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Casa de shows num antigo cinema da Liberdade, com pista e palco.",
+    "porque": "Show em pé, com bar no fundo; para grupo que quer sair dançando e não precisa de mesa.",
+    "combina": [
+      "karaoke-liberdade",
+      "liberdade-passeio"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "karaoke-liberdade",
+    "nome": "Karaokê na Liberdade",
+    "tipo": "jogo",
+    "regiao": "centro",
+    "bairro": "Liberdade",
+    "preco": 1,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "agitar",
+      "comemorar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Casas de karaokê em cabines privativas na Liberdade, em que o grupo reserva uma sala.",
+    "porque": "Sala só do grupo, ninguém assiste, e quem tem vergonha acaba cantando no refrão.",
+    "combina": [
+      "liberdade-passeio",
+      "cine-joia"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "feira-praca-da-republica",
+    "nome": "Feira da Praça da República",
+    "tipo": "feira",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Feira de arte e artesanato na Praça da República, com barracas de pintura, bijuteria e comida.",
+    "porque": "Passeio solto, com barraca de tudo, ideal para ver a praça sem compromisso e voltar para casa com algo.",
+    "combina": [
+      "theatro-municipal",
+      "galeria-do-rock"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "museu-de-arte-sacra",
+    "nome": "Museu de Arte Sacra",
+    "tipo": "cultura",
+    "regiao": "centro",
+    "bairro": "Luz",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 6
+    },
+    "climas": [
+      "descobrir",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Museu de arte religiosa colonial instalado em um mosteiro do século XVIII, na Avenida Tiradentes.",
+    "porque": "Silencioso e fora do circuito, um achado para quem acha que já viu tudo de museu.",
+    "combina": [
+      "pinacoteca-luz",
+      "parque-da-luz"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "mosteiro-de-sao-bento",
+    "nome": "Mosteiro de São Bento",
+    "tipo": "passeio",
+    "regiao": "centro",
+    "bairro": "Centro",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "relaxar",
+      "descobrir"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Mosteiro e basílica beneditina no centro, com pátio e igreja abertos a visitantes.",
+    "porque": "Silêncio em pleno centro, que serve de pausa antes de voltar para o barulho do Viaduto.",
+    "combina": [
+      "anhangabau-viaduto-do-cha",
+      "patio-do-colegio-se"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "anhangabau-viaduto-do-cha",
+    "nome": "Vale do Anhangabaú e Viaduto do Chá",
+    "tipo": "passeio",
+    "regiao": "centro",
+    "bairro": "Centro",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Passeio a pé pelo Vale do Anhangabaú e o Viaduto do Chá, com vista dos prédios do centro.",
+    "porque": "Praça aberta e plana, boa para caminhar e conversar com gente no entorno sem ninguém se apertar.",
+    "combina": [
+      "farol-santander",
+      "theatro-municipal"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "sala-sao-paulo",
+    "nome": "Sala São Paulo",
+    "tipo": "musica",
+    "regiao": "centro",
+    "bairro": "Luz",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "comemorar",
+      "descobrir",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Sala de concertos na antiga estação Júlio Prestes, sede da orquestra sinfônica do estado.",
+    "porque": "Concerto numa das melhores salas do país, em ocasião para vestir algo melhor e fechar a semana.",
+    "combina": [
+      "pinacoteca-luz",
+      "parque-da-luz"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "parque-da-aclimacao",
+    "nome": "Parque da Aclimação",
+    "tipo": "ar-livre",
+    "regiao": "centro",
+    "bairro": "Aclimação",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Parque com lago, trilhas e gramados, na região da Liberdade.",
+    "porque": "Lago, sombra e gramado perto da Liberdade, para quem quer um pique tranquilo depois do almoço.",
+    "combina": [
+      "liberdade-passeio",
+      "karaoke-liberdade"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "casa-do-porco",
+    "nome": "A Casa do Porco",
+    "tipo": "comida",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 3,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "comemorar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Restaurante de cozinha brasileira com foco em carne de porco, no centro, bastante procurado.",
+    "porque": "É o jantar que o grupo marca com antecedência para comemorar; reservem e peçam para dividir.",
+    "combina": [
+      "bar-brahma",
+      "dona-onca"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "parque-ibirapuera",
+    "nome": "Parque Ibirapuera",
+    "tipo": "ar-livre",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Ibirapuera",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "relaxar",
+      "conversar",
+      "descobrir"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Maior parque urbano da cidade, com lago, marquise, museus e pistas, projeto de Niemeyer e Burle Marx.",
+    "porque": "Dá para ir com cinco pessoas ou vinte e ainda achar sombra, e cada um segue o ritmo que quiser.",
+    "combina": [
+      "museu-afro-brasil",
+      "auditorio-ibirapuera"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "masp",
+    "nome": "MASP",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Paulista",
+    "preco": 2,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Museu de arte com acervo europeu e brasileiro, em prédio de Lina Bo Bardi na Avenida Paulista.",
+    "porque": "Os quadros ficam sobre cavaletes de vidro, e olhar todo mundo ao redor da mesma tela rende conversa.",
+    "combina": [
+      "parque-trianon",
+      "paulista-aberta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "instituto-moreira-salles-paulista",
+    "nome": "Instituto Moreira Salles Paulista",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Paulista",
+    "preco": 0,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Centro cultural de fotografia, música e literatura na Avenida Paulista, com café e livraria.",
+    "porque": "Fotografia sem pressão: entrada livre, três andares e um café para rever as imagens favoritas.",
+    "combina": [
+      "parque-trianon",
+      "casa-das-rosas"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "casa-das-rosas",
+    "nome": "Casa das Rosas",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Paulista",
+    "preco": 0,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 6
+    },
+    "climas": [
+      "relaxar",
+      "descobrir"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Espaço de literatura e poesia em casarão com jardim na Avenida Paulista.",
+    "porque": "Casarão de jardim no meio dos prédios, quieto, bom para uma pausa de meia hora entre dois programas.",
+    "combina": [
+      "instituto-moreira-salles-paulista",
+      "masp"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "parque-trianon",
+    "nome": "Parque Trianon",
+    "tipo": "ar-livre",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Paulista",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Parque com mata atlântica preservada, em frente ao MASP, no meio da Avenida Paulista.",
+    "porque": "Mata de verdade a dois passos do MASP, onde o grupo sente a temperatura cair antes de sentar.",
+    "combina": [
+      "masp",
+      "paulista-aberta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "paulista-aberta",
+    "nome": "Domingo na Paulista aberta",
+    "tipo": "passeio",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Paulista",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "agitar",
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Programa de fechar a Avenida Paulista para pedestres e ciclistas em horários de lazer, com artistas de rua e barracas.",
+    "porque": "Quem não sabe o que fazer anda a avenida de ponta a ponta e acha uma banda, um museu ou um sorvete.",
+    "combina": [
+      "masp",
+      "parque-trianon"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "sesc-avenida-paulista",
+    "nome": "Sesc Avenida Paulista",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Paulista",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Unidade do Sesc com exposições, teatro, oficinas e um terraço com vista, na Paulista.",
+    "porque": "Vista do terraço, exposição de graça e um lugar para sentar entre o MASP e o jantar.",
+    "combina": [
+      "masp",
+      "casa-das-rosas"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "museu-afro-brasil",
+    "nome": "Museu Afro Brasil",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Ibirapuera",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Museu de arte e história afro-brasileira dentro do Parque Ibirapuera.",
+    "porque": "Acervo grande e pouco famoso, para quem quer entrar no Ibirapuera por um motivo além do gramado.",
+    "combina": [
+      "parque-ibirapuera",
+      "planetario-ibirapuera"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "planetario-ibirapuera",
+    "nome": "Planetário do Ibirapuera",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Ibirapuera",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Planetário com cúpula de projeção de céu, ligado ao Parque Ibirapuera.",
+    "porque": "Sentar de cabeça para cima por uma hora, sem celular, descansa melhor que uma soneca.",
+    "combina": [
+      "parque-ibirapuera",
+      "museu-afro-brasil"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bixiga-passeio",
+    "nome": "Bixiga a pé",
+    "tipo": "passeio",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Bixiga",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "conversar",
+      "agitar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Bairro de tradição italiana e afro-brasileira, com ruas, cantinas, escolas de samba e teatros.",
+    "porque": "Cantina, samba e teatro numa só região, para quem prefere trocar de cenário a ficar numa mesa só.",
+    "combina": [
+      "cantina-speranza",
+      "mirante-9-de-julho"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "feira-do-bixiga",
+    "nome": "Feira de antiguidades do Bixiga",
+    "tipo": "feira",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Bixiga",
+    "preco": 1,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "descobrir",
+      "conversar",
+      "relaxar"
+    ],
+    "arLivre": true,
+    "comida": "tem",
+    "resumo": "Feira de rua de antiguidades, artesanato e comida na Praça Dom Orione, no Bixiga.",
+    "porque": "Passeio solto entre barracas de tudo, que acaba na cantina mais próxima sem plano nenhum.",
+    "combina": [
+      "cantina-speranza",
+      "bixiga-passeio"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "cantina-speranza",
+    "nome": "Pizzaria Speranza",
+    "tipo": "comida",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Bixiga",
+    "preco": 2,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "comemorar",
+      "agitar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Pizzaria tradicional do Bixiga, aberta há décadas.",
+    "porque": "Pizza pedida por mesa e dividida no meio, de modo que ninguém precisa decidir sozinho.",
+    "combina": [
+      "bixiga-passeio",
+      "mirante-9-de-julho"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "pizzaria-camelo",
+    "nome": "Pizzaria Camelo",
+    "tipo": "comida",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Jardins",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "comemorar",
+      "agitar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Pizzaria clássica nos Jardins, de fila longa nas noites de fim de semana.",
+    "porque": "Pizza que o grupo já conhece de nome; cheguem cedo e esperem a mesa com cerveja na calçada.",
+    "combina": [
+      "sinuca-augusta",
+      "paulista-aberta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bar-veloso",
+    "nome": "Bar Veloso",
+    "tipo": "bar",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Vila Mariana",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "agitar",
+      "conversar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Boteco tradicional da Vila Mariana, com salão cheio e mesas na calçada.",
+    "porque": "Boteco de bairro que já ficou famoso; vá em turma, peça petisco para a mesa e aceite a espera.",
+    "combina": [
+      "parque-ibirapuera",
+      "tom-jazz"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "estadao-bar-restaurante",
+    "nome": "Estadão",
+    "tipo": "comida",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Bela Vista",
+    "preco": 1,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Lanchonete e restaurante tradicional ao lado do Viaduto Nove de Julho.",
+    "porque": "Mesa de lanchonete em hora estranha, a conta é pequena e o assunto fica longo.",
+    "combina": [
+      "mirante-9-de-julho",
+      "bixiga-passeio"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "padaria-bella-paulista",
+    "nome": "Padaria Bella Paulista",
+    "tipo": "comida",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Consolação",
+    "preco": 1,
+    "momentos": [
+      "manha",
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "centro",
+    "resumo": "Padaria de esquina na Consolação, com salgados, doces e mesas, que fica aberta até tarde.",
+    "porque": "Serve quando o programa acaba cedo ou o grupo chega faminto e ninguém quer escolher restaurante.",
+    "combina": [
+      "paulista-aberta",
+      "cine-belas-artes"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "cine-belas-artes",
+    "nome": "Cine Belas Artes",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Consolação",
+    "preco": 1,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Cinema de rua tradicional da Consolação, com programação de filmes de autor e clássicos.",
+    "porque": "Sessão em sala antiga, que rende conversa pós-filme sem precisar nem escolher o assunto.",
+    "combina": [
+      "padaria-bella-paulista",
+      "sinuca-augusta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "mis-museu-da-imagem-e-do-som",
+    "nome": "MIS (Museu da Imagem e do Som)",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Jardim Europa",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Museu de fotografia, cinema e artes visuais na Avenida Europa, com café.",
+    "porque": "Exposição de imagem em movimento, que dura uma tarde e ainda sobra tempo para jantar na região.",
+    "combina": [
+      "casa-museu-ema-klabin",
+      "pizzaria-camelo"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "casa-museu-ema-klabin",
+    "nome": "Casa Museu Ema Klabin",
+    "tipo": "cultura",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Jardim Europa",
+    "preco": 1,
+    "momentos": [
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 6
+    },
+    "climas": [
+      "descobrir",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Casa-museu com acervo de arte e jardim, no Jardim Europa, aberta a visitas.",
+    "porque": "Visita em casa de verdade, com sala, jardim e objeto antigo, em tom mais íntimo que museu grande.",
+    "combina": [
+      "mis-museu-da-imagem-e-do-som",
+      "pizzaria-camelo"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "sinuca-augusta",
+    "nome": "Sinuca e pebolim na Rua Augusta",
+    "tipo": "jogo",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Consolação",
+    "preco": 1,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "agitar",
+      "conversar",
+      "comemorar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Bares da Rua Augusta com sinuca, pebolim ou fliperama, em que o programa é escolher o bar e jogar.",
+    "porque": "Jogo em dupla enquanto o resto da mesa torce, e o bar já é a próxima parada sem sair de lá.",
+    "combina": [
+      "pizzaria-camelo",
+      "bar-veloso"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "mirante-9-de-julho",
+    "nome": "Mirante 9 de Julho",
+    "tipo": "passeio",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Bela Vista",
+    "preco": 0,
+    "momentos": [
+      "tarde",
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 12
+    },
+    "climas": [
+      "relaxar",
+      "descobrir",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Mirante público no alto do Viaduto Nove de Julho, com vista da cidade.",
+    "porque": "Mirante sem ingresso, que serve de fim de tarde antes de uma pizza no Bixiga a poucos passos.",
+    "combina": [
+      "cantina-speranza",
+      "estadao-bar-restaurante"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "auditorio-ibirapuera",
+    "nome": "Auditório Ibirapuera",
+    "tipo": "musica",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Ibirapuera",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 8
+    },
+    "climas": [
+      "descobrir",
+      "comemorar",
+      "relaxar"
+    ],
+    "arLivre": false,
+    "comida": "nao",
+    "resumo": "Sala de concertos desenhada por Niemeyer, no Parque Ibirapuera, com palco aberto para o parque.",
+    "porque": "Concerto numa sala de arquitetura famosa, para tratar a noite como ocasião e depois caminhar no parque.",
+    "combina": [
+      "parque-ibirapuera",
+      "museu-afro-brasil"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "tom-jazz",
+    "nome": "Tom Jazz",
+    "tipo": "musica",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Consolação",
+    "preco": 2,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 8
+    },
+    "climas": [
+      "conversar",
+      "comemorar",
+      "descobrir"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Casa de jazz e música instrumental na Avenida Angélica, com mesas e jantar.",
+    "porque": "Música ao vivo sem berro, de modo que dá para ouvir e ainda comentar a música com o vizinho de mesa.",
+    "combina": [
+      "sinuca-augusta",
+      "bar-veloso"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "parque-mario-covas",
+    "nome": "Parque Mário Covas",
+    "tipo": "ar-livre",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Paulista",
+    "preco": 0,
+    "momentos": [
+      "manha",
+      "tarde"
+    ],
+    "grupo": {
+      "min": 1,
+      "max": 20
+    },
+    "climas": [
+      "relaxar",
+      "conversar"
+    ],
+    "arLivre": true,
+    "comida": "nao",
+    "resumo": "Parque urbano pequeno, com gramado e árvores, perto da Avenida Paulista.",
+    "porque": "Gramado perto da avenida, para parar uma hora com lanche de padaria antes de seguir.",
+    "combina": [
+      "padaria-bella-paulista",
+      "paulista-aberta"
+    ],
+    "selo": "editorial",
+    "conferido": false
+  },
+  {
+    "id": "bar-exemplo",
+    "nome": "Bar Exemplo (parceiro fictício)",
+    "tipo": "bar",
+    "regiao": "pinheiros-vila-madalena",
+    "bairro": "Vila Madalena",
+    "preco": 1,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "agitar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Lugar inventado para mostrar como o patrocínio aparece na lista; este bar não existe.",
+    "porque": "Exemplo de como o selo de patrocinado aparece, sempre separado das escolhas da casa.",
+    "combina": [],
+    "selo": "patrocinado",
+    "conferido": false
+  },
+  {
+    "id": "boliche-exemplo",
+    "nome": "Boliche Exemplo (parceiro fictício)",
+    "tipo": "jogo",
+    "regiao": "centro",
+    "bairro": "República",
+    "preco": 1,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "agitar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Lugar inventado para mostrar como o patrocínio aparece na lista; este boliche não existe.",
+    "porque": "Exemplo de como o selo de patrocinado aparece, sempre separado das escolhas da casa.",
+    "combina": [],
+    "selo": "patrocinado",
+    "conferido": false
+  },
+  {
+    "id": "restaurante-exemplo",
+    "nome": "Restaurante Exemplo (parceiro fictício)",
+    "tipo": "comida",
+    "regiao": "paulista-ibirapuera",
+    "bairro": "Jardins",
+    "preco": 1,
+    "momentos": [
+      "noite"
+    ],
+    "grupo": {
+      "min": 2,
+      "max": 10
+    },
+    "climas": [
+      "conversar",
+      "agitar"
+    ],
+    "arLivre": false,
+    "comida": "tem",
+    "resumo": "Lugar inventado para mostrar como o patrocínio aparece na lista; este restaurante não existe.",
+    "porque": "Exemplo de como o selo de patrocinado aparece, sempre separado das escolhas da casa.",
+    "combina": [],
+    "selo": "patrocinado",
+    "conferido": false
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "A": {
+    "nome": "Papel vivo",
+    "pasta": "A-papel-vivo",
+    "entrada": 0.32,
+    "distancia": 25,
+    "transicao": 0.2,
+    "camera": false
+  },
+  "B": {
+    "nome": "Câmera suave",
+    "pasta": "B-camera-suave",
+    "entrada": 0.4,
+    "distancia": 32,
+    "transicao": 0.34,
+    "camera": true
+  },
+  "C": {
+    "nome": "Direção refinada",
+    "pasta": "C-direcao-refinada",
+    "entrada": 0.36,
+    "distancia": 28,
+    "transicao": 0.22,
+    "camera": true,
+    "refinado": true
+  }
+}
