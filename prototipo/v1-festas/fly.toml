@@ -1,0 +1,33 @@
+# Fly.io: o protótipo visual do Finde, em endereço provisório (finde.fly.dev).
+# Publicar: fly deploy (nesta pasta). Volume criado uma vez:
+#   fly volumes create finde_convites --region gru --size 1
+app = "finde"
+primary_region = "gru"
+
+[build]
+  # ./Dockerfile
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Para quando ninguém usa e liga no primeiro acesso: o protótipo não tem
+  # tarefa agendada, então máquina parada não perde nada.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "3s"
+    grace_period = "10s"
+    method = "get"
+    path = "/"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# Os convites mandados ao grupo moram aqui; sem o volume, sumiriam a cada deploy.
+[mounts]
+  source = "finde_convites"
+  destination = "/data"

@@ -158,6 +158,26 @@
     return el('header', { class: 'topo' }, marca(), direita || null);
   }
 
+  // Recomeçar: zera o pedido, a conversa, a lista e a festa aberta, e volta à
+  // pergunta 1. Os convites já criados ficam (o mesmo link reabre).
+  function botaoRecomecar() {
+    const b = el('button', { type: 'button', class: 'botao-texto', texto: 'Recomeçar', 'aria-label': 'Recomeçar o pedido do zero' });
+    b.addEventListener('click', recomecar);
+    return b;
+  }
+
+  function recomecar() {
+    if (estado.ocupado) return;
+    clearTimeout(estado.avancoPendente);
+    Object.assign(estado, {
+      respostas: { dia: null, janela: null, bairros: [], idade: null, teto: null, estilos: [] },
+      editando: null, criterios: null, resultado: null, fala: null, novas: [], mandar: null, festa: null, rolagemLista: 0,
+    });
+    // O histórico também recomeça: voltar da pergunta 1 leva ao início, nunca à lista velha.
+    history.replaceState({ tela: 'inicio', passo: 0 }, '');
+    ir('pergunta', { passo: 0 });
+  }
+
   function botaoVoltar() {
     const b = el('button', { type: 'button', class: 'botao-texto', texto: 'Voltar' });
     b.addEventListener('click', () => history.back());
@@ -690,7 +710,8 @@
         el('p', { class: 'onde', 'aria-hidden': 'true' }, `${o.bairro} `, el('span', { class: 'onde-preco', texto: `· ${FT.precoNaLista(f)}`.replace(/R\$ /g, 'R$\u00a0') })),
         motivos.length ? el('p', { class: 'porque' },
           el('span', { class: 'vh', texto: 'Por que esta: ' }),
-          motivos.flatMap((m, i) => [i ? ' · ' : null, el('span', { class: 'item', texto: m })])) : null,
+          // O "·" vai preso ao motivo seguinte, nunca pendurado no fim da linha.
+          motivos.flatMap((m, i) => [i ? ' ' : null, el('span', { class: 'item', texto: `${i ? '· ' : ''}${semQuebraNoPreco(m)}` })])) : null,
         // O sinal visível de que o item abre: só no primeiro da lista.
         primeiro ? el('span', { class: 'ver', 'aria-hidden': 'true', texto: 'Ver a festa' }) : null));
   }
@@ -795,7 +816,7 @@
     h2.removeAttribute('tabindex');
 
     return el('div', { class: 'tela-resultado', id: 'tela-resultado' },
-      topo(),
+      topo(botaoRecomecar()),
       el('section', { class: 'cabeca', id: 'cabeca-resultado' },
         frasePedido(r.pedidoPartes || []),
         tituloResultado(),

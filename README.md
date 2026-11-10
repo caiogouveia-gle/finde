@@ -32,3 +32,5 @@ cd prototipo/v1-festas && node servidor.js
 ```
 
 Abre em `http://localhost:8763`. Testes: `node --test teste/`.
+
+No ar, em endereço provisório: https://finde.fly.dev (Fly.io, São Paulo; a máquina dorme sem uso e acorda no primeiro acesso). Para publicar de novo: `fly deploy` dentro de `prototipo/v1-festas`.
