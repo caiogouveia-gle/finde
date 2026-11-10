@@ -1,0 +1,885 @@
+{
+  "aviso": "Base fictícia do protótipo do Finde. Festas, produtoras e casas inventadas; nenhuma existe.",
+  "fimDeSemana": "sexta, sábado e domingo",
+  "festas": [
+    {
+      "id": "sexta-sem-pressa",
+      "nome": "Sexta Sem Pressa",
+      "produtora": "Coletivo Expediente",
+      "casa": "terraço em Pinheiros",
+      "bairro": "pinheiros",
+      "regiao": "oeste",
+      "dia": "sex",
+      "inicio": 18,
+      "esquenta": 20,
+      "fim": 23,
+      "mediaIdade": 32,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 60,
+      "estilos": [
+        "house-disco"
+      ],
+      "frase": "Sai do trabalho direto pra pista. O crachá fica na bolsa.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "disco-do-poente",
+      "nome": "Disco do Poente",
+      "produtora": "Selo Mormaço",
+      "casa": "rooftop na Bela Vista",
+      "bairro": "bela-vista",
+      "regiao": "centro",
+      "dia": "sex",
+      "inicio": 17,
+      "esquenta": 19,
+      "fim": 23,
+      "mediaIdade": 31,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 50,
+      "estilos": [
+        "house-disco",
+        "pop-2000"
+      ],
+      "frase": "O sol vai embora às seis. A pista fica.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "roda-de-sexta",
+      "nome": "Roda de Sexta",
+      "produtora": "Samba da Esquina Torta",
+      "casa": "quintal na Vila Mariana",
+      "bairro": "vila-mariana",
+      "regiao": "centro-sul",
+      "dia": "sex",
+      "inicio": 18,
+      "esquenta": 20,
+      "fim": 24,
+      "mediaIdade": 35,
+      "faixas": [
+        "30-35",
+        "36+"
+      ],
+      "preco": 30,
+      "estilos": [
+        "mpb-samba"
+      ],
+      "frase": "Samba de roda no quintal, cerveja gelada e cadeira pra quem pedir.",
+      "selo": "editorial",
+      "distanciaMin": 6
+    },
+    {
+      "id": "pop-arquivo",
+      "nome": "Pop Arquivo",
+      "produtora": "Fita Cassete Produções",
+      "casa": "galpão na Barra Funda",
+      "bairro": "barra-funda",
+      "regiao": "oeste",
+      "dia": "sex",
+      "inicio": 22,
+      "esquenta": 24,
+      "fim": 28,
+      "mediaIdade": 29,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 70,
+      "estilos": [
+        "pop-2000"
+      ],
+      "frase": "Os hits de 2003, com o coro inteiro sabendo a letra.",
+      "selo": "editorial",
+      "distanciaMin": 7
+    },
+    {
+      "id": "guitarra-molhada",
+      "nome": "Guitarra Molhada",
+      "produtora": "Coletivo Lado B",
+      "casa": "porão no Centro",
+      "bairro": "centro",
+      "regiao": "centro",
+      "dia": "sex",
+      "inicio": 22,
+      "esquenta": 23.5,
+      "fim": 28,
+      "mediaIdade": 27,
+      "faixas": [
+        "25-29"
+      ],
+      "preco": 40,
+      "estilos": [
+        "indie-rock"
+      ],
+      "frase": "Porão, guitarra e aquela banda que você jurava que tinha acabado.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "baile-da-firma",
+      "nome": "Baile da Firma",
+      "produtora": "Quebrada Fina",
+      "casa": "quadra no Centro",
+      "bairro": "centro",
+      "regiao": "centro",
+      "dia": "sex",
+      "inicio": 23,
+      "esquenta": 25,
+      "fim": 29,
+      "mediaIdade": 23,
+      "faixas": [
+        "18-24"
+      ],
+      "preco": 50,
+      "estilos": [
+        "funk"
+      ],
+      "frase": "Começa quando a sua festa já estaria acabando.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "pulso",
+      "nome": "Pulso",
+      "produtora": "Núcleo Frequência",
+      "casa": "galpão na Barra Funda",
+      "bairro": "barra-funda",
+      "regiao": "oeste",
+      "dia": "sex",
+      "inicio": 23,
+      "esquenta": 25,
+      "fim": 30,
+      "mediaIdade": 28,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 90,
+      "estilos": [
+        "eletronica"
+      ],
+      "frase": "Techno até o sol nascer. Planeje o sábado de acordo.",
+      "selo": "editorial",
+      "distanciaMin": 6
+    },
+    {
+      "id": "jantar-dancante",
+      "nome": "Jantar Dançante",
+      "produtora": "Casa Alameda",
+      "casa": "salão nos Jardins",
+      "bairro": "jardins",
+      "regiao": "centro-sul",
+      "dia": "sex",
+      "inicio": 20,
+      "esquenta": 22,
+      "fim": 25,
+      "mediaIdade": 39,
+      "faixas": [
+        "36+"
+      ],
+      "preco": 120,
+      "estilos": [
+        "mpb-samba",
+        "house-disco"
+      ],
+      "frase": "Janta às oito, dança às dez. Ninguém precisa escolher.",
+      "selo": "editorial",
+      "distanciaMin": 3
+    },
+    {
+      "id": "sexta-brasileira",
+      "nome": "Sexta Brasileira",
+      "produtora": "Coletivo Pé de Serra",
+      "casa": "bar com pista na Vila Madalena",
+      "bairro": "vila-madalena",
+      "regiao": "oeste",
+      "dia": "sex",
+      "inicio": 19,
+      "esquenta": 21,
+      "fim": 25,
+      "mediaIdade": 31,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 45,
+      "estilos": [
+        "mpb-samba"
+      ],
+      "frase": "Forró, samba e MPB, nessa ordem. Sapato confortável ajuda.",
+      "selo": "editorial",
+      "distanciaMin": 3
+    },
+    {
+      "id": "primeira-rodada",
+      "nome": "Primeira Rodada",
+      "produtora": "Calourada Livre",
+      "casa": "casa de shows na Vila Madalena",
+      "bairro": "vila-madalena",
+      "regiao": "oeste",
+      "dia": "sex",
+      "inicio": 21,
+      "esquenta": 23,
+      "fim": 27,
+      "mediaIdade": 21,
+      "faixas": [
+        "18-24"
+      ],
+      "preco": 30,
+      "estilos": [
+        "pop-2000",
+        "funk"
+      ],
+      "frase": "Público de faculdade. Se a sua formatura foi há dez anos, fica a dica.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "clube-varanda",
+      "nome": "Clube Varanda",
+      "produtora": "Varanda Eventos",
+      "casa": "varanda nos Jardins",
+      "bairro": "jardins",
+      "regiao": "centro-sul",
+      "dia": "sex",
+      "inicio": 19,
+      "esquenta": 21,
+      "fim": 25,
+      "mediaIdade": 33,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 80,
+      "estilos": [
+        "house-disco",
+        "eletronica"
+      ],
+      "frase": "Espumante por conta da casa até as 21h para quem chega cedo.",
+      "selo": "patrocinado",
+      "distanciaMin": 4
+    },
+    {
+      "id": "madrugada-leve",
+      "nome": "Madrugada Leve",
+      "produtora": "Selo Mormaço",
+      "casa": "clube pequeno em Pinheiros",
+      "bairro": "pinheiros",
+      "regiao": "oeste",
+      "dia": "sex",
+      "inicio": 22,
+      "esquenta": 23.5,
+      "fim": 27,
+      "mediaIdade": 33,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 70,
+      "estilos": [
+        "house-disco"
+      ],
+      "frase": "Pra quem ainda topa a noite, mas sem fila na porta.",
+      "selo": "editorial",
+      "distanciaMin": 6
+    },
+    {
+      "id": "sabado-groove",
+      "nome": "Sábado Groove",
+      "produtora": "Coletivo Meia-Luz",
+      "casa": "terraço em Pinheiros",
+      "bairro": "pinheiros",
+      "regiao": "oeste",
+      "dia": "sab",
+      "inicio": 19,
+      "esquenta": 21,
+      "fim": 25,
+      "mediaIdade": 31,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 60,
+      "estilos": [
+        "house-disco"
+      ],
+      "frase": "House no terraço, pista cheia às 21h e a volta ainda com metrô.",
+      "selo": "editorial",
+      "distanciaMin": 3
+    },
+    {
+      "id": "noite-pop-2000",
+      "nome": "Noite Pop 2000",
+      "produtora": "Fita Cassete Produções",
+      "casa": "casa noturna na Vila Madalena",
+      "bairro": "vila-madalena",
+      "regiao": "oeste",
+      "dia": "sab",
+      "inicio": 20,
+      "esquenta": 22,
+      "fim": 26,
+      "mediaIdade": 30,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 70,
+      "estilos": [
+        "pop-2000"
+      ],
+      "frase": "Todo mundo aqui já teve um fotolog. Ninguém toca no assunto.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "terraco-mpb",
+      "nome": "Terraço MPB",
+      "produtora": "Samba da Esquina Torta",
+      "casa": "terraço no Centro",
+      "bairro": "centro",
+      "regiao": "centro",
+      "dia": "sab",
+      "inicio": 18,
+      "esquenta": 20,
+      "fim": 24,
+      "mediaIdade": 34,
+      "faixas": [
+        "30-35",
+        "36+"
+      ],
+      "preco": 50,
+      "estilos": [
+        "mpb-samba"
+      ],
+      "frase": "MPB com vista pro Centro. Dá pra conversar sem gritar.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "disco-ao-por-do-sol",
+      "nome": "Disco ao Pôr do Sol",
+      "produtora": "Selo Mormaço",
+      "casa": "terraço em Pinheiros",
+      "bairro": "pinheiros",
+      "regiao": "oeste",
+      "dia": "sab",
+      "inicio": 17,
+      "esquenta": 19,
+      "fim": 23,
+      "mediaIdade": 30,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 80,
+      "estilos": [
+        "house-disco"
+      ],
+      "frase": "Disco com o céu ainda claro. Boa hora pra chegar e pra voltar.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "feijoada-sonora",
+      "nome": "Feijoada Sonora",
+      "produtora": "Coletivo Panela",
+      "casa": "quintal na Vila Mariana",
+      "bairro": "vila-mariana",
+      "regiao": "centro-sul",
+      "dia": "sab",
+      "inicio": 15,
+      "esquenta": 18,
+      "fim": 22,
+      "mediaIdade": 36,
+      "faixas": [
+        "30-35",
+        "36+"
+      ],
+      "preco": 40,
+      "estilos": [
+        "mpb-samba"
+      ],
+      "frase": "Feijoada às três, samba às seis, cama às onze.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "matine-eletronica",
+      "nome": "Matinê Eletrônica",
+      "produtora": "Núcleo Frequência",
+      "casa": "galpão na Barra Funda",
+      "bairro": "barra-funda",
+      "regiao": "oeste",
+      "dia": "sab",
+      "inicio": 17,
+      "esquenta": 19,
+      "fim": 24,
+      "mediaIdade": 29,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 70,
+      "estilos": [
+        "eletronica",
+        "house-disco"
+      ],
+      "frase": "O mesmo techno da madrugada, só que você lembra de tudo depois.",
+      "selo": "editorial",
+      "distanciaMin": 6
+    },
+    {
+      "id": "baile-do-sabado",
+      "nome": "Baile do Sábado",
+      "produtora": "Quebrada Fina",
+      "casa": "quadra no Centro",
+      "bairro": "centro",
+      "regiao": "centro",
+      "dia": "sab",
+      "inicio": 23,
+      "esquenta": 25,
+      "fim": 29,
+      "mediaIdade": 23,
+      "faixas": [
+        "18-24"
+      ],
+      "preco": 40,
+      "estilos": [
+        "funk"
+      ],
+      "frase": "Baile cheio, e a pista só pega depois da 1h.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "funk-ao-entardecer",
+      "nome": "Funk ao Entardecer",
+      "produtora": "Baile Cedo",
+      "casa": "rooftop na Barra Funda",
+      "bairro": "barra-funda",
+      "regiao": "oeste",
+      "dia": "sab",
+      "inicio": 18,
+      "esquenta": 20,
+      "fim": 24,
+      "mediaIdade": 31,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 50,
+      "estilos": [
+        "funk",
+        "pop-2000"
+      ],
+      "frase": "Os funks que você sabia de cor em 2012, com hora pra acabar.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "sala-de-estar",
+      "nome": "Sala de Estar",
+      "produtora": "Coletivo Lado B",
+      "casa": "sobrado na Vila Madalena",
+      "bairro": "vila-madalena",
+      "regiao": "oeste",
+      "dia": "sab",
+      "inicio": 21,
+      "esquenta": 23,
+      "fim": 27,
+      "mediaIdade": 28,
+      "faixas": [
+        "25-29"
+      ],
+      "preco": 50,
+      "estilos": [
+        "indie-rock"
+      ],
+      "frase": "Indie num sobrado com cara de casa de amigo.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "vinil-e-vinho",
+      "nome": "Vinil e Vinho",
+      "produtora": "Casa Alameda",
+      "casa": "salão nos Jardins",
+      "bairro": "jardins",
+      "regiao": "centro-sul",
+      "dia": "sab",
+      "inicio": 19,
+      "esquenta": 21,
+      "fim": 24,
+      "mediaIdade": 36,
+      "faixas": [
+        "30-35",
+        "36+"
+      ],
+      "preco": 110,
+      "estilos": [
+        "mpb-samba",
+        "house-disco"
+      ],
+      "frase": "Disco de vinil, taça de vinho e pista pequena. Ninguém derruba nada.",
+      "selo": "editorial",
+      "distanciaMin": 3
+    },
+    {
+      "id": "segunda-juventude",
+      "nome": "Segunda Juventude",
+      "produtora": "Pista Madura",
+      "casa": "clube na Vila Mariana",
+      "bairro": "vila-mariana",
+      "regiao": "centro-sul",
+      "dia": "sab",
+      "inicio": 20,
+      "esquenta": 22,
+      "fim": 26,
+      "mediaIdade": 40,
+      "faixas": [
+        "36+"
+      ],
+      "preco": 90,
+      "estilos": [
+        "pop-2000",
+        "house-disco"
+      ],
+      "frase": "Os hits que você dançava no casamento dos outros.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "galpao-aberto",
+      "nome": "Galpão Aberto",
+      "produtora": "Núcleo Frequência",
+      "casa": "galpão na Barra Funda",
+      "bairro": "barra-funda",
+      "regiao": "oeste",
+      "dia": "sab",
+      "inicio": 23,
+      "esquenta": 25.5,
+      "fim": 31,
+      "mediaIdade": 27,
+      "faixas": [
+        "25-29"
+      ],
+      "preco": 120,
+      "estilos": [
+        "eletronica"
+      ],
+      "frase": "A noite do jeito tradicional: começa tarde e acaba de dia.",
+      "selo": "editorial",
+      "distanciaMin": 8
+    },
+    {
+      "id": "rock-na-laje",
+      "nome": "Rock na Laje",
+      "produtora": "Coletivo Garagem",
+      "casa": "laje na Bela Vista",
+      "bairro": "bela-vista",
+      "regiao": "centro",
+      "dia": "sab",
+      "inicio": 20,
+      "esquenta": 22,
+      "fim": 25,
+      "mediaIdade": 32,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 35,
+      "estilos": [
+        "indie-rock"
+      ],
+      "frase": "Rock na laje do Bixiga. Os joelhos agradecem a escada curta.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "noite-aurora",
+      "nome": "Noite Aurora",
+      "produtora": "Aurora Eventos",
+      "casa": "rooftop nos Jardins",
+      "bairro": "jardins",
+      "regiao": "centro-sul",
+      "dia": "sab",
+      "inicio": 19,
+      "esquenta": 21,
+      "fim": 25,
+      "mediaIdade": 32,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 80,
+      "estilos": [
+        "house-disco",
+        "pop-2000"
+      ],
+      "frase": "Open bar até as 21h para quem chega cedo.",
+      "selo": "patrocinado",
+      "distanciaMin": 3
+    },
+    {
+      "id": "gafieira-moderna",
+      "nome": "Gafieira Moderna",
+      "produtora": "Coletivo Pé de Serra",
+      "casa": "salão no Centro",
+      "bairro": "centro",
+      "regiao": "centro",
+      "dia": "sab",
+      "inicio": 19,
+      "esquenta": 21,
+      "fim": 24,
+      "mediaIdade": 34,
+      "faixas": [
+        "30-35",
+        "36+"
+      ],
+      "preco": 40,
+      "estilos": [
+        "mpb-samba"
+      ],
+      "frase": "Gafieira com meia hora de aula pra quem chega cedo.",
+      "selo": "editorial",
+      "distanciaMin": 6
+    },
+    {
+      "id": "domingo-no-terraco",
+      "nome": "Domingo no Terraço",
+      "produtora": "Coletivo Meia-Luz",
+      "casa": "terraço em Pinheiros",
+      "bairro": "pinheiros",
+      "regiao": "oeste",
+      "dia": "dom",
+      "inicio": 16,
+      "esquenta": 18,
+      "fim": 22,
+      "mediaIdade": 32,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 50,
+      "estilos": [
+        "house-disco"
+      ],
+      "frase": "Acaba às 22h. A segunda nem percebe.",
+      "selo": "editorial",
+      "distanciaMin": 3
+    },
+    {
+      "id": "samba-de-domingo",
+      "nome": "Samba de Domingo",
+      "produtora": "Samba da Esquina Torta",
+      "casa": "praça na Bela Vista",
+      "bairro": "bela-vista",
+      "regiao": "centro",
+      "dia": "dom",
+      "inicio": 15,
+      "esquenta": 17,
+      "fim": 21,
+      "mediaIdade": 34,
+      "faixas": [
+        "30-35",
+        "36+"
+      ],
+      "preco": 0,
+      "estilos": [
+        "mpb-samba"
+      ],
+      "frase": "Roda na praça, de graça. Leve uma canga e um amigo.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "matine-pop",
+      "nome": "Matinê Pop",
+      "produtora": "Fita Cassete Produções",
+      "casa": "casa noturna na Vila Madalena",
+      "bairro": "vila-madalena",
+      "regiao": "oeste",
+      "dia": "dom",
+      "inicio": 17,
+      "esquenta": 19,
+      "fim": 23,
+      "mediaIdade": 29,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 40,
+      "estilos": [
+        "pop-2000"
+      ],
+      "frase": "A matinê que você ia aos 15, agora com bar.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "domingo-eletronico",
+      "nome": "Domingo Eletrônico",
+      "produtora": "Núcleo Frequência",
+      "casa": "galpão na Barra Funda",
+      "bairro": "barra-funda",
+      "regiao": "oeste",
+      "dia": "dom",
+      "inicio": 16,
+      "esquenta": 19,
+      "fim": 24,
+      "mediaIdade": 28,
+      "faixas": [
+        "25-29"
+      ],
+      "preco": 60,
+      "estilos": [
+        "eletronica"
+      ],
+      "frase": "Techno de domingo com luz de fim de tarde.",
+      "selo": "editorial",
+      "distanciaMin": 6
+    },
+    {
+      "id": "ultimo-disco",
+      "nome": "Último Disco",
+      "produtora": "Casa Alameda",
+      "casa": "salão nos Jardins",
+      "bairro": "jardins",
+      "regiao": "centro-sul",
+      "dia": "dom",
+      "inicio": 18,
+      "esquenta": 20,
+      "fim": 24,
+      "mediaIdade": 35,
+      "faixas": [
+        "30-35",
+        "36+"
+      ],
+      "preco": 70,
+      "estilos": [
+        "house-disco"
+      ],
+      "frase": "O último disco do fim de semana toca às 23h50, pontual.",
+      "selo": "editorial",
+      "distanciaMin": 4
+    },
+    {
+      "id": "funk-de-domingo",
+      "nome": "Funk de Domingo",
+      "produtora": "Baile Cedo",
+      "casa": "quadra no Centro",
+      "bairro": "centro",
+      "regiao": "centro",
+      "dia": "dom",
+      "inicio": 17,
+      "esquenta": 19,
+      "fim": 23,
+      "mediaIdade": 24,
+      "faixas": [
+        "18-24",
+        "25-29"
+      ],
+      "preco": 20,
+      "estilos": [
+        "funk"
+      ],
+      "frase": "Baile de fim de tarde, público de faculdade.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "indie-dominical",
+      "nome": "Indie Dominical",
+      "produtora": "Coletivo Garagem",
+      "casa": "bar com palco na Vila Mariana",
+      "bairro": "vila-mariana",
+      "regiao": "centro-sul",
+      "dia": "dom",
+      "inicio": 18,
+      "esquenta": 20,
+      "fim": 23,
+      "mediaIdade": 31,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 30,
+      "estilos": [
+        "indie-rock"
+      ],
+      "frase": "Banda ao vivo às oito, discotecagem até as onze.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    },
+    {
+      "id": "pagode-do-fim",
+      "nome": "Pagode do Fim",
+      "produtora": "Samba da Esquina Torta",
+      "casa": "quintal na Vila Mariana",
+      "bairro": "vila-mariana",
+      "regiao": "centro-sul",
+      "dia": "dom",
+      "inicio": 16,
+      "esquenta": 18,
+      "fim": 22,
+      "mediaIdade": 38,
+      "faixas": [
+        "36+"
+      ],
+      "preco": 30,
+      "estilos": [
+        "mpb-samba"
+      ],
+      "frase": "Pagode dos anos 90 pra quem estava lá.",
+      "selo": "editorial",
+      "distanciaMin": 6
+    },
+    {
+      "id": "disco-na-praca",
+      "nome": "Disco na Praça",
+      "produtora": "Selo Mormaço",
+      "casa": "praça no Centro",
+      "bairro": "centro",
+      "regiao": "centro",
+      "dia": "dom",
+      "inicio": 16,
+      "esquenta": 18,
+      "fim": 21,
+      "mediaIdade": 30,
+      "faixas": [
+        "25-29",
+        "30-35"
+      ],
+      "preco": 0,
+      "estilos": [
+        "house-disco",
+        "eletronica"
+      ],
+      "frase": "Grátis, ao ar livre e acaba antes do jantar.",
+      "selo": "editorial",
+      "distanciaMin": 3
+    },
+    {
+      "id": "domingueira",
+      "nome": "Domingueira",
+      "produtora": "Coletivo Garagem",
+      "casa": "clube na Bela Vista",
+      "bairro": "bela-vista",
+      "regiao": "centro",
+      "dia": "dom",
+      "inicio": 20,
+      "esquenta": 22,
+      "fim": 26,
+      "mediaIdade": 33,
+      "faixas": [
+        "30-35"
+      ],
+      "preco": 60,
+      "estilos": [
+        "pop-2000",
+        "indie-rock"
+      ],
+      "frase": "Pra quem emendou a segunda de folga. Ou finge que emendou.",
+      "selo": "editorial",
+      "distanciaMin": 5
+    }
+  ]
+}
