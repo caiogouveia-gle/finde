@@ -1,0 +1,3 @@
+# O que as produtoras mandam por arquivo é dado delas e não vai para o repositório público.
+entrada/*
+!entrada/LEIA-ME.md

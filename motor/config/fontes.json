@@ -1,0 +1,24 @@
+{
+  "envio": {
+    "ligada": true,
+    "motivo": "A produtora manda os próprios dados: é a fonte principal e a única que traz média de idade (R16).",
+    "pastas": ["entrada"]
+  },
+  "mapas-culturais": {
+    "ligada": true,
+    "motivo": "APIs abertas do padrão Mapas Culturais, publicadas para consulta pública sem chave.",
+    "dias": 14,
+    "municipio": "São Paulo",
+    "timeoutMs": 20000,
+    "instancias": [
+      { "id": "spcultura", "base": "https://spcultura.prefeitura.sp.gov.br", "ligada": true },
+      { "id": "mapa-da-cultura", "base": "https://mapa.cultura.gov.br", "ligada": true }
+    ]
+  },
+  "ical": {
+    "ligada": false,
+    "motivo": "Liga quando uma produtora informar o endereço .ics da própria agenda.",
+    "dias": 30,
+    "feeds": []
+  }
+}

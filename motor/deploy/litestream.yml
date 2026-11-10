@@ -1,0 +1,19 @@
+# Litestream: o banco do motor copiado para o bucket a cada segundo, para uma
+# máquina ou volume perdido custar segundos e não o dia. Os valores vêm do
+# ambiente (o Litestream expande ${VAR}); são os nomes que `fly storage create`
+# define como segredos para um bucket Tigris.
+dbs:
+  - path: ${FINDE_BANCO}
+    replica:
+      type: s3
+      bucket: ${BUCKET_NAME}
+      path: finde/finde.sqlite3
+      endpoint: ${AWS_ENDPOINT_URL_S3}
+      region: ${AWS_REGION}
+      sync-interval: 1s
+
+# Um snapshot por dia, guardado uma semana: dá para voltar a qualquer ponto dos
+# últimos sete dias (`litestream restore -timestamp`).
+snapshot:
+  interval: 24h
+  retention: 168h

@@ -1,0 +1,44 @@
+{
+  "aviso": "Exemplo fictício de envio de produtora. A produtora, as festas, os endereços, os artistas e os links são inventados.",
+  "exemplo": true,
+  "produtora": { "nome": "Coletivo Expediente", "instagram": "@finde_exemplo" },
+  "festas": [
+    {
+      "id": "sexta-sem-pressa",
+      "nome": "Sexta Sem Pressa",
+      "casa": "Terraço Exemplo",
+      "endereco": "Rua Exemplo, 100 - Pinheiros",
+      "data": "proxima-sexta",
+      "inicio": "18:00",
+      "pistaCheia": "20:00",
+      "fim": "23:00",
+      "lotes": [
+        { "nome": "1º lote", "preco": 40, "disponivel": false },
+        { "nome": "2º lote", "preco": 60, "disponivel": true }
+      ],
+      "linkCompra": "https://ingressos.example/sexta-sem-pressa",
+      "linkEvento": "https://coletivo.example/sexta-sem-pressa",
+      "instagram": "@finde_exemplo",
+      "cartaz": "https://coletivo.example/cartazes/sexta-sem-pressa.jpg",
+      "lineup": ["DJ Fulana Exemplo", "DJ Beltrano Exemplo"],
+      "estilos": ["house-disco"],
+      "idadeMinima": 18,
+      "regras": { "documento": "RG ou CNH com foto" },
+      "mediaIdade": { "valor": 32, "origem": "produtora" },
+      "descricao": "Sai do trabalho direto pra pista. House e disco no terraço, do fim da tarde até as onze."
+    },
+    {
+      "id": "domingo-de-quintal",
+      "nome": "Domingo de Quintal",
+      "casa": "Quintal Exemplo",
+      "endereco": "Rua Exemplo, 200 - Vila Mariana",
+      "data": "proximo-domingo",
+      "inicio": "15:00",
+      "fim": "22:00",
+      "naPorta": { "preco": 30 },
+      "instagram": "@finde_exemplo",
+      "mediaIdade": { "valor": 35, "origem": "avaliacoes", "avaliacoes": 42 },
+      "descricao": "Roda de samba no quintal, com cadeira pra quem pedir. Proibida a entrada de menores de 18 anos. Lista amiga até as 16h pelo direct. Lineup a confirmar."
+    }
+  ]
+}

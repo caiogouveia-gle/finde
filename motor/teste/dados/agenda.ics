@@ -1,0 +1,27 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Exemplo//Agenda//PT
+BEGIN:VEVENT
+UID:sexta-sem-pressa@exemplo
+DTSTART;TZID=America/Sao_Paulo:20261113T180000
+DTEND;TZID=America/Sao_Paulo:20261113T230000
+SUMMARY:Sexta Sem Pressa
+LOCATION:Terraço Exemplo\, Rua Exemplo\, 100 - Pinheiros
+DESCRIPTION:House e disco no terraço.\nLote único R$ 50.
+URL:https://coletivo.example/sexta-sem-pressa
+END:VEVENT
+BEGIN:VEVENT
+UID:madrugada@exemplo
+DTSTART:20261115T020000Z
+DTEND:20261115T080000Z
+SUMMARY:After Exemplo
+LOCATION:Galpão Exemplo
+DESCRIPTION:Techno até o sol nascer. Uma linha longa que foi do
+ brada pelo calendário.
+END:VEVENT
+BEGIN:VEVENT
+UID:passada@exemplo
+DTSTART:20261101T220000Z
+SUMMARY:Já passou
+END:VEVENT
+END:VCALENDAR

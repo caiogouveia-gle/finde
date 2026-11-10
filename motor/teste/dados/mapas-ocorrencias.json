@@ -1,0 +1,23 @@
+[
+  {
+    "id": 501, "name": "Baile da Praça", "shortDescription": "Baile com DJ e samba rock na praça. Proibida a entrada de menores de 18 anos.",
+    "terms": { "tag": [], "linguagem": ["Música Popular", "Dança"] }, "classificacaoEtaria": "18 anos",
+    "@entityType": "event", "occurrence_id": 9001, "event_id": 501,
+    "starts_on": "2026-11-14", "starts_at": "20:00:00", "ends_on": null, "ends_at": "02:00:00",
+    "rule": { "price": "Gratuito", "description": "Sábado das 20h às 2h" },
+    "space": { "id": 77, "@entityType": "space" },
+    "mediaIdade": 31
+  },
+  {
+    "id": 502, "name": "Exposição de Gravuras", "shortDescription": "Mostra de gravura contemporânea.",
+    "terms": { "tag": [], "linguagem": ["Artes Visuais", "Exposição"] }, "classificacaoEtaria": "Livre",
+    "event_id": 502, "starts_on": "2026-11-14", "starts_at": "10:00:00", "ends_at": "10:00:00",
+    "rule": { "price": "R$ 10,00" }, "space": { "id": 77 }
+  },
+  {
+    "id": 503, "name": "Festa em Joinville", "shortDescription": "Festa com DJ.",
+    "terms": { "linguagem": ["Música Popular"] }, "classificacaoEtaria": "18 anos",
+    "event_id": 503, "starts_on": "2026-11-14", "starts_at": "22:00:00", "ends_at": "04:00:00",
+    "space": { "id": 88 }
+  }
+]

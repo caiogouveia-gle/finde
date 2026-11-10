@@ -1,0 +1,16 @@
+{
+  "name": "finde-motor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Motor de coleta, agregação e classificação de festas do Finde (R14 a R17).",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node --test teste/",
+    "coletar": "node cli.js coletar",
+    "servidor": "node servidor.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.7.0"
+  }
+}

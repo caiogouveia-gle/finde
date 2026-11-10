@@ -1,0 +1,36 @@
+# Fly.io: o motor do Finde. NADA FOI CRIADO NA CONTA. Antes do primeiro deploy,
+# com o sim do grupo, os passos estão no README (seção "No Fly").
+app = "finde-motor"
+primary_region = "gru"
+
+[build]
+  # ./Dockerfile
+
+[env]
+  FINDE_HORARIOS = "padrao"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Sempre ligado: a agenda de coletas roda dentro do servidor (KTD8). Uma
+  # máquina parada não coleta.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "2s"
+    grace_period = "20s"
+    method = "get"
+    path = "/saude"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# O banco mora no volume; o Litestream copia para o bucket.
+# Criar uma vez: fly volumes create finde_dados --region gru --size 1
+[mounts]
+  source = "finde_dados"
+  destination = "/data"

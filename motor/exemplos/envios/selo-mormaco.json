@@ -1,0 +1,31 @@
+{
+  "aviso": "Exemplo fictício de envio de produtora. A produtora, as festas, os endereços, os artistas e os links são inventados.",
+  "exemplo": true,
+  "produtora": { "nome": "Selo Mormaço", "instagram": "@finde_exemplo" },
+  "festas": [
+    {
+      "id": "disco-do-poente",
+      "nome": "Disco do Poente",
+      "casa": "Rooftop Exemplo",
+      "endereco": "Rua Exemplo, 300 - Bela Vista",
+      "data": "proximo-sabado",
+      "inicio": "17:00",
+      "fim": "23:00",
+      "lotes": [{ "nome": "Lote único", "preco": 50, "disponivel": true }],
+      "linkCompra": "https://ingressos.example/disco-do-poente",
+      "descricao": "Pôr do sol com disco e house no rooftop. A pista enche lá pelas 19:30. Traje livre, mas tem quem venha de branco."
+    },
+    {
+      "id": "pop-arquivo",
+      "nome": "Pop Arquivo",
+      "casa": "Galpão Exemplo",
+      "endereco": "Rua Exemplo, 400 - Barra Funda",
+      "data": "proximo-sabado",
+      "inicio": "22:00",
+      "fim": "04:00",
+      "lotes": [{ "nome": "1º lote", "preco": 70, "disponivel": true }],
+      "mediaIdade": { "valor": 29 },
+      "descricao": "Os hits de 2003 com o coro inteiro sabendo a letra. Pop dos anos 2000 a noite toda. DJs: Fita Exemplo e Cassete Exemplo."
+    }
+  ]
+}
