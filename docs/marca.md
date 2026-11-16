@@ -50,6 +50,6 @@ Exemplo de evento: `QUI · 19H00 · PINHEIROS · MÉDIA 30 ANOS` / **Disco ao p�
 
 ## Aplicações de referência
 
-- **Boas-vindas (modo dia):** rótulo HOJE · A PARTIR DAS 19H; título "A pista abre *antes.*"; fio rosé; texto curto; botão primário bordô em pílula (raio 22 px) "Ver festas de hoje" e secundário vazado "Entrar".
+- **Boas-vindas (modo dia):** rótulo HOJE · A PARTIR DAS 19H; título "A pista abre *antes.*"; fio rosé; texto curto; botão primário bordô em pílula (raio 22 px) "Ver festas de hoje" e secundário vazado "Entrar". No protótipo os botões têm canto reto, sem pílula (decisão de 10/11/2026, em `decisoes.md`).
 - **Pré-quiz:** uma pergunta por tela, barra de progresso em segmentos (bordô ativo, `#D7BFB4` inativo), rótulo "1 DE 4", título em Instrument Serif com itálico ("A festa boa começa *às…*"), opções em lista separadas por fios rosé finos, a escolhida em DM Sans 500, botão "Continuar".
 - **Splash (modo noite):** lockup oficial sobre bordô.

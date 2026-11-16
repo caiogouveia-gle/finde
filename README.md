@@ -10,6 +10,7 @@ Guia de festas para quem tem entre 28 e 35 anos em São Paulo: junta as festas d
 - [`docs/disciplina.md`](docs/disciplina.md): o que cada entrega pede, prazos e pesos, roteiro de entrevistas.
 - [`docs/marca.md`](docs/marca.md): resumo do manual de identidade visual.
 - [`docs/decisoes.md`](docs/decisoes.md): as decisões tomadas, com data.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): como sugerir mudanças por pull request, o que não pode entrar num repositório público e como rodar os testes.
 
 ## O que tem aqui
 
