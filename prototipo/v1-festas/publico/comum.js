@@ -121,7 +121,17 @@
     const relogio = document.getElementById('relogio');
     if (relogio) {
       const { h, m } = agora();
-      relogio.replaceChildren(hora(`${h}h${m}`));
+      const antes = relogio.textContent;
+      const novo = hora(`${h}h${m}`);
+      if (novo.textContent !== antes) {
+        relogio.replaceChildren(novo);
+        // O minuto acontece: só o dígito que mudou sobe, e só com a aba à vista.
+        if (antes && !document.hidden) {
+          const ds = relogio.querySelectorAll('.d');
+          const velhos = antes.replace(/\D/g, '');
+          ds.forEach((d, i) => { if (d.textContent !== velhos[i]) mov.trocaNumero(d); });
+        }
+      }
     }
     const sub = document.getElementById('relogio-rotulo');
     if (sub && window.FindeTema) sub.textContent = window.FindeTema.pelaHora() === 'noite' ? 'noite desde as 18h' : 'a noite começa às 18h';
@@ -335,8 +345,253 @@
 
   const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+  // ------------------------------------------------------------ movimento
+  // O vocabulário mora no CSS (--mov-*, o mesmo da landing) e é lido uma vez.
+  // Tudo parte do estado final: a página nasce pronta, e a animação só existe
+  // enquanto roda (Web Animations, sem estilo inline). Se ela falhar, o
+  // conteúdo já está lá. Só translate, scale, opacity e clip-path. Com
+  // movimento reduzido, no máximo uma troca de opacidade de 160 ms.
+
+  const MOV_PADRAO = {
+    saida: 'cubic-bezier(.2, .7, .2, 1)', troca: 'cubic-bezier(.6, 0, .2, 1)',
+    toque: 160, estado: 320, bloco: 560, titulo: 900, escala: 60, maximo: 6,
+  };
+  let movLido = null;
+  function mv() {
+    if (movLido) return movLido;
+    const v = { ...MOV_PADRAO };
+    try {
+      const cs = getComputedStyle(document.documentElement);
+      const ler = (nome) => cs.getPropertyValue(`--mov-${nome}`).trim();
+      for (const k of ['saida', 'troca']) if (ler(k)) v[k] = ler(k);
+      for (const k of ['toque', 'estado', 'bloco', 'titulo', 'escala']) {
+        const n = parseFloat(ler(k));
+        if (Number.isFinite(n)) v[k] = n;
+      }
+    } catch { /* fica o padrão */ }
+    movLido = v;
+    return v;
+  }
+
+  const anima = () => typeof Element !== 'undefined' && typeof Element.prototype.animate === 'function';
+  // Pode mover: o navegador anima e a pessoa não pediu menos movimento.
+  const pode = () => anima() && !reduzir.matches;
+  const lista = (x) => (!x ? [] : typeof x.length === 'number' && !x.nodeType ? [...x] : [x]).filter(Boolean);
+
+  function animar(alvo, quadros, opcoes) {
+    if (!alvo || !anima()) return null;
+    // Um quadro só é o de partida (offset 0): o de chegada é o valor que o
+    // CSS já dá. Sem o offset, o navegador o tomaria como o de chegada.
+    const qs = quadros.length === 1 && quadros[0].offset === undefined ? [{ ...quadros[0], offset: 0 }] : quadros;
+    try {
+      return alvo.animate(qs, { fill: 'backwards', ...opcoes });
+    } catch {
+      return null;
+    }
+  }
+  const vivas = (xs) => xs.flat(Infinity).filter(Boolean);
+
+  // Movimento reduzido: uma troca de opacidade, curta, sem escalonar.
+  function soOpacidade(els) {
+    return vivas(lista(els).map((e) => animar(e, [{ opacity: 0 }], { duration: mv().toque, easing: 'linear' })));
+  }
+
+  // Entrada de bloco: sobe de y px e aparece. Até seis em escada de 60 ms.
+  // Um quadro só (o de partida): o fim é o valor que o CSS já dá, então um
+  // elemento com opacidade própria (o Continuar oculto) continua como está.
+  function subir(els, { atraso = 0, y = 12, duracao, curva, escada = true } = {}) {
+    const v = mv();
+    if (!pode()) return reduzir.matches ? soOpacidade(els) : [];
+    return vivas(lista(els).map((e, i) => animar(e, [{ opacity: 0, translate: `0 ${y}px` }], {
+      duration: duracao || v.bloco, easing: curva || v.saida,
+      delay: atraso + (escada ? Math.min(i, v.maximo - 1) * v.escala : 0),
+    })));
+  }
+
+  // Um fio que se desenha da esquerda (scaleX). linear é a curva do fio que
+  // marca tempo, como a régua do horário.
+  function fio(e, { atraso = 0, duracao, curva, de = 0 } = {}) {
+    if (!e || !pode()) return [];
+    const v = mv();
+    return vivas([animar(e, [
+      { scale: `${de} 1`, transformOrigin: '0 50%' },
+      { scale: '1 1', transformOrigin: '0 50%' },
+    ], { duration: duracao || v.bloco, easing: curva || v.saida, delay: atraso })]);
+  }
+
+  // Revela por recorte: da esquerda (um traço, uma linha de texto) ou de
+  // cima (o painel do convite abrindo).
+  function revelar(e, { atraso = 0, duracao, curva, de = 'esquerda' } = {}) {
+    if (!e || !pode()) return [];
+    const v = mv();
+    const inicio = de === 'cima' ? 'inset(0 0 100% 0)' : 'inset(-20% 100% -20% 0)';
+    const fim = de === 'cima' ? 'inset(0 0 0% 0)' : 'inset(-20% 0% -20% 0)';
+    return vivas([animar(e, [{ clipPath: inicio }, { clipPath: fim }], { duration: duracao || v.bloco, easing: curva || v.saida, delay: atraso })]);
+  }
+
+  // O elemento sobe de dentro de uma máscara (o recorte é do pai, só enquanto
+  // a animação roda). Para a hora grande do detalhe e os dígitos do relógio.
+  function mascara(e, { atraso = 0, duracao, de = '100%', recorte = 'inset(-.4em -2em -.06em -2em)' } = {}) {
+    if (!e || !e.parentElement || !pode()) return [];
+    const v = mv();
+    const d = duracao || v.titulo;
+    return vivas([
+      animar(e.parentElement, [{ clipPath: recorte }, { clipPath: recorte }], { duration: d, delay: atraso, fill: 'both' }),
+      animar(e, [{ translate: `0 ${de}` }], { duration: d, easing: v.saida, delay: atraso }),
+    ]).map((a, i, xs) => {
+      // O recorte sai junto com o movimento, nunca antes nem depois.
+      if (i === 0) Promise.all(xs.map((x) => x.finished)).then(() => a.cancel(), () => a.cancel());
+      return a;
+    });
+  }
+
+  // Título em Instrument Serif: cada linha sobe de dentro da sua máscara, em
+  // escada, e a palavra em itálico chega um tempo depois. As linhas vêm da
+  // própria quebra do título (mede palavra por palavra), e o título volta a
+  // ser o que era quando a animação termina: o texto, o foco e a quebra são
+  // os de sempre.
+  // duracao e em: o questionário usa o tempo de bloco e o itálico quase
+  // junto, para a troca de pergunta não segurar quem responde.
+  function tituloPorLinha(h, { atraso = 0, duracao, em: emAtraso = 280 } = {}) {
+    if (!h || !anima()) return [];
+    if (!pode()) return soOpacidade(h);
+    const v = mv();
+    const original = [...h.childNodes];
+    const pecas = [];
+    for (const no of original) {
+      if (no.nodeType === 3) {
+        for (const parte of no.textContent.split(/(\s+)/)) {
+          if (!parte) continue;
+          pecas.push(/^\s+$/.test(parte) ? document.createTextNode(parte) : el('span', { texto: parte }));
+        }
+      } else {
+        pecas.push(no.cloneNode(true));
+      }
+    }
+    h.replaceChildren(...pecas);
+    // Fonte ainda chegando: a quebra medida seria outra. Vai como uma linha só.
+    const medir = !document.fonts || document.fonts.status === 'loaded';
+    const linhas = [];
+    let topoDaLinha = null;
+    for (const p of pecas) {
+      if (p.nodeType === 3) {
+        if (!linhas.length) linhas.push([]);
+        linhas[linhas.length - 1].push(p);
+        continue;
+      }
+      const t = medir ? p.getBoundingClientRect().top : 0;
+      if (topoDaLinha === null || Math.abs(t - topoDaLinha) > 4) {
+        linhas.push([]);
+        topoDaLinha = t;
+      }
+      linhas[linhas.length - 1].push(p);
+    }
+    const anims = [];
+    const blocos = linhas.map((grupo, i) => {
+      const dentro = el('span', { class: 'mov-linha-in' }, grupo);
+      anims.push(animar(dentro, [{ translate: '0 108%' }], { duration: duracao || v.titulo, easing: v.saida, delay: atraso + i * v.escala }));
+      return el('span', { class: 'mov-linha' }, dentro);
+    });
+    h.replaceChildren(...blocos);
+    for (const em of h.querySelectorAll('em')) {
+      const i = Math.max(0, blocos.findIndex((b) => b.contains(em)));
+      em.classList.add('mov-em');
+      anims.push(animar(em, [{ opacity: 0, translate: '0 .3em' }], { duration: v.bloco, easing: v.saida, delay: atraso + i * v.escala + emAtraso }));
+    }
+    const feitas = vivas(anims);
+    let devolvido = false;
+    const devolver = () => {
+      if (devolvido) return;
+      devolvido = true;
+      h.replaceChildren(...original);
+    };
+    if (!feitas.length) devolver();
+    else Promise.all(feitas.map((a) => a.finished)).then(devolver, devolver);
+    return feitas;
+  }
+
+  // O convite se monta: o painel abre de cima para baixo e as faixas entram
+  // em sequência (a marca e o título, a hora, o nome, as respostas). É tela
+  // de ação: a montagem cabe em uns 560 ms, e as respostas entram junto com
+  // o resto, tocáveis antes dos 500 ms.
+  function painel(p, { atraso = 0 } = {}) {
+    if (!p || !anima()) return [];
+    if (!pode()) return soOpacidade(p);
+    const v = mv();
+    const anims = [revelar(p, { de: 'cima', atraso, duracao: v.estado })];
+    const faixas = [[], [], [], []];
+    for (const filho of p.children) {
+      if (filho.classList.contains('vh')) continue;
+      if (filho.matches('.marca, .painel-rotulo, .painel-titulo')) faixas[0].push(filho);
+      else if (filho.matches('.painel-quando')) faixas[1].push(filho);
+      else if (filho.matches('.painel-nome, .painel-onde, .painel-horario')) faixas[2].push(filho);
+      else faixas[3].push(filho);
+    }
+    // Entre uma faixa e outra, um passo da escada; dentro dela, também.
+    faixas.forEach((grupo, k) => grupo.forEach((x, j) => {
+      const d = atraso + 40 + Math.min(k + j, v.maximo - 1) * v.escala;
+      if (x.matches('.painel-titulo')) anims.push(tituloPorLinha(x, { atraso: d, duracao: v.bloco, em: 2 * v.escala }));
+      else if (x.matches('.painel-quando')) {
+        anims.push(subir(x, { atraso: d, y: 0, duracao: v.estado }));
+        anims.push(mascara(x.querySelector('.painel-hora .hora'), { atraso: d, duracao: v.bloco }));
+        anims.push(subir(x.querySelectorAll('.painel-media, .painel-origem'), { atraso: d + 160, y: 6, duracao: v.estado }));
+      } else anims.push(subir(x, { atraso: d, y: 10, duracao: v.estado }));
+    }));
+    return vivas(anims);
+  }
+
+  // Entra quando chega perto da tela, uma vez só. fazer(el) cria as
+  // animações; elas nascem pausadas no primeiro quadro (o elemento ainda
+  // fora da vista não roda nada) e andam quando o elemento aparece, em escada
+  // com os que aparecem junto. Sem IntersectionObserver, andam na hora.
+  function aoVer(els, fazer, { atraso = 0, margem = '0px 0px 48px 0px' } = {}) {
+    if (!pode()) return;
+    const v = mv();
+    const alvos = lista(els);
+    if (!alvos.length) return;
+    const espera = new Map();
+    for (const e of alvos) {
+      const anims = vivas([fazer(e)]);
+      for (const a of anims) a.pause();
+      espera.set(e, anims);
+    }
+    const soltar = (e, extra) => {
+      for (const a of espera.get(e) || []) {
+        try {
+          a.effect.updateTiming({ delay: (a.effect.getTiming().delay || 0) + extra });
+          a.play();
+        } catch { a.cancel(); }
+      }
+      espera.delete(e);
+    };
+    if (typeof IntersectionObserver !== 'function') {
+      alvos.forEach((e, k) => soltar(e, atraso + Math.min(k, v.maximo - 1) * v.escala));
+      return;
+    }
+    let primeiro = true;
+    const io = new IntersectionObserver((entradas) => {
+      const vistos = entradas.filter((x) => x.isIntersecting).map((x) => x.target)
+        .sort((a, b) => (a.compareDocumentPosition(b) & 4 ? -1 : 1));
+      vistos.forEach((e, k) => {
+        io.unobserve(e);
+        soltar(e, (primeiro ? atraso : 0) + Math.min(k, v.maximo - 1) * v.escala);
+      });
+      primeiro = false;
+      if (!espera.size) io.disconnect();
+    }, { rootMargin: margem });
+    for (const e of alvos) io.observe(e);
+  }
+
+  // Um número que muda (quem está dentro, um minuto do relógio): o novo sobe
+  // de dentro da sua caixa. Não conta passando pelos do meio.
+  function trocaNumero(e) {
+    return mascara(e, { duracao: mv().estado, de: '70%', recorte: 'inset(0 -.2em)' });
+  }
+
+  const mov = { v: mv, pode, anima, animar, subir, fio, revelar, mascara, titulo: tituloPorLinha, painel, aoVer, soOpacidade, trocaNumero };
+
   window.Finde = {
     el, titulo, chamar, site, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
-    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite,
+    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite, mov,
   };
 })();

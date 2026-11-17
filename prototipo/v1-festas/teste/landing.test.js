@@ -489,3 +489,170 @@ test('landing.js: o formulário confere o e-mail, avisa que é protótipo e não
 test('landing.js sem o formulário na página não quebra', () => {
   assert.doesNotThrow(() => vm.runInNewContext(JS, { document: { getElementById: () => null } }));
 });
+
+// ------------------------------------------------------------ movimento
+
+// Os blocos de CSS de uma @media (todos com essa abertura), sem comentários.
+function blocosMedia(abertura) {
+  const fora = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const achados = [];
+  let ini = fora.indexOf(`@media ${abertura} {`);
+  while (ini >= 0) {
+    let n = 0;
+    for (let i = fora.indexOf('{', ini); i < fora.length; i++) {
+      if (fora[i] === '{') n++;
+      else if (fora[i] === '}' && --n === 0) { achados.push(fora.slice(ini, i + 1)); ini = i; break; }
+    }
+    ini = fora.indexOf(`@media ${abertura} {`, ini + 1);
+  }
+  return achados;
+}
+const blocoMedia = (abertura) => blocosMedia(abertura).join('\n') || null;
+
+test('landing.js carrega no <head> sem defer: a classe do movimento entra antes da primeira pintura', () => {
+  const cabeca = HTML.match(/<head>([\s\S]*?)<\/head>/)[1];
+  assert.match(cabeca, /<script src="\/landing\.js"><\/script>/);
+  assert.ok(cabeca.indexOf('landing.css') < cabeca.indexOf('landing.js'), 'o CSS vem antes do script');
+});
+
+test('landing.css: o vocabulário de movimento é o comum (--mov-*)', () => {
+  const raiz = regras(':root')[0];
+  assert.match(raiz, /--mov-saida:\s*cubic-bezier\(\.2, \.7, \.2, 1\)/);
+  assert.match(raiz, /--mov-troca:\s*cubic-bezier\(\.6, 0, \.2, 1\)/);
+  for (const [nome, ms] of [['toque', 160], ['estado', 320], ['bloco', 560], ['titulo', 900], ['passo', 60]]) {
+    assert.match(raiz, new RegExp(`--mov-${nome}:\\s*${ms}ms`), nome);
+  }
+});
+
+test('landing.css: sem JavaScript tudo aparece; só .mov esconde, e só com movimento liberado', () => {
+  const fora = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const livre = [blocoMedia('(prefers-reduced-motion: no-preference)'), blocoMedia('(prefers-reduced-motion: no-preference) and (max-width: 640px)')].join('\n');
+  assert.ok(livre.trim(), 'falta o bloco de movimento liberado');
+  // Fora dos blocos de movimento, nada nasce invisível nem fechado.
+  let resto = fora;
+  for (const ab of ['(prefers-reduced-motion: no-preference)', '(prefers-reduced-motion: no-preference) and (max-width: 640px)', '(prefers-reduced-motion: reduce)']) {
+    for (const b of blocosMedia(ab)) resto = resto.replace(b, '');
+  }
+  resto = resto.replace(/@keyframes[^{]*\{(?:[^{}]*\{[^}]*\})*[^}]*\}/g, '');
+  assert.doesNotMatch(resto, /opacity:\s*0[;\s}]/);
+  assert.doesNotMatch(resto, /scaleX\(0\)/);
+  assert.doesNotMatch(resto, /clip-path:\s*inset\(0 0 100%/);
+  // Dentro, toda regra que esconde depende de .mov (posta pelo script).
+  const movidos = [...livre.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter((m) => /opacity:\s*0[;\s]|scaleX\(0\)/.test(m[2]))
+    // O fio do foco do campo nasce fechado: é estado de foco, não conteúdo.
+    .filter((m) => m[1].trim() !== '.campo::after');
+  assert.ok(movidos.length > 5);
+  for (const m of movidos) {
+    for (const sel of m[1].split(/,(?![^(]*\))/)) assert.match(sel.trim(), /^\.mov\b/, sel.trim());
+  }
+});
+
+test('landing.css: movimento só com transform, opacity e clip-path; sem laço infinito', () => {
+  const quadros = [...CSS.matchAll(/@keyframes\s+([\w-]+)\s*\{((?:[^{}]*\{[^}]*\})*)[^}]*\}/g)];
+  assert.ok(quadros.length >= 4);
+  for (const [, nome, corpo] of quadros) {
+    const props = [...corpo.matchAll(/([\w-]+)\s*:/g)].map((m) => m[1]);
+    assert.ok(props.every((p) => ['transform', 'opacity', 'clip-path'].includes(p)), `${nome}: ${props}`);
+  }
+  assert.doesNotMatch(CSS, /infinite/);
+  const trans = [...CSS.matchAll(/transition(?:-property)?:\s*([^;]+);/g)].map((m) => m[1]);
+  for (const t of trans) {
+    for (const p of t.split(',').map((x) => x.trim().split(/\s+/)[0])) {
+      assert.ok(['transform', 'opacity', 'color', 'background-color', 'outline-offset'].includes(p), `transição em ${p}`);
+    }
+  }
+});
+
+test('landing.css: com movimento reduzido nada se desloca', () => {
+  const reduzido = blocoMedia('(prefers-reduced-motion: reduce)');
+  assert.ok(reduzido, 'falta o bloco de movimento reduzido');
+  assert.match(reduzido, /\*, \*::before, \*::after \{ animation: none !important;/);
+  // O que sobra é uma troca de opacidade de 160 ms, no aviso do formulário.
+  const sobra = [...reduzido.matchAll(/animation:\s*([\w-]+)\s+([^;]+);/g)].filter((m) => m[1] !== 'none');
+  for (const [, nome, resto] of sobra) {
+    assert.equal(nome, 'mov-surge');
+    assert.match(resto, /var\(--mov-toque\)/);
+  }
+  assert.match(CSS, /@keyframes mov-surge \{ from \{ opacity: 0; \} \}/);
+  // O rolar suave do âncora também só com movimento liberado.
+  assert.match(blocoMedia('(prefers-reduced-motion: no-preference)') || '', /scroll-behavior:\s*smooth/);
+});
+
+// landing.js com uma janela de mentira: decide o movimento no <head>.
+function rodarMovimento({ reduzido = false, io = true } = {}) {
+  const classes = new Set();
+  const relogios = [];
+  const ouvintes = {};
+  const raiz = { classList: { add: (c) => classes.add(c), remove: (c) => classes.delete(c), contains: (c) => classes.has(c) } };
+  const document = {
+    documentElement: raiz,
+    readyState: 'loading',
+    getElementById: () => null,
+    addEventListener: (tipo, f) => { ouvintes[tipo] = f; },
+  };
+  const window = {
+    matchMedia: (q) => ({ matches: /no-preference/.test(q) ? !reduzido : false }),
+    ...(io ? { IntersectionObserver: function IO() {} } : {}),
+  };
+  class Element {}
+  Element.prototype.animate = () => {};
+  vm.runInNewContext(JS, {
+    window, document, Element,
+    setTimeout: (f, ms) => { relogios.push({ f, ms }); return relogios.length; },
+    clearTimeout: () => {},
+  });
+  return { classes, relogios, ouvintes };
+}
+
+test('landing.js: põe .mov já no <head>, e o socorro a tira se a chegada não começar', () => {
+  const m = rodarMovimento();
+  assert.ok(m.classes.has('mov'), 'a classe entra antes do DOM pronto');
+  assert.ok(m.ouvintes.DOMContentLoaded, 'o resto espera o DOM');
+  const socorro = m.relogios.find((r) => r.ms === 3000);
+  assert.ok(socorro, 'há um socorro de 3 s');
+  socorro.f();
+  assert.equal(m.classes.has('mov'), false, 'sem chegada, a página aparece como está');
+});
+
+test('landing.js: com movimento reduzido ou sem IntersectionObserver, a página fica parada e visível', () => {
+  assert.equal(rodarMovimento({ reduzido: true }).classes.has('mov'), false);
+  assert.equal(rodarMovimento({ io: false }).classes.has('mov'), false);
+});
+
+test('landing.js: depois do socorro, o movimento não começa mais (nada é partido)', () => {
+  const m = rodarMovimento();
+  m.relogios.find((r) => r.ms === 3000).f();
+  const antes = m.relogios.length;
+  assert.doesNotThrow(() => m.ouvintes.DOMContentLoaded());
+  assert.equal(m.relogios.length, antes, 'nenhuma espera nova: a chegada não é agendada');
+  assert.equal(m.classes.has('mov'), false);
+});
+
+test('landing.js: um foco num bloco que ainda entra o põe pronto na hora', () => {
+  assert.match(JS, /addEventListener\('focusin'/);
+  assert.match(JS, /classList\.add\('ja', 'fim'\)/);
+  assert.match(JS, /classList\.add\('chegou', 'chegou-fim'\)/);
+});
+
+test('landing.css: só títulos e fios se deslocam; o texto de apoio entra por opacidade', () => {
+  const livre = blocoMedia('(prefers-reduced-motion: no-preference)');
+  const sobe = [...livre.matchAll(/([^{}]+)\{[^{}]*animation:\s*mov-sobe\b[^{}]*\}/g)].map((m) => m[1].trim());
+  assert.deepEqual(sobe, ['.erro:not(:empty), .aviso:not(:empty)'], 'mov-sobe só na resposta ao envio');
+  assert.doesNotMatch(CSS, /mov-desliza/);
+  // O botão do app acende junto da segunda linha do título, antes de 400 ms.
+  const acoes = livre.match(/\.hero-acoes > \* \{ animation: mov-surge var\(--mov-estado\) var\(--mov-saida\) (\d+)ms both; \}/);
+  assert.ok(acoes, 'os botões do herói entram por opacidade, juntos');
+  assert.ok(Number(acoes[1]) <= 400, `botões em ${acoes[1]} ms`);
+});
+
+test('landing.css: o vocabulário que a landing divide com o app', () => {
+  const raiz = regras(':root')[0];
+  assert.match(raiz, /--mov-sobe-px:\s*10px/);
+  assert.match(raiz, /--mov-linha-passo:\s*60ms/);
+  assert.match(raiz, /--mov-italico-atraso:\s*280ms/);
+  assert.match(raiz, /--mov-toque-escala:\s*\.98/);
+  assert.match(CSS, /\.botao:active:not\(:disabled\) \{ transform: scale\(var\(--mov-toque-escala\)\); \}/);
+  assert.match(JS, /ler\('linha-passo', 'passo'\)/);
+  assert.match(JS, /ler\('italico-atraso', 'tarde'\)/);
+});

@@ -93,6 +93,16 @@
 
   --lateral: var(--e5);
   --curva: cubic-bezier(.22, .61, .36, 1);
+
+  /* Movimento: o mesmo vocabulário da landing. Saída para o que chega,
+     troca para o que muda de estado; linear só no fio que marca tempo. */
+  --mov-saida: cubic-bezier(.2, .7, .2, 1);
+  --mov-troca: cubic-bezier(.6, 0, .2, 1);
+  --mov-toque: 160ms;
+  --mov-estado: 320ms;
+  --mov-bloco: 560ms;
+  --mov-titulo: 900ms;
+  --mov-escala: 60ms;
   color-scheme: light;
 }
 
@@ -427,10 +437,12 @@ p.carregando {
    fios pareciam um trilho só); o vão de baixo encolhe o mesmo tanto, e o
    título não sai do lugar. */
 .progresso { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: var(--e1); margin-top: var(--e6); align-items: start; }
-.progresso span { height: 2px; background: var(--fio-off); }
-.progresso span.feito { background: var(--tinta); }
-/* O passo atual na mesma espessura dos outros (2 px, prancha Aplicações), em bordô. */
-.progresso span.atual { background: var(--tinta); }
+.progresso > span { position: relative; height: 2px; background: var(--fio-off); }
+/* O passo atual na mesma espessura dos outros (2 px, prancha Aplicações), em
+   bordô. O bordô é um fio por cima do trilho apagado: na troca de pergunta
+   ele se desenha da esquerda, e ao voltar se recolhe. */
+.progresso-fio { position: absolute; inset: 0; background: var(--tinta); scale: 0 1; transform-origin: 0 50%; }
+.progresso > .feito .progresso-fio, .progresso > .atual .progresso-fio { scale: 1 1; }
 
 /* O título fica na mesma altura nas cinco perguntas: o vão de cima é fixo, e
    a lista é que cresce. */
@@ -455,11 +467,14 @@ p.carregando {
   cursor: pointer;
 }
 .opcao input { position: absolute; left: 0; top: 50%; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
-.marcador { position: absolute; left: -14px; top: 50%; width: 6px; height: 6px; margin-top: -3px; }
-.opcao input:checked ~ .marcador { background: var(--marcado); border-radius: 50%; }
-.opcao--varios input:checked ~ .marcador { border-radius: 0; }
+.marcador { position: absolute; left: -14px; top: 50%; width: 6px; height: 6px; margin-top: -3px; background: var(--marcado); border-radius: 50%; scale: 0; transition: scale var(--mov-toque) var(--mov-saida); }
+.opcao input:checked ~ .marcador { scale: 1; }
+.opcao--varios .marcador { border-radius: 0; }
+/* O fio da escolhida: um traço na cor da tinta por cima do rosé, que se
+   desenha da esquerda no toque (160 ms) e se recolhe quando sai. */
+.opcao::after { content: ''; position: absolute; left: 0; right: 0; bottom: -.5px; border-top: .5px solid var(--tinta); scale: 0 1; transform-origin: 0 50%; transition: scale var(--mov-toque) var(--mov-saida); pointer-events: none; }
+.opcao:has(input:checked)::after { scale: 1 1; }
 .opcao-detalhe { font-size: 14px; color: var(--rotulo); text-align: right; padding-left: var(--e3); }
-.opcao:has(input:checked) { border-bottom-color: var(--tinta); }
 .opcao input:checked ~ .opcao-nome { font-weight: 500; }
 /* Foco de teclado: um sublinhado, não uma caixa sobre os fios. */
 .opcao:has(input:focus-visible) { border-bottom: 1.5px solid var(--foco); }
@@ -517,12 +532,20 @@ p.carregando {
    dois pontos de 44 px de alvo; a escala; os botões de passo. */
 .faixa { display: flex; flex-direction: column; gap: var(--e4); margin-top: var(--e6); }
 .faixa-valor { font-family: var(--serifa); font-size: 44px; line-height: 1; color: var(--tinta); font-variant-numeric: lining-nums; }
-.faixa-trilho { position: relative; height: 44px; margin: 0 22px; touch-action: pan-y; cursor: pointer; }
+.faixa-trilho { position: relative; height: 44px; margin: 0 22px; touch-action: pan-y; cursor: pointer; container-type: inline-size; }
 .faixa-passo[aria-disabled="true"] { color: var(--fio-off); cursor: default; }
 .faixa-base { position: absolute; left: -22px; right: -22px; top: 21px; border-top: 1px solid var(--fio-off); }
-.faixa-sel { position: absolute; top: 20px; height: 3px; background: var(--tinta); }
-.faixa-ponto { position: absolute; top: 0; width: 44px; height: 44px; margin-left: -22px; display: grid; place-items: center; border-radius: 50%; outline-offset: -6px; cursor: grab; }
-.faixa-ponto-marca { width: 20px; height: 20px; border-radius: 50%; background: var(--fundo); border: 1.5px solid var(--tinta); }
+/* Pontos e trecho andam por translate e scale, em % do trilho (cqw): o
+   valor vem do app em --p, --a e --b (0 a 100). No toque e nos passos eles
+   deslizam em 160 ms; no arrasto seguem o dedo, sem transição. */
+.faixa-sel { position: absolute; left: 0; top: 20px; width: 100%; height: 3px; background: var(--tinta); transform-origin: 0 50%; translate: calc(var(--a, 0) * 1cqw) 0; scale: calc((var(--b, 100) - var(--a, 0)) / 100) 1; transition: translate var(--mov-toque) var(--mov-saida), scale var(--mov-toque) var(--mov-saida); }
+.faixa-ponto { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin-left: -22px; display: grid; place-items: center; border-radius: 50%; outline-offset: -6px; cursor: grab; translate: calc(var(--p, 0) * 1cqw) 0; transition: translate var(--mov-toque) var(--mov-saida); }
+.faixa-ponto-marca { width: 20px; height: 20px; border-radius: 50%; background: var(--fundo); border: 1.5px solid var(--tinta); transition: scale var(--mov-toque) var(--mov-saida); }
+.arrastando .faixa-ponto, .arrastando .faixa-sel { transition: none; }
+.arrastando .faixa-ponto:focus .faixa-ponto-marca { scale: 1.2; }
+@supports not (width: 1cqw) {
+  .faixa-sel, .faixa-ponto { translate: none; scale: none; }
+}
 .faixa-ponto:focus-visible .faixa-ponto-marca, .arrastando .faixa-ponto:focus .faixa-ponto-marca { background: var(--tinta); }
 .faixa-escala { display: flex; justify-content: space-between; margin-top: -20px; font-size: 12px; font-weight: 500; color: var(--rotulo); }
 .faixa-passos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e4); margin-top: var(--e3); padding-top: var(--e3); border-top: .5px solid var(--fio); }
@@ -1003,6 +1026,7 @@ h2.secao-rotulo { margin: 0; }
 
 .quem { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e5); padding: var(--e5) 0 var(--e6); margin-top: var(--e6); border-top: .5px solid var(--fio); }
 .quem-bloco { display: flex; flex-direction: column; gap: var(--e2); }
+.conta { display: inline-block; }
 .quem-nomes { font-family: var(--serifa); font-size: 26px; line-height: 1.08; letter-spacing: 0; color: var(--tinta); text-wrap: balance; overflow-wrap: anywhere; }
 .quem-nomes.vazio-quem { font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--corrido); }
 
@@ -1071,13 +1095,75 @@ h2.secao-rotulo { margin: 0; }
 
 /* ---------------------------------------------------------------- movimento */
 
-/* Troca de tela: só o que muda, por opacidade, curta. O topo e o progresso
-   ficam firmes. Depois de um ajuste, só as festas novas. */
-@keyframes surgir { from { opacity: .35; } to { opacity: 1; } }
-.entra .cabeca, .entra .cabeca-pergunta, .entra .opcoes,
-.entra .festas, .entra .painel-convite, .entra .bloco,
-.tela-festa.entra > :not(.topo):not(.barra) { animation: surgir 160ms var(--curva) backwards; }
-.festa.nova, .marca-lateral.nova-marca { animation: surgir 320ms var(--curva) both; }
+/* O vocabulário está nas --mov-* do :root; quem anima é o JS (comum.js,
+   Web Animations), sempre a partir do estado final. Aqui ficam as peças
+   que ele monta e o que é só CSS. */
+
+/* Título por linha: cada linha numa máscara (o recorte deixa a serifa e o
+   itálico respirarem para os lados e para baixo). */
+.mov-linha { display: block; clip-path: inset(-.3em -.6em -.2em -.6em); }
+.mov-linha-in { display: block; }
+.mov-em { display: inline-block; }
+/* A pergunta que sai não recebe toque. */
+.saindo { pointer-events: none; }
+
+/* No convite, a resposta escolhida se enche da esquerda: o fundo vem de um
+   ::after que o JS escala (só enquanto a classe existe); o botão, a borda e
+   o foco ficam como estão. */
+.botao.enche, .convite--respondido .par .botao.enche[aria-pressed="true"] { position: relative; isolation: isolate; background: transparent; }
+.botao.enche::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--acao);
+  transform-origin: 0 50%;
+}
+
+/* Toque: o botão afunda um pouco, sem mola. */
+.botao { transition: scale var(--mov-toque) var(--mov-saida); }
+.botao:active:not(:disabled):not([aria-disabled="true"]) { scale: .98; }
+
+/* Esperando: a linha de rótulo ganha embaixo o fio que corre, o mesmo do
+   botão carregando, devagar. Some quando a página chega. */
+p.carregando::after, .conversa[aria-busy="true"] .fala-finde::after {
+  content: '';
+  display: block;
+  width: 2.4em;
+  margin-top: var(--e2);
+  border-top: 1px solid var(--fio);
+  transform-origin: left center;
+  animation: correr 1400ms var(--mov-troca) infinite;
+}
+.conversa[aria-busy="true"] .fala-finde::after { width: 3.2em; }
+
+/* Depois de um ajuste, só as festas novas entram. */
+@keyframes mov-sobe { from { opacity: 0; translate: 0 10px; } }
+.festa.nova > *, .marca-lateral.nova-marca { animation: mov-sobe var(--mov-bloco) var(--mov-saida) backwards; }
+
+/* O nome viaja do cartão ao detalhe na caixa do próprio texto: com a caixa
+   da coluna, a imagem dele encolheria ou cresceria pela largura errada. A
+   quebra e o lugar das letras não mudam (o texto já é alinhado à esquerda). */
+.festa .nome, .festa-nome { width: fit-content; max-width: 100%; }
+
+/* Do cartão ao detalhe (View Transitions, onde houver): a hora e o nome
+   saem da posição do cartão e chegam aos do detalhe; o resto troca por
+   opacidade, rápido na saída. */
+::view-transition-group(festa-hora), ::view-transition-group(festa-nome) {
+  animation-duration: var(--mov-bloco);
+  animation-timing-function: var(--mov-saida);
+}
+/* Viaja uma imagem só, a de chegada, que parte do tamanho do cartão: sem a
+   dupla exposição de duas horas de corpos diferentes se cruzando. */
+::view-transition-old(festa-hora), ::view-transition-old(festa-nome) { animation: none; opacity: 0; }
+::view-transition-new(festa-hora), ::view-transition-new(festa-nome) { animation: none; }
+@keyframes mov-vt-sai { to { opacity: 0; } }
+@keyframes mov-vt-entra { from { opacity: 0; } }
+/* As duas páginas não ficam legíveis uma sobre a outra: a de saída some em
+   140 ms e a de chegada só começa aos 100 ms, quando a outra já quase
+   sumiu. Quem atravessa a troca inteira são a hora e o nome. */
+::view-transition-old(root) { animation: mov-vt-sai 140ms var(--mov-troca) both; }
+::view-transition-new(root) { animation: mov-vt-entra var(--mov-estado) var(--mov-saida) 100ms both; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

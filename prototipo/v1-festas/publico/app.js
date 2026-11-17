@@ -10,7 +10,7 @@
 (() => {
   const {
     el, titulo, chamar, site, marca, rodape, reduzir, hora, anunciar, manterVisivel,
-    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite,
+    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite, mov: M,
   } = window.Finde;
   const FT = window.FindeTexto;
   const $tela = document.getElementById('tela');
@@ -33,7 +33,9 @@
   const EIXO = { de: 15, ate: 27 };
   const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const NUMERAL = ['Nada', 'Uma', 'Duas', 'Três'];
-  const AVANCO_MS = 220;
+  // A escolha aparece em 160 ms (o marcador e o fio); o resto da pausa é
+  // para a pessoa ver o que escolheu antes de a pergunta sair.
+  const AVANCO_MS = 200;
   // Depois de trocar de tela, um toque não vale por este tempo. Com movimento
   // reduzido o avanço é imediato, então a trava soma o atraso que ele não teve:
   // nos dois modos, um segundo toque até uns 650 ms depois do primeiro é engolido.
@@ -150,17 +152,42 @@
     // Voltar do detalhe devolve a lista onde ela estava, com o foco na festa aberta.
     if (tela === 'resultado' && veioDoDetalhe && estado.festa) {
       const id = estado.festa.festa.id;
-      desenhar({ focar: false, rolagem: estado.rolagemLista });
-      const b = $tela.querySelector(`[data-festa="${CSS.escape(id)}"] .festa-abrir`);
-      if (b) b.focus({ preventScroll: true });
+      // A troca pode esperar a transição: o foco vai depois dela.
+      desenhar({
+        focar: false, rolagem: estado.rolagemLista, volta: true,
+        depois: () => {
+          const b = $tela.querySelector(`[data-festa="${CSS.escape(id)}"] .festa-abrir`);
+          if (b) b.focus({ preventScroll: true });
+        },
+      });
       return;
     }
-    desenhar();
+    desenhar({ volta: true });
   });
 
-  // entrar: a tela chega com um fade curto, só no que muda. Depois de um
-  // ajuste, nada pisca: só as festas novas aparecem.
-  function desenhar({ focar = true, entrar = true, travar = entrar, rolagem = 0 } = {}) {
+  // entrar: a tela chega com o seu movimento (coreografia). Depois de um
+  // ajuste, nada pisca: só as festas novas aparecem. Duas trocas esperam um
+  // instante antes do desenho: de uma pergunta para outra, a que sai recua
+  // (160 ms); entre a lista e o detalhe, a hora e o nome do cartão viajam
+  // (View Transitions). Por isso o que depende da tela nova vai em depois.
+  let trocaPendente = null;
+  let ultima = null; // a tela desenhada por último: { tela, passo }
+  function desenhar(opcoes = {}) {
+    if (trocaPendente) trocaPendente.cancelar();
+    const entrar = opcoes.entrar !== false;
+    const de = ultima;
+    const velho = $tela.firstElementChild;
+    if (entrar && M.pode() && de && velho && !document.hidden) {
+      if (de.tela === 'pergunta' && estado.tela === 'pergunta' && velho.matches('form.tela-pergunta')) {
+        recuar(velho, opcoes.volta, () => desenharJa(opcoes, de));
+        return;
+      }
+      if (comVista(de.tela, () => desenharJa(opcoes, de))) return;
+    }
+    desenharJa(opcoes, de);
+  }
+
+  function desenharJa({ focar = true, entrar = true, travar = entrar, rolagem = 0, volta = false, depois = null } = {}, de = null) {
     const telas = { pergunta: telaPergunta, resultado: telaResultado, festa: telaFesta, mandar: telaMandar };
     // Sem o formulário ainda (página salva, rede lenta), a pergunta espera.
     const tela = estado.tela === 'pergunta' && !estado.form ? telaCarregando : telas[estado.tela] || telaPergunta;
@@ -181,7 +208,245 @@
       travaAte = performance.now() + trava();
       requestAnimationFrame(() => { travaAte = Math.max(travaAte, performance.now() + trava()); });
     }
+    const agora = { tela: estado.tela, passo: estado.passo };
+    if (entrar) coreografia(conteudo, de, { volta });
+    ultima = agora;
     salvar();
+    if (depois) depois();
+  }
+
+  // ------------------------------------------------------------ movimento
+
+  // A pergunta que sai recua: some subindo (descendo, se a pessoa voltou),
+  // em 160 ms, e só então a nova é desenhada. Um desenho no meio cancela a
+  // espera e desenha já. Com a aba oculta a animação para; a troca não.
+  function recuar(velho, volta, seguir) {
+    const v = M.v();
+    velho.classList.add('saindo');
+    const alvos = velho.querySelectorAll('.cabeca-pergunta, .opcoes, .onde-chips, .faixa, .pe');
+    const anims = [...alvos].map((x) => M.animar(x, [{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: `0 ${volta ? 10 : -10}px` }], {
+      duration: v.toque, easing: v.troca, fill: 'forwards',
+    })).filter(Boolean);
+    let feito = false;
+    const fim = () => {
+      feito = true;
+      trocaPendente = null;
+      document.removeEventListener('visibilitychange', ir1);
+    };
+    const ir1 = () => {
+      if (feito) return;
+      fim();
+      seguir();
+    };
+    trocaPendente = { cancelar: fim };
+    document.addEventListener('visibilitychange', ir1);
+    if (!anims.length) ir1();
+    else {
+      Promise.all(anims.map((a) => a.finished)).then(ir1, ir1);
+      // A nova não espera o último quadro da saída: com a curva de troca, aos
+      // 110 ms a velha já quase sumiu, e assim não sobra quadro vazio.
+      setTimeout(ir1, v.toque - 50);
+    }
+  }
+
+  // Do cartão ao detalhe e de volta: a hora e o nome da festa aberta viajam
+  // entre as duas posições. Devolve false quando não há transição a fazer
+  // (o desenho segue direto).
+  function comVista(de, fazer) {
+    if (typeof document.startViewTransition !== 'function') return false;
+    const ida = de === 'resultado' && estado.tela === 'festa';
+    const volta = de === 'festa' && estado.tela === 'resultado';
+    const id = estado.festa && estado.festa.festa && estado.festa.festa.id;
+    if ((!ida && !volta) || !id || estado.avulsa) return false;
+    const nomes = [];
+    const nomear = (naLista) => {
+      const raiz = naLista ? $tela.querySelector(`[data-festa="${CSS.escape(id)}"]`) : $tela.querySelector('.tela-festa');
+      if (!raiz) return;
+      const hora1 = raiz.querySelector(naLista ? '.festa-quando .hora' : '.detalhe-hora .hora');
+      const nome1 = raiz.querySelector(naLista ? '.nome' : '#festa-nome');
+      for (const [x, n] of [[hora1, 'festa-hora'], [nome1, 'festa-nome']]) {
+        if (!x) continue;
+        x.style.viewTransitionName = n;
+        nomes.push(x);
+      }
+    };
+    // Antes da troca a página ainda é a de origem (na ida, a lista); dentro
+    // dela, já é a de destino (na volta, a lista de novo).
+    nomear(ida);
+    let t;
+    try {
+      t = document.startViewTransition(() => {
+        for (const x of nomes.splice(0)) x.style.viewTransitionName = '';
+        fazer();
+        nomear(volta);
+      });
+    } catch {
+      for (const x of nomes.splice(0)) x.style.viewTransitionName = '';
+      return false;
+    }
+    // O detalhe sabe que a hora e o nome chegaram pela transição.
+    vistaEmCurso = true;
+    const limpar = () => {
+      vistaEmCurso = false;
+      for (const x of nomes.splice(0)) x.style.viewTransitionName = '';
+    };
+    t.finished.then(limpar, limpar);
+    return true;
+  }
+  let vistaEmCurso = false;
+
+  // O que cada tela faz ao chegar. Tudo parte do estado final.
+  function coreografia(raiz, de, { volta }) {
+    if (!M.anima()) return;
+    if (!M.pode()) {
+      M.soOpacidade(raiz);
+      return;
+    }
+    const t = estado.tela;
+    if (raiz.classList.contains('tela-carregando')) return;
+    if (t === 'pergunta') entraPergunta(raiz, de, volta);
+    else if (t === 'resultado') {
+      // Voltando do detalhe, a lista já estava ali: só o cartão viaja.
+      if (volta && de && de.tela !== 'pergunta') {
+        if (!vistaEmCurso) M.subir(raiz, { y: 0, duracao: M.v().estado });
+        return;
+      }
+      entraResultado(raiz);
+    } else if (t === 'festa') entraFesta(raiz, { volta, vista: vistaEmCurso });
+    else if (t === 'mandar') entraMandar(raiz, volta);
+  }
+
+  function entraPergunta(raiz, de, volta) {
+    const v = M.v();
+    // O segmento da pergunta nova se desenha; voltando, o de antes se recolhe.
+    const segs = raiz.querySelectorAll('.progresso > span');
+    if (volta && segs[estado.passo + 1]) {
+      M.animar(segs[estado.passo + 1].firstElementChild, [{ scale: '1 1', transformOrigin: '100% 50%' }, { scale: '0 1', transformOrigin: '100% 50%' }], { duration: v.bloco, easing: v.troca });
+    } else if (!volta && segs[estado.passo]) {
+      M.fio(segs[estado.passo].firstElementChild, { atraso: 60, duracao: v.bloco });
+    }
+    // A primeira pergunta tem o tempo de título (900 ms); entre uma pergunta
+    // e outra, o de bloco, com o itálico quase junto e as opções logo atrás
+    // do título: legíveis e tocáveis uns 500 ms depois do toque.
+    const troca = de && de.tela === 'pergunta';
+    M.subir(raiz.querySelector('.cabeca-pergunta > .rotulo'), { y: 6, duracao: v.estado });
+    M.titulo(raiz.querySelector('.cabeca-pergunta h1'), troca ? { duracao: v.bloco, em: 2 * v.escala } : { atraso: 40 });
+    M.subir(raiz.querySelector('.dica'), { atraso: troca ? 60 : 320, y: 6, duracao: troca ? v.estado : v.bloco });
+    M.subir(raiz.querySelectorAll('.opcoes > .opcao, .onde-chips > *, .faixa > *'), troca ? { atraso: 40, y: 10, duracao: v.estado } : { atraso: 260, y: 14 });
+    M.subir(raiz.querySelector('.pe'), { atraso: troca ? 120 : 520, y: 0, duracao: v.estado });
+  }
+
+  function entraResultado(raiz) {
+    const v = M.v();
+    M.subir(raiz.querySelector('.pedido'), { y: 6, duracao: v.estado });
+    M.titulo(raiz.querySelector('#cabeca-resultado h1'), { atraso: 60 });
+    M.subir(raiz.querySelector('#conversa'), { atraso: 380, y: 8 });
+    // A programação: os fios ficam, e cada festa chega na sua linha, em
+    // escada; a "% a sua cara" se desenha depois. As de baixo, quando a
+    // rolagem chega perto delas.
+    M.aoVer(raiz.querySelectorAll('.festa'), (li) => [
+      M.subir([...li.children], { y: 12, escada: false }),
+      M.revelar(li.querySelector('.cara-pct'), { atraso: 280, duracao: v.bloco }),
+    ], { atraso: 420 });
+    // O ajuste fecha a tela: entra depois das festas que estão à vista.
+    M.aoVer(raiz.querySelectorAll('.bloco-rotulo, .ajuste > *'), (x) => M.subir(x, { y: 10 }), { atraso: 760 });
+  }
+
+  // A régua do horário se desenha do começo ao fim da festa, no ritmo do
+  // relógio (linear); o ponto de "enche" chega quando o traço passa por ele,
+  // e cada rótulo aparece quando o traço o alcança. A janela pedida (o
+  // colchete rosé) se abre por baixo, um pouco antes.
+  function animarRegua(rg, atraso, dur) {
+    if (!rg) return [];
+    const v = M.v();
+    const d = dur || v.titulo;
+    const festa = rg.querySelector('.rg-festa');
+    const janela = rg.querySelector('.rg-janela');
+    const pos = (x) => parseFloat(x && x.dataset.l) || 0;
+    const ini = pos(festa);
+    const larg = parseFloat(festa && festa.dataset.w) || 0;
+    const quando = (x) => (larg ? Math.max(0, Math.min(1, (x - ini) / larg)) : 1);
+    const traco = atraso + 120;
+    const anims = [
+      M.revelar(janela, { atraso, duracao: v.bloco }),
+      M.fio(festa, { atraso: traco, duracao: d, curva: 'linear' }),
+    ];
+    const pico = rg.querySelector('.rg-pico, .rg-media');
+    if (pico && pico.classList.contains('rg-pico')) {
+      anims.push(M.subir(pico, { atraso: traco + d * quando(pos(pico)) + 40, y: -6, duracao: v.estado }));
+    }
+    for (const r of rg.querySelectorAll('.rg-cima .rg-rotulo')) {
+      // O rótulo do fim está preso à direita do ponto: ele chega com o fim.
+      anims.push(M.subir(r, { atraso: traco + d * quando(pos(r)) - 60, y: 4, duracao: v.estado }));
+    }
+    anims.push(M.subir(rg.querySelectorAll('.rg-baixo .rg-rotulo'), { atraso: atraso + 200, y: 0, duracao: v.estado, escada: false }));
+    return anims.flat();
+  }
+
+  // A régua da idade: a faixa pedida se abre e a média chega nela.
+  function animarReguaIdade(rg) {
+    const v = M.v();
+    return [
+      M.revelar(rg.querySelector('.rg-janela'), { duracao: v.bloco }),
+      M.subir(rg.querySelector('.rg-media'), { atraso: 360, y: -6, duracao: v.estado }),
+      M.subir(rg.querySelectorAll('.rg-baixo .rg-rotulo'), { atraso: 120, y: 0, duracao: v.estado, escada: false }),
+    ].flat();
+  }
+
+  function entraFesta(raiz, { volta, vista }) {
+    const v = M.v();
+    const barra = raiz.querySelector('.barra');
+    const corpo = [...raiz.children].filter((x) => !x.matches('.topo, .barra'));
+    if (volta) {
+      // Voltando do envio: o detalhe só reaparece.
+      M.subir(corpo, { y: 0, duracao: v.estado, escada: false });
+      return;
+    }
+    // A ficha não espera a régua: os blocos de texto entram em escada logo
+    // depois da hora (até uns 400 ms), e a régua se desenha por cima deles,
+    // no ritmo do relógio.
+    const q = raiz.querySelector('.detalhe-quando');
+    if (q) {
+      M.subir(q.querySelector(':scope > .rotulo'), { y: 6, duracao: v.estado });
+      // Sem a viagem do cartão, a hora sobe de dentro da sua linha.
+      if (!vista) M.mascara(q.querySelector('.detalhe-hora .hora'), { atraso: 40 });
+      M.subir(q.querySelector('.detalhe-media-curta'), { atraso: 120, y: 6, duracao: v.estado });
+      animarRegua(q.querySelector('.regua:not(.regua-idade)'), 80, v.bloco + 2 * v.escala);
+      M.subir(q.querySelector('.detalhe-encaixe'), { atraso: 200, y: 8 });
+      // A idade logo depois do horário, de cima para baixo.
+      const ri = q.querySelector('.regua-idade');
+      if (ri) M.aoVer(ri, animarReguaIdade, { atraso: 180 });
+      M.aoVer(q.querySelectorAll('.media-origem, .idade-encaixe'), (x) => M.subir(x, { y: 8 }), { atraso: 240 });
+      const cara = q.querySelector('.cara');
+      if (cara) {
+        M.aoVer(cara, (c) => [
+          M.subir(c.querySelector('.cara-pct'), { y: 10 }),
+          M.subir(c.querySelector('.cara-peso'), { atraso: 60, y: 8 }),
+          M.subir(c.querySelectorAll('.cara-linha'), { atraso: 120, y: 8 }),
+        ].flat(), { atraso: 300 });
+      }
+    }
+    // O resto da ficha, por ordem, quando chega perto da tela.
+    const quem = raiz.querySelector('.detalhe-quem');
+    if (quem && vista) {
+      // O nome chegou viajando: o resto do bloco dele chega junto.
+      M.subir([...quem.querySelectorAll('.cartaz, .ficha-produtora, .ficha-casa, .ficha-frase, .bloco-onde')], { atraso: 220, y: 10 });
+    }
+    M.aoVer(corpo.filter((x) => x !== q && !(vista && x === quem)), (x) => M.subir(x, { y: 14 }), { atraso: 300 });
+    // A barra sobe por baixo.
+    if (barra) M.animar(barra, [{ translate: '0 100%' }], { duration: v.bloco, easing: v.saida, delay: 240 });
+  }
+
+  function entraMandar(raiz, volta) {
+    const v = M.v();
+    if (volta) {
+      M.subir(raiz, { y: 0, duracao: v.estado });
+      return;
+    }
+    M.subir(raiz.querySelector('.cabeca'), { y: 8, duracao: v.estado });
+    M.painel(raiz.querySelector('.painel-convite'), { atraso: 40 });
+    // O botão de criar chega com o painel, não depois dele.
+    M.subir(raiz.querySelectorAll(':scope > .bloco'), { atraso: 200, y: 10, duracao: v.estado });
   }
 
   // A barra fixa do detalhe muda de altura com a fonte, a largura e o celular
@@ -425,7 +690,7 @@
     const form = el('form', { class: 'tela-pergunta', novalidate: true },
       topo(botaoVoltar()),
       editando ? null : el('div', { class: 'progresso', 'aria-hidden': 'true' },
-        PERGUNTAS.map((_, j) => el('span', { class: j < i ? 'feito' : j === i ? 'atual' : null }))),
+        PERGUNTAS.map((_, j) => el('span', { class: j < i ? 'feito' : j === i ? 'atual' : null }, el('span', { class: 'progresso-fio' })))),
       el('div', { class: 'espaco' }),
       el('div', { class: 'cabeca-pergunta' },
         el('p', { class: 'rotulo', texto: editando ? 'Ajustar o pedido' : `${i + 1} de ${PERGUNTAS.length}` }),
@@ -522,12 +787,22 @@
       el('div', { class: 'faixa-passo-grupo' }, el('span', { class: 'rotulo', 'aria-hidden': 'true', texto: 'Máximo' }),
         el('div', { class: 'faixa-passo-linha' }, passo('max', -1, 'Diminuir a idade máxima'), numMax, passo('max', +1, 'Aumentar a idade máxima'))));
     const pos = (n) => `${((n - LIM.min) / (LIM.max - LIM.min)) * 100}%`;
+    const p100 = (n) => String(((n - LIM.min) / (LIM.max - LIM.min)) * 100);
+    // Os pontos andam por translate em % do trilho (cqw, no CSS): mexer em
+    // left refaria o layout a cada passo do dedo. Sem cqw, left.
+    const cq = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('width', '1cqw');
     function pintar() {
       valor.textContent = `${v.min} a ${anos(v.max)}`;
-      pMin.style.left = pos(v.min);
-      pMax.style.left = pos(v.max);
-      sel.style.left = pos(v.min);
-      sel.style.width = `calc(${pos(v.max)} - ${pos(v.min)})`;
+      pMin.style.setProperty('--p', p100(v.min));
+      pMax.style.setProperty('--p', p100(v.max));
+      sel.style.setProperty('--a', p100(v.min));
+      sel.style.setProperty('--b', p100(v.max));
+      if (!cq) {
+        pMin.style.left = pos(v.min);
+        pMax.style.left = pos(v.max);
+        sel.style.left = pos(v.min);
+        sel.style.width = `calc(${pos(v.max)} - ${pos(v.min)})`;
+      }
       for (const [el2, qual, de, ate] of [[pMin, 'min', LIM.min, v.max - 1], [pMax, 'max', v.min + 1, LIM.max]]) {
         el2.setAttribute('aria-valuemin', String(de));
       (qual === 'min' ? numMin : numMax).textContent = qual === 'max' && v.max >= LIM.max ? `${LIM.max}+` : String(v[qual]);
@@ -1348,6 +1623,8 @@
       travaAte = Math.max(travaAte, tocou + AVANCO_MS + trava());
       const p = document.getElementById('convite-pronto');
       if (p) p.focus({ preventScroll: true });
+      // O que nasceu no lugar de "Criar o convite" chega em escada.
+      if (p && p.parentElement) M.subir([...p.parentElement.children], { y: 8, duracao: M.v().estado });
       const zap = document.getElementById('mandar-zap');
       if (zap) zap.scrollIntoView({ block: 'nearest', behavior: reduzir.matches ? 'auto' : 'smooth' });
     });

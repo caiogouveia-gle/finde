@@ -5,7 +5,7 @@
 // com ela oculta; uma leitura velha nunca desfaz a resposta da própria pessoa.
 
 (() => {
-  const { el, chamar, site, marca, rodape, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite } = window.Finde;
+  const { el, chamar, site, marca, rodape, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite, mov: M } = window.Finde;
   const $tela = document.getElementById('tela');
   const id = decodeURIComponent(window.location.pathname.split('/')[2] || '');
 
@@ -154,6 +154,24 @@
         el('p', { class: 'texto', texto })),
       el('div', { class: 'pe' }, acoes),
       rodape()));
+    const t = $tela.firstElementChild;
+    M.titulo(t.querySelector('h1'), { atraso: 40 });
+    M.subir(t.querySelectorAll('.cabeca > :not(h1), .pe'), { atraso: 320, y: 10 });
+  }
+
+  // Vazado que vira cheio: o bordô corre da esquerda por baixo do texto. Quem
+  // corre é um fundo (::after), nunca o botão: ele, a borda e o anel de foco
+  // ficam inteiros o tempo todo, e quem chegou pelo teclado não se perde.
+  const pseudoAnima = typeof KeyframeEffect === 'function' && 'pseudoElement' in KeyframeEffect.prototype;
+  function encher(b) {
+    if (!M.pode() || !pseudoAnima) return;
+    b.classList.add('enche');
+    const a = M.animar(b, [{ scale: '0 1' }, { scale: '1 1' }], {
+      duration: M.v().estado, easing: M.v().troca, pseudoElement: '::after',
+    });
+    const fim = () => b.classList.remove('enche');
+    if (!a) fim();
+    else a.finished.then(fim, fim);
   }
 
   // ------------------------------------------------------------ desenho
@@ -178,8 +196,11 @@
     dom.confirmar = el('div', { class: 'confirmar' });
     dom.nomesDentro = el('p', { class: 'quem-nomes' });
     dom.nomesFora = el('p', { class: 'quem-nomes' });
-    dom.rotuloDentro = el('p', { class: 'rotulo' });
-    dom.rotuloFora = el('p', { class: 'rotulo' });
+    // A contagem num span próprio: quando muda, o número novo sobe.
+    dom.contaDentro = el('span', { class: 'conta' });
+    dom.contaFora = el('span', { class: 'conta' });
+    dom.rotuloDentro = el('p', { class: 'rotulo' }, 'Tô dentro · ', dom.contaDentro);
+    dom.rotuloFora = el('p', { class: 'rotulo' }, 'Não rola · ', dom.contaFora);
     dom.par = el('div', { class: 'par' }, dom.dentro, dom.fora);
 
     const form = el('form', { class: 'form-resposta' },
@@ -211,6 +232,22 @@
       rodape());
     $tela.replaceChildren(dom.tela);
     dom.montado = true;
+    // O convite se monta como na landing: o painel abre e as faixas entram
+    // em sequência; quem vai e o resto chegam quando a rolagem chega neles.
+    M.painel(dom.tela.querySelector('.painel-convite'));
+    M.subir(dom.tela.querySelector('.quem'), { atraso: 300, y: 10 });
+    M.aoVer([...dom.tela.querySelectorAll('.convite-detalhes > *, .convite-mais')], (x) => M.subir(x, { y: 12 }), { atraso: 400 });
+  }
+
+  // Um texto que mudou entra subindo um pouco (a contagem sobe por dentro
+  // da sua caixa). Na primeira leitura, nada se mexe: o painel já se monta.
+  function trocar(no, texto, numero = false) {
+    if (no.textContent === texto) return;
+    const antes = no.textContent;
+    no.textContent = texto;
+    if (!antes) return;
+    if (numero) M.trocaNumero(no);
+    else M.subir(no, { y: 6, duracao: M.v().estado });
   }
 
   // O essencial do detalhe da festa (R13), abaixo da resposta: a resposta
@@ -244,12 +281,12 @@
 
   function desenhar() {
     if (!dom.montado) montar();
-    dom.rotuloDentro.textContent = `Tô dentro · ${plano.dentro.length}`;
+    trocar(dom.contaDentro, String(plano.dentro.length), true);
     // "Lista" fica para a lista da porta e a lista da semana; aqui é o "tô dentro".
-    dom.nomesDentro.textContent = plano.dentro.length ? juntar(plano.dentro) : 'Ninguém ainda. Pode ser você.';
+    trocar(dom.nomesDentro, plano.dentro.length ? juntar(plano.dentro) : 'Ninguém ainda. Pode ser você.');
     dom.nomesDentro.classList.toggle('vazio-quem', !plano.dentro.length);
-    dom.rotuloFora.textContent = `Não rola · ${plano.fora.length}`;
-    dom.nomesFora.textContent = plano.fora.length ? juntar(plano.fora) : 'Ninguém.';
+    trocar(dom.contaFora, String(plano.fora.length), true);
+    trocar(dom.nomesFora, plano.fora.length ? juntar(plano.fora) : 'Ninguém.');
     dom.nomesFora.classList.toggle('vazio-quem', !plano.fora.length);
 
     if (plano.passou) {
@@ -278,7 +315,17 @@
       }
     } else {
       const [eu, outro] = minha === 'dentro' ? [dentro, fora] : [fora, dentro];
+      // A resposta acabou de mudar: a escolhida se preenche da esquerda e a
+      // outra recua para link. Numa leitura sem mudança, nada se mexe.
+      const mudou = eu.getAttribute('aria-pressed') !== 'true';
+      const vazado = eu.classList.contains('botao--vazado');
+      if (mudou) {
+        // Já cheio: só o texto novo acende. (O vazado se enche logo abaixo.)
+        if (!vazado) M.animar(eu, [{ opacity: 0.55 }], { duration: M.v().estado, easing: M.v().saida });
+        M.subir(outro, { atraso: 120, y: 4, duracao: M.v().estado });
+      }
       eu.className = 'botao';
+      if (mudou && vazado) encher(eu);
       eu.textContent = minha === 'dentro' ? 'Você tá dentro' : 'Anotado: não rola';
       eu.setAttribute('aria-pressed', 'true');
       outro.className = 'link';

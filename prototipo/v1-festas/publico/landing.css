@@ -63,6 +63,23 @@
   --lateral: clamp(16px, 5vw, 48px);
   --largura: 1200px;
   --cv-pe: 28px; /* o respiro embaixo de "Tô dentro" e "Não rola" no convite */
+
+  /* Movimento: o mesmo vocabulário do app. Saída para o que chega, troca
+     para o que muda de estado, linear só para fio que se desenha. */
+  --mov-saida: cubic-bezier(.2, .7, .2, 1);
+  --mov-troca: cubic-bezier(.6, 0, .2, 1);
+  --mov-toque: 160ms;
+  --mov-estado: 320ms;
+  --mov-bloco: 560ms;
+  --mov-titulo: 900ms;
+  --mov-passo: 60ms;
+  /* Os mesmos nomes e valores no app.css: quanto o texto de resposta sobe,
+     o passo entre as linhas de um título, quando o itálico chega depois da
+     linha e quanto o botão cede sob o dedo. */
+  --mov-sobe-px: 10px;
+  --mov-linha-passo: 60ms;
+  --mov-italico-atraso: 280ms;
+  --mov-toque-escala: .98;
   color-scheme: light;
 }
 
@@ -364,7 +381,8 @@ a.marca:hover { color: var(--bordo); }
   font-size: clamp(46px, 7vw, 96px);
   line-height: 1;
 }
-.manifesto-assinatura span { color: var(--rose); }
+/* Só o span do HTML: as linhas e palavras que o movimento cria não pegam o rosé. */
+.manifesto-assinatura span:not(.mov-linha, .mov-linha-in, .mov-pal) { color: var(--rose); }
 .manifesto-texto { max-width: 560px; font-size: 18px; line-height: 1.6; color: var(--sobre-bordo); text-wrap: balance; }
 
 /* ------------------------------------------------------------ inscrição */
@@ -501,4 +519,162 @@ a.marca:hover { color: var(--bordo); }
    miniaturas do convite não são alvo de toque e não mudam. */
 @media (max-width: 359px), (max-height: 640px) {
   .botao { min-height: 44px; }
+}
+
+/* ------------------------------------------------------------ movimento */
+
+/* O movimento revela a ordem da página, responde ao toque e deixa a hora e a
+   idade do convite chegarem depois do resto do cartão. Só transform, opacity
+   e clip-path: nada mexe no layout. O estado final é o CSS de cima. O
+   landing.js põe .mov na raiz antes da primeira pintura, e só com ela o que
+   vai entrar fica escondido; cada bloco ganha .ja quando chega à tela e .fim
+   quando parou. Sem JavaScript ou com movimento reduzido, a página aparece
+   pronta.
+
+   Só os títulos (a linha sobe de dentro da máscara) e os fios (se desenham
+   da esquerda) se deslocam. O texto de apoio, os botões e os links entram só
+   por opacidade, em 320 ms: é o contraste entre os dois que dá a hierarquia. */
+
+@keyframes mov-sobe { from { opacity: 0; transform: translateY(var(--mov-sobe-px)); } }
+@keyframes mov-surge { from { opacity: 0; } }
+@keyframes mov-linha { from { transform: translateY(1.5em); } }
+@keyframes mov-fio { from { transform: scaleX(0); } }
+@keyframes mov-abre { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* A linha do título é uma máscara um pouco maior que ela (a serifa passa da
+   caixa da linha); o texto sobe de baixo dela. */
+.mov-linha { display: block; clip-path: inset(-.3em -.6em -.3em -.6em); }
+.mov-linha-in { display: block; }
+.mov-tarde { display: inline-block; }
+/* A ordem das anotações, para o passo de 60 ms entre elas. */
+.nota-2 { --i: 1; }
+.nota-3 { --i: 2; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mov .mov-linha-in,
+  .mov .mov-tarde { animation: mov-linha var(--dur, var(--mov-titulo)) var(--mov-saida) var(--dl, 0ms) both; }
+
+  /* Chegada: a marca e o rótulo acendem, o título sobe linha a linha a partir
+     de 120 ms, e o texto e os dois botões acendem juntos com a segunda linha.
+     O botão do app está pleno em 680 ms, antes de o título terminar. */
+  .mov body:not(.chegou) :is(.topo .marca, .topo-app, .hero-texto > .rotulo, .hero h1, .hero-lead, .hero-acoes > *) { opacity: 0; }
+  .mov .chegou:not(.chegou-fim) .topo .marca { animation: mov-surge var(--mov-estado) var(--mov-saida) both; }
+  .mov .chegou:not(.chegou-fim) .topo-app { animation: mov-surge var(--mov-estado) var(--mov-saida) var(--mov-passo) both; }
+  .mov .chegou:not(.chegou-fim) .hero-texto > .rotulo { animation: mov-surge var(--mov-estado) var(--mov-saida) var(--mov-passo) both; }
+  .mov .chegou:not(.chegou-fim) .hero h1:not(.partido) { animation: mov-surge var(--mov-bloco) var(--mov-saida) 120ms both; }
+  .mov .chegou:not(.chegou-fim) .hero-lead { animation: mov-surge var(--mov-estado) var(--mov-saida) 300ms both; }
+  .mov .chegou:not(.chegou-fim) .hero-acoes > * { animation: mov-surge var(--mov-estado) var(--mov-saida) 360ms both; }
+
+  /* O convite em quatro tempos: o painel bordô abre de cima para baixo e,
+     abrindo, já traz a marca, o rótulo e as faixas de dentro; "Bora na
+     sexta?" sobe da máscara; a hora e a idade sobem depois; os dois botões
+     acendem. Nenhuma peça sobe sozinha. */
+  .mov .convite:not(.ja) :is(.cv-cartao, .cv-titulo, .cv-hora, .cv-hora-linha .cv-rotulo, .cv-botao) { opacity: 0; }
+  .mov .convite.ja:not(.fim) .cv-cartao { animation: mov-abre var(--mov-bloco) var(--mov-saida) var(--base) both; }
+  .mov .convite.ja:not(.fim) .cv-titulo:not(.partido) { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 160ms) both; }
+  .mov .convite.ja:not(.fim) :is(.cv-hora, .cv-hora-linha .cv-rotulo):not(.partido) { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 360ms) both; }
+  .mov .convite.ja:not(.fim) .cv-botao { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 600ms) both; }
+
+  /* As anotações esperam o cartão assentar: o fio sai do cartão e o texto
+     acende no fim dele, uma anotação a cada 60 ms. */
+  .mov .convite:not(.ja-notas) :is(.nota > span:last-child, .cv-legenda) { opacity: 0; }
+  .mov .convite:not(.ja-notas) .nota-fio { transform: scaleX(0); }
+  .nota-fio { transform-origin: left center; }
+  .mov .convite.ja-notas:not(.fim-notas) .nota-fio { animation: mov-fio var(--mov-estado) linear calc(var(--notas) + var(--i, 0) * var(--mov-passo)) both; }
+  .mov .convite.ja-notas:not(.fim-notas) .nota > span:last-child { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--notas) + 200ms + var(--i, 0) * var(--mov-passo)) both; }
+  .mov .convite.ja-notas:not(.fim-notas) .cv-legenda { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--notas) + 320ms) both; }
+
+  /* Pilares: o fio de cima se desenha, o título sobe da linha e o texto acende atrás. */
+  .mov .pilar { position: relative; border-top-color: transparent; }
+  .mov .pilar::before {
+    content: '';
+    position: absolute; left: 0; right: 0; top: -.5px;
+    border-top: .5px solid var(--bordo);
+    transform-origin: left center;
+  }
+  .mov .pilar:not(.ja)::before { transform: scaleX(0); }
+  .mov .pilar:not(.ja) > * { opacity: 0; }
+  .mov .pilar.ja:not(.fim)::before { animation: mov-fio var(--mov-titulo) linear var(--base) both; }
+  .mov .pilar.ja:not(.fim) h2:not(.partido) { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 160ms) both; }
+  .mov .pilar.ja:not(.fim) p { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 360ms) both; }
+  .mov .pilares-acao:not(.ja) { opacity: 0; }
+  .mov .pilares-acao.ja:not(.fim) { animation: mov-surge var(--mov-estado) var(--mov-saida) var(--base) both; }
+
+  /* Manifesto: "still going out." sobe e "just differently." chega depois. */
+  .mov .manifesto:not(.ja) :is(.manifesto-assinatura, .manifesto-texto) { opacity: 0; }
+  .mov .manifesto.ja:not(.fim) .manifesto-assinatura:not(.partido) { animation: mov-surge var(--mov-bloco) var(--mov-saida) var(--base) both; }
+  .mov .manifesto.ja:not(.fim) .manifesto-texto { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 600ms) both; }
+
+  /* Inscrição: o título sobe da máscara; o texto, o campo e a nota acendem
+     em ordem. Um foco aqui dentro antes da hora encerra a entrada (landing.js). */
+  .mov .inscricao:not(.ja) > :is(h2, .inscricao-texto, .form-lista, .nota-prototipo) { opacity: 0; }
+  .mov .inscricao.ja:not(.fim) > h2:not(.partido) { animation: mov-surge var(--mov-bloco) var(--mov-saida) var(--base) both; }
+  .mov .inscricao.ja:not(.fim) > .inscricao-texto { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 240ms) both; }
+  .mov .inscricao.ja:not(.fim) > .form-lista { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 300ms) both; }
+  .mov .inscricao.ja:not(.fim) > .nota-prototipo { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 360ms) both; }
+
+  .mov .rodape { position: relative; border-top-color: transparent; }
+  .mov .rodape::before {
+    content: '';
+    position: absolute; left: 0; right: 0; top: -.5px;
+    border-top: .5px solid var(--rose);
+    transform-origin: left center;
+  }
+  .mov .rodape:not(.ja)::before { transform: scaleX(0); }
+  .mov .rodape:not(.ja) > * { opacity: 0; }
+  .mov .rodape.ja:not(.fim)::before { animation: mov-fio var(--mov-titulo) linear var(--base) both; }
+  .mov .rodape.ja:not(.fim) > * { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--base) + 300ms) both; }
+  .mov .rodape.ja:not(.fim) > :nth-child(2) { animation-delay: calc(var(--base) + 360ms); }
+  .mov .rodape.ja:not(.fim) > :nth-child(3) { animation-delay: calc(var(--base) + 420ms); }
+  .mov .rodape.ja:not(.fim) > :nth-child(4) { animation-delay: calc(var(--base) + 480ms); }
+
+  /* Resposta ao toque. O D muda de fundo e cede um pouco sob o dedo; a seta
+     do C anda. O foco chega de fora e fecha no lugar, sem sumir. */
+  :where(a, button, input) {
+    outline-offset: 8px;
+    transition: outline-offset var(--mov-toque) var(--mov-saida), color var(--mov-toque) var(--mov-troca);
+  }
+  .botao {
+    transition:
+      background-color var(--mov-toque) var(--mov-troca),
+      transform var(--mov-toque) var(--mov-saida),
+      outline-offset var(--mov-toque) var(--mov-saida);
+  }
+  .botao:active:not(:disabled) { transform: scale(var(--mov-toque-escala)); }
+  .link-fio .seta { transition: transform var(--mov-toque) var(--mov-saida); }
+  .link-fio:hover .seta, .link-fio:focus-visible .seta { transform: translateX(4px); }
+  .link-fio:active .seta { transform: translateX(7px); }
+  .pular { transition: transform var(--mov-estado) var(--mov-saida); }
+
+  /* O campo de e-mail: no foco, o fio de baixo engrossa da esquerda. */
+  .campo { position: relative; }
+  .campo::after {
+    content: '';
+    position: absolute; left: 0; right: 0; bottom: 0;
+    border-bottom: 1.5px solid var(--bordo);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--mov-estado) var(--mov-saida);
+    pointer-events: none;
+  }
+  .campo:focus-within::after { transform: none; }
+  .campo input:focus:not([aria-invalid="true"]) { border-bottom-width: .5px; }
+
+  /* A resposta ao envio é a única coisa de texto que sobe: ela é do toque. */
+  .erro:not(:empty), .aviso:not(:empty) { animation: mov-sobe var(--mov-estado) var(--mov-saida) both; }
+}
+
+/* Numa coluna só, as anotações vêm embaixo do cartão, sem fio: acendem quando
+   chegam à tela, uma depois da outra, e nunca antes de o cartão assentar. */
+@media (prefers-reduced-motion: no-preference) and (max-width: 640px) {
+  .mov .convite:not(.ja-notas) .nota { opacity: 0; }
+  .mov .convite.ja-notas:not(.fim-notas) .nota { animation: mov-surge var(--mov-estado) var(--mov-saida) calc(var(--notas, 0ms) + var(--i, 0) * var(--mov-passo)) both; }
+  .mov .convite.ja-notas:not(.fim-notas) .nota > span:last-child { animation: none; }
+  .mov .convite.ja-notas:not(.fim-notas) .cv-legenda { animation-delay: calc(var(--notas, 0ms) + 180ms); }
+}
+
+/* Movimento reduzido: nada se desloca. O aviso do formulário só acende. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-property: color, background-color !important; }
+  .erro:not(:empty), .aviso:not(:empty) { animation: mov-surge var(--mov-toque) linear both !important; }
 }
