@@ -28,9 +28,10 @@ const BAIRROS = {
   'santana': { nome: 'Santana', regiao: 'norte', nomes: ['tucuruvi', 'casa verde'] },
   mooca: { nome: 'Mooca', regiao: 'leste', nomes: ['bras', 'belenzinho', 'tatuape', 'cambuci'] },
   'santo-amaro': { nome: 'Santo Amaro', regiao: 'sul', nomes: ['brooklin', 'campo belo', 'chacara santo antonio'] },
+  interlagos: { nome: 'Interlagos', regiao: 'sul', nomes: ['autodromo de interlagos'] },
 };
 
-const semAcento = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const semAcento = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 // Índice de nomes, do mais longo para o mais curto, para "vila madalena" ganhar de "madalena".
 const INDICE = Object.entries(BAIRROS)

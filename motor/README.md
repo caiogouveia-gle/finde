@@ -37,6 +37,7 @@ Abre em `http://localhost:8764`. `curl localhost:8764/api/festas` devolve as fes
 | `node cli.js exportar [arquivo] [--todas] [--sem-exemplos]` | Os registros R14 num JSON (padrão `var/festas-r14.json`) |
 | `node cli.js produtora criar "<nome>"` | Cadastra uma produtora e mostra o token uma vez só |
 | `node cli.js produtora listar` · `produtora desativar <id>` | |
+| `node cli.js indicar <url> [--tipo festa\|perfil\|agenda\|referencia] [--nome "..."]` | Guarda um link indicado pelo grupo em `entrada/` para a leitura manual (ver "Indicação do grupo") |
 | `node cli.js fontes` | Fontes ligadas e desligadas, com o motivo |
 | `node cli.js execucoes` | As últimas execuções |
 | `node cli.js uso` | Gasto com o modelo e acessos à API |
@@ -85,7 +86,7 @@ Cada registro:
 | `endereco` | `{ texto, bairro, regiao, cidade }`; `bairro` e `regiao` com os ids do protótipo quando é um dos sete bairros dele |
 | `data` | `AAAA-MM-DD` |
 | `inicio`, `pistaCheia`, `fim` | ISO com `-03:00`; fim depois da meia-noite já cai no dia seguinte |
-| `lotes` | `[{ nome, preco, disponivel }]`; `disponivel` é `null` quando a fonte não diz |
+| `lotes` | `[{ nome, preco, disponivel, taxa?, ate? }]`; `disponivel` é `null` quando a fonte não diz; `taxa` em reais e `ate` (`HH:MM`, a hora em que o preço deixa de valer), os mesmos nomes da base do protótipo |
 | `precoAPartirDe` | `{ valor, lote, esgotadosAntes }`: o menor lote disponível (AE3 do detalhe) ou a porta |
 | `esgotado`, `entradaNaPorta` | `true` quando todos os lotes acabaram e não há porta; `{ preco }` da porta |
 | `linkCompra`, `linkEvento`, `instagram`, `cartaz` | URLs http(s) ou `null` |
@@ -111,12 +112,13 @@ Campo que nenhuma fonte trouxe sai `null` ou lista vazia, nunca inventado. Os in
 
 | Fonte | Estado | Por quê |
 |---|---|---|
-| Envio da produtora (arquivo em `entrada/` ou `POST /api/envios`) | Ligada | A produtora manda os próprios dados. É a fonte principal e a única que traz média de idade |
+| Envio da produtora (arquivo em `entrada/` ou `POST /api/envios`) | Ligada | A produtora manda os próprios dados. É a fonte principal e a única que traz média de idade em qualquer origem |
+| Indicação do grupo (`entrada/indicacoes/`) | Ligada | Links que alguém do grupo manda, lidos e preenchidos à mão a partir da página pública. Não há coletor |
 | Mapas Culturais: SP Cultura e Mapa da Cultura | Ligada | APIs abertas, sem chave. Em 10/11/2026 o SP Cultura não respondia e o Mapa da Cultura não tinha nenhum evento na cidade nos 30 dias seguintes. O conector fica pronto para quando houver |
 | Agenda iCal da produtora | Desligada | Liga quando uma produtora informar o endereço `.ics` em `config/fontes.json` |
-| Instagram, Resident Advisor, Eventbrite, Sympla, Shotgun, DICE, Fever, Google Places, Sesc SP | Sem conector | Os termos proíbem coleta, não há API pública de listagem, ou o site bloqueia acesso automatizado. O motivo de cada uma está em `fontes/index.js` |
+| Instagram, Resident Advisor, Eventbrite, Sympla, Shotgun, DICE, Fever, Google Places, Sesc SP, Guia da Parik | Sem conector | Os termos proíbem coleta, não há API pública de listagem, ou o site bloqueia acesso automatizado. O motivo de cada uma está em `fontes/index.js` |
 
-Quando duas fontes falam do mesmo campo, vale a de maior prioridade: envio 100, iCal 80, Mapas Culturais 60, Claude 40, regras 20.
+Quando duas fontes falam do mesmo campo, vale a de maior prioridade: envio 100, iCal 80, indicação do grupo 70, Mapas Culturais 60, Claude 40, regras 20.
 
 ### O envio da produtora
 
@@ -148,7 +150,25 @@ curl -X POST localhost:8764/api/envios -H "Authorization: Bearer <token>" -H "Co
 
 O envio entra na coleta seguinte. O nome da produtora vem do cadastro, não do corpo.
 
-**Média de idade (R16).** Só entra pelo envio e com origem: `produtora` (ela declara), `edicoes` (estimada pelas edições anteriores; pede `detalhe`) ou `avaliacoes` (pede `avaliacoes` com ao menos 5). Média sem origem, ou vinda de qualquer outra fonte, é descartada com aviso na execução. O modelo nunca diz média: o esquema da resposta nem tem esse campo.
+**Média de idade (R16).** Entra pelo envio, com origem: `produtora` (ela declara), `edicoes` (estimada pelas edições anteriores; pede `detalhe`) ou `avaliacoes` (pede `avaliacoes` com ao menos 5). Pela indicação do grupo, só a que a produtora publicou (ver "Indicação do grupo"). Média sem origem, ou vinda de qualquer outra fonte, é descartada com aviso na execução. O modelo nunca diz média: o esquema da resposta nem tem esse campo.
+
+### Indicação do grupo
+
+Quando alguém do grupo manda um link (pelo WhatsApp, por exemplo), ele entra assim:
+
+```bash
+node cli.js indicar https://www.instagram.com/coletivo.x/            # perfil: vai para entrada/grupo/contatos.json
+node cli.js indicar https://ingressos.example/festa-x --nome "Festa X" # festa: cria entrada/indicacoes/AAAA-MM-DD-festa-x.json
+node cli.js indicar https://agenda.example/ --tipo agenda              # agenda ou referência: entrada/grupo/a-avaliar.json
+```
+
+Sem `--tipo`, um perfil do Instagram vira `perfil` e o resto vira `festa`. O comando só registra o link; não abre a página.
+
+Para uma festa, alguém abre a página pública, lê e preenche o esqueleto com os campos do envio (nome, data, início e fim, casa, endereço, lotes, link de compra, Instagram) e anota cada leitura em `leitura`: a URL lida, a hora (`lidoEm`) e os campos que vieram dela. Cada campo do registro sai com o `conferidoEm` da leitura que o trouxe e a fonte "Indicado pelo grupo", com o link recebido como origem. Depois, `node cli.js coletar --fonte indicacao`. Exemplo fictício em `exemplos/indicacoes/`.
+
+O preenchimento é manual de propósito: os termos do Instagram, do RA e das plataformas de ingresso não autorizam coleta automatizada (R15), e abrir dezenas de perfis por automação seria isso. Média de idade, só se a produtora a publicou, com `origem: "produtora"` e o `detalhe` de onde (R16); sem isso, fica vazia. Nada de quem indicou entra no registro nem no repositório: os arquivos ficam em `entrada/`, fora do git.
+
+Os perfis de produtoras e casas ficam numa lista privada de quem contatar, `entrada/grupo/contatos.json`, para o convite ao envio direto. Agendas e agregadores esperam em `entrada/grupo/a-avaliar.json` até alguém ler os termos de uso; só então entram em `config/fontes.json`, ligados ou desligados com o motivo, como as outras fontes.
 
 ## A classificação pelo Claude
 
@@ -186,12 +206,13 @@ O `Dockerfile` instala o Litestream com versão e sha256 fixos, e `deploy/inicio
 node --test teste/
 ```
 
-54 testes, nenhum toca a rede nem a API paga: normalização (horário que cruza a meia-noite, preço em texto, Instagram, URLs, média de idade só com origem), o registro (prioridade entre fontes, campo ausente, menor lote disponível), a classificação com um cliente falso (saída estruturada, cache, resposta inválida, erro, teto da execução e do dia, sem chave), os conectores com respostas gravadas (Mapas Culturais, iCal, exemplos de envio), a execução de ponta a ponta (AE1 a AE5 do plano, reexecução, trava) e a API num servidor em porta efêmera (token da produtora, corpo grande, CORS, uso sem IP).
+59 testes, nenhum toca a rede nem a API paga: normalização (horário que cruza a meia-noite, preço em texto, Instagram, URLs, média de idade só com origem), o registro (prioridade entre fontes, campo ausente, menor lote disponível), a classificação com um cliente falso (saída estruturada, cache, resposta inválida, erro, teto da execução e do dia, sem chave), os conectores com respostas gravadas (Mapas Culturais, iCal, exemplos de envio e de indicação, com `conferidoEm` por leitura e taxa e hora-limite de lote), o comando `indicar`, a execução de ponta a ponta (AE1 a AE5 do plano, reexecução, trava) e a API num servidor em porta efêmera (token da produtora, corpo grande, CORS, uso sem IP).
 
 ## Onde está cada coisa
 
 - `cli.js`, `servidor.js`: os comandos e a API.
 - `nucleo/coleta.js`: a execução. `agregar.js`: festa única e valores por fonte. `normalizar.js`: de fonte para campo. `contrato.js`: o registro R14. `classificar.js` e `custo.js`: o Claude e o teto. `agenda.js`, `banco.js`, `produtoras.js`, `uso.js`, `ambiente.js`, `bairros.js`, `catalogo.js`.
 - `fontes/`: os conectores e o registro de fontes. `config/fontes.json`: o que está ligado.
-- `exemplos/envios/`: os envios fictícios. `entrada/`: os envios reais por arquivo (fora do git).
+- `exemplos/envios/` e `exemplos/indicacoes/`: os exemplos fictícios. `entrada/`: os envios e as indicações reais, e a lista de contatos (fora do git).
+- `nucleo/indicar.js`: o comando `indicar`.
 - `Dockerfile`, `fly.toml`, `deploy/`: o Fly.

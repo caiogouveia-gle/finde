@@ -12,6 +12,7 @@ const CONECTORES = {
   envio: require('./envio'),
   'mapas-culturais': require('./mapas-culturais'),
   ical: require('./ical'),
+  indicacao: require('./indicacao'),
 };
 
 const DESLIGADAS = [
@@ -23,6 +24,7 @@ const DESLIGADAS = [
   { id: 'dice', nome: 'DICE', motivo: 'Sem API pública de listagem encontrada; páginas devolveram 403 ao acesso automatizado. Termos não verificados.' },
   { id: 'fever', nome: 'Fever', motivo: 'Sem API pública de listagem encontrada; termos não puderam ser lidos.' },
   { id: 'google-places', nome: 'Google Maps (Places)', motivo: 'Os termos proíbem guardar nome, endereço e avaliações fora do serviço; só o place ID pode ser guardado. Serve, no máximo, para o link "abrir no mapa".' },
+  { id: 'guia-da-parik', nome: 'Guia da Parik (curadoria de eventos em SP)', motivo: 'Indicada pelo grupo em 16/11/2026. A curadoria vive no Instagram, no TikTok e num Linktree; os termos da Meta proíbem coleta fora das APIs e não há agenda aberta. Caminho: parceria, com a curadora mandando as festas pelo envio ou pela indicação. Ver docs/pesquisa/2026-11-16-referencias-de-recomendacao.md.' },
   { id: 'sesc-sp', nome: 'Sesc SP', motivo: 'A API do site (/wp-json/wp/v1/atividades) devolve 403 do CloudFront para cliente automatizado e não há termo de uso publicado. Bloqueio é recusa: não contornamos.' },
 ];
 
@@ -31,8 +33,10 @@ const RAIZ = path.join(__dirname, '..');
 function lerConfig(arquivo = process.env.FINDE_FONTES || path.join(RAIZ, 'config', 'fontes.json')) {
   const c = JSON.parse(fs.readFileSync(arquivo, 'utf8'));
   // Pastas relativas são relativas a motor/.
-  if (c.envio && Array.isArray(c.envio.pastas)) {
-    c.envio.pastas = c.envio.pastas.map((p) => (path.isAbsolute(p) ? p : path.join(RAIZ, p)));
+  for (const id of ['envio', 'indicacao']) {
+    if (c[id] && Array.isArray(c[id].pastas)) {
+      c[id].pastas = c[id].pastas.map((p) => (path.isAbsolute(p) ? p : path.join(RAIZ, p)));
+    }
   }
   return c;
 }
@@ -46,6 +50,9 @@ function fontesLigadas(config, { so = null, exemplos = false } = {}) {
     c.envio = c.envio || { ligada: true, pastas: [] };
     c.envio.ligada = true;
     c.envio.pastas = [...(c.envio.pastas || []), path.join(RAIZ, 'exemplos', 'envios')];
+    c.indicacao = c.indicacao || { ligada: true, pastas: [] };
+    c.indicacao.ligada = true;
+    c.indicacao.pastas = [...(c.indicacao.pastas || []), path.join(RAIZ, 'exemplos', 'indicacoes')];
   }
   const fontes = Object.entries(CONECTORES)
     .filter(([id]) => (so ? id === so : c[id] && c[id].ligada))

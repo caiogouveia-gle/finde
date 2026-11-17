@@ -2,7 +2,16 @@
   "envio": {
     "ligada": true,
     "motivo": "A produtora manda os próprios dados: é a fonte principal e a única que traz média de idade (R16).",
-    "pastas": ["entrada"]
+    "pastas": [
+      "entrada"
+    ]
+  },
+  "indicacao": {
+    "ligada": true,
+    "motivo": "Links que alguém do grupo manda, lidos e preenchidos à mão a partir da página pública. Sem coletor: Instagram, RA e plataformas de ingresso continuam fora (R15).",
+    "pastas": [
+      "entrada/indicacoes"
+    ]
   },
   "mapas-culturais": {
     "ligada": true,
@@ -11,8 +20,16 @@
     "municipio": "São Paulo",
     "timeoutMs": 20000,
     "instancias": [
-      { "id": "spcultura", "base": "https://spcultura.prefeitura.sp.gov.br", "ligada": true },
-      { "id": "mapa-da-cultura", "base": "https://mapa.cultura.gov.br", "ligada": true }
+      {
+        "id": "spcultura",
+        "base": "https://spcultura.prefeitura.sp.gov.br",
+        "ligada": true
+      },
+      {
+        "id": "mapa-da-cultura",
+        "base": "https://mapa.cultura.gov.br",
+        "ligada": true
+      }
     ]
   },
   "ical": {

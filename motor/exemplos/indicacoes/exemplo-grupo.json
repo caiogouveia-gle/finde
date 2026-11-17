@@ -1,0 +1,31 @@
+{
+  "aviso": "Exemplo fictício de indicação do grupo. A festa, a casa, os links e a leitura são inventados.",
+  "exemplo": true,
+  "recebidaEm": "2026-11-16T21:40:00-03:00",
+  "festas": [
+    {
+      "id": "baile-exemplo",
+      "origem": "https://www.instagram.com/finde_exemplo/",
+      "leitura": [
+        { "url": "https://www.instagram.com/finde_exemplo/", "lidoEm": "2026-11-16T21:50:00-03:00", "campos": ["nome", "instagram", "produtora"] },
+        { "url": "https://ingressos.example/baile-exemplo", "lidoEm": "2026-11-16T22:05:00-03:00", "campos": ["data", "inicio", "fim", "casa", "endereco", "lotes", "linkCompra", "idadeMinima"] }
+      ],
+      "nome": "Baile Exemplo",
+      "produtora": { "nome": "Coletivo Exemplo", "instagram": "@finde_exemplo" },
+      "data": "proximo-sabado",
+      "inicio": "22:00",
+      "fim": "05:00",
+      "casa": "Galpão Exemplo",
+      "endereco": "Rua Exemplo, 500 - Barra Funda",
+      "lotes": [
+        { "nome": "1º lote", "preco": 40, "disponivel": false, "taxa": 4 },
+        { "nome": "2º lote", "preco": 55, "disponivel": true, "taxa": 5.5, "ate": "23:59" }
+      ],
+      "linkCompra": "https://ingressos.example/baile-exemplo",
+      "instagram": "@finde_exemplo",
+      "idadeMinima": 18,
+      "ehFesta": true,
+      "descricao": "Baile de funk e pop dos anos 2000 a noite toda."
+    }
+  ]
+}

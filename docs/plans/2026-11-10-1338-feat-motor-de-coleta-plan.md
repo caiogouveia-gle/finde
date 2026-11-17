@@ -70,6 +70,12 @@ Os IDs levam M (motor) para não colidir com R1 a R22 do plano do detalhe.
 - M12. As tarefas rodam várias vezes ao dia em horários configuráveis, dentro do servidor ou por comando avulso.
 - M13. O acesso à API de leitura e ao envio fica registrado para rastreio de uso, sem guardar IP.
 
+**Indicação do grupo (16/11/2026)**
+
+- M14. Links que alguém do grupo manda entram por uma fonte própria, "Indicado pelo grupo": festa lida e preenchida à mão a partir da página pública, com o link recebido como origem e `conferidoEm` por campo. Sem coletor de Instagram, RA ou plataforma de ingresso (R15).
+- M15. Perfis de produtoras e casas vão para uma lista privada de quem contatar; agendas e agregadores esperam a leitura dos termos antes de virar fonte. Nada de quem indicou, nem da conversa, entra no registro ou no repositório.
+- M16. `node cli.js indicar <url>` registra o próximo link no lugar certo, para a leitura manual depois.
+
 ### Acceptance Examples
 
 - AE1 (M1, M9). A produtora fictícia envia uma festa com lotes; o registro sai com `fontes` contendo o envio e `conferidoEm` em cada campo enviado.
@@ -77,6 +83,7 @@ Os IDs levam M (motor) para não colidir com R1 a R22 do plano do detalhe.
 - AE3 (M5). A mesma festa chega pelo envio e pela agenda iCal da produtora; sai um registro só, com as duas fontes, e o preço do envio prevalece.
 - AE4 (M7). Com teto de US$ 0,01, a primeira festa é classificada pelo modelo e as seguintes por regras; a execução registra que o teto parou o modelo.
 - AE5 (M6). Sem `ANTHROPIC_API_KEY`, a execução termina, e os registros dizem `classificacao.por: "regras"`.
+- AE6 (M14, R16). Uma indicação traz média de idade com `origem: "avaliacoes"`; o registro sai sem média e a execução avisa. Com `origem: "produtora"` e o detalhe de onde foi publicada, a média entra.
 
 ### Scope Boundaries
 
@@ -98,13 +105,14 @@ Os IDs levam M (motor) para não colidir com R1 a R22 do plano do detalhe.
 ### Key Technical Decisions
 
 - **KTD1. Node 24 puro com `node:sqlite`.** Igual ao protótipo: sem build, sem dependência para rodar e testar. A única dependência é `@anthropic-ai/sdk`, carregada só quando há `ANTHROPIC_API_KEY`; sem ela o motor roda inteiro por regras (M6).
-- **KTD2. Valores por fonte, escolha na leitura.** A tabela `valores` guarda `(festa, campo, fonte, valor, conferido_em)`. O registro R14 escolhe, campo a campo, o valor da fonte de maior prioridade e, no empate, o mais recente. Assim a origem e a data de cada campo saem de graça (M9) e nada se perde quando uma fonte some. Prioridade: `envio` 100, `ical` 80, `mapas-culturais` 60, `claude` 40, `regras` 20.
+- **KTD2. Valores por fonte, escolha na leitura.** A tabela `valores` guarda `(festa, campo, fonte, valor, conferido_em)`. O registro R14 escolhe, campo a campo, o valor da fonte de maior prioridade e, no empate, o mais recente. Assim a origem e a data de cada campo saem de graça (M9) e nada se perde quando uma fonte some. Prioridade: `envio` 100, `ical` 80, `indicacao` 70, `mapas-culturais` 60, `claude` 40, `regras` 20.
 - **KTD3. Vínculo estável.** `vinculos(fonte, id_externo) → festa_id`. Item sem vínculo procura festa do mesmo dia com casa e nome parecidos (Jaccard de palavras ≥ 0,5 no nome e casa igual sem acento); sem par, nasce `slug-do-nome-AAAAMMDD-xxxx` (≤ 60 caracteres, `[a-z0-9-]`, o formato do protótipo), com `xxxx` do hash de fonte e id externo (M5).
 - **KTD4. Classificação com saída estruturada.** `messages.create` com `output_config.format` em `json_schema`; modelo em `FINDE_MODELO` (padrão `claude-haiku-5-5`, definido só em `motor/nucleo/classificar.js`; esforço `low`). O resultado entra como fonte `claude`. Cache por hash do texto de entrada: festa sem mudança não volta ao modelo.
 - **KTD5. Teto antes da chamada.** Antes de cada chamada, o custo estimado (caracteres/3 de entrada, 1.000 de saída, tabela de preços em `custo.js`) somado ao gasto da execução e do dia não pode passar de `FINDE_TETO_EXECUCAO_USD` (0,50) nem de `FINDE_TETO_DIA_USD` (2,00). Depois, grava-se o uso real em `uso_llm` (M7).
 - **KTD6. Média de idade só do envio.** O normalizador de qualquer fonte que não seja `envio` descarta `mediaIdade` com aviso; o do envio exige origem válida (`avaliacoes` pede contagem ≥ 5, `edicoes` pede detalhe) (M8).
 - **KTD7. Fuso fixo −03:00.** São Paulo não tem horário de verão desde 2019; horários saem em ISO com `-03:00`, e fim antes do início vira o dia seguinte.
 - **KTD8. Agenda dentro do servidor.** `FINDE_HORARIOS=07:00,12:00,17:00,21:00`; trava na tabela `execucoes` (uma `rodando` com menos de 30 min impede outra). O comando `node motor/cli.js coletar` serve para cron externo. LaunchAgent no Mac não lê `~/Documents` (TCC), por isso o README manda rodar o servidor ou usar o Fly.
+- **KTD10. Indicação como leitura manual registrada (16/11/2026).** (session-settled: user-directed — Caio, 16/11/2026: incorporar os links que o grupo manda.) O arquivo de `entrada/indicacoes/` guarda, além dos campos, a lista `leitura` (URL, `lidoEm`, campos); `gravarValores` aceita um `conferidoEm` por campo. Na indicação, a média de idade só entra com `origem: "produtora"` e `detalhe`. Os lotes adotam `taxa` e `ate`, com os nomes da base do protótipo.
 - **KTD9. Fly igual ao Phoenix.** `Dockerfile` com Litestream fixado por versão e sha256, `inicio.sh` que restaura do bucket quando o volume está vazio e supervisiona o Node, `litestream.yml` lendo as variáveis que `fly storage create` define. Nada é criado na conta.
 
 ### Sources
@@ -122,6 +130,7 @@ Os IDs levam M (motor) para não colidir com R1 a R22 do plano do detalhe.
 - **U4. Classificação.** Goal: estilo, se é festa, idade mínima, lineup, regras. Requirements: M6, M7. Files: `motor/nucleo/classificar.js`, `motor/nucleo/custo.js`. Approach: KTD4, KTD5; regras por palavras como reserva. Test scenarios: cliente falso devolve JSON válido; JSON fora do esquema cai para regras; teto parando na segunda chamada (AE4); cache evita segunda chamada; sem chave tudo por regras (AE5); média nunca sai do modelo.
 - **U5. Coleta.** Goal: a execução de ponta a ponta. Requirements: M5, M10. Files: `motor/nucleo/coleta.js`, `motor/nucleo/agregar.js`. Approach: trava, coleta por fonte, normaliza, vincula, classifica, grava valores, fecha a execução com resumo. Test scenarios: AE1, AE2, AE3; segunda execução simultânea recusada; reexecução não duplica festas.
 - **U6. Servidor, CLI e agenda.** Goal: entregar e agendar. Requirements: M1, M11, M12, M13. Files: `motor/servidor.js`, `motor/cli.js`, `motor/nucleo/agenda.js`. Approach: `GET /api/festas`, `GET /api/festas/:id`, `GET /api/fontes`, `POST /api/envios` (Bearer da produtora), `GET /api/uso` (Bearer de admin), `GET /saude`; CORS opcional por `FINDE_CORS`; CLI `coletar`, `exportar`, `produtora`, `uso`, `fontes`. Test scenarios: envio sem token 401; com token grava e aparece na leitura; corpo grande 413; uso registrado sem IP; agenda calcula a próxima hora em −03:00.
+- **U8. Indicação do grupo.** Goal: os links do grupo viram festas, contatos ou fontes a avaliar. Requirements: M14–M16. Files: `motor/fontes/indicacao.js`, `motor/nucleo/indicar.js`, `motor/exemplos/indicacoes/`, `motor/teste/indicacao.test.js`. Test scenarios: `conferidoEm` por leitura; média só declarada pela produtora (AE6); indicação sem origem fica fora; `indicar` separa perfil, festa e agenda e não duplica.
 - **U7. Deploy pronto e README.** Goal: rodar no Fly sem surpresa e explicar tudo. Files: `motor/README.md`, `motor/deploy/{Dockerfile,inicio.sh,litestream.yml,fly.toml}`, `motor/package.json`. Approach: KTD9. Verification: leitura; nada é executado contra o Fly.
 
 ## Verification Contract

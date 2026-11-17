@@ -93,13 +93,15 @@ async function executar({
           avisar(`${rotulo}: sem nome ou data; não entra`);
           continue;
         }
-        const conferidoEm = item.conferidoEm || agora().toISOString();
+        const conferidoEm = item.conferidoPorCampo
+          ? { padrao: item.conferidoEm || agora().toISOString(), ...item.conferidoPorCampo }
+          : (item.conferidoEm || agora().toISOString());
         const hash = crypto.createHash('sha256').update(JSON.stringify(item.bruto)).digest('hex');
         const festaId = transacao(db, () => {
           db.prepare(`INSERT INTO itens_brutos (fonte, id_externo, hash, bruto, coletado_em) VALUES (?, ?, ?, ?, ?)
             ON CONFLICT (fonte, id_externo) DO UPDATE SET hash = excluded.hash, bruto = excluded.bruto, coletado_em = excluded.coletado_em`)
             .run(fonte.id, item.idExterno, hash, JSON.stringify(item.bruto), agora().toISOString());
-          const v = vincular(db, { fonte: fonte.id, idExterno: item.idExterno, url: item.url, campos, agora: conferidoEm });
+          const v = vincular(db, { fonte: fonte.id, idExterno: item.idExterno, url: item.url, campos, agora: typeof conferidoEm === 'string' ? conferidoEm : conferidoEm.padrao });
           if (v.nova) {
             r.novas += 1;
             resumo.festasNovas += 1;

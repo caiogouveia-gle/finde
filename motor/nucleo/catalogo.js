@@ -13,6 +13,7 @@ const ORIGENS_IDADE = ['produtora', 'edicoes', 'avaliacoes'];
 const PRIORIDADE = {
   envio: 100,
   ical: 80,
+  indicacao: 70,
   'mapas-culturais': 60,
   claude: 40,
   regras: 20,
@@ -22,6 +23,7 @@ const PRIORIDADE = {
 const NOME_FONTE = {
   envio: 'Enviado pela produtora',
   ical: 'Agenda da produtora',
+  indicacao: 'Indicado pelo grupo',
   'mapas-culturais': 'Mapa da Cultura',
   claude: 'Classificação automática (Claude)',
   regras: 'Classificação por regras',

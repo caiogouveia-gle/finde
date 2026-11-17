@@ -10,7 +10,8 @@ const { listarRegistros, VERSAO_CONTRATO } = require('./nucleo/contrato');
 const { criarProdutora } = require('./nucleo/produtoras');
 const { resumoDeUso } = require('./nucleo/uso');
 const { modeloAtual } = require('./nucleo/classificar');
-const { fontesLigadas, descreverFontes } = require('./fontes');
+const { fontesLigadas, descreverFontes, RAIZ } = require('./fontes');
+const { indicar } = require('./nucleo/indicar');
 
 const AJUDA = `Uso: node cli.js <comando>
 
@@ -19,6 +20,8 @@ const AJUDA = `Uso: node cli.js <comando>
                                             grava os registros R14 em JSON (padrão: var/festas-r14.json)
   produtora criar "<nome>"                  cadastra uma produtora e mostra o token UMA vez
   produtora listar | produtora desativar <id>
+  indicar <url> [--tipo festa|perfil|agenda|referencia] [--nome "..."]
+                                            guarda um link indicado pelo grupo em entrada/ para a leitura manual
   fontes                                    lista as fontes, ligadas e desligadas, com o motivo
   execucoes                                 as últimas execuções
   uso                                       gasto com o modelo e acessos à API
@@ -39,6 +42,19 @@ async function main(args) {
     console.log(AJUDA);
     return 0;
   }
+  if (cmd === 'indicar') {
+    const link = resto.find((a, i) => !a.startsWith('--') && !['--tipo', '--nome'].includes(resto[i - 1]));
+    if (!link) {
+      console.error('uso: node cli.js indicar <url> [--tipo festa|perfil|agenda|referencia] [--nome "..."]');
+      return 1;
+    }
+    const r = indicar(RAIZ, link, { tipo: valor('--tipo'), nome: valor('--nome') });
+    if (!r.novo) console.info(`já estava: ${r.arquivo}`);
+    else if (r.tipo === 'festa') console.info(`esqueleto criado: ${r.arquivo}\nabra a página, preencha os campos e as leituras (url, lidoEm, campos) e rode \`node cli.js coletar --fonte indicacao\``);
+    else console.info(`${r.tipo} anotado em ${r.arquivo}`);
+    return 0;
+  }
+
   const { amb, db, config, claude } = preparar();
 
   if (cmd === 'coletar') {

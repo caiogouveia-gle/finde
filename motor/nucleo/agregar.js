@@ -51,6 +51,8 @@ function vincular(db, { fonte, idExterno, url, campos, agora }) {
   return { festaId, nova };
 }
 
+// `conferidoEm` é um instante só ou { padrao, <campo>: instante } quando cada
+// campo foi conferido numa hora (a indicação manual lê páginas diferentes).
 // Grava os campos de uma fonte. O que a fonte trouxe antes e não traz mais sai
 // (a produtora apagou o lineup, por exemplo). conferido_em anda sempre;
 // mudou_em só quando o valor muda.
@@ -64,7 +66,8 @@ function gravarValores(db, festaId, fonte, campos, conferidoEm) {
       valor = excluded.valor,
       conferido_em = CASE WHEN excluded.conferido_em > valores.conferido_em THEN excluded.conferido_em ELSE valores.conferido_em END`);
   for (const [campo, valor] of Object.entries(campos)) {
-    ins.run(festaId, campo, fonte, JSON.stringify(valor), conferidoEm, conferidoEm);
+    const quando = typeof conferidoEm === 'string' ? conferidoEm : (conferidoEm[campo] || conferidoEm.padrao);
+    ins.run(festaId, campo, fonte, JSON.stringify(valor), quando, quando);
     atuais.delete(campo);
   }
   const del = db.prepare('DELETE FROM valores WHERE festa_id = ? AND campo = ? AND fonte = ?');

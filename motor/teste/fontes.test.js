@@ -93,14 +93,14 @@ test('envio pelo endpoint: o nome da produtora vem do cadastro, não do corpo', 
 test('M3: o registro de fontes diz o que está desligado e por quê', () => {
   const config = lerConfig();
   const fontes = descreverFontes(config);
-  for (const id of ['instagram', 'resident-advisor', 'eventbrite', 'sympla', 'shotgun', 'dice', 'fever', 'google-places', 'sesc-sp']) {
+  for (const id of ['instagram', 'resident-advisor', 'eventbrite', 'sympla', 'shotgun', 'dice', 'fever', 'google-places', 'sesc-sp', 'guia-da-parik']) {
     const f = fontes.find((x) => x.id === id);
     assert.ok(f, id);
     assert.equal(f.ligada, false);
     assert.ok(f.motivo.length > 40, id);
   }
   assert.equal(fontes.find((x) => x.id === 'ical').ligada, false);
-  assert.equal(DESLIGADAS.length, 9);
+  assert.equal(DESLIGADAS.length, 10);
 });
 
 test('fontesLigadas não muda a configuração original', () => {
@@ -108,5 +108,5 @@ test('fontesLigadas não muda a configuração original', () => {
   const antes = JSON.stringify(config);
   const { fontes } = fontesLigadas(config, { exemplos: true });
   assert.equal(JSON.stringify(config), antes);
-  assert.deepEqual(fontes.map((f) => f.id), ['envio', 'mapas-culturais']);
+  assert.deepEqual(fontes.map((f) => f.id), ['envio', 'mapas-culturais', 'indicacao']);
 });

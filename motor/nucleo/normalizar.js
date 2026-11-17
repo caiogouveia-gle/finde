@@ -95,11 +95,23 @@ function lotes(lista, avisos) {
       avisos.push('lote sem preço válido ignorado');
       continue;
     }
-    saida.push({
+    const lote = {
       nome: texto(l.nome, 40) || `${saida.length + 1}º lote`,
       preco: p,
       disponivel: typeof l.disponivel === 'boolean' ? l.disponivel : null,
-    });
+    };
+    // Os mesmos nomes da base do protótipo: `taxa` em reais e `ate`, a hora em
+    // que aquele preço deixa de valer.
+    if (l.taxa !== undefined && l.taxa !== null) {
+      const t = preco(l.taxa);
+      if (t !== null && t <= 200) lote.taxa = t;
+      else avisos.push('taxa de lote inválida ignorada');
+    }
+    if (l.ate !== undefined && l.ate !== null) {
+      if (typeof l.ate === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(l.ate)) lote.ate = l.ate;
+      else avisos.push('hora-limite de lote inválida ignorada');
+    }
+    saida.push(lote);
   }
   return saida.length ? saida : null;
 }
@@ -112,10 +124,18 @@ function idadeMinima(v) {
   return idadeMinima(Number(m[1]));
 }
 
-// R16: a média só entra pelo envio da produtora e com origem válida.
+// R16: a média só entra com origem declarada. Pelo envio, a produtora declara
+// em qualquer das três origens; pela indicação do grupo, só vale o que a
+// produtora publicou (origem "produtora", com o detalhe de onde).
 function mediaIdade(v, fonte, avisos) {
   if (v === undefined || v === null) return null;
-  if (fonte !== 'envio') {
+  if (fonte === 'indicacao') {
+    const o = typeof v === 'object' ? v : {};
+    if (o.origem !== 'produtora' || !texto(o.detalhe, 160)) {
+      avisos.push('média de idade descartada: na indicação, só a declarada pela produtora, com o detalhe de onde (R16)');
+      return null;
+    }
+  } else if (fonte !== 'envio') {
     avisos.push(`média de idade descartada: veio de "${fonte}", e só a produtora declara (R16)`);
     return null;
   }
@@ -172,7 +192,7 @@ function normalizarItem(b, fonte) {
     });
   }
 
-  if (b.data !== undefined && !dataValida(b.data)) avisos.push('data inválida');
+  if (b.data !== undefined && b.data !== null && !dataValida(b.data)) avisos.push('data inválida');
   if (dataValida(b.data)) {
     por('data', b.data);
     const ini = minutos(b.inicio);
