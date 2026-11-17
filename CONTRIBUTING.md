@@ -42,7 +42,7 @@ cd prototipo/v1-festas
 node servidor.js
 ```
 
-Abre em `http://localhost:8763`. Testes: `node --test teste/`. Os dados ficam em `dados/festas.json`, e a interface em `publico/`.
+Abre em `http://localhost:8763`, na landing; o app fica em `/app`. Testes: `node --test teste/`. Os dados ficam em `dados/festas.json`, e a interface em `publico/`.
 
 A versão no ar é https://finde.fly.dev. Só o Caio publica, depois que o PR entra na `main`.
 
@@ -59,11 +59,16 @@ Sem chave da Anthropic, a classificação vai por regras, e isso basta para dese
 ## Desenho e texto do protótipo
 
 - **Base:** o manual de marca do grupo, resumido em [`docs/marca.md`](docs/marca.md): cores, tipografia e voz.
-- **Exceção ao manual:** botões e opções têm canto reto, sem pílula (decisão de 10/11/2026).
+- **Porta de entrada:** a landing, em `/`. É a primeira tela de quem abre o protótipo. O app fica em `/app`, e `/app?festa=<id>` abre direto o detalhe de uma festa. Mudança na landing parte da prancha 08 do manual e das diferenças anotadas em [`docs/marca.md`](docs/marca.md). Depoimento só entra com fala real aprovada, e o formulário de e-mail continua sem enviar nem guardar nada.
+- **Botões:** são dois, tirados da prancha de teste de botões do manual (decisão de 16/11/2026).
+  - Principal, a opção D: retângulo sem raio, fundo bordô, texto nude em DM Sans 12 px, caixa alta, espaçamento de .16em. No modo noite, fundo nude e texto bordô. Quando dois ficam lado a lado, como "Tô dentro" e "Não rola", o segundo é o contorno do D.
+  - Secundário, a opção C: link com fio rosé embaixo e seta.
+  - As outras opções da prancha (A, B, E e F) não entram.
+- **Canto reto:** nada de pílula nem de canto arredondado em painel, mesmo onde a prancha do manual ainda desenha assim (decisão de 10/11/2026).
 - **Evite o visual de interface feita por IA:**
   - gradiente;
   - sombra difusa;
-  - cartão flutuante com borda arredondada;
+  - cartão flutuante;
   - emoji;
   - ícone decorativo;
   - frase de marketing.
