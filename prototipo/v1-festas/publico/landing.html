@@ -26,45 +26,27 @@
 
   <header class="topo faixa">
     <a class="marca" href="/" aria-label="finde, início">finde<span class="ponto" aria-hidden="true">.</span></a>
-    <a class="topo-lista" href="#lista">Receber por e-mail</a>
+    <a class="topo-app" href="__URL_APP__">Abrir o app</a>
   </header>
 
   <main id="conteudo">
     <section class="hero faixa" aria-labelledby="hero-titulo">
       <div class="hero-texto">
         <p class="rotulo">App de festas em São Paulo</p>
-        <h1 id="hero-titulo">Festas que começam no seu horário, com gente da sua idade</h1>
+        <h1 id="hero-titulo">Festas que começam <span class="inteiro">no seu horário,</span> <span class="inteiro">com gente</span> da sua idade</h1>
         <p class="hero-lead">Antes de sair de casa, você vê a que horas cada festa começa, enche e acaba, e a idade média de quem vai. Achou a sua, manda pro grupo.</p>
         <div class="hero-acoes">
-          <a class="botao" href="#festas">Ver as festas da semana</a>
+          <a class="botao" href="__URL_APP__">Achar a minha festa</a>
           <a class="link-fio" href="#lista">ou receba a lista por e-mail <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
         </div>
       </div>
       __CONVITE__
     </section>
 
-    <section id="festas" class="festas faixa" aria-labelledby="festas-titulo">
-      <div class="painel">
-        <h2 id="festas-titulo" class="painel-titulo">A lista da semana</h2>
-        <div class="filtros" role="group" aria-label="Filtrar por dia">
-          <button type="button" class="filtro" data-dia="todas" aria-pressed="true">Todas</button>
-          <button type="button" class="filtro" data-dia="sex" aria-pressed="false">Sex</button>
-          <button type="button" class="filtro" data-dia="sab" aria-pressed="false">Sáb</button>
-          <button type="button" class="filtro" data-dia="dom" aria-pressed="false">Dom</button>
-        </div>
-        <ul class="linhas" id="linhas">
-__LISTA__
-        </ul>
-        <p class="vazio" id="vazio"__VAZIO__>A lista desta semana ainda está vazia. Ela fecha na quarta.</p>
-        <p class="vh" id="contagem" role="status" aria-live="polite"></p>
-        <a class="link-fio link-fio--noite" href="/app">Montar a lista com a sua cara <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
-      </div>
-    </section>
-
     <section class="pilares faixa" aria-label="Como o finde funciona">
       <div class="pilar">
-        <h2>Lista pronta</h2>
-        <p>As festas da semana chegam selecionadas e você escolhe a sua.</p>
+        <h2>Horário primeiro</h2>
+        <p>Diga a que horas quer chegar e voltar, e o finde mostra as festas que cabem nesse horário.</p>
       </div>
       <div class="pilar">
         <h2>Convite para o grupo</h2>
@@ -74,6 +56,7 @@ __LISTA__
         <h2>Com a sua cara</h2>
         <p>Cada festa mostra o quanto cabe no seu pedido: horário, bairro, idade, preço e som.</p>
       </div>
+      <p class="pilares-acao"><a class="link-fio" href="__URL_APP__">Achar a minha festa <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></p>
     </section>
 
     <section class="manifesto" aria-label="Assinatura">
@@ -103,6 +86,7 @@ __LISTA__
     <span class="marca marca--rodape" role="img" aria-label="finde">finde<span class="ponto">.</span></span>
     <span class="rotulo">São Paulo</span>
     <span class="rotulo">Protótipo · festas fictícias</span>
+    <a class="rodape-app" href="__URL_APP__">Abrir o app</a>
   </footer>
 </body>
 </html>

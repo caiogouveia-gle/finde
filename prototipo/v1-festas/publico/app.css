@@ -1043,6 +1043,9 @@ h2.secao-rotulo { margin: 0; }
 /* ---------------------------------------------------------------- rodapé */
 
 .rodape { margin-top: auto; padding-top: var(--e7); }
+/* Na pergunta, o rodapé vem logo abaixo do botão: o vão livre fica acima dos
+   dois (no .pe), e o título continua na mesma altura. */
+.rodape--junto { margin-top: 0; padding-top: var(--e5); }
 .rodape-linha { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: var(--e3); border-top: .5px solid var(--fio); }
 /* O tema não é ação da festa: texto simples com sublinhado fino, sem o fio
    e sem a seta do C. Alvo de 44 px. */

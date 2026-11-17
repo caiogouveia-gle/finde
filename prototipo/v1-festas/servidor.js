@@ -1,7 +1,15 @@
 'use strict';
-// Servidor do Finde v1: a landing (/), o app (/app), estáticos de publico/,
-// a API e as páginas de convite.
-// Node puro, sem dependências. `node servidor.js` sobe tudo.
+// Servidor do Finde v1: a landing, o app, estáticos de publico/, a API e as
+// páginas de convite. Node puro, sem dependências.
+//
+// FINDE_SITE escolhe o que sobe:
+//   landing  só a landing, em / (finde.fly.dev). /app e /p/<id> mandam para o
+//            app, em FINDE_URL_APP; a API não existe aqui, e página que não
+//            existe dá o 404 em HTML, com o caminho para o app.
+//   app      só o app, em / e em /app (finde-app.fly.dev), com a API e os
+//            convites. A landing fica em FINDE_URL_SITE.
+//   ausente  tudo junto, para desenvolver e testar: landing em /, app em /app.
+// As páginas recebem os dois endereços nos marcadores __URL_SITE__ e __URL_APP__.
 
 const http = require('node:http');
 const fs = require('node:fs');
@@ -57,6 +65,14 @@ const CABECALHOS = {
   'X-Frame-Options': 'DENY',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
+
+// Só a página da landing manda a própria origem (sem caminho nem query) para
+// outro endereço: em produção o app mora em finde-app.fly.dev, e é por esse
+// referrer que ele sabe que a entrada anterior da história é a landing e
+// volta por ela. Nenhuma outra página faz isso (nem o 404 da landing), então
+// um referrer com a origem da landing quer dizer a landing. O app e os
+// convites continuam em same-origin: o id de um convite não sai para fora.
+const REFERRER_DA_LANDING = { 'Referrer-Policy': 'strict-origin-when-cross-origin' };
 
 // ---------------------------------------------------------------- base
 
@@ -141,18 +157,31 @@ function escapar(t) {
   return String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// Origem para os endereços absolutos das imagens de compartilhamento.
+// Origem para os endereços absolutos das imagens de compartilhamento. No Fly
+// o pedido chega aqui em http, atrás do proxy, e o esquema de quem pediu vem
+// em X-Forwarded-Proto: sem ele, a prévia do link levaria uma imagem em http.
 function origem(req) {
   const host = String(req.headers.host || '');
-  return /^[a-z0-9.-]+(:\d{1,5})?$/i.test(host) ? `http://${host}` : '';
+  if (!/^[a-z0-9.-]+(:\d{1,5})?$/i.test(host)) return '';
+  const proto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();
+  return `${proto === 'https' ? 'https' : 'http'}://${host}`;
 }
 
-// Páginas HTML com as metas de compartilhamento preenchidas.
-function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dados, trocas } = {}) {
+// Os endereços da landing e do app nos marcadores do modelo, escapados para HTML.
+function trocarEnderecos(html, enderecos) {
+  let saida = html;
+  for (const [marca, valor] of Object.entries(enderecos)) saida = saida.replaceAll(marca, () => escapar(valor));
+  return saida;
+}
+
+// Páginas HTML com as metas de compartilhamento preenchidas. Os marcadores do
+// modelo (a origem e os endereços) saem primeiro, antes de entrar qualquer
+// texto montado: nada que venha da base vira endereço.
+function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dados, trocas, enderecos = {}, cabecalhos = {} } = {}) {
   fs.readFile(arquivo, 'utf8', (e, html) => {
     if (e) return erro(res, 404, 'Não achei essa página.');
-    let pagina = html.replaceAll('__ORIGEM__', escapar(origem(req)));
-    // Trechos de HTML montados (e escapados) aqui no servidor, como a landing.
+    let pagina = trocarEnderecos(html.replaceAll('__ORIGEM__', escapar(origem(req))), enderecos);
+    // Trechos de HTML montados (e escapados) aqui no servidor, como o convite da landing.
     for (const [marca, trecho] of Object.entries(trocas || {})) pagina = pagina.replace(marca, () => trecho);
     // JSON dentro de <script type="application/json">: "<" escapado, nada executa.
     pagina = pagina.replace('__DADOS__', () => (dados ? JSON.stringify(dados).replace(/</g, '\\u003c') : 'null'));
@@ -165,6 +194,7 @@ function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dado
     enviarCorpo(req, res, status, {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache',
+      ...cabecalhos,
     }, Buffer.from(pagina, 'utf8'));
   });
 }
@@ -201,8 +231,10 @@ function enviarArquivo(req, res, caminho) {
   });
 }
 
-// Só serve o que está dentro de publico/, depois de decodificar e normalizar.
-function estatico(req, res, pathname) {
+// Só serve o que está dentro de publico/, depois de decodificar e normalizar,
+// e só o que o site deixa (`pode` recebe o caminho normalizado). HTML nunca
+// sai daqui: cada página tem a sua rota, que troca os marcadores.
+function estatico(req, res, pathname, pode = () => true) {
   let decodificado;
   try {
     decodificado = decodeURIComponent(pathname);
@@ -210,9 +242,140 @@ function estatico(req, res, pathname) {
     return erro(res, 400, 'Endereço malformado.');
   }
   if (decodificado.includes('\0') || decodificado.includes('\\')) return erro(res, 400, 'Endereço malformado.');
-  const alvo = path.resolve(PUBLICO, '.' + path.posix.normalize('/' + decodificado));
-  if (!alvo.startsWith(PUBLICO + path.sep)) return erro(res, 404, 'Não achei essa página.');
+  const caminho = path.posix.normalize('/' + decodificado);
+  const alvo = path.resolve(PUBLICO, '.' + caminho);
+  if (!alvo.startsWith(PUBLICO + path.sep) || path.extname(alvo).toLowerCase() === '.html' || !pode(caminho)) {
+    return erro(res, 404, 'Não achei essa página.');
+  }
   enviarArquivo(req, res, alvo);
+}
+
+// Sem corpo; o navegador segue o Location. Sem cache, para o endereço do app
+// poder mudar sem deixar redirecionamento velho guardado no navegador. Sem
+// Referrer-Policy: no redirecionamento ela trocaria a de quem pediu, e o
+// /app?festa=<id> tocado na landing chegaria ao app sem a origem dela.
+function redirecionar(res, status, destino) {
+  const { 'Referrer-Policy': _, ...cabecalhos } = CABECALHOS;
+  res.writeHead(status, { ...cabecalhos, Location: destino, 'Cache-Control': 'no-cache', 'Content-Length': 0 });
+  res.end();
+}
+
+// Um segmento do caminho, decodificado e codificado de novo: o que for vai
+// inteiro para o outro endereço, sem abrir barra, "?" nem "#".
+function recodificar(segmento) {
+  try {
+    return encodeURIComponent(decodeURIComponent(segmento));
+  } catch {
+    return encodeURIComponent(segmento);
+  }
+}
+
+// A página de "não achei" de onde a landing mora (só a landing, ou tudo
+// junto): o wordmark, o D para o app e o C de volta para o início, com o
+// estilo da landing. Caminho de página (sem extensão ou .html) cai aqui;
+// arquivo que falta continua com o 404 curto em JSON.
+const NAO_ACHEI = `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Não achei essa página · finde.</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#EADCD2">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/landing.css">
+</head>
+<body>
+  <header class="topo faixa">
+    <a class="marca" href="__URL_SITE__" aria-label="finde, início">finde<span class="ponto" aria-hidden="true">.</span></a>
+  </header>
+  <main id="conteudo">
+    <section class="hero faixa" aria-labelledby="nao-achei-titulo">
+      <div class="hero-texto">
+        <p class="rotulo">Erro 404</p>
+        <h1 id="nao-achei-titulo">Não achei essa página</h1>
+        <p class="hero-lead">Pode ser que o link tenha vindo cortado ou com algum caractere a mais no fim.</p>
+        <div class="hero-acoes">
+          <a class="botao" href="__URL_APP__">Achar a minha festa</a>
+          <a class="link-fio" href="__URL_SITE__">ou volte para o início <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+`;
+
+const ehCaminhoDePagina = (pathname) => {
+  const ext = path.posix.extname(pathname).toLowerCase();
+  return !ext || ext === '.html';
+};
+
+// ---------------------------------------------------------------- sites
+
+// Um caminho deste servidor ("/", "/app") ou um endereço http(s) inteiro.
+function lerEndereco(nome, valor, padrao) {
+  const v = valor === undefined || valor === null || String(valor).trim() === '' ? padrao : String(valor).trim();
+  if (/^\/(?![/\\])[^\s\\]*$/.test(v)) return v;
+  let u = null;
+  try {
+    u = new URL(v);
+  } catch { /* cai no erro abaixo */ }
+  if (u && (u.protocol === 'https:' || u.protocol === 'http:') && !u.username && !u.password) return u.href;
+  throw new Error(`[finde] ${nome} precisa ser um caminho deste servidor (/app) ou um endereço http(s), não "${v}"`);
+}
+
+const ehAbsoluto = (endereco) => /^https?:\/\//.test(endereco);
+
+// O modo e os dois endereços, conferidos ao subir: configuração errada para o
+// servidor na hora, em vez de virar redirecionamento em círculo (a landing
+// mandando /app para ela mesma) ou um app sem caminho de volta.
+function configurarSites({ site, urlSite, urlApp }) {
+  const modo = site === undefined || site === null ? '' : String(site).trim();
+  if (modo && modo !== 'landing' && modo !== 'app') {
+    throw new Error(`[finde] FINDE_SITE aceita "landing" ou "app" (ou nada, para tudo junto), não "${modo}"`);
+  }
+  const conf = {
+    modo: modo || null,
+    urlSite: lerEndereco('FINDE_URL_SITE', urlSite, '/'),
+    // No modo app, o app está na raiz.
+    urlApp: lerEndereco('FINDE_URL_APP', urlApp, modo === 'app' ? '/' : '/app'),
+  };
+  if (conf.modo === 'landing' && !ehAbsoluto(conf.urlApp)) {
+    throw new Error('[finde] FINDE_SITE=landing pede FINDE_URL_APP com o endereço do app (https://...)');
+  }
+  if (conf.modo === 'app' && !ehAbsoluto(conf.urlSite)) {
+    throw new Error('[finde] FINDE_SITE=app pede FINDE_URL_SITE com o endereço da landing (https://...)');
+  }
+  return conf;
+}
+
+// O que a landing pede de publico/: os caminhos locais de landing.html (href,
+// src e a imagem de compartilhamento) e os url() de landing.css. No modo
+// landing, só isso sai; o resto (o app, os cartazes) mora no outro endereço.
+function arquivosDaLanding() {
+  const ler = (nome) => {
+    try {
+      return fs.readFileSync(path.join(PUBLICO, nome), 'utf8');
+    } catch {
+      return '';
+    }
+  };
+  const caminhos = [
+    ...ler('landing.html').matchAll(/\b(?:href|src|content)="(?:__ORIGEM__)?(\/[^"?#]*)/g),
+    ...ler('landing.css').matchAll(/url\(\s*['"]?(\/[^'")?#\s]+)/g),
+  ].map((m) => path.posix.normalize(m[1]));
+  return new Set(caminhos.filter((c) => path.extname(c) && path.extname(c).toLowerCase() !== '.html'));
+}
+
+// O que cada modo serve de publico/ como arquivo estático.
+function estaticosDoModo(modo) {
+  if (modo === 'landing') {
+    const daLanding = arquivosDaLanding();
+    return (caminho) => daLanding.has(caminho);
+  }
+  if (modo === 'app') return (caminho) => !/^\/landing\./i.test(caminho);
+  return () => true;
 }
 
 function lerCorpo(req) {
@@ -321,45 +484,31 @@ function formulario(base) {
 // ---------------------------------------------------------------- landing
 
 const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-const POR_DIA_NA_LANDING = 3;
 const FESTA_DO_CONVITE = 'sexta-sem-pressa';
 
-const ordemDaLista = (a, b) => C.ORDEM_DIAS.indexOf(a.dia) - C.ORDEM_DIAS.indexOf(b.dia)
-  || a.inicio - b.inicio || a.id.localeCompare(b.id);
-
-// A lista da semana na landing: festas editoriais com média de 28 a 35 que
-// começam até as 20h, as três que abrem mais cedo em cada dia, em ordem de
-// dia e hora. "Todas" é a soma dos três dias: o filtro de um dia nunca mostra
-// festa que "Todas" escondeu. Patrocinada não entra: na landing não há como
-// dizer que é.
-function selecaoDaLanding(base) {
-  const cabe = base.filter((f) => f.selo !== 'patrocinado' && f.mediaIdade >= 28 && f.mediaIdade <= 35 && f.inicio <= 20);
-  const porDia = Object.fromEntries(C.ORDEM_DIAS.map((d) => [d, cabe.filter((f) => f.dia === d).sort(ordemDaLista).slice(0, POR_DIA_NA_LANDING)]));
-  return { porDia, todas: C.ORDEM_DIAS.flatMap((d) => porDia[d]) };
-}
-
 // "sex, 20 nov" (a página põe em caixa alta) a partir da data da festa.
-function rotuloDaData(f, agora, { mes = true } = {}) {
+function rotuloDaData(f, agora) {
   const q = dataDaFesta(f, agora);
   const curto = C.DIAS[f.dia].curto.toLowerCase();
   if (!q) return curto;
   const [, m, d] = q.data.split('-').map(Number);
-  return mes ? `${curto}, ${d} ${MESES[m - 1]}` : `${curto} ${d}`;
+  return `${curto}, ${d} ${MESES[m - 1]}`;
 }
 
-// O convite do herói, montado com uma festa fictícia da base. O cartão
-// inteiro é um link para o detalhe dessa festa no app: "Tô dentro" e "Não
-// rola" desenham o convite de verdade, e o toque em qualquer ponto abre a
-// festa em vez de não fazer nada.
+// O convite do herói, montado com uma festa fictícia da base. É ilustração:
+// nada nele é link nem botão. "Tô dentro" e "Não rola" desenham o convite de
+// verdade (span com cara de botão, fora do foco), e o par tem um nome só para
+// o leitor de tela. A legenda que diz que é exemplo aparece na tela
+// (.cv-legenda, depois das anotações); a figcaption diz o mesmo ao leitor de
+// tela, que não lê a de cima duas vezes.
 function htmlDoConvite(f, agora) {
   if (!f) return '';
   const dia = C.DIAS[f.dia];
   // Quebra só antes de um "·", e a hora nunca desce sozinha na linha de baixo.
   const onde = escapar(FT.ondeSemQuebra([f.casa, FT.precoNaLista(f), f.produtora]));
-  const rotulo = `Ver a festa do exemplo, ${f.nome}: ${dia.nome.toLowerCase()}, ${C.horaCheia(f.inicio)}, média de ${f.mediaIdade} anos, ${f.origemIdade}`;
   return `<figure class="convite" aria-labelledby="convite-legenda">
     <figcaption id="convite-legenda" class="vh">Exemplo de convite do finde, com uma festa fictícia</figcaption>
-    <a class="cv-cartao" href="/app?festa=${encodeURIComponent(f.id)}" aria-label="${escapar(rotulo)}">
+    <div class="cv-cartao">
     <div class="cv cv-topo">
       <span class="cv-marca" aria-hidden="true">finde<span class="ponto">.</span></span>
       <span class="cv-rotulo">Convite · ${escapar(rotuloDaData(f, agora))}</span>
@@ -374,45 +523,25 @@ function htmlDoConvite(f, agora) {
       <span class="cv-onde">${onde}</span>
       <span class="cv-horario">${escapar(FT.horarioSemQuebra(C.fraseDoHorario(f)))}</span>
     </div>
-    <div class="cv cv-botoes" aria-hidden="true">
-      <span class="cv-botao">Tô dentro</span>
-      <span class="cv-botao cv-botao--vazado">Não rola</span>
+    <div class="cv cv-botoes" role="img" aria-label="O grupo responde no convite: Tô dentro ou Não rola">
+      <span class="cv-botao" aria-hidden="true">Tô dentro</span>
+      <span class="cv-botao cv-botao--vazado" aria-hidden="true">Não rola</span>
     </div>
-    </a>
+    </div>
     <p class="nota nota-1"><span class="nota-fio" aria-hidden="true"></span><span>Idade média do público, ${escapar(f.origemIdade)}</span></p>
     <p class="nota nota-2"><span class="nota-fio" aria-hidden="true"></span><span>A hora que começa, enche e acaba</span></p>
     <p class="nota nota-3"><span class="nota-fio" aria-hidden="true"></span><span>Seu grupo responde no próprio convite</span></p>
+    <p class="cv-legenda rotulo" aria-hidden="true">Exemplo de convite · festa fictícia</p>
   </figure>`;
 }
 
-// As linhas da lista, todas visíveis em "Todas"; o filtro de dia esconde as
-// outras. O preço vai num bloco que não quebra e leva o "·" no começo: numa
-// tela estreita a linha quebra antes do ponto, nunca deixa o ponto solto.
-function htmlDaLista(selecao, agora) {
-  return selecao.todas.map((f) => {
-    const preco = FT.precoNaLista(f);
-    const rotulo = `${C.DIAS[f.dia].nome}, ${C.hora(f.inicio)}: ${f.nome}, ${f.casa}, ${preco}. Média de ${f.mediaIdade} anos, ${f.origemIdade}.`;
-    return `<li data-dia="${f.dia}">
-      <a class="linha" href="/app?festa=${encodeURIComponent(f.id)}" aria-label="${escapar(rotulo)}">
-        <span class="linha-quando"><span class="linha-hora">${escapar(C.hora(f.inicio))}</span><span class="linha-dia">${escapar(rotuloDaData(f, agora, { mes: false }))}</span></span>
-        <span class="linha-meio"><span class="linha-nome">${escapar(f.nome)}</span><span class="linha-onde">${escapar(f.casa)} <span class="sem-quebra">· ${escapar(preco)}</span></span></span>
-        <span class="linha-media"><span class="linha-media-num">${escapar(f.mediaIdade)}</span><span class="linha-media-rot">Média</span><span class="linha-origem">${escapar(f.origemIdadeCurta)}</span></span>
-      </a>
-    </li>`;
-  }).join('\n');
+// A festa do convite: a do desenho (Sexta Sem Pressa) ou, se ela sair da
+// base, a primeira editorial.
+function festaDoConvite(base) {
+  return base.find((f) => f.id === FESTA_DO_CONVITE) || base.find((f) => f.selo === 'editorial') || null;
 }
 
-function trocasDaLanding(base, agora) {
-  const selecao = selecaoDaLanding(base);
-  const convite = base.find((f) => f.id === FESTA_DO_CONVITE) || selecao.todas[0];
-  return {
-    __CONVITE__: htmlDoConvite(convite, agora),
-    __LISTA__: htmlDaLista(selecao, agora),
-    __VAZIO__: selecao.todas.length ? ' hidden' : '',
-  };
-}
-
-// O detalhe de uma festa sem pedido (o link da landing): o mesmo formato de
+// O detalhe de uma festa sem pedido (/app?festa=<id>): o mesmo formato de
 // um item de opcoes, com um pedido neutro tirado da própria festa (o dia
 // dela, a janela em que ela cabe, idade de 18 a 50, sem teto). Sem a cara,
 // que só existe diante de um pedido de verdade.
@@ -435,10 +564,22 @@ function criarServidor({
   varDir = process.env.FINDE_VAR || path.join(RAIZ, 'var'),
   log = console,
   relogio = () => Date.now(),
+  site = process.env.FINDE_SITE,
+  urlSite = process.env.FINDE_URL_SITE,
+  urlApp = process.env.FINDE_URL_APP,
 } = {}) {
+  const sites = configurarSites({ site, urlSite, urlApp });
+  const temLanding = sites.modo !== 'app';
+  const temApp = sites.modo !== 'landing';
+  const podeServir = estaticosDoModo(sites.modo);
+  const enderecos = { __URL_SITE__: sites.urlSite, __URL_APP__: sites.urlApp };
+  log.info(sites.modo === 'landing' ? `[finde] só a landing; o app fica em ${sites.urlApp}`
+    : sites.modo === 'app' ? `[finde] só o app; a landing fica em ${sites.urlSite}`
+      : '[finde] landing em / e app em /app');
   const fonte = criarFonteDaBase(path.resolve(dados), log, relogio);
   fonte.base();
-  const planos = criarPlanos(path.resolve(varDir), { log });
+  // A landing sozinha não abre convite nenhum: os convites moram no app.
+  const planos = temApp ? criarPlanos(path.resolve(varDir), { log }) : null;
 
   // Cada opção leva a data da festa: o detalhe abre com ela (R4). Fica aqui
   // para valer nos três caminhos da conversa.
@@ -572,12 +713,27 @@ function criarServidor({
     },
   };
 
+  const pagina = (req, res, nome, opcoes = {}) => enviarPagina(req, res, path.join(PUBLICO, nome), { ...opcoes, enderecos });
+
+  // A landing vem montada: o convite do herói sai daqui.
+  const landing = (req, res) => pagina(req, res, 'landing.html', {
+    trocas: { __CONVITE__: htmlDoConvite(festaDoConvite(fonte.base()), new Date(relogio())) },
+    cabecalhos: REFERRER_DA_LANDING,
+  });
+
+  const naoAchei = (req, res) => enviarCorpo(req, res, 404, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Cache-Control': 'no-cache',
+  }, Buffer.from(trocarEnderecos(NAO_ACHEI, enderecos), 'utf8'));
+
+  // Os dados da primeira tela vão junto com o HTML: uma ida e volta a menos.
+  const app = (req, res) => pagina(req, res, 'index.html', { dados: formulario(fonte.base()) });
+
   // /p/:id: 404 de verdade quando o convite não existe; quando existe, as
   // metas de compartilhamento dizem a festa.
   function paginaDoConvite(req, res, id) {
-    const arquivo = path.join(PUBLICO, 'plano.html');
     if (!planos.existe(id)) {
-      return enviarPagina(req, res, arquivo, { status: 404, titulo: 'Esse convite não existe · finde.' });
+      return pagina(req, res, 'plano.html', { status: 404, titulo: 'Esse convite não existe · finde.' });
     }
     const p = planos.ler(id);
     const o = p.festa;
@@ -592,7 +748,7 @@ function criarServidor({
     const onde = f.endereco && f.endereco.texto ? `${f.casa}, ${f.endereco.texto}` : f.casa;
     const mediaLonga = temMedia ? ` Média de ${f.mediaIdade} anos${f.origemIdade ? `, ${f.origemIdade}` : ''}.` : '';
     const descricao = `${onde} · ${FT.precoNaLista(f)}. ${o.horario}${mediaLonga}`;
-    return enviarPagina(req, res, arquivo, { titulo, descricao });
+    return pagina(req, res, 'plano.html', { titulo, descricao });
   }
 
   async function api(req, res, pathname) {
@@ -623,28 +779,40 @@ function criarServidor({
   }
 
   return http.createServer(async (req, res) => {
-    let pathname;
+    let endereco;
     try {
-      pathname = new URL(req.url, 'http://finde').pathname;
+      endereco = new URL(req.url, 'http://finde');
     } catch {
       return erro(res, 400, 'Endereço malformado.');
     }
+    const { pathname, search } = endereco;
     try {
-      if (pathname.startsWith('/api/')) return await api(req, res, pathname);
+      if (pathname.startsWith('/api/')) {
+        // A landing sozinha não tem API: festas, conversa e convites moram no app.
+        if (!temApp) return erro(res, 404, 'Não achei esse caminho.');
+        return await api(req, res, pathname);
+      }
       if (req.method !== 'GET' && req.method !== 'HEAD') return erro(res, 405, 'Esse caminho não aceita esse método.');
-      if (pathname === '/' || pathname === '/index.html') {
-        // A landing vem montada: o convite e a lista da semana saem daqui.
-        return enviarPagina(req, res, path.join(PUBLICO, 'landing.html'), { trocas: trocasDaLanding(fonte.base(), new Date(relogio())) });
-      }
+      // A raiz é a landing; no modo app, é o app.
+      if (pathname === '/' || pathname === '/index.html') return temLanding ? landing(req, res) : app(req, res);
       if (pathname === '/app' || pathname === '/app/') {
-        // Os dados da primeira tela vão junto com o HTML: uma ida e volta a menos.
-        return enviarPagina(req, res, path.join(PUBLICO, 'index.html'), { dados: formulario(fonte.base()) });
+        if (temApp) return app(req, res);
+        // Na landing sozinha, /app leva ao app no outro endereço, com o pedido
+        // junto (/app?festa=<id> abre a mesma festa).
+        return redirecionar(res, 302, sites.urlApp + (search && sites.urlApp.includes('?') ? `&${search.slice(1)}` : search));
       }
-      if (pathname === '/landing.html') return erro(res, 404, 'Não achei essa página.');
       const convite = pathname.match(/^\/p\/([^/]+)\/?$/);
-      if (convite) return paginaDoConvite(req, res, convite[1]);
-      if (pathname === '/plano.html') return erro(res, 404, 'Não achei essa página.');
-      return estatico(req, res, pathname);
+      if (convite) {
+        if (temApp) return paginaDoConvite(req, res, convite[1]);
+        // Convite mandado antes da separação: abre no app, no mesmo caminho.
+        // Qualquer segmento vai (um ponto colado no fim do link, um
+        // parêntese), e quem diz que o convite não existe é a página do app.
+        // A origem é fixa: não vira redirecionamento para fora.
+        return redirecionar(res, 301, `${new URL(sites.urlApp).origin}/p/${recodificar(convite[1])}${search}`);
+      }
+      if (pathname === '/fora.html' && temApp) return pagina(req, res, 'fora.html');
+      if (temLanding && ehCaminhoDePagina(pathname)) return naoAchei(req, res);
+      return estatico(req, res, pathname, podeServir);
     } catch (e) {
       if (e instanceof ErroPlano) return erro(res, e.status, e.message, e.dados);
       log.error('[finde] erro inesperado', e);
@@ -659,4 +827,4 @@ if (require.main === module) {
   servidor.listen(porta, () => console.log(`[finde] no ar em http://localhost:${porta}`));
 }
 
-module.exports = { criarServidor, proximaPista, dataDaFesta, selecaoDaLanding, opcaoSemPedido };
+module.exports = { criarServidor, proximaPista, dataDaFesta, opcaoSemPedido, trocarEnderecos };

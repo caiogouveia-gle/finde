@@ -5,15 +5,16 @@
 // com ela oculta; uma leitura velha nunca desfaz a resposta da própria pessoa.
 
 (() => {
-  const { el, chamar, marca, rodape, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite } = window.Finde;
+  const { el, chamar, site, marca, rodape, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite } = window.Finde;
   const $tela = document.getElementById('tela');
   const id = decodeURIComponent(window.location.pathname.split('/')[2] || '');
 
   const INTERVALO = 4000;
   const CURTO = { sex: 'sex', sab: 'sáb', dom: 'dom' };
-  // O wordmark leva à landing; "ver festas" leva ao app, que reabre a lista
-  // de quem já montou uma nesta aba (sem lista, começa o pedido).
-  const LANDING = '/';
+  // O wordmark leva à landing (o endereço vem da meta finde-site); "ver
+  // festas" leva ao app, que reabre a lista de quem já montou uma nesta aba
+  // (sem lista, começa o pedido). /app serve o app nos dois jeitos de rodar.
+  const LANDING = site();
   const APP = '/app?ver=lista';
   const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const SEM_REDE = 'Sem conexão agora. Tento de novo em instantes.';

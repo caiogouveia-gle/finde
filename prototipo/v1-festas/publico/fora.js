@@ -18,6 +18,10 @@
     else if (u.protocol === 'https:') destino = `${u.hostname.replace(/^www\./, '')}${u.pathname === '/' ? '' : u.pathname}`.replace(/\/$/, '');
   } catch { /* sem destino */ }
 
+  // O wordmark leva à landing, que em produção mora em outro endereço.
+  const marca = document.querySelector('.topo .marca');
+  if (marca && window.Finde) marca.href = window.Finde.site();
+
   const titulo = document.getElementById('fora-titulo');
   // Um itálico só por frase, no verbo: "Aqui você *iria* para o Instagram."
   if (servico) {

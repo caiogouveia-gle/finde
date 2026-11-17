@@ -379,3 +379,188 @@ test('casa · preço · produtora: quebra só antes de um "·", cada trecho inte
   assert.equal(T.ondeSemQuebra([longo, 'R$ 30 na porta']), `${longo} ·${NB}R$${NB}30${NB}na${NB}porta`);
   assert.equal(T.ondeSemQuebra(null), '');
 });
+
+// ------------------------------------------------------------ o app em outro endereço
+
+// Em produção a landing (finde.fly.dev) e o app (finde-app.fly.dev) moram em
+// endereços diferentes; a meta finde-site diz ao app onde está a landing.
+const vm = require('node:vm');
+const PUBLICO = path.join(__dirname, '..', 'publico');
+const COMUM = fs.readFileSync(path.join(PUBLICO, 'comum.js'), 'utf8');
+
+// comum.js num navegador de mentira: só o que ele toca ao carregar.
+function siteCom(conteudo, aqui) {
+  const meta = conteudo === undefined ? null : { getAttribute: () => conteudo };
+  const document = { addEventListener() {}, querySelector: (s) => (s === 'meta[name="finde-site"]' ? meta : null) };
+  const window = { location: new URL(aqui), matchMedia: () => ({ matches: false }), document };
+  vm.runInContext(COMUM, vm.createContext({ window, document, URL, setInterval() {} }));
+  return window.Finde.site();
+}
+
+test('finde-site: a landing de outro endereço, um caminho daqui, e a raiz quando a meta falha', () => {
+  const APP_AQUI = 'https://finde-app.fly.dev/?festa=sexta-sem-pressa';
+  assert.equal(siteCom('https://finde.fly.dev/', APP_AQUI), 'https://finde.fly.dev/');
+  assert.equal(siteCom('/', 'http://127.0.0.1:8904/app?ver=lista'), 'http://127.0.0.1:8904/');
+  assert.equal(siteCom('  http://127.0.0.1:8905/ ', 'http://127.0.0.1:8906/'), 'http://127.0.0.1:8905/');
+  // Marcador que o servidor não trocou, meta ausente, vazia ou de outro tipo: a raiz daqui.
+  for (const torto of ['__URL_SITE__', undefined, '', 'javascript:alert(1)', '//finde.fly.dev/', 'finde.fly.dev', 'data:text/html,x']) {
+    assert.equal(siteCom(torto, APP_AQUI), 'https://finde-app.fly.dev/', String(torto));
+  }
+});
+
+test('finde-site: as três páginas do app trazem a meta, e o wordmark e o Voltar vão por ela', () => {
+  for (const nome of ['index.html', 'plano.html', 'fora.html']) {
+    const html = fs.readFileSync(path.join(PUBLICO, nome), 'utf8');
+    assert.match(html, /<meta name="finde-site" content="__URL_SITE__">/, nome);
+    // comum.js carrega antes do script da página, que lê a meta por ele.
+    assert.ok(html.indexOf('/comum.js') < html.search(/\/(app|plano|fora)\.js/), nome);
+  }
+  const PLANO = fs.readFileSync(path.join(PUBLICO, 'plano.js'), 'utf8');
+  const FORA = fs.readFileSync(path.join(PUBLICO, 'fora.js'), 'utf8');
+  assert.match(APP, /const LANDING = site\(\);/);
+  assert.match(PLANO, /const LANDING = site\(\);/);
+  assert.match(FORA, /marca\.href = window\.Finde\.site\(\);/);
+  assert.match(APP, /marca\(LANDING\)/);
+  assert.match(APP, /window\.location\.assign\(LANDING\)/);
+  // Nenhum caminho do app supõe estar em /app nem que a landing tem a lista.
+  assert.doesNotMatch(APP, /replaceState\([^)]*'\/app'\)/);
+  assert.doesNotMatch(APP, /#festas/);
+  assert.doesNotMatch(APP, /pathname === '\/' \|\|/);
+});
+
+// O "Voltar" que sai do app (pergunta 1, detalhe aberto por link), tirado do
+// app.js e rodado com uma história de mentira. Devolve o que ele fez:
+// ['go', -k] ou ['assign', url].
+function voltarCom({ landing, aqui, n = 0, referrer = '', comprimento, entradas }) {
+  const ini = APP.indexOf('  const caminho = (p) =>');
+  const fim = APP.indexOf('  function botaoVoltar()');
+  assert.ok(ini > 0 && fim > ini, 'o trecho da volta está no app.js');
+  const feito = [];
+  const location = new URL(aqui);
+  location.assign = (url) => feito.push(['assign', url]);
+  const nav = entradas && {
+    entries: () => entradas.map((url) => ({ url })),
+    currentEntry: { index: entradas.length - 1 - (entradas.atras || 0) },
+  };
+  const ctx = vm.createContext({
+    URL,
+    LANDING: landing,
+    nivel: () => n,
+    document: { referrer },
+    history: { length: comprimento, go: (d) => feito.push(['go', d]) },
+    window: { location, navigation: nav },
+  });
+  vm.runInContext(`${APP.slice(ini, fim)}\nvoltarParaLanding();`, ctx);
+  return feito[0];
+}
+
+test('Voltar na pergunta 1: volta pela história à landing de outro endereço, quando ela está lá', () => {
+  const LANDING = 'https://finde.fly.dev/';
+  const APP_ = 'https://finde-app.fly.dev/';
+  // Veio do D da landing: a landing é a entrada antes da primeira do app.
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: LANDING, comprimento: 2, entradas: [APP_] }), ['go', -1]);
+  // Duas perguntas adiante e de volta à primeira: a landing continua uma abaixo.
+  const ida = Object.assign([APP_, APP_, APP_], { atras: 2 });
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: LANDING, comprimento: 4, entradas: ida }), ['go', -1]);
+  // Detalhe aberto por link, duas telas acima da entrada: k = 3.
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: `${APP_}?festa=x`, n: 2, referrer: LANDING, comprimento: 4, entradas: [APP_, APP_, APP_] }), ['go', -3]);
+  // Aba nova (o D aberto à parte): nada antes do app, vai pelo link.
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: LANDING, comprimento: 1, entradas: [APP_] }), ['assign', LANDING]);
+  const abaNova = Object.assign([APP_, APP_], { atras: 1 });
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: LANDING, comprimento: 2, entradas: abaNova }), ['assign', LANDING]);
+  // Link colado, ou vindo de outro site: sem o referrer da landing, link.
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: '', comprimento: 2, entradas: [APP_] }), ['assign', LANDING]);
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: 'https://example.com/', comprimento: 2, entradas: [APP_] }), ['assign', LANDING]);
+  // Meta torta: a "landing" é a raiz daqui, e um referrer vazio não pode
+  // passar por ela.
+  assert.deepEqual(voltarCom({ landing: APP_, aqui: APP_, referrer: '', comprimento: 2, entradas: [APP_] }), ['assign', APP_]);
+  assert.deepEqual(voltarCom({ landing: APP_, aqui: APP_, referrer: '', comprimento: 2 }), ['assign', APP_]);
+  // Depois de recarregar, a entrada de baixo é do próprio app: link.
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: LANDING, comprimento: 3, entradas: [APP_, APP_] }), ['assign', LANDING]);
+  // Sem a API de navegação, o referrer e o tamanho da história decidem.
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: LANDING, comprimento: 2 }), ['go', -1]);
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: '', comprimento: 2 }), ['assign', LANDING]);
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: APP_, referrer: LANDING, comprimento: 1 }), ['assign', LANDING]);
+});
+
+test('Voltar na pergunta 1: quem veio de um convite volta para ele, em qualquer jeito de rodar', () => {
+  // Produção: o convite e o app em finde-app, a landing em outro endereço.
+  const LANDING = 'https://finde.fly.dev/';
+  const CONVITE = 'https://finde-app.fly.dev/p/ab12cd34';
+  const LISTA = 'https://finde-app.fly.dev/app';
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: LISTA, referrer: CONVITE, comprimento: 2, entradas: [CONVITE, LISTA] }), ['go', -1]);
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: LISTA, referrer: CONVITE, comprimento: 2 }), ['go', -1]);
+  // Tudo junto (desenvolvimento): o mesmo, e a landing daqui também volta pela história.
+  const L = 'http://127.0.0.1:8763/';
+  const P = 'http://127.0.0.1:8763/p/ab12cd34';
+  const A = 'http://127.0.0.1:8763/app';
+  assert.deepEqual(voltarCom({ landing: L, aqui: A, referrer: P, comprimento: 2, entradas: [P, A] }), ['go', -1]);
+  assert.deepEqual(voltarCom({ landing: L, aqui: A, referrer: L, comprimento: 2, entradas: [L, A] }), ['go', -1]);
+  // Outra página do app embaixo (a de saída, por exemplo) não é convite nem landing: link.
+  assert.deepEqual(voltarCom({ landing: L, aqui: A, referrer: '', comprimento: 2, entradas: ['http://127.0.0.1:8763/fora.html', A] }), ['assign', L]);
+  // Um /p/ de outro endereço não conta como convite daqui.
+  assert.deepEqual(voltarCom({ landing: LANDING, aqui: LISTA, referrer: 'https://outro.example/p/ab12cd34', comprimento: 2 }), ['assign', LANDING]);
+});
+
+// ------------------------------------------------------------ o rodapé do protótipo
+
+// comum.js num DOM de mentira que monta elementos de verdade (o bastante
+// para o rodapé), com o tema e a hora pedidos.
+function comumComDom({ tema = 'dia', pelaHora = 'dia' } = {}) {
+  class No {
+    constructor(tag) { this.tag = tag; this.filhos = []; this.atributos = {}; this.className = ''; this.proprio = ''; }
+    set textContent(v) { this.proprio = String(v); this.filhos = []; }
+    get textContent() { return this.proprio + this.filhos.map((f) => f.textContent).join(''); }
+    setAttribute(k, v) { this.atributos[k] = v; }
+    addEventListener() {}
+    append(...n) { this.filhos.push(...n); }
+  }
+  const document = {
+    addEventListener() {},
+    querySelector: () => null,
+    createElement: (tag) => new No(tag),
+    createTextNode: (t) => { const n = new No('#text'); n.textContent = t; return n; },
+  };
+  const window = {
+    location: new URL('https://finde-app.fly.dev/'),
+    matchMedia: () => ({ matches: false }),
+    document,
+    FindeTema: { atual: () => tema, pelaHora: () => pelaHora },
+  };
+  vm.runInContext(COMUM, vm.createContext({ window, document, URL, Node: No, setInterval() {} }));
+  return window.Finde;
+}
+
+test('rodapé: a nota do protótipo e um seletor de tema que diz que é tema', () => {
+  const r = comumComDom().rodape();
+  assert.equal(r.tag, 'footer');
+  assert.match(r.textContent, /^Protótipo · festas fictícias/);
+  // De dia, "noite às 18h" sozinho, no detalhe de uma festa que começa às 18h,
+  // se lia como o horário dela.
+  assert.equal(r.textContent, 'Protótipo · festas fictícias' + 'modo noite às 18h · ver agora');
+  const rotulo = (tema, pelaHora) => comumComDom({ tema, pelaHora }).rodape().filhos[0].filhos[1].textContent;
+  assert.equal(rotulo('dia', 'dia'), 'modo noite às 18h · ver agora');
+  assert.equal(rotulo('noite', 'noite'), 'ver de dia');
+  assert.equal(rotulo('noite', 'dia'), 'voltar pro dia');
+  assert.equal(rotulo('dia', 'noite'), 'voltar pra noite');
+});
+
+test('rodapé: toda tela do app traz a nota do protótipo, a pergunta 1 inclusive', () => {
+  // O corpo de cada função de tela, até a próxima função do mesmo nível.
+  const corpo = (nome) => {
+    const i = APP.search(new RegExp(`\\n  (async )?function ${nome}\\(`));
+    assert.ok(i >= 0, nome);
+    const resto = APP.slice(i + 1);
+    const fim = resto.search(/\n {2}(async )?function /);
+    return fim < 0 ? resto : resto.slice(0, fim);
+  };
+  for (const nome of ['telaCarregando', 'telaPergunta', 'telaResultado', 'telaFesta', 'telaMandar', 'semFesta', 'abrirAvulsa']) {
+    assert.match(corpo(nome), /rodape\(\)/, nome);
+  }
+  // Na pergunta, o rodapé fica logo abaixo do botão, dentro do formulário.
+  const pergunta = corpo('telaPergunta');
+  assert.match(pergunta, /const fim = rodape\(\);\s*fim\.classList\.add\('rodape--junto'\);/);
+  assert.match(pergunta, /el\('div', \{ class: 'pe' \}, continuar,[^\n]*\),\s*fim\);/);
+  const CSS = fs.readFileSync(path.join(PUBLICO, 'app.css'), 'utf8');
+  assert.match(CSS, /\.rodape--junto \{ margin-top: 0; padding-top: var\(--e5\); \}/);
+});

@@ -4,6 +4,7 @@ Mais recente primeiro.
 
 | Data | Decisão | Origem |
 |---|---|---|
+| 17/11/2026 | A landing é o foco do Finde e fica sozinha em finde.fly.dev; o protótipo é a segunda etapa, num endereço próprio (finde-app.fly.dev; com domínio, `app.<domínio>`), aberto pelo botão "Achar a minha festa". A lista da semana sai da landing, que fica com menos funcionalidade: hero com o convite como ilustração, pilares, manifesto, e-mail só visual e rodapé. Convites antigos em finde.fly.dev/p/<id> continuam abrindo, redirecionados ao app | Caio |
 | 16/11/2026 | A landing do manual atualizado é a primeira tela do protótipo, em `/`; o app (seis perguntas, lista, detalhe da festa e envio ao grupo) passa para `/app`; os convites continuam em `/p/:id`, e `/app?festa=<id>` abre direto o detalhe de uma festa da lista da landing | Caio; desenho da chefe de design do grupo |
 | 16/11/2026 | Botões: o principal é a opção D da prancha de teste (retângulo sem raio, bordô, texto nude em DM Sans 12 px, caixa alta, espaçamento de .16em) e o secundário é a opção C (link com fio rosé e seta). Detalha a linha de 10/11 sobre pílula, que continua valendo | Caio; desenho da chefe de design do grupo |
 | 16/11/2026 | Formulário de e-mail da landing só visual: avisa que é protótipo, não envia nem guarda nada | Caio; desenho da chefe de design do grupo |

@@ -1,0 +1,42 @@
+# Fly.io: o protótipo do Finde (o app), em endereço provisório (finde-app.fly.dev).
+# A landing é outro app do Fly, finde.fly.dev: ver fly.toml.
+# Publicar o app: fly deploy -c fly.app.toml (nesta pasta). Volume criado uma vez:
+#   fly volumes create finde_convites --region gru --size 1 -a finde-app
+app = "finde-app"
+primary_region = "gru"
+
+[build]
+  # A mesma imagem da landing; FINDE_SITE decide o que sobe.
+  dockerfile = "Dockerfile"
+
+# Só o app, na raiz e em /app, com a API e os convites. O wordmark e o
+# "Voltar" da primeira pergunta levam à landing.
+[env]
+  FINDE_SITE = "app"
+  FINDE_URL_SITE = "https://finde.fly.dev/"
+  FINDE_URL_APP = "/"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Para quando ninguém usa e liga no primeiro acesso: o protótipo não tem
+  # tarefa agendada, então máquina parada não perde nada.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "3s"
+    grace_period = "10s"
+    method = "get"
+    path = "/"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# Os convites mandados ao grupo moram aqui; sem o volume, sumiriam a cada deploy.
+[mounts]
+  source = "finde_convites"
+  destination = "/data"

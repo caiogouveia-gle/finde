@@ -1,4 +1,7 @@
 # Finde, protótipo visual (prototipo/v1-festas). Node 24 sem dependências.
+# A mesma imagem serve os dois apps do Fly: a landing (fly.toml) e o app
+# (fly.app.toml). O que sobe vem de FINDE_SITE, no [env] de cada um; sem ele,
+# sobe tudo junto, como no desenvolvimento.
 FROM node:24-slim
 
 WORKDIR /app

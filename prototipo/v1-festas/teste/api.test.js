@@ -100,8 +100,10 @@ test('CSP: tudo daqui, fontes incluídas; sem script inline', async () => {
   assert.match(fonte.headers.get('cache-control'), /immutable/);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
   assert.equal(r.cabecalhos.get('x-content-type-options'), 'nosniff');
-  // O endereço de origem só vai para o próprio servidor, nunca para fora.
-  assert.equal(r.cabecalhos.get('referrer-policy'), 'same-origin');
+  // A landing manda para fora só a própria origem (o app, em outro endereço,
+  // sabe que veio dela); o app, nem isso.
+  assert.equal(r.cabecalhos.get('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.equal((await chamar('GET', '/app')).cabecalhos.get('referrer-policy'), 'same-origin');
   assert.doesNotMatch(r.corpo, /<script(?![^>]*\b(src=|type="application\/json"))[^>]*>/);
   assert.doesNotMatch(r.corpo, /style=/);
 });
@@ -270,6 +272,23 @@ test('/p/:id: 404 quando não existe; quando existe, as metas de compartilhament
   const inicio = await chamar('GET', '/');
   assert.match(inicio.corpo, /og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png"/);
   assert.match(inicio.corpo, /apple-touch-icon" href="\/icone-180\.png"/);
+});
+
+test('prévia do link atrás do proxy do Fly: a imagem sai em https quando X-Forwarded-Proto diz https', async () => {
+  const criado = await chamar('POST', '/api/planos', { criterios: PEDIDO, festa: 'sabado-groove' });
+  for (const pagina of ['/', '/app', `/p/${criado.corpo.id}`]) {
+    const imagem = async (cabecalhos) => (await chamar('GET', pagina, undefined, cabecalhos)).corpo
+      .match(/<meta property="og:image" content="([^"]*)">/)[1];
+    assert.match(await imagem({ 'X-Forwarded-Proto': 'https' }), /^https:\/\/127\.0\.0\.1:\d+\/compartilhar\.png$/, pagina);
+    assert.match(await imagem({ 'X-Forwarded-Proto': 'HTTPS, http' }), /^https:\/\//, pagina);
+    // Sem o cabeçalho, ou com qualquer outra coisa nele, fica http.
+    for (const outro of [{}, { 'X-Forwarded-Proto': 'http' }, { 'X-Forwarded-Proto': 'javascript' }, { 'X-Forwarded-Proto': 'https://mal' }]) {
+      assert.match(await imagem(outro), /^http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png$/, `${pagina} ${JSON.stringify(outro)}`);
+    }
+  }
+  // Host estranho: nada de origem.
+  const r = await bruto('GET', '/', { Host: 'mal"><script>', 'X-Forwarded-Proto': 'https' });
+  assert.match(r.corpo.toString('utf8'), /<meta property="og:image" content="\/compartilhar\.png">/);
 });
 
 test('planos: festa inexistente, id torto, resposta estranha, método errado', async () => {

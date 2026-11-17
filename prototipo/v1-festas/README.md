@@ -1,6 +1,6 @@
 # Finde, protótipo v1 (festas)
 
-Guia de festas do fim de semana em São Paulo para quem tem de 28 a 35 anos. A primeira tela é a landing do manual de marca, em `/`. O app fica em `/app`: a pessoa responde seis perguntas, recebe três festas, cada uma com a "% a sua cara", ajusta a lista em uma frase, abre a festa para conferir tudo o que iria buscar no Instagram, na plataforma de ingresso e no mapa, e só então manda pro grupo. É o fluxo do vídeo 2, com a marca de `docs/marca.md`. Substitui o v0 (`../v0-conversa`), que segue intocado.
+Guia de festas do fim de semana em São Paulo para quem tem de 28 a 35 anos. A porta de entrada é a landing do manual de marca; o protótipo (o app) é a segunda etapa, aberta a partir dela. No ar, cada um tem o seu endereço: a landing em https://finde.fly.dev e o app em https://finde-app.fly.dev. Para desenvolver, os dois sobem juntos, a landing em `/` e o app em `/app`. No app, a pessoa responde seis perguntas, recebe três festas, cada uma com a "% a sua cara", ajusta a lista em uma frase, abre a festa para conferir tudo o que iria buscar no Instagram, na plataforma de ingresso e no mapa, e só então manda pro grupo. É o fluxo do vídeo 2, com a marca de `docs/marca.md`. Substitui o v0 (`../v0-conversa`), que segue intocado.
 
 ## Rodar
 
@@ -15,16 +15,32 @@ Abre em `http://localhost:8763`, na landing. O app fica em `http://localhost:876
 - `FINDE_PORTA`: porta (padrão 8763).
 - `FINDE_DADOS`: a base (padrão `dados/festas.json`). Linhas inválidas são ignoradas uma a uma, com aviso no log. Se o arquivo faltar, o app sobe com a lista vazia e diz isso. A base é relida quando o arquivo muda.
 - `FINDE_VAR`: onde ficam os convites (padrão `var/`, arquivo `planos.json`, gravado de forma atômica).
+- `FINDE_SITE`: o que sobe. Sem ela, tudo junto (o jeito de desenvolver e o dos testes). `landing`: só a landing. `app`: só o app, na raiz.
+- `FINDE_URL_APP`: para onde vão as portas da landing (padrão `/app`; em `app`, `/`). Com `FINDE_SITE=landing`, tem de ser o endereço completo do app (`https://...`).
+- `FINDE_URL_SITE`: a landing, para onde vão o wordmark e o "Voltar" do app (padrão `/`). Com `FINDE_SITE=app`, tem de ser o endereço completo da landing.
+
+O servidor troca `__URL_SITE__` e `__URL_APP__` por esses endereços, escapados para HTML, em toda página que serve. Para simular os dois endereços numa máquina só:
+
+```
+FINDE_PORTA=8941 FINDE_SITE=landing FINDE_URL_APP=http://127.0.0.1:8942/ node servidor.js
+FINDE_PORTA=8942 FINDE_SITE=app FINDE_URL_SITE=http://127.0.0.1:8941/ node servidor.js
+```
 
 ## Rotas
 
+Tudo junto (sem `FINDE_SITE`):
+
 | Rota | O que abre |
 |---|---|
-| `/` | A landing, primeira tela do protótipo |
+| `/` | A landing, a porta de entrada |
 | `/app` | O app: as seis perguntas, a lista, o detalhe da festa e o envio ao grupo |
-| `/app?festa=<id>` | O app direto no detalhe de uma festa. É para onde leva cada linha da lista da landing |
+| `/app?festa=<id>` | O app direto no detalhe de uma festa, sem pedido (link direto; a landing não tem mais links para festas) |
 | `/p/:id` | O convite que o grupo recebe |
 | `GET /api/festa/<id>` | Os dados de uma festa, para o detalhe aberto por `/app?festa=<id>` |
+
+Só a landing (`FINDE_SITE=landing`, finde.fly.dev): `/` serve a landing, com os arquivos que ela pede e mais nada. `/app` (com ou sem barra e com a query) vai para `FINDE_URL_APP` com 302, levando a query; `/p/<id>` vai com 301 para o mesmo caminho no endereço do app, e os convites antigos continuam abrindo. A API dá 404, e página que não existe dá um 404 em HTML com o caminho para o app.
+
+Só o app (`FINDE_SITE=app`, finde-app.fly.dev): `/` e `/app` servem o app; `/p/<id>`, a API, `/fora.html` e os estáticos do app continuam. A landing não é servida aqui.
 
 As outras rotas da API estão no fim deste arquivo.
 
@@ -34,29 +50,28 @@ As outras rotas da API estão no fim deste arquivo.
 node --test teste/
 ```
 
-Testes de: base (validação e cobertura), registro do detalhe (`teste/registro.test.js`: campos do contrato `finde-r14/1`, preço contra lotes, links só `https`, congelamento, relógio da base fictícia), texto do detalhe (`teste/festa-texto.test.js`: porta, lote esgotado, grátis, lineup não divulgado, média ausente, tempo relativo, fontes, destino dos links), motor (filtros, estilo como critério, patrocinada, afrouxamento, lista vazia com oferta, ordem por horário, determinismo), `entender` (mais de 30 frases reais de ajuste), conversa de ponta a ponta (um teste para cada defeito da revisão), convites (nome repetido, escrita atômica), a API num servidor em porta efêmera (path traversal, corpo grande, nome com HTML, CSP, 404 e metas de compartilhamento em `/p/:id`), a landing e as rotas novas (`teste/landing.test.js`: o que `/` serve, o convite do hero, o formulário de e-mail sem envio, a seleção e as linhas da lista da semana, a base vazia, `/app`, `/api/festa/<id>` e o `landing.css` sem raio, gradiente nem sombra) e a "% a sua cara" (`teste/cara.test.js`).
+Testes de: base (validação e cobertura), registro do detalhe (`teste/registro.test.js`: campos do contrato `finde-r14/1`, preço contra lotes, links só `https`, congelamento, relógio da base fictícia), texto do detalhe (`teste/festa-texto.test.js`: porta, lote esgotado, grátis, lineup não divulgado, média ausente, tempo relativo, fontes, destino dos links), motor (filtros, estilo como critério, patrocinada, afrouxamento, lista vazia com oferta, ordem por horário, determinismo), `entender` (mais de 30 frases reais de ajuste), conversa de ponta a ponta (um teste para cada defeito da revisão), convites (nome repetido, escrita atômica), a API num servidor em porta efêmera (path traversal, corpo grande, nome com HTML, CSP, 404 e metas de compartilhamento em `/p/:id`), a landing (`teste/landing.test.js`: o que `/` serve, as quatro portas para o app, o convite do herói como ilustração, a saída da lista da semana, o formulário de e-mail sem envio, a base vazia, `/app`, `/api/festa/<id>` e o `landing.css` sem raio, gradiente nem sombra), os dois endereços (`teste/sites.test.js`: `FINDE_SITE`, os redirecionamentos, o que cada modo serve e não serve, o referrer da landing, os dois `fly.toml`) e a "% a sua cara" (`teste/cara.test.js`). O "Voltar" que sai do app é testado com uma história de mentira em `teste/festa-texto.test.js`.
 
 ## A landing
 
-Em `/`, o desenho da prancha 08 do manual (`docs/marca.md`), sempre em modo dia, como no desenho. O servidor monta a página com o convite e a lista tirados da base; `landing.js` só filtra a lista por dia e cuida do formulário. De cima para baixo:
+O desenho da prancha 08 do manual (`docs/marca.md`), sempre em modo dia, com menos do que o desenho: a lista da semana saiu (decisão de 17/11/2026), e a landing é a porta para o app. O servidor monta a página com o convite tirado da base; `landing.js` só cuida do formulário. De cima para baixo:
 
-1. **Cabeçalho:** o wordmark e o link "Entrar na lista", que desce até o formulário.
-2. **Hero:** o título "Festas que começam no seu horário, com gente da sua idade", o botão "Ver as festas da semana", que abre o app na primeira pergunta, e o link "ou receba a lista por e-mail". Ao lado, o convite em bordô da festa fictícia Sexta Sem Pressa, com a data da próxima sexta, e três anotações: de onde vem a média de idade, a hora que a festa começa, enche e acaba, e a resposta do grupo no próprio convite.
-3. **A lista da semana**, com filtro por dia (Todas, Sex, Sáb, Dom). Entram as festas editoriais com média de 28 a 35 anos que começam até as 20h, em ordem de dia e hora: oito em Todas, divididas entre os três dias, e até oito em cada dia. Patrocinada não entra, porque a linha não tem como dizer que é. Cada linha traz a hora, o dia, o nome, a casa, o preço e a média com a origem, e abre o detalhe da festa em `/app?festa=<id>`. A lista não mostra a "% a sua cara": sem pedido, não há o que calcular. No fim do painel, "Deixar com a sua cara" abre o app.
-4. **Três pilares:** lista pronta, convite para o grupo, com a sua cara.
-5. **Faixa do manifesto:** "still going out. just differently."
-6. **Formulário de e-mail**, só visual: o campo não tem `name` e o formulário não tem `action`. Com um e-mail válido, avisa "Isto é um protótipo: seu e-mail não foi enviado nem guardado." Sem JavaScript, o botão fica desligado.
-7. **Rodapé:** o wordmark, São Paulo e "Protótipo · festas fictícias".
+1. **Cabeçalho:** o wordmark e o link "Abrir o app".
+2. **Hero:** o título "Festas que começam no seu horário, com gente da sua idade", o botão "Achar a minha festa", que abre o app na primeira pergunta, e o link "ou receba a lista por e-mail", que desce até o formulário. Ao lado, o convite em bordô da festa fictícia Sexta Sem Pressa, com a data da próxima sexta, três anotações (de onde vem a média de idade, a hora que a festa começa, enche e acaba, e a resposta do grupo no próprio convite) e a legenda "Exemplo de convite · festa fictícia". O convite é ilustração: nada nele é link nem botão, e "Tô dentro" e "Não rola" são miniaturas, menores que o botão do herói, fora da árvore de acessibilidade, com um rótulo para o conjunto. Lado a lado, a coluna de texto tem a altura do cartão: o rótulo na linha do topo dele e as ações do herói fechando na linha de baixo, não na de "Tô dentro".
+3. **Três pilares:** horário primeiro, convite para o grupo, com a sua cara. Depois deles, o link "Achar a minha festa", de novo para o app.
+4. **Faixa do manifesto:** "still going out. just differently."
+5. **Formulário de e-mail**, só visual: o campo não tem `name` e o formulário não tem `action`. Com um e-mail válido, avisa "Isto é um protótipo: seu e-mail não foi enviado nem guardado." Sem JavaScript, o botão fica desligado.
+6. **Rodapé:** o wordmark, São Paulo, "Protótipo · festas fictícias" e "Abrir o app".
 
-A seção de depoimentos do desenho ficou de fora até haver falas reais aprovadas. Os botões são o D (principal) e o C (secundário) da prancha de teste de botões: retângulo sem raio em caixa alta e link com fio rosé e seta. O que mais o protótipo faz diferente do desenho está em `docs/marca.md`.
+São quatro portas para o app (cabeçalho, botão do herói, link depois dos pilares e rodapé), todas para a primeira pergunta. A seção de depoimentos do desenho ficou de fora até haver falas reais aprovadas. Os botões são o D (principal) e o C (secundário) da prancha de teste de botões: retângulo sem raio em caixa alta e link com fio rosé e seta. O que mais o protótipo faz diferente do desenho está em `docs/marca.md`.
 
 ## O fluxo do app
 
-Em `/app`. A boas-vindas saiu: quem chega veio da landing e começa na primeira pergunta. O wordmark e o "Voltar" da primeira pergunta levam de volta à landing.
+Em `/app` (no ar, na raiz de finde-app.fly.dev). A boas-vindas saiu: quem chega veio da landing e começa na primeira pergunta. O wordmark leva à landing. O "Voltar" da primeira pergunta volta pela história para de onde a pessoa veio, a landing ou o convite (por "Ver outras festas do fim de semana"), e ela reaparece na rolagem em que estava; sem nenhuma das duas antes (link colado, aba nova), vai pelo link à landing. Com a landing em outro endereço, quem diz que a entrada anterior é ela é o referrer: só a página da landing manda a própria origem.
 
 1. **Seis perguntas, uma por tela**, presas embaixo, ao alcance do polegar: dia; janela de horário (17h às 23h, 19h à 1h, 22h às 3h); onde, com bairros em chips por zona que se somam e "São Paulo inteira" marcado de saída e exclusivo; a faixa de idade em que a pessoa se sente bem, num seletor de dois pontos de 18 a 50 (padrão 28 a 35), que se arrasta, anda pelas setas do teclado e por botões de passo, e diz "mínimo, 30 anos" ao leitor de tela; teto (R$ 50, R$ 80, R$ 150, sem limite); estilo, opcional e múltiplo. Um toque numa resposta única já avança; pelo teclado, setas escolhem e Enter confirma. A faixa é flexível: festa com média fora dela aparece depois, com aviso.
 2. **Resultado como a programação da noite**: o pedido vira frase ("Sábado, das 19h à 1h, gente de 30 a 35, até R$ 80.") e cada trecho reabre só aquela pergunta. As festas vêm em blocos: primeiro as que cabem; depois, rotuladas, as de bairros vizinhos ("Perto de Pinheiros e do Centro"), as que furam o pedido em som, horário ou preço ("Quase no seu pedido") e as de média fora da faixa ("Fora da sua faixa", com "Média 27, um pouco abaixo da sua faixa"). Nada que fure o pedido fica misturado com o que cabe. Em cada bloco, em ordem de horário, cada festa traz a hora, quando a pista enche, a média com a origem, o nome, a casa, o preço a partir de, a "% a sua cara" e o aviso quando ela fura o pedido. O item inteiro é tocável e abre o detalhe; a lista não manda nada pro grupo. A conversa ajusta em uma frase, com atalhos; o Finde responde curto e diz o que entrou e o que saiu. Quando nada cabe, ele diz o que travou e oferece soltar; "sim" aceita.
-3. **Detalhe da festa**, na ordem do plano (`docs/plans/2026-11-10-1248-feat-detalhe-da-festa-plan.md`): data, hora grande, a frase do horário e uma régua das 15h às 3h com a festa, a pista cheia e a janela pedida; a média de idade com a origem e quando foi conferida; a "% a sua cara", com a explicação do que cabe no pedido; o cartaz em miniatura ao lado do nome, da produtora e da casa, a frase do curador, o endereço e "Abrir no mapa"; o ingresso (menor lote disponível, os lotes, "1º lote esgotado", entrada na porta ou grátis, e onde comprar); os links da produtora (Instagram e página do evento, com o nome do serviço; o que falta aparece como não informado); as regras para entrar; o som e o lineup ("Lineup ainda não divulgado." quando não saiu); e de onde vêm os dados, com "conferido há X h". Uma barra fixa no pé leva "Comprar · R$ X" (só quando há venda online) e "Mandar pro grupo". Voltar devolve a lista na mesma rolagem; recarregar no detalhe mantém o detalhe. Aberto por `/app?festa=<id>`, a partir da lista da landing, o detalhe vem sem pedido e, por isso, sem a porcentagem e sem a janela pedida na régua; "Voltar" leva à landing, e "Mandar pro grupo" continua valendo. Festa que saiu da base mostra "Essa festa saiu." e um botão para começar o pedido.
+3. **Detalhe da festa**, na ordem do plano (`docs/plans/2026-11-10-1248-feat-detalhe-da-festa-plan.md`): data, hora grande, a frase do horário e uma régua das 15h às 3h com a festa, a pista cheia e a janela pedida; a média de idade com a origem e quando foi conferida; a "% a sua cara", com a explicação do que cabe no pedido; o cartaz em miniatura ao lado do nome, da produtora e da casa, a frase do curador, o endereço e "Abrir no mapa"; o ingresso (menor lote disponível, os lotes, "1º lote esgotado", entrada na porta ou grátis, e onde comprar); os links da produtora (Instagram e página do evento, com o nome do serviço; o que falta aparece como não informado); as regras para entrar; o som e o lineup ("Lineup ainda não divulgado." quando não saiu); e de onde vêm os dados, com "conferido há X h". Uma barra fixa no pé leva "Comprar · R$ X" (só quando há venda online) e "Mandar pro grupo". Voltar devolve a lista na mesma rolagem; recarregar no detalhe mantém o detalhe. Aberto por `/app?festa=<id>`, por link direto, o detalhe vem sem pedido e, por isso, sem a porcentagem e sem a janela pedida na régua; "Voltar" leva à landing, e "Mandar pro grupo" continua valendo. Festa que saiu da base mostra "Essa festa saiu." e um botão para começar o pedido.
 4. **Mandar pro grupo**: a tela já é a prévia do convite ("Convite de [nome]", "Bora no *sábado?*"). Criado o convite, aparece a prévia da mensagem do WhatsApp e o botão para mandar. Em `/p/:id`, quem recebe vê a festa (hora, média com origem, nome, casa, preço) e responde "tô dentro" ou "não rola"; abaixo da resposta, o cartaz com o endereço e o mapa, o ingresso e os links da produtora; os nomes aparecem, a página se atualiza a cada 4 s (pausa com a aba oculta), e nome repetido pergunta "É você?" antes de trocar a resposta. O servidor preenche o título e a descrição de compartilhamento com a festa.
 
 **Por que confirmação e não votação.** No v0 o grupo votava entre três opções. No v1 a comparação já acontece no app, com o filtro e a conversa; o que o grupo faz no vídeo é topar ou não ("Achei essa, bora?", "Tô dentro."). Por isso o convite leva uma festa só e pede confirmação. Quem manda pode deixar o nome e já entra como "tô dentro".
@@ -73,7 +88,7 @@ Patrocinadas: no máximo duas na base, no máximo uma por resultado, sempre por 
 
 `nucleo/cara.js` diz quanto cada festa bate com o pedido. A lista continua sendo a do motor, na mesma ordem, e a porcentagem entra como um campo a mais em cada opção. Os pesos são horário 30, idade 25, bairro 20, preço 15 e som 10. Critério que a pessoa não pediu (nenhum som marcado, São Paulo inteira, sem teto, idade de 18 a 50) sai da conta, e os pesos dos outros se redistribuem. O que fica perto de caber conta pela metade: até 1 h fora da janela, até 2 anos fora da faixa, bairro vizinho, até 20% acima do teto. Cada critério vem com uma frase, e é essa explicação que o detalhe mostra.
 
-A porcentagem só existe diante de um pedido. Por isso aparece no resultado e no detalhe do app, e fica fora da lista da landing e do detalhe aberto por `/app?festa=<id>`.
+A porcentagem só existe diante de um pedido. Por isso aparece no resultado e no detalhe do app, e fica fora da landing e do detalhe aberto por `/app?festa=<id>`.
 
 ## Onde trocar por um modelo de linguagem
 
@@ -93,17 +108,18 @@ A base fictícia diz `"ficticia": true` e uma `referencia`: ao ler, o servidor d
 
 ## O que é fictício
 
-Todas as 37 festas, produtoras, casas, endereços, lineups e cartazes de `dados/festas.json` são inventados. As casas são descritas de forma genérica ("terraço em Pinheiros", "galpão na Barra Funda"). Os minutos entre bairros são aproximações. As duas patrocinadas (Clube Varanda e Noite Aurora) também são fictícias. O convite do hero e a lista da semana, na landing, saem da mesma base. A interface diz "Protótipo · festas fictícias" no rodapé de todas as telas.
+Todas as 37 festas, produtoras, casas, endereços, lineups e cartazes de `dados/festas.json` são inventados. As casas são descritas de forma genérica ("terraço em Pinheiros", "galpão na Barra Funda"). Os minutos entre bairros são aproximações. As duas patrocinadas (Clube Varanda e Noite Aurora) também são fictícias. O convite do herói, na landing, sai da mesma base. A landing e as telas do app dizem "Protótipo · festas fictícias" no rodapé; a página de saída (`fora.html`), que não tem rodapé, diz no texto que as festas do protótipo são inventadas.
 
 ## O que ficou de fora
 
 Conta, login, pagamento, venda de ingresso, mapa dentro do app, localização do aparelho, painel das produtoras e a origem real da idade do público (a maior hipótese a validar, ver `docs/conceito.md`). Os convites vivem num arquivo JSON, bom para a demonstração e não para muita gente ao mesmo tempo.
 
-Da landing desenhada: o envio da lista por e-mail (o formulário é só visual), a seção de depoimentos (até haver falas reais aprovadas) e o hero com foto, que é um teste do manual.
+Da landing desenhada: a lista da semana (saiu em 17/11/2026), o envio da lista por e-mail (o formulário é só visual), a seção de depoimentos (até haver falas reais aprovadas) e o hero com foto, que é um teste do manual.
 
 ## Onde está cada coisa
 
-- `servidor.js`: a landing (montada aqui, com o convite e a lista da semana tirados da base), o app, estáticos, API, página do convite, cabeçalhos de segurança (CSP só com `'self'`, sem script inline; as fontes são servidas de `publico/fontes/`).
+- `servidor.js`: os três jeitos de subir (`FINDE_SITE`), a landing (montada aqui, com o convite tirado da base), o app, estáticos, API, página do convite, os redirecionamentos entre os dois endereços, cabeçalhos de segurança (CSP só com `'self'`, sem script inline; as fontes são servidas de `publico/fontes/`).
+- `fly.toml` (a landing, app `finde` do Fly) e `fly.app.toml` (o app, `finde-app`), com a mesma imagem (`Dockerfile`). Cada um diz no topo como publicar.
 - `nucleo/catalogo.js`: dias, janelas, faixas, tetos, estilos e afinidade entre eles, bairros, minutos entre bairros e a escrita de horário e preço.
 - `nucleo/base.js`: validação da base.
 - `nucleo/motor.js`, `nucleo/entender.js`, `nucleo/conversa.js`, `nucleo/planos.js`.
@@ -120,4 +136,4 @@ Da landing desenhada: o envio da lista por e-mail (o formulário é só visual),
 - `GET /api/planos/:id` → convite com `dentro` e `fora`.
 - `POST /api/planos/:id/respostas` `{ nome, resposta: "dentro" | "fora", confirmar? }`. Nome repetido sem `confirmar` dá 409 com "Já tem Ju na lista. É você?".
 - `GET /p/:id` → página do convite.
-- `GET /` → a landing. `GET /app` → o app; com `?festa=<id>`, direto no detalhe da festa.
+- `GET /` → a landing (tudo junto e só a landing) ou o app (só o app). `GET /app` → o app; com `?festa=<id>`, direto no detalhe da festa. Só a landing: 302 para o endereço do app.

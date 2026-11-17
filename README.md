@@ -20,7 +20,7 @@ Guia de festas para quem tem entre 28 e 35 anos em São Paulo: junta as festas d
 | `entregas/` | Versões entregues ou em revisão: entrega do Ignite, percurso do Start, vídeo 2 |
 | `motor/` | Motor de coleta: busca festas em fontes permitidas, junta duplicatas, classifica e entrega registros no formato do detalhe da festa (ver `motor/README.md`) |
 | `video/v24/` | Fonte do vídeo 2: roteiro em `roteiro.json`, cenas em `src/render.cjs`, desenhos em `assets/` |
-| `prototipo/v1-festas/` | Protótipo atual: a landing em `/` e o app em `/app` (seis perguntas, a programação da noite com ajuste por conversa, o detalhe da festa e o convite para o grupo), sob o manual de marca. Festas fictícias |
+| `prototipo/v1-festas/` | Protótipo atual: a landing (no ar em finde.fly.dev) e o app (no ar em finde-app.fly.dev; localmente em `/app`), com as seis perguntas, a programação da noite com ajuste por conversa, o detalhe da festa e o convite para o grupo), sob o manual de marca. Festas fictícias |
 | `prototipo/v0-conversa/` | Primeiro protótipo, da tese anterior (conversa sobre experiências em geral) |
 
 Os documentos de trabalho em Word ficam no Google Drive do grupo, na pasta `E&I-Folia`. Entrevistas brutas e material do professor não entram aqui.
@@ -35,8 +35,8 @@ cd prototipo/v1-festas && node servidor.js
 
 Abre em `http://localhost:8763`. Testes: `node --test teste/`.
 
-- `/` é a landing, a primeira tela: o que é o Finde, um convite de exemplo, a lista da semana com filtro por dia e um formulário de e-mail só visual, que avisa que é protótipo e não envia nem guarda nada.
-- `/app` é o app: as seis perguntas, a lista com a "% a sua cara" de cada festa, o detalhe da festa e o envio ao grupo. `/app?festa=<id>` abre direto o detalhe de uma festa da lista da landing.
+- `/` é a landing, a porta de entrada e o foco: o que é o Finde, um convite de exemplo, os três pilares, o manifesto e um formulário de e-mail só visual, que avisa que é protótipo e não envia nem guarda nada. No ar em https://finde.fly.dev.
+- `/app` é o app, a segunda etapa, aberta pelo botão "Achar a minha festa": as seis perguntas, a lista com a "% a sua cara" de cada festa, o detalhe da festa e o envio ao grupo. No ar, ele tem endereço próprio: https://finde-app.fly.dev.
 - `/p/:id` é o convite que o grupo recebe.
 
-No ar, em endereço provisório: https://finde.fly.dev (Fly.io, São Paulo; a máquina dorme sem uso e acorda no primeiro acesso). Para publicar de novo: `fly deploy` dentro de `prototipo/v1-festas`.
+No ar, em endereços provisórios no Fly.io (São Paulo; as máquinas dormem sem uso e acordam no primeiro acesso): a landing em https://finde.fly.dev (`fly deploy` dentro de `prototipo/v1-festas`) e o app em https://finde-app.fly.dev (`fly deploy -c fly.app.toml`). Publique o app antes da landing.

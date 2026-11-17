@@ -1,7 +1,8 @@
 'use strict';
-// Peças comuns às duas páginas: criar elementos (tudo que vem de fora entra
-// por textContent), chamar a API, a marca, o lockup, o rodapé com o seletor
-// de tema e as laterais do desktop.
+// Peças comuns às páginas do app (o app, o convite e a página de saída):
+// criar elementos (tudo que vem de fora entra por textContent), chamar a API,
+// o endereço da landing, a marca, o lockup, o rodapé com o seletor de tema e
+// as laterais do desktop.
 
 (() => {
   function el(tag, atributos = {}, ...filhos) {
@@ -36,6 +37,21 @@
       dados = JSON.parse(texto);
     } catch { /* corpo não é JSON */ }
     return { status: r.status, ok: r.ok, texto, dados };
+  }
+
+  // Onde mora a landing. Em produção ela tem endereço próprio (finde.fly.dev,
+  // e o app fica em finde-app.fly.dev), e o servidor escreve qual na meta
+  // finde-site. Sem a meta, com o marcador ainda cru ou com algo que não é
+  // http(s) nem caminho, é a raiz daqui.
+  function site() {
+    const meta = document.querySelector('meta[name="finde-site"]');
+    const valor = meta ? String(meta.getAttribute('content') || '').trim() : '';
+    if (/^(https?:\/\/[^\s/]+(\/\S*)?|\/(?!\/)\S*)$/i.test(valor)) {
+      try {
+        return new URL(valor, window.location.href).href;
+      } catch { /* cai na raiz */ }
+    }
+    return new URL('/', window.location.href).href;
   }
 
   // finde. com o ponto em rosé. Para leitor de tela, só "finde".
@@ -88,14 +104,16 @@
       mm ? el('span', { class: 'mm' }, digitos(mm)) : null);
   }
 
-  // O seletor de tema é uma ação, e diz o que faz.
+  // O seletor de tema é uma ação, e diz o que faz. De dia, ele diz "modo
+  // noite": no detalhe de uma festa que começa às 18h, "noite às 18h" sozinho
+  // se lia como horário da festa.
   function rotuloDoTema() {
     const T = window.FindeTema;
     if (!T) return 'mudar o tema';
     const tema = T.atual();
     const pelaHora = T.pelaHora();
     if (tema === 'noite') return pelaHora === 'noite' ? 'ver de dia' : 'voltar pro dia';
-    return pelaHora === 'dia' ? 'noite às 18h · ver agora' : 'voltar pra noite';
+    return pelaHora === 'dia' ? 'modo noite às 18h · ver agora' : 'voltar pra noite';
   }
 
   function atualizarRotulos() {
@@ -318,7 +336,7 @@
   const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   window.Finde = {
-    el, titulo, chamar, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
+    el, titulo, chamar, site, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
     linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite,
   };
 })();

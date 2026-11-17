@@ -1,12 +1,15 @@
 'use strict';
-// O app do Finde (/app): formulário de seis perguntas (uma por tela, sem
+// O app do Finde: formulário de seis perguntas (uma por tela, sem
 // boas-vindas: quem chega veio da landing), resultado que vira conversa, o
-// detalhe da festa e o convite pro grupo. /app?festa=<id> abre direto o
-// detalhe de uma festa, sem pedido.
+// detalhe da festa e o convite pro grupo. ?festa=<id> abre direto o detalhe
+// de uma festa, sem pedido. Em desenvolvimento ele mora em /app, ao lado da
+// landing; em produção, na raiz do próprio endereço, e a landing em outro.
+// Nada aqui depende do caminho: os links internos vão a /app?..., que o
+// servidor serve nos dois casos.
 
 (() => {
   const {
-    el, titulo, chamar, marca, rodape, reduzir, hora, anunciar, manterVisivel,
+    el, titulo, chamar, site, marca, rodape, reduzir, hora, anunciar, manterVisivel,
     linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite,
   } = window.Finde;
   const FT = window.FindeTexto;
@@ -38,9 +41,8 @@
   const trava = () => TRAVA_MS + (reduzir.matches ? AVANCO_MS : 0);
   const SESSAO = 'finde.sessao';
   // A landing: para onde vão o wordmark e o "Voltar" da pergunta 1 e do
-  // detalhe aberto por link (este, direto na lista da landing).
-  const LANDING = '/';
-  const LANDING_LISTA = '/#festas';
+  // detalhe aberto por link. O endereço vem da meta finde-site.
+  const LANDING = site();
 
   const estado = {
     form: null,
@@ -233,43 +235,69 @@
     ir('pergunta', { passo: 0, substituir: true });
   }
 
-  // Na pergunta 1 e no detalhe aberto por link, "Voltar" leva à landing; no
-  // resto, volta uma tela.
+  // Na pergunta 1 e no detalhe aberto por link, "Voltar" sai do app: para a
+  // landing ou para o convite de onde a pessoa veio. No resto, volta uma tela.
   function voltaParaLanding() {
     return (estado.tela === 'pergunta' && estado.passo === 0 && !estado.editando) || (estado.tela === 'festa' && estado.avulsa);
   }
 
+  // A landing é deste mesmo endereço (em desenvolvimento: ela em /, o app em
+  // /app), ou de outro (em produção)? Nos dois casos dá para voltar a ela
+  // pela história, mas o jeito de saber que ela está lá muda.
+  const caminho = (p) => (p === '/index.html' ? '/' : p);
   const ehLanding = (url) => {
     try {
       const u = new URL(url, window.location.href);
-      return u.origin === window.location.origin && (u.pathname === '/' || u.pathname === '/index.html');
+      const l = new URL(LANDING);
+      return u.origin === l.origin && caminho(u.pathname) === caminho(l.pathname);
     } catch {
       return false;
     }
   };
-  // Quem chegou da landing volta pela história: ela reaparece no filtro e na
-  // rolagem em que estava, e o voltar do navegador não cai de novo no app. A
-  // landing está k entradas abaixo (a altura n desta tela, mais uma). Sem ela
-  // ali (link colado, aba nova), vai pelo endereço.
-  function voltarParaLanding(destino) {
+  const landingAqui = (() => {
+    const l = new URL(LANDING);
+    return l.origin === window.location.origin && caminho(l.pathname) !== caminho(window.location.pathname);
+  })();
+  // Um convite deste endereço (/p/<id>): quem veio dele por "Ver outras
+  // festas" volta para ele, não para uma landing que nunca viu.
+  const ehConvite = (url) => {
+    try {
+      const u = new URL(url, window.location.href);
+      return u.origin === window.location.origin && /^\/p\/[^/]+\/?$/.test(u.pathname);
+    } catch {
+      return false;
+    }
+  };
+  // Quem chegou da landing ou de um convite volta pela história: a página
+  // reaparece na rolagem em que estava, e o voltar do navegador não cai de
+  // novo no app. Ela está k entradas abaixo (a altura n desta tela, mais
+  // uma). Sem ela ali (link colado, aba nova), vai pelo link à landing.
+  // navigation.entries() só lista as entradas deste endereço: a landing de
+  // outro endereço é a entrada logo antes delas, e quem diz que é ela é o
+  // referrer (só a página da landing manda a própria origem).
+  function voltarParaLanding() {
     const k = nivel() + 1;
     const nav = window.navigation;
+    // Referrer vazio resolveria para esta página, que com a meta falhando é a "landing".
+    const veioDaLanding = Boolean(document.referrer) && ehLanding(document.referrer);
     let pela = false;
     if (nav && nav.currentEntry && typeof nav.entries === 'function') {
-      const alvo = nav.entries()[nav.currentEntry.index - k];
-      pela = Boolean(alvo && ehLanding(alvo.url));
+      const entradas = nav.entries();
+      const i = nav.currentEntry.index - k;
+      if (i >= 0) pela = ehConvite(entradas[i].url) || (landingAqui && ehLanding(entradas[i].url));
+      else pela = !landingAqui && i === -1 && veioDaLanding && history.length > entradas.length;
     } else {
-      pela = ehLanding(document.referrer) && history.length > k;
+      pela = (veioDaLanding || ehConvite(document.referrer)) && history.length > k;
     }
     if (pela) history.go(-k);
-    else window.location.assign(destino);
+    else window.location.assign(LANDING);
   }
 
   function botaoVoltar() {
     const b = acaoC('button', { type: 'button' }, 'Voltar', { volta: true });
     b.addEventListener('click', () => {
       if (!voltaParaLanding()) history.back();
-      else voltarParaLanding(estado.tela === 'festa' ? LANDING_LISTA : LANDING);
+      else voltarParaLanding();
     });
     return b;
   }
@@ -389,6 +417,11 @@
         detalhe ? el('span', { class: 'opcao-detalhe' }, el('span', { class: 'vh', texto: ', ' }), detalhe) : el('span'));
     }));
 
+    // O rodapé de todas as telas (a nota do protótipo e o tema) logo abaixo
+    // do botão: a pergunta 1 é a primeira tela de quem abre o app direto.
+    const fim = rodape();
+    fim.classList.add('rodape--junto');
+
     const form = el('form', { class: 'tela-pergunta', novalidate: true },
       topo(botaoVoltar()),
       editando ? null : el('div', { class: 'progresso', 'aria-hidden': 'true' },
@@ -399,7 +432,8 @@
         h1,
         p.dica ? el('p', { class: 'dica', id: `${idTitulo}-dica`, texto: p.dica }) : null),
       lista,
-      el('div', { class: 'pe' }, continuar, el('p', { class: 'aviso-erro', id: 'erro', role: 'alert' })));
+      el('div', { class: 'pe' }, continuar, el('p', { class: 'aviso-erro', id: 'erro', role: 'alert' })),
+      fim);
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       clearTimeout(estado.avancoPendente);
@@ -1364,7 +1398,7 @@
     }
   }
 
-  // /app?festa=<id>: se o endereço pediu uma festa, e o id dela já
+  // ?festa=<id>: se o endereço pediu uma festa, e o id dela já
   // normalizado (FT.idDeFesta), ou null quando não tem forma de id.
   function festaDoEndereco() {
     const bruto = new URLSearchParams(window.location.search).get('festa');
@@ -1372,7 +1406,7 @@
   }
 
   // Recarregar e o voltar/avançar do navegador devolvem a tela salva; um link
-  // novo para /app começa na pergunta 1 (a landing é a boas-vindas).
+  // novo para o app começa na pergunta 1 (a landing é a boas-vindas).
   function chegouPorLink() {
     try {
       const n = performance.getEntriesByType('navigation')[0];
@@ -1394,7 +1428,7 @@
       if (!estado.form) buscarFormulario();
       return;
     }
-    // O detalhe avulso da sessão não volta em /app sem ?festa: começa o pedido.
+    // O detalhe avulso da sessão não volta no app sem ?festa: começa o pedido.
     if (estado.avulsa) Object.assign(estado, { avulsa: false, tela: 'pergunta', passo: 0, festa: null, mandar: null, editando: null });
     // Por link, só a lista volta, e só quando o link pede (/app?ver=lista,
     // o "ver outras festas" do convite); as respostas de antes ficam marcadas.
@@ -1403,7 +1437,8 @@
       const lista = verLista && estado.resultado && estado.criterios;
       Object.assign(estado, { tela: lista ? 'resultado' : 'pergunta', passo: 0, editando: null, festa: null, mandar: null, rolagemLista: 0 });
     }
-    if (verLista) history.replaceState(history.state, '', '/app');
+    // O ?ver=lista sai do endereço, que fica no caminho em que o app está.
+    if (verLista) history.replaceState(history.state, '', window.location.pathname);
     // Recarregar devolve a pessoa onde ela estava: o histórico ganha a
     // pergunta 1 embaixo, e a tela salva em cima.
     const voltavel = (estado.tela === 'resultado' && estado.resultado)
