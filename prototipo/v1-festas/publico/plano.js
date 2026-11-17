@@ -1,18 +1,20 @@
 'use strict';
-// A página do convite: quem recebe vê a festa e responde "tô dentro" ou
-// "não rola" com o nome. A resposta fica logo abaixo da festa, à vista sem
-// rolar; quem vai vem depois. Atualiza a cada 4 s com a aba visível e pausa
+// A página do convite: quem recebe vê a festa num painel bordô (o convite da
+// landing do manual v2) e responde "tô dentro" ou "não rola" com o nome, no
+// próprio painel, à vista sem rolar; quem vai vem depois. Atualiza a cada 4 s com a aba visível e pausa
 // com ela oculta; uma leitura velha nunca desfaz a resposta da própria pessoa.
 
 (() => {
-  const { el, titulo, chamar, marca, rodape, quandoGrande, anunciar, mediaFalada, cartaz, blocoOnde, blocoIngresso, blocoLinks } = window.Finde;
+  const { el, chamar, marca, rodape, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite } = window.Finde;
   const $tela = document.getElementById('tela');
   const id = decodeURIComponent(window.location.pathname.split('/')[2] || '');
 
   const INTERVALO = 4000;
-  const DIA = { sex: 'sexta', sab: 'sábado', dom: 'domingo' };
   const CURTO = { sex: 'sex', sab: 'sáb', dom: 'dom' };
-  const NA = { sex: 'na', sab: 'no', dom: 'no' };
+  // O wordmark leva à landing; "ver festas" leva ao app, que reabre a lista
+  // de quem já montou uma nesta aba (sem lista, começa o pedido).
+  const LANDING = '/';
+  const APP = '/app?ver=lista';
   const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const SEM_REDE = 'Sem conexão agora. Tento de novo em instantes.';
 
@@ -140,9 +142,11 @@
       b.addEventListener('click', () => buscar().then(agendar));
       acoes.push(b);
     }
-    acoes.push(el('a', { class: tentar ? 'link' : 'botao botao--largo', href: '/', texto: 'Ver festas do fim de semana' }));
+    acoes.push(tentar
+      ? acaoC('a', { href: APP }, 'Ver festas do fim de semana')
+      : el('a', { class: 'botao botao--largo', href: APP, texto: 'Ver festas do fim de semana' }));
     $tela.replaceChildren(el('div', { class: 'tela-plano entra' },
-      el('header', { class: 'topo' }, marca('/')),
+      el('header', { class: 'topo' }, marca(LANDING)),
       el('section', { class: 'cabeca' },
         el('h1', { class: 'titulo titulo--pergunta', tabindex: '-1', texto: tituloTexto }),
         el('hr', { class: 'fio' }),
@@ -160,7 +164,7 @@
       id: 'seu-nome', class: 'campo', type: 'text', maxlength: '24', autocomplete: 'given-name',
       placeholder: 'como o grupo te chama', value: meuNomeAqui() || lerNome(), enterkeyhint: 'done',
     });
-    dom.dentro = el('button', { type: 'submit', class: 'botao botao--vazado', value: 'dentro' });
+    dom.dentro = el('button', { type: 'submit', class: 'botao', value: 'dentro' });
     dom.fora = el('button', { type: 'submit', class: 'botao botao--vazado', value: 'fora' });
     nome.addEventListener('input', () => {
       dom.confirmar.replaceChildren();
@@ -177,7 +181,7 @@
     dom.rotuloFora = el('p', { class: 'rotulo' });
     dom.par = el('div', { class: 'par' }, dom.dentro, dom.fora);
 
-    const form = el('form', { class: 'bloco form-resposta' },
+    const form = el('form', { class: 'form-resposta' },
       el('label', { class: 'rotulo', for: 'seu-nome', texto: 'Seu nome' }),
       nome,
       dom.par,
@@ -196,24 +200,13 @@
 
     $tela.setAttribute('aria-busy', 'false');
     dom.tela = el('div', { class: 'tela-plano convite convite--sem-resposta entra' },
-      el('header', { class: 'topo' }, marca('/')),
-      el('section', { class: 'cabeca' },
-        el('p', { class: 'rotulo', texto: quando ? `${de} · ${quando}` : de }),
-        titulo('h1', 'titulo titulo--pergunta', `Bora ${NA[f.dia]} `, `${DIA[f.dia]}?`),
-        el('hr', { class: 'fio' })),
-      el('article', { class: 'festa-convite', 'aria-labelledby': 'nome-festa' },
-        el('p', { class: 'vh', texto: `${o.linha.replace(/ · média \d+ anos$/, '')}, ${mediaFalada(f)}` }),
-        quandoGrande(o),
-        el('h2', { class: 'nome', id: 'nome-festa', texto: f.nome }),
-        el('p', { class: 'onde', texto: `${f.casa} · ${window.FindeTexto.precoNaLista(f)} · ${f.produtora}` }),
-        el('p', { class: 'sobre', texto: [o.horario, f.frase].filter(Boolean).join(' ') })),
-      form,
+      painelConvite(o, { rotulo: quando ? `${de} · ${quando}` : de, marcaHref: LANDING, resto: [form] }),
       dom.status,
       el('section', { class: 'quem', 'aria-label': 'Quem vai' },
         el('div', { class: 'quem-bloco' }, dom.rotuloDentro, dom.nomesDentro),
         el('div', { class: 'quem-bloco' }, dom.rotuloFora, dom.nomesFora)),
       detalhes(o),
-      el('a', { class: 'link', href: '/', texto: 'Ver outras festas do fim de semana' }),
+      acaoC('a', { href: APP, class: 'convite-mais' }, 'Ver outras festas do fim de semana'),
       rodape());
     $tela.replaceChildren(dom.tela);
     dom.montado = true;
@@ -251,7 +244,8 @@
   function desenhar() {
     if (!dom.montado) montar();
     dom.rotuloDentro.textContent = `Tô dentro · ${plano.dentro.length}`;
-    dom.nomesDentro.textContent = plano.dentro.length ? juntar(plano.dentro) : 'Ninguém ainda. Abre a lista.';
+    // "Lista" fica para a lista da porta e a lista da semana; aqui é o "tô dentro".
+    dom.nomesDentro.textContent = plano.dentro.length ? juntar(plano.dentro) : 'Ninguém ainda. Pode ser você.';
     dom.nomesDentro.classList.toggle('vazio-quem', !plano.dentro.length);
     dom.rotuloFora.textContent = `Não rola · ${plano.fora.length}`;
     dom.nomesFora.textContent = plano.fora.length ? juntar(plano.fora) : 'Ninguém.';
@@ -269,14 +263,15 @@
       return;
     }
 
-    // Sem resposta, os dois iguais e vazados. Com resposta, a escolhida fica
-    // cheia e muda de texto; a outra vira um link pra mudar.
+    // Sem resposta: "Tô dentro" cheio e "Não rola" vazado (o par D do manual).
+    // Com resposta, a escolhida fica cheia e muda de texto; a outra vira um
+    // link pra mudar.
     const minha = minhaResposta();
     marcar(minha, false);
     const { dentro, fora } = dom;
     if (!minha) {
-      for (const [b, texto] of [[dentro, 'Tô dentro'], [fora, 'Não rola']]) {
-        b.className = 'botao botao--vazado';
+      for (const [b, texto, classe] of [[dentro, 'Tô dentro', 'botao'], [fora, 'Não rola', 'botao botao--vazado']]) {
+        b.className = classe;
         b.textContent = texto;
         b.setAttribute('aria-pressed', 'false');
       }
@@ -344,7 +339,7 @@
       return;
     }
     if (r && r.status === 409 && r.dados && r.dados.duplicado) {
-      // "Já tem Ju na lista. É você?"
+      // "Já tem Ju neste convite. É você?"
       dom.erro.textContent = r.dados.erro;
       const sou = el('button', { type: 'button', class: 'link', texto: 'Sou eu' });
       sou.addEventListener('click', () => responder(resposta, true));
@@ -362,7 +357,7 @@
       // A resposta pode ter se perdido na volta com a escrita feita: o nome
       // fica lembrado, e o próximo toque confirma sem perguntar "É você?".
       if (!r) guardar(nome);
-      dom.erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toca de novo.';
+      dom.erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toque de novo.';
       agendar();
       return;
     }

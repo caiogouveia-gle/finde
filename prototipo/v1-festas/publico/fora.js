@@ -38,10 +38,10 @@
 
   document.getElementById('fora-voltar').addEventListener('click', () => {
     window.close();
-    // Se a aba não fecha (aberta à mão, por exemplo), volta pela história ou para o início.
+    // Se a aba não fecha (aberta à mão, por exemplo), volta pela história ou para o app.
     setTimeout(() => {
       if (history.length > 1) history.back();
-      else window.location.href = '/';
+      else window.location.href = '/app';
     }, 150);
   });
   titulo.focus({ preventScroll: true });

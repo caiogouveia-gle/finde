@@ -227,5 +227,126 @@
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
   }
 
-  return { preco, precoNaLista, ha, media, som, regras, regrasFrase, fontes, servico, usuario, destino, links, mapa, ESTILOS };
+  // /app?festa=<id>: o id normalizado, ou null quando não tem forma de id.
+  // Caixa e espaço de um link copiado à mão não derrubam o link.
+  function idDeFesta(valor) {
+    if (typeof valor !== 'string') return null;
+    const id = valor.trim().toLocaleLowerCase('pt-BR');
+    return /^[a-z0-9-]{1,60}$/.test(id) ? id : null;
+  }
+
+  // "média 31 anos, informada pela produtora", para leitor de tela.
+  function mediaFalada(f) {
+    if (!f || !Number.isInteger(f.mediaIdade)) return 'média de idade não informada';
+    const origem = typeof f.origemIdade === 'string' ? f.origemIdade.trim() : '';
+    return `média ${f.mediaIdade} anos${origem ? `, ${origem}` : ''}`;
+  }
+
+  // A linha da festa da API ("Sáb · 17h00 · Pinheiros · média 30 anos") sem
+  // a média, que vai em seguida com a origem, uma vez só.
+  const linhaSemMedia = (linha) => String(linha || '').replace(/ · média \d+ anos$/, '');
+
+  // O que o leitor de tela ouve de um cartão da lista: a linha da festa, a
+  // média uma vez só (com a origem), o preço, a % quando ela aparece no
+  // cartão e as marcas.
+  function cartaoFalado(o, { pct = null, nova = false } = {}) {
+    const f = o.festa;
+    return [linhaSemMedia(o.linha), mediaFalada(f), precoNaLista(f), Number.isInteger(pct) ? `${pct}% a sua cara` : null,
+      o.patrocinada ? 'patrocinado' : null, nova ? 'nova na lista' : null].filter(Boolean).join(' · ');
+  }
+
+  // "Casa · Bairro", quando a casa não diz o bairro.
+  const casaComBairro = (casa, bairro) => {
+    const c = String(casa || '');
+    return bairro && !c.includes(bairro) ? `${c} · ${bairro}` : c;
+  };
+
+  // A mensagem que vai pro grupo, em texto corrido (a caixa alta do manual é
+  // estilo de rótulo, não cabe no WhatsApp). Abre com a hora e a média, com a
+  // origem (regra 3 da voz). data: "sáb, 21 nov".
+  function mensagem({ data, hora, bairro, festa: f, link }) {
+    const origem = typeof f.origemIdade === 'string' && f.origemIdade.trim() ? f.origemIdade.trim() : '';
+    const media = Number.isInteger(f.mediaIdade)
+      ? `média ${f.mediaIdade} anos${origem ? ` (${origem})` : ''}`
+      : 'média de idade ainda não informada';
+    const quando = [data, hora, media].filter(Boolean).join(' · ');
+    return [
+      'Achei essa, bora?',
+      '',
+      quando.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')),
+      f.nome,
+      `${casaComBairro(f.casa, bairro)} · ${precoNaLista(f)}`,
+      '',
+      'Diz aqui se você tá dentro:',
+      link,
+    ];
+  }
+
+  // "% a sua cara". A ordem dos critérios é a dos pesos de nucleo/cara.js
+  // (horário 30, idade 25, bairro 20, preço 15, som 10; um teste confere).
+  const CARA_ORDEM = ['horario', 'idade', 'bairro', 'preco', 'som'];
+  const CARA_NOME = { horario: 'o horário', idade: 'a idade', bairro: 'o bairro', preco: 'o preço', som: 'o som' };
+  const pctDe = (o) => {
+    const c = o && o.cara;
+    return c && Number.isInteger(c.pct) && c.pct >= 0 && c.pct <= 100 ? c.pct : null;
+  };
+
+  // As partes na ordem do peso, o horário primeiro.
+  function ordemDaCara(partes) {
+    const pos = (x) => {
+      const i = CARA_ORDEM.indexOf(x && x.criterio);
+      return i < 0 ? CARA_ORDEM.length : i;
+    };
+    return (Array.isArray(partes) ? partes : []).filter((x) => x && typeof x.texto === 'string' && x.texto.trim())
+      .map((x, i) => [x, i]).sort((a, b) => pos(a[0]) - pos(b[0]) || a[1] - b[1]).map(([x]) => x);
+  }
+
+  // "Conta mais o horário, depois a idade e o bairro." Só quando ajuda a
+  // conferir a conta: dois critérios ou mais, e algum que não cabe inteiro.
+  function pesoDaCara(cara) {
+    const partes = ordemDaCara(cara && cara.partes);
+    if (partes.length < 2 || partes.every((x) => x.cabe === true)) return '';
+    const nomes = partes.map((x) => CARA_NOME[x.criterio]).filter(Boolean);
+    if (nomes.length < 2) return '';
+    const resto = nomes.slice(1);
+    return `Conta mais ${nomes[0]}, depois ${lista(resto)}.`;
+  }
+
+  // A frase do horário no desenho (painel do convite, convite da landing):
+  // "…e acaba às 23h." nunca deixa a hora sozinha na linha de baixo. O verbo,
+  // a preposição e a hora andam juntos ("enche às 20h", "e acaba à 1h"); o
+  // sujeito fica solto, para "a pista enche à meia-noite" não pedir uma
+  // terceira linha a 320 px. A frase da API continua a mesma.
+  // Espaço e hífen que não quebram (o U+2011 existe na DM Sans servida).
+  const colar = (t) => t.replace(/ /g, '\u00a0').replace(/-/g, '\u2011');
+  function horarioSemQuebra(texto) {
+    return String(texto || '')
+      .replace(/(^|\s)((?:e )?(?:começa|enche|acaba) às? \S+)/giu, (_, antes, trecho) => `${antes}${colar(trecho)}`);
+  }
+
+  // "casa · preço · produtora" só quebra antes de um "·": cada trecho anda
+  // inteiro ("Coletivo Meia-Luz" não se parte no hífen), e o ponto abre a
+  // linha de baixo, nunca fica pendurado no fim da de cima. Trecho longo
+  // demais para uma linha estreita (mais de 32 letras) quebra por dentro.
+  const TRECHO_INTEIRO = 32;
+  function ondeSemQuebra(trechos) {
+    return (Array.isArray(trechos) ? trechos : [])
+      .map((t) => String(t === null || t === undefined ? '' : t).trim())
+      .filter(Boolean)
+      .map((t) => (t.length <= TRECHO_INTEIRO ? colar(t) : t.replace(/R\$ (?=\d)/g, 'R$\u00a0')))
+      .join(' ·\u00a0');
+  }
+
+  // Na lista, a % só aparece quando ajuda a escolher: se todas as festas
+  // têm a mesma, ela sai dos cartões e fica no detalhe.
+  function pctNosCartoes(opcoes) {
+    const pcts = (Array.isArray(opcoes) ? opcoes : []).map(pctDe).filter((x) => x !== null);
+    return pcts.length > 1 && new Set(pcts).size > 1;
+  }
+
+  return {
+    preco, precoNaLista, ha, media, som, regras, regrasFrase, fontes, servico, usuario, destino, links, mapa, ESTILOS,
+    idDeFesta, casaComBairro, mensagem, CARA_ORDEM, ordemDaCara, pesoDaCara, pctNosCartoes, mediaFalada, linhaSemMedia, cartaoFalado,
+    horarioSemQuebra, ondeSemQuebra,
+  };
 });

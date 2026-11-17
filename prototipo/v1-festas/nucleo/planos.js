@@ -95,7 +95,7 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
     const i = plano.respostas.findIndex((r) => chaveNome(r.nome) === chave);
     if (i >= 0 && !confirmar) {
       const existente = plano.respostas[i].nome;
-      throw new ErroPlano(409, `Já tem ${existente} na lista. É você?`, { duplicado: existente });
+      throw new ErroPlano(409, `Já tem ${existente} neste convite. É você?`, { duplicado: existente });
     }
     if (i >= 0) plano.respostas[i] = nova;
     else if (plano.respostas.length >= LIMITE_RESPOSTAS) throw new ErroPlano(409, 'Esse convite já tem respostas demais.');

@@ -223,3 +223,159 @@ test('frases da página: média, som, regras e o lote seguinte', () => {
   const p = T.preco(festa({ lotes: [{ nome: '1º lote', preco: 40, disponivel: false }, { nome: '2º lote', preco: 60, disponivel: true }, { nome: '3º lote', preco: 80, disponivel: true }] }));
   assert.equal(p.depois, 'depois, R$ 80');
 });
+
+// ------------------------------------------------------------ o app (/app)
+
+const fs = require('node:fs');
+const path = require('node:path');
+const APP = fs.readFileSync(path.join(__dirname, '..', 'publico', 'app.js'), 'utf8');
+const { PESOS } = require('../nucleo/cara');
+
+test('/app?festa=<id>: caixa e espaço de um link copiado não derrubam o id; link torto vira null', () => {
+  assert.equal(T.idDeFesta('sexta-sem-pressa'), 'sexta-sem-pressa');
+  assert.equal(T.idDeFesta('  SEXTA-sem-Pressa '), 'sexta-sem-pressa');
+  assert.equal(T.idDeFesta('a'.repeat(60)), 'a'.repeat(60));
+  for (const torto of ['a'.repeat(61), '<img src=x>', 'sexta sem pressa', '../etc', '', null, undefined, 42]) {
+    assert.equal(T.idDeFesta(torto), null, String(torto));
+  }
+  // O app não cai calado na pergunta 1: link torto mostra "Essa festa saiu.".
+  assert.match(APP, /if \(pedida\.id\) abrirAvulsa\(pedida\.id\);\s*else semFesta\(true\);/);
+});
+
+test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na mesma linha', () => {
+  const f = festa({ nome: 'Disco ao Pôr do Sol', casa: 'terraço em Pinheiros', mediaIdade: 30, preco: 80, lotes: [{ nome: '1º lote', preco: 80, disponivel: true }, { nome: '2º lote', preco: 100, disponivel: true }] });
+  const linhas = T.mensagem({ data: 'sáb, 21 nov', hora: '17h00', bairro: 'Pinheiros', festa: f, link: 'https://finde.example/p/abc' });
+  assert.deepEqual(linhas, [
+    'Achei essa, bora?',
+    '',
+    'Sáb, 21 nov · 17h00 · média 30 anos (informada pela produtora)',
+    'Disco ao Pôr do Sol',
+    'terraço em Pinheiros · a partir de R$ 80',
+    '',
+    'Diz aqui se você tá dentro:',
+    'https://finde.example/p/abc',
+  ]);
+  // Nenhuma linha em maiúsculas, e a hora com "h" minúsculo.
+  for (const l of linhas) assert.ok(!l || l !== l.toLocaleUpperCase('pt-BR') || !/[a-zà-ú]/i.test(l), l);
+  assert.doesNotMatch(linhas.join('\n'), /\d+H\d*/);
+  // A casa que não diz o bairro ganha o bairro; média sem origem e ausente.
+  const sem = T.mensagem({ data: 'sex, 20 nov', hora: '18h00', bairro: 'Barra Funda', festa: festa({ casa: 'galpão', origemIdade: null }), link: 'x' });
+  assert.equal(sem[2], 'Sex, 20 nov · 18h00 · média 31 anos');
+  assert.match(sem[4], /^galpão · Barra Funda · /);
+  assert.equal(T.mensagem({ data: 'dom, 22 nov', hora: '16h00', bairro: 'Centro', festa: festa({ mediaIdade: null }), link: 'x' })[2], 'Dom, 22 nov · 16h00 · média de idade ainda não informada');
+  // O app monta a mensagem por aqui, sem o toLocaleUpperCase de antes.
+  assert.match(APP, /FT\.mensagem\(/);
+  assert.doesNotMatch(APP.slice(APP.indexOf('function linhasDaMensagem')), /toLocaleUpperCase\('pt-BR'\),\s*\n\s*f\.nome/);
+});
+
+test('% a sua cara: as partes na ordem do peso de nucleo/cara.js, o horário primeiro', () => {
+  const porPeso = Object.keys(PESOS).sort((a, b) => PESOS[b] - PESOS[a]);
+  assert.deepEqual(T.CARA_ORDEM, porPeso);
+  const partes = [
+    { criterio: 'som', cabe: true, texto: 'house e disco' },
+    { criterio: 'bairro', cabe: true, texto: 'em Pinheiros' },
+    { criterio: 'horario', cabe: false, texto: 'começa às 17h, antes da sua janela' },
+    { criterio: 'preco', cabe: 'quase', texto: 'R$ 90, pouco acima' },
+    { criterio: 'idade', cabe: true, texto: 'média 30 (pela produtora), dentro da sua faixa' },
+    { criterio: 'idade', cabe: true, texto: '  ' },
+  ];
+  assert.deepEqual(T.ordemDaCara(partes).map((x) => x.criterio), ['horario', 'idade', 'bairro', 'preco', 'som']);
+  assert.deepEqual(T.ordemDaCara(null), []);
+});
+
+test('% a sua cara: a linha do peso só quando algo não cabe inteiro', () => {
+  const tudo = { pct: 100, partes: [{ criterio: 'idade', cabe: true, texto: 'a' }, { criterio: 'horario', cabe: true, texto: 'b' }] };
+  assert.equal(T.pesoDaCara(tudo), '');
+  assert.equal(T.pesoDaCara({ pct: 0, partes: [{ criterio: 'horario', cabe: false, texto: 'b' }] }), '');
+  const cinco = { pct: 70, partes: ['som', 'preco', 'bairro', 'idade', 'horario'].map((c) => ({ criterio: c, cabe: c !== 'horario', texto: c })) };
+  assert.equal(T.pesoDaCara(cinco), 'Conta mais o horário, depois a idade, o bairro, o preço e o som.');
+  const dois = { pct: 55, partes: [{ criterio: 'idade', cabe: 'quase', texto: 'a' }, { criterio: 'horario', cabe: true, texto: 'b' }] };
+  assert.equal(T.pesoDaCara(dois), 'Conta mais o horário, depois a idade.');
+});
+
+test('% a sua cara nos cartões: só quando varia na lista', () => {
+  const op = (...pcts) => pcts.map((pct) => ({ festa: { id: String(pct) }, cara: pct === null ? undefined : { pct, partes: [] } }));
+  assert.equal(T.pctNosCartoes(op(100, 100, 100)), false, 'três 100% não ajudam a escolher');
+  assert.equal(T.pctNosCartoes(op(100, 83, 100)), true);
+  assert.equal(T.pctNosCartoes(op(70)), false);
+  assert.equal(T.pctNosCartoes(op(null, null)), false);
+  assert.equal(T.pctNosCartoes(op(null, 80, 80)), false);
+  assert.equal(T.pctNosCartoes([{ cara: { pct: 101 } }, { cara: { pct: 50 } }]), false, 'fora de 0 a 100 não conta');
+  assert.equal(T.pctNosCartoes(undefined), false);
+});
+
+test('cartão da lista para leitor de tela: a média uma vez só, com a origem', () => {
+  const f = festa({ id: 'sexta-sem-pressa', nome: 'Sexta Sem Pressa', mediaIdade: 32 });
+  const o = { festa: f, linha: 'Sex · 18h00 · Pinheiros · média 32 anos' };
+  const lido = T.cartaoFalado(o, { pct: 83 });
+  assert.equal(lido, 'Sex · 18h00 · Pinheiros · média 32 anos, informada pela produtora · R$ 60 · 83% a sua cara');
+  assert.equal((lido.match(/média/g) || []).length, 1);
+  assert.equal(T.cartaoFalado({ ...o, patrocinada: true }, { nova: true }), 'Sex · 18h00 · Pinheiros · média 32 anos, informada pela produtora · R$ 60 · patrocinado · nova na lista');
+  assert.equal(T.cartaoFalado({ festa: festa({ mediaIdade: null }), linha: 'Sáb · 22h00 · Centro' }), 'Sáb · 22h00 · Centro · média de idade não informada · R$ 60');
+  assert.equal(T.linhaSemMedia('Sáb · 17h00 · Pinheiros · média 30 anos'), 'Sáb · 17h00 · Pinheiros');
+  assert.match(APP, /const lido = FT\.cartaoFalado\(/);
+});
+
+test('casa com bairro: o bairro só entra quando a casa não o diz', () => {
+  assert.equal(T.casaComBairro('terraço em Pinheiros', 'Pinheiros'), 'terraço em Pinheiros');
+  assert.equal(T.casaComBairro('galpão', 'Barra Funda'), 'galpão · Barra Funda');
+  assert.equal(T.casaComBairro('galpão', null), 'galpão');
+});
+
+// As travas do app vivem no DOM; o teste confere que elas estão ligadas.
+test('Mandar pro grupo: o toque duplo em "Criar o convite" não abre o WhatsApp', () => {
+  const criar = APP.slice(APP.indexOf('function blocoCriar'), APP.indexOf('function blocoConvite'));
+  assert.match(criar, /const tocou = performance\.now\(\);/);
+  assert.match(criar, /desenhar\(\{ focar: false, entrar: false, travar: true \}\);\s*travaAte = Math\.max\(travaAte, tocou \+ AVANCO_MS \+ trava\(\)\);/);
+  // Quem voltou no meio não é puxado de volta para a tela do convite.
+  assert.match(criar, /const saiu = minha !== geracao;/);
+});
+
+test('voltar e recomeçar: a pergunta 1 é o fundo do histórico, e a resposta velha não vale', () => {
+  const recomecar = APP.slice(APP.indexOf('function recomecar'), APP.indexOf('function voltaParaLanding'));
+  assert.match(recomecar, /cancelarEspera\(\);/);
+  assert.match(recomecar, /history\.go\(-n\)/);
+  assert.doesNotMatch(recomecar, /estado\.ocupado\) return/);
+  // As entradas refeitas ao recarregar também levam a altura (n).
+  const iniciar = APP.slice(APP.indexOf('async function iniciar'), APP.indexOf('function semFesta'));
+  assert.doesNotMatch(iniciar, /history\.pushState/);
+  assert.match(iniciar, /history\.replaceState\(\{ tela: 'pergunta', passo: 0, n: 0 \}, ''\)/);
+  // A lista refeita depois de mudar um trecho volta à entrada da lista velha.
+  assert.match(APP, /if \(daLista\) \{[\s\S]*?history\.back\(\);/);
+  // Uma resposta de uma geração velha é descartada nas duas buscas.
+  for (const nome of ['async function buscarFestas', 'async function ajustar']) {
+    const corpo = APP.slice(APP.indexOf(nome), APP.indexOf('\n  }\n', APP.indexOf(nome)));
+    assert.match(corpo, /const minha = geracao;[\s\S]*if \(minha !== geracao\) return;/, nome);
+  }
+});
+
+test('tela de mandar: o campo do nome tem o rótulo visível ("Convite de") no nome acessível', () => {
+  assert.match(APP, /'aria-labelledby': 'convite-de convite-de-mais', 'aria-describedby': 'dica-nome'/);
+  assert.match(APP, /id: 'convite-de', texto: 'Convite de'/);
+  assert.doesNotMatch(APP, /'aria-label': 'Seu nome, opcional'/);
+  // O par lado a lado é o mesmo C, os dois com seta.
+  assert.match(APP, /const copiar = acaoC\('button', \{ type: 'button' \}, 'Copiar o link'\);/);
+});
+
+test('a frase do horário no desenho: a hora nunca desce sozinha, e a frase lida é a mesma', () => {
+  const NB = '\u00a0';
+  const colada = T.horarioSemQuebra(C.fraseDoHorario({ inicio: 18, esquenta: 20, fim: 23 }));
+  assert.equal(colada, `Começa${NB}às${NB}18h, a pista enche${NB}às${NB}20h e${NB}acaba${NB}às${NB}23h.`);
+  // À meia-noite, nem o hífen quebra.
+  assert.match(T.horarioSemQuebra(C.fraseDoHorario({ inicio: 18, esquenta: 20, fim: 24 })), /e\u00a0acaba\u00a0à\u00a0meia\u2011noite\.$/);
+  assert.equal(T.horarioSemQuebra(null), '');
+  // Para quem lê, nada muda: o desenho é que cola.
+  const t = 'Começa às 16h30, a pista enche às 18h e acaba à meia-noite.';
+  assert.equal(T.horarioSemQuebra(t).replace(/\u00a0/g, ' ').replace(/\u2011/g, '-'), t);
+});
+
+test('casa · preço · produtora: quebra só antes de um "·", cada trecho inteiro', () => {
+  const NB = '\u00a0';
+  assert.equal(T.ondeSemQuebra(['terraço em Pinheiros', 'a partir de R$ 60', 'Coletivo Meia-Luz']),
+    `terraço${NB}em${NB}Pinheiros ·${NB}a${NB}partir${NB}de${NB}R$${NB}60 ·${NB}Coletivo${NB}Meia\u2011Luz`);
+  // Trecho que falta não deixa "·" sobrando; o longo demais quebra por dentro.
+  assert.equal(T.ondeSemQuebra(['quintal', null, '', 'Roda']), `quintal ·${NB}Roda`);
+  const longo = 'um galpão enorme na Barra Funda perto do metrô';
+  assert.equal(T.ondeSemQuebra([longo, 'R$ 30 na porta']), `${longo} ·${NB}R$${NB}30${NB}na${NB}porta`);
+  assert.equal(T.ondeSemQuebra(null), '');
+});

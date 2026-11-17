@@ -40,7 +40,7 @@ test('responder: nome repetido pergunta "É você?" antes de trocar', () => {
   planos.responder(id, 'Ju', 'dentro');
   planos.responder(id, 'Léo', 'fora');
   assert.throws(() => planos.responder(id, 'léo', 'dentro'), (e) => e.status === 409
-    && e.message === 'Já tem Léo na lista. É você?' && e.dados.duplicado === 'Léo');
+    && e.message === 'Já tem Léo neste convite. É você?' && e.dados.duplicado === 'Léo');
   const p = planos.responder(id, 'léo', 'dentro', { confirmar: true });
   assert.deepEqual(p.dentro, ['Bruna', 'Ju', 'léo']);
   assert.deepEqual(p.fora, []);

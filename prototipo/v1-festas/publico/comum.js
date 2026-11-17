@@ -50,7 +50,26 @@
   function lockup(classe = '', tag = 'p', assinatura = true) {
     return el('div', { class: `lockup ${classe}`.trim() },
       el(tag, { class: 'marca', tabindex: tag === 'h1' ? '-1' : null }, 'finde', el('span', { class: 'ponto', 'aria-hidden': 'true', texto: '.' })),
-      assinatura ? el('p', { class: 'assinatura-lockup', lang: 'en', texto: 'Still going out. Just differently.' }) : null);
+      assinatura ? el('p', { class: 'assinatura-lockup', lang: 'en', texto: 'still going out. just differently.' }) : null);
+  }
+
+  // A seta do botão secundário (opção C do manual): 16 × 16, traço 1,2. A cor
+  // vem do CSS (currentColor). volta: a mesma seta, apontando para trás.
+  const SVG = 'http://www.w3.org/2000/svg';
+  function seta(volta = false) {
+    const svg = document.createElementNS(SVG, 'svg');
+    for (const [k, v] of [['class', 'seta'], ['width', '16'], ['height', '16'], ['viewBox', '0 0 16 16'], ['fill', 'none'], ['aria-hidden', 'true'], ['focusable', 'false']]) svg.setAttribute(k, v);
+    const p = document.createElementNS(SVG, 'path');
+    p.setAttribute('d', volta ? 'M13 8H3M7 4L3 8l4 4' : 'M3 8h10M9 4l4 4-4 4');
+    svg.append(p);
+    return svg;
+  }
+
+  // Ação secundária com fio e seta: <button> ou <a>, o texto e a seta.
+  function acaoC(tag, atributos, texto, { volta = false } = {}) {
+    const classe = `link link--seta${volta ? ' link--volta' : ''}${atributos.class ? ` ${atributos.class}` : ''}`;
+    const filhos = volta ? [seta(true), el('span', { texto })] : [el('span', { texto }), seta()];
+    return el(tag, { ...atributos, class: classe }, ...filhos);
   }
 
   const agora = () => {
@@ -90,8 +109,10 @@
     if (sub && window.FindeTema) sub.textContent = window.FindeTema.pelaHora() === 'noite' ? 'noite desde as 18h' : 'a noite começa às 18h';
   }
 
+  // Não é uma ação da festa: fica fora do C, em texto com sublinhado fino. O
+  // nome dele é o que está escrito ("voltar pra noite"), que já diz o que faz.
   function botaoTema() {
-    const b = el('button', { type: 'button', class: 'link tema-botao', 'aria-label': 'Alternar entre modo dia e modo noite' });
+    const b = el('button', { type: 'button', class: 'tema-botao' });
     b.textContent = rotuloDoTema();
     b.addEventListener('click', () => {
       if (window.FindeTema) window.FindeTema.alternar();
@@ -131,12 +152,10 @@
     const t = origemDaIdade(f);
     return t ? el('span', { class: 'idade-origem', texto: t }) : null;
   }
-  // "média 31, informada pela produtora", para leitor de tela e mensagem.
-  function mediaFalada(f) {
-    const t = origemDaIdade(f);
-    if (!Number.isInteger(f.mediaIdade)) return 'média de idade não informada';
-    return `média ${f.mediaIdade}${t ? `, ${t}` : ''}`;
-  }
+  // "média 31 anos, informada pela produtora", para leitor de tela, e a
+  // linha da festa sem a média: as frases moram em festa-texto.js.
+  const mediaFalada = (f) => window.FindeTexto.mediaFalada(f);
+  const linhaSemMedia = (linha) => window.FindeTexto.linhaSemMedia(linha);
 
   // A festa do convite: "18h00" e "média 31 anos" na mesma linha de base, e a
   // origem da média junto dela.
@@ -145,6 +164,34 @@
       hora(o.hora),
       el('span', { class: 'media-grande', texto: Number.isInteger(o.festa.mediaIdade) ? `média ${o.festa.mediaIdade} anos` : 'média não informada' }),
       idadeOrigem(o.festa));
+  }
+
+  // O convite como painel (Landing do manual v2): wordmark, "CONVITE · SÁB,
+  // 21 NOV", o título com um itálico, a hora grande com a média, a origem da
+  // média, o nome, "casa · preço · produtora" e a frase do horário. O que vem
+  // depois (as respostas, no convite) entra em `resto`. Sem canto, sem sombra.
+  const DIA_PAINEL = { sex: ['na ', 'sexta?'], sab: ['no ', 'sábado?'], dom: ['no ', 'domingo?'] };
+  function painelConvite(o, { rotulo = 'Convite', marcaHref = null, resto = [] } = {}) {
+    const f = o.festa;
+    const [na, dia] = DIA_PAINEL[f.dia] || ['', 'quando?'];
+    const temMedia = Number.isInteger(f.mediaIdade);
+    const origem = origemDaIdade(f);
+    const h1 = el('h1', { class: 'painel-titulo', tabindex: '-1', id: 'convite-titulo' }, `Bora ${na}`, el('em', { texto: dia }));
+    return el('article', { class: 'painel-convite', 'aria-labelledby': 'convite-titulo' },
+      marca(marcaHref),
+      el('p', { class: 'painel-rotulo', texto: rotulo }),
+      h1,
+      el('p', { class: 'vh', texto: `${linhaSemMedia(o.linha)}, ${mediaFalada(f)}.` }),
+      el('div', { class: 'painel-quando', 'aria-hidden': 'true' },
+        el('p', { class: 'painel-hora' },
+          hora(o.hora),
+          el('span', { class: 'painel-media', texto: temMedia ? `média ${f.mediaIdade} anos` : 'média não informada' })),
+        temMedia && origem ? el('p', { class: 'painel-origem', texto: origem }) : null),
+      el('h2', { class: 'painel-nome', id: 'nome-festa', texto: f.nome }),
+      // Quebra só antes de um "·", e a hora nunca desce sozinha (FT).
+      el('p', { class: 'painel-onde', texto: FT().ondeSemQuebra([f.casa, FT().precoNaLista(f), f.produtora]) }),
+      o.horario ? el('p', { class: 'painel-horario', texto: FT().horarioSemQuebra(o.horario) }) : null,
+      ...resto);
   }
 
   // Com o teclado aberto, o visor visível encolhe (no iPhone, só ele): o campo
@@ -200,6 +247,14 @@
     if (!href) return null;
     return el('a', { class: `${classe} fora`, href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': texto ? `${texto}, abre fora do finde` : null }, texto);
   }
+  // O mesmo link no desenho do C inteiro: texto e seta.
+  function linkForaC(url, texto, servico, exemplo) {
+    const a = linkFora(url, texto, servico, exemplo);
+    if (!a) return null;
+    a.classList.add('link--seta');
+    a.replaceChildren(el('span', { texto }), seta());
+    return a;
+  }
 
   // O cartaz da produtora, em miniatura 4:5. Sem cartaz, nada.
   function cartaz(f, classe = 'cartaz') {
@@ -219,9 +274,15 @@
   function blocoOnde(f, bairro, exemplo) {
     const e = f.endereco;
     if (!e || typeof e.texto !== 'string' || !e.texto.trim()) return el('div', { class: 'bloco-onde' }, ausente('Endereço não informado.'));
+    const mapa = linkFora(FT().mapa(e, bairro), null, 'Google Maps', exemplo);
+    if (mapa) {
+      mapa.classList.add('link--seta');
+      mapa.setAttribute('aria-label', 'Abrir no mapa, abre fora do finde');
+      mapa.append(el('span', { texto: 'Abrir no mapa' }), seta());
+    }
     return el('div', { class: 'bloco-onde' },
       el('p', { class: 'endereco' }, e.texto, el('span', { class: 'endereco-bairro', texto: bairro ? `${bairro}, São Paulo` : 'São Paulo' })),
-      linkFora(FT().mapa(e, bairro), 'Abrir no mapa', 'Google Maps', exemplo));
+      mapa);
   }
 
   // Ingresso (R7): o preço que se paga hoje, com a taxa quando a fonte dá; numa
@@ -244,20 +305,20 @@
       linha ? el('p', { class: 'ingresso-lote', texto: linha }) : null,
       // No convite, o link de compra já diz onde: a frase "Vende no X" sai.
       onde && !(comprar && p.compra) ? el('p', { class: 'ingresso-onde', texto: onde }) : null,
-      comprar && p.compra ? linkFora(p.url, `Comprar no ${p.servico}`, p.servico, exemplo) : null);
+      comprar && p.compra ? linkForaC(p.url, `Comprar no ${p.servico}`, p.servico, exemplo) : null);
   }
 
   // Links de origem (R8): Instagram e página do evento, cada um com o nome do
   // serviço; o que falta aparece como ausente.
   function blocoLinks(f, exemplo) {
     return el('ul', { class: 'links-origem' }, FT().links(f).map((l) => el('li', { class: 'origem' },
-      l.url ? linkFora(l.url, l.texto, l.servico, exemplo) : el('span', { class: 'ausente', texto: `${l.texto}.` }))));
+      l.url ? linkForaC(l.url, l.texto, l.servico, exemplo) : el('span', { class: 'ausente', texto: `${l.texto}.` }))));
   }
 
   const reduzir = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   window.Finde = {
-    el, titulo, chamar, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, manterVisivel,
-    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks,
+    el, titulo, chamar, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
+    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite,
   };
 })();

@@ -417,3 +417,37 @@ test('o porquê não soa a conta: "sobra R$ X" vira o quanto cabe no teto', () =
   assert.match(barata, /bem abaixo do seu teto/);
   assert.match(quase, /dentro do seu teto/);
 });
+
+test('o aviso de horário fala como a pergunta: "seu horário" para chegar, "sua volta" para voltar', () => {
+  const c = motor.completar(motor.sanearCriterios(pedidoNovo()));
+  const aviso = (extra) => motor.opcao(festa('h', extra), c).aviso;
+  // Das 19h à 1h. Enche às 17h: antes de você chegar.
+  assert.equal(aviso({ inicio: 15, esquenta: 17, fim: 23 }), 'Enche às 17h, antes do seu horário.');
+  // Enche à 0h30: perto da volta. Enche à 1h30: depois dela.
+  assert.equal(aviso({ inicio: 22.5, esquenta: 24.5, fim: 25 }), 'Enche à 0h30, perto da sua volta.');
+  assert.equal(aviso({ inicio: 23.5, esquenta: 25.5, fim: 28 }), 'Enche à 1h30, depois da sua volta.');
+  assert.equal(aviso({ fim: 26 }), 'Acaba às 2h, depois da sua volta.');
+  // Em nenhum pedido da grade sobra "sua hora" ou "sua janela".
+  for (const p of todosOsPedidos()) {
+    for (const o of motor.escolher(p, base).opcoes) assert.doesNotMatch(o.fora.join(' '), /sua hora\b|sua janela/, o.festa.id);
+  }
+});
+
+test('furaHorario é a régua do horário: a mesma do porquê, do bloco e do afrouxamento', () => {
+  const c = motor.completar(motor.sanearCriterios(pedidoNovo()));
+  // Começa às 17h e enche às 19h: cabe. A pista uma hora antes de você chegar: ainda cabe (tolerância).
+  assert.equal(motor.furaHorario(festa('a', { inicio: 17, esquenta: 19, fim: 23 }), c), false);
+  assert.equal(motor.furaHorario(festa('b', { inicio: 16, esquenta: 18, fim: 23 }), c), false);
+  // Duas horas antes: fura; abrindo o horário, não.
+  assert.equal(motor.furaHorario(festa('c', { inicio: 15, esquenta: 17, fim: 23 }), c), true);
+  assert.equal(motor.furaHorario(festa('c', { inicio: 15, esquenta: 17, fim: 23 }), c, motor.TOLERANCIA_AFROUXADA), false);
+  // A volta dita na conversa não afrouxa.
+  const volta = motor.completar(motor.sanearCriterios({ ...pedidoNovo(), voltaMax: 23 }));
+  assert.equal(motor.furaHorario(festa('d'), volta, motor.TOLERANCIA_AFROUXADA), true);
+  for (const p of todosOsPedidos()) {
+    const cc = motor.completar(motor.sanearCriterios(p));
+    for (const o of motor.escolher(p, base).opcoes) {
+      assert.equal(motor.foraDoPedido(o.festa, cc).includes('horario'), motor.furaHorario(o.festa, cc), o.festa.id);
+    }
+  }
+});

@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const http = require('node:http');
+const zlib = require('node:zlib');
 const { criarServidor } = require('../servidor');
 
 const DADOS = path.join(__dirname, '..', 'dados', 'festas.json');
@@ -35,6 +36,20 @@ async function chamar(metodo, caminho, corpo, cabecalhos = {}) {
   });
   const tipo = r.headers.get('content-type') || '';
   return { status: r.status, cabecalhos: r.headers, corpo: tipo.includes('json') ? await r.json() : await r.text() };
+}
+
+// Pedido cru, com os cabeçalhos dados e o corpo como veio (sem descomprimir).
+function bruto(metodo, caminho, cabecalhos = {}, corpo) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(raiz);
+    const req = http.request({ host: u.hostname, port: u.port, path: caminho, method: metodo, headers: cabecalhos }, (res) => {
+      const partes = [];
+      res.on('data', (d) => partes.push(d));
+      res.on('end', () => resolve({ status: res.statusCode, cabecalhos: res.headers, corpo: Buffer.concat(partes) }));
+    });
+    req.on('error', reject);
+    req.end(corpo);
+  });
 }
 
 // Caminho cru, sem o fetch normalizar "..".
@@ -67,6 +82,12 @@ test('GET /api/formulario traz as cinco perguntas e a contagem, sem cache', asyn
 });
 
 test('CSP: tudo daqui, fontes incluídas; sem script inline', async () => {
+  for (const pagina of ['/', '/app']) {
+    const p = await chamar('GET', pagina);
+    assert.doesNotMatch(p.corpo, /googleapis|gstatic/, pagina);
+    assert.doesNotMatch(p.corpo, /<script(?![^>]*\b(src=|type="application\/json"))[^>]*>/, pagina);
+    assert.doesNotMatch(p.corpo, /style=/, pagina);
+  }
   const r = await chamar('GET', '/');
   const csp = r.cabecalhos.get('content-security-policy');
   assert.match(csp, /script-src 'self'(;|$)/);
@@ -79,6 +100,8 @@ test('CSP: tudo daqui, fontes incluídas; sem script inline', async () => {
   assert.match(fonte.headers.get('cache-control'), /immutable/);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
   assert.equal(r.cabecalhos.get('x-content-type-options'), 'nosniff');
+  // O endereço de origem só vai para o próprio servidor, nunca para fora.
+  assert.equal(r.cabecalhos.get('referrer-policy'), 'same-origin');
   assert.doesNotMatch(r.corpo, /<script(?![^>]*\b(src=|type="application\/json"))[^>]*>/);
   assert.doesNotMatch(r.corpo, /style=/);
 });
@@ -195,7 +218,7 @@ test('planos: nome repetido pergunta antes de trocar', async () => {
   const caminho = `/api/planos/${criado.corpo.id}/respostas`;
   const r = await chamar('POST', caminho, { nome: 'ju', resposta: 'fora' });
   assert.equal(r.status, 409);
-  assert.equal(r.corpo.erro, 'Já tem Ju na lista. É você?');
+  assert.equal(r.corpo.erro, 'Já tem Ju neste convite. É você?');
   assert.equal(r.corpo.duplicado, 'Ju');
   const ok = await chamar('POST', caminho, { nome: 'ju', resposta: 'fora', confirmar: true });
   assert.deepEqual(ok.corpo.fora, ['ju']);
@@ -222,8 +245,8 @@ test('convite vencido não aceita resposta', () => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
-test('a página inicial já vem com os dados da primeira tela', async () => {
-  const r = await chamar('GET', '/');
+test('o app (/app) já vem com os dados da primeira tela', async () => {
+  const r = await chamar('GET', '/app');
   const m = r.corpo.match(/<script type="application\/json" id="dados-iniciais">([^<]*)<\/script>/);
   assert.ok(m, 'sem dados iniciais');
   const dados = JSON.parse(m[1]);
@@ -238,7 +261,10 @@ test('/p/:id: 404 quando não existe; quando existe, as metas de compartilhament
   const criado = await chamar('POST', '/api/planos', { criterios: PEDIDO, festa: 'sabado-groove' });
   const sim = await chamar('GET', `/p/${criado.corpo.id}`);
   assert.equal(sim.status, 200);
-  assert.match(sim.corpo, /<meta property="og:title" content="Bora no sábado\? Sábado Groove, 19h00 · média 31">/);
+  // A prévia do link (o que o grupo vê primeiro) traz a média com a origem.
+  assert.match(sim.corpo, /<meta property="og:title" content="Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)">/);
+  assert.match(sim.corpo, /<title>Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)<\/title>/);
+  assert.match(sim.corpo, /<meta property="og:description" content="[^"]*Média de 31 anos, informada pela produtora\.">/);
   assert.match(sim.corpo, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png">/);
   assert.equal((await chamar('GET', '/plano.html')).status, 404);
   const inicio = await chamar('GET', '/');
@@ -277,6 +303,37 @@ test('path traversal não sai de publico/', async () => {
     assert.ok([400, 404].includes(r.status), `${c} devolveu ${r.status}`);
     assert.doesNotMatch(r.corpo, /criarServidor|"festas"/, c);
   }
+});
+
+test('texto sai em gzip para quem aceita; sem o pedido, sai como está; fonte nunca', async () => {
+  const gz = { 'accept-encoding': 'gzip, deflate, br' };
+  for (const caminho of ['/', '/app', '/landing.css', '/app.js', '/api/formulario']) {
+    const com = await bruto('GET', caminho, gz);
+    const sem = await bruto('GET', caminho);
+    assert.equal(com.status, 200, caminho);
+    assert.equal(com.cabecalhos['content-encoding'], 'gzip', caminho);
+    assert.equal(com.cabecalhos.vary, 'Accept-Encoding', caminho);
+    assert.equal(Number(com.cabecalhos['content-length']), com.corpo.length, caminho);
+    assert.ok(com.corpo.length < sem.corpo.length, caminho);
+    assert.equal(sem.cabecalhos['content-encoding'], undefined, caminho);
+    assert.equal(Number(sem.cabecalhos['content-length']), sem.corpo.length, caminho);
+    if (!caminho.startsWith('/api/') && caminho !== '/' && caminho !== '/app') {
+      assert.deepEqual(zlib.gunzipSync(com.corpo), sem.corpo, caminho);
+    }
+  }
+  // Quem recusa gzip (q=0) recebe sem compressão; HEAD diz o tamanho e não manda corpo.
+  assert.equal((await bruto('GET', '/landing.css', { 'accept-encoding': 'gzip;q=0' })).cabecalhos['content-encoding'], undefined);
+  const cabeca = await bruto('HEAD', '/landing.css', gz);
+  assert.equal(cabeca.cabecalhos['content-encoding'], 'gzip');
+  assert.ok(Number(cabeca.cabecalhos['content-length']) > 0);
+  assert.equal(cabeca.corpo.length, 0);
+  // A API comprimida continua sendo o mesmo JSON.
+  const api = await bruto('POST', '/api/festas', { ...gz, 'content-type': 'application/json' }, JSON.stringify({ criterios: PEDIDO }));
+  assert.equal(api.cabecalhos['content-encoding'], 'gzip');
+  assert.equal(JSON.parse(zlib.gunzipSync(api.corpo)).opcoes.length, 3);
+  // Fonte já é comprimida: vai como está, em fluxo.
+  const fonte = await bruto('GET', '/fontes/dm-sans.woff2', gz);
+  assert.equal(fonte.cabecalhos['content-encoding'], undefined);
 });
 
 test('estáticos: CSS, JS e favicon com o tipo certo', async () => {

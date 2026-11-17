@@ -1,10 +1,12 @@
 'use strict';
-// Servidor do Finde v1: estáticos de publico/, a API e as páginas de convite.
+// Servidor do Finde v1: a landing (/), o app (/app), estáticos de publico/,
+// a API e as páginas de convite.
 // Node puro, sem dependências. `node servidor.js` sobe tudo.
 
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const zlib = require('node:zlib');
 
 const C = require('./nucleo/catalogo');
 const motor = require('./nucleo/motor');
@@ -46,10 +48,12 @@ const CSP = [
   "object-src 'none'",
 ].join('; ');
 
+// same-origin: o endereço de origem só vai para o próprio servidor (o app
+// sabe se veio da landing); para fora, nada.
 const CABECALHOS = {
   'Content-Security-Policy': CSP,
   'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'no-referrer',
+  'Referrer-Policy': 'same-origin',
   'X-Frame-Options': 'DENY',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
@@ -97,15 +101,37 @@ function criarFonteDaBase(caminho, log, relogio) {
 
 // ---------------------------------------------------------------- respostas
 
+// Texto (HTML, CSS, JS, JSON, SVG) sai comprimido em gzip para quem aceita:
+// numa rede lenta, a primeira pintura espera o HTML e o CSS inteiros.
+const COMPRIMIVEL = /^(text\/|application\/json|image\/svg\+xml)/;
+const MINIMO_PARA_COMPRIMIR = 1024;
+
+function aceitaGzip(req) {
+  const aceita = String((req && req.headers['accept-encoding']) || '');
+  return /\bgzip\b(?!\s*;\s*q=0(?:\.0+)?\b)/i.test(aceita);
+}
+
+// Manda um corpo pronto (Buffer), comprimido quando vale a pena.
+function enviarCorpo(req, res, status, cabecalhos, corpo, comprimido) {
+  const tipo = cabecalhos['Content-Type'] || '';
+  let saida = corpo;
+  const extra = {};
+  if (corpo.length >= MINIMO_PARA_COMPRIMIR && COMPRIMIVEL.test(tipo)) {
+    extra.Vary = 'Accept-Encoding';
+    if (aceitaGzip(req)) {
+      saida = comprimido ? comprimido() : zlib.gzipSync(corpo);
+      extra['Content-Encoding'] = 'gzip';
+    }
+  }
+  res.writeHead(status, { ...CABECALHOS, ...cabecalhos, ...extra, 'Content-Length': saida.length });
+  res.end(req && req.method === 'HEAD' ? undefined : saida);
+}
+
 function json(res, status, corpo) {
-  const texto = JSON.stringify(corpo);
-  res.writeHead(status, {
-    ...CABECALHOS,
+  enviarCorpo(res.req, res, status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
-    'Content-Length': Buffer.byteLength(texto),
-  });
-  res.end(texto);
+  }, Buffer.from(JSON.stringify(corpo), 'utf8'));
 }
 
 const erro = (res, status, mensagem, dados = {}) => json(res, status, { erro: mensagem, ...dados });
@@ -122,10 +148,12 @@ function origem(req) {
 }
 
 // Páginas HTML com as metas de compartilhamento preenchidas.
-function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dados } = {}) {
+function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dados, trocas } = {}) {
   fs.readFile(arquivo, 'utf8', (e, html) => {
     if (e) return erro(res, 404, 'Não achei essa página.');
     let pagina = html.replaceAll('__ORIGEM__', escapar(origem(req)));
+    // Trechos de HTML montados (e escapados) aqui no servidor, como a landing.
+    for (const [marca, trecho] of Object.entries(trocas || {})) pagina = pagina.replace(marca, () => trecho);
     // JSON dentro de <script type="application/json">: "<" escapado, nada executa.
     pagina = pagina.replace('__DADOS__', () => (dados ? JSON.stringify(dados).replace(/</g, '\\u003c') : 'null'));
     if (titulo) {
@@ -134,29 +162,40 @@ function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dado
         .replace(/<title>[^<]*<\/title>/, `<title>${escapar(titulo)}</title>`);
     }
     if (descricao) pagina = pagina.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${escapar(descricao)}$2`);
-    const corpo = Buffer.from(pagina, 'utf8');
-    res.writeHead(status, {
-      ...CABECALHOS,
+    enviarCorpo(req, res, status, {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Length': corpo.length,
       'Cache-Control': 'no-cache',
-    });
-    res.end(req.method === 'HEAD' ? undefined : corpo);
+    }, Buffer.from(pagina, 'utf8'));
   });
 }
+
+// Estáticos de texto comprimidos uma vez só, enquanto o arquivo não muda.
+const comprimidos = new Map();
 
 function enviarArquivo(req, res, caminho) {
   fs.stat(caminho, (e, st) => {
     if (e || !st.isFile()) return erro(res, 404, 'Não achei essa página.');
     const tipo = TIPOS_ARQUIVO[path.extname(caminho).toLowerCase()];
     if (!tipo) return erro(res, 404, 'Não achei essa página.');
-    res.writeHead(200, {
-      ...CABECALHOS,
+    const cabecalhos = {
       'Content-Type': tipo,
-      'Content-Length': st.size,
       // Fontes não mudam: guardam por um ano. O resto revalida.
       'Cache-Control': tipo === 'font/woff2' ? 'public, max-age=31536000, immutable' : 'no-cache',
-    });
+    };
+    if (COMPRIMIVEL.test(tipo)) {
+      return fs.readFile(caminho, (e2, corpo) => {
+        if (e2) return erro(res, 404, 'Não achei essa página.');
+        const marca = `${st.mtimeMs}:${st.size}`;
+        enviarCorpo(req, res, 200, cabecalhos, corpo, () => {
+          const guardado = comprimidos.get(caminho);
+          if (guardado && guardado.marca === marca) return guardado.gz;
+          const gz = zlib.gzipSync(corpo);
+          comprimidos.set(caminho, { marca, gz });
+          return gz;
+        });
+      });
+    }
+    res.writeHead(200, { ...CABECALHOS, ...cabecalhos, 'Content-Length': st.size });
     if (req.method === 'HEAD') return res.end();
     fs.createReadStream(caminho).pipe(res);
   });
@@ -276,6 +315,118 @@ function formulario(base) {
     })),
     tetos: C.TETOS.map((t) => ({ id: t.id, rotulo: t.rotulo })),
     estilos: C.ESTILOS.map((e) => ({ id: e.id, rotulo: e.rotulo })),
+  };
+}
+
+// ---------------------------------------------------------------- landing
+
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const POR_DIA_NA_LANDING = 3;
+const FESTA_DO_CONVITE = 'sexta-sem-pressa';
+
+const ordemDaLista = (a, b) => C.ORDEM_DIAS.indexOf(a.dia) - C.ORDEM_DIAS.indexOf(b.dia)
+  || a.inicio - b.inicio || a.id.localeCompare(b.id);
+
+// A lista da semana na landing: festas editoriais com média de 28 a 35 que
+// começam até as 20h, as três que abrem mais cedo em cada dia, em ordem de
+// dia e hora. "Todas" é a soma dos três dias: o filtro de um dia nunca mostra
+// festa que "Todas" escondeu. Patrocinada não entra: na landing não há como
+// dizer que é.
+function selecaoDaLanding(base) {
+  const cabe = base.filter((f) => f.selo !== 'patrocinado' && f.mediaIdade >= 28 && f.mediaIdade <= 35 && f.inicio <= 20);
+  const porDia = Object.fromEntries(C.ORDEM_DIAS.map((d) => [d, cabe.filter((f) => f.dia === d).sort(ordemDaLista).slice(0, POR_DIA_NA_LANDING)]));
+  return { porDia, todas: C.ORDEM_DIAS.flatMap((d) => porDia[d]) };
+}
+
+// "sex, 20 nov" (a página põe em caixa alta) a partir da data da festa.
+function rotuloDaData(f, agora, { mes = true } = {}) {
+  const q = dataDaFesta(f, agora);
+  const curto = C.DIAS[f.dia].curto.toLowerCase();
+  if (!q) return curto;
+  const [, m, d] = q.data.split('-').map(Number);
+  return mes ? `${curto}, ${d} ${MESES[m - 1]}` : `${curto} ${d}`;
+}
+
+// O convite do herói, montado com uma festa fictícia da base. O cartão
+// inteiro é um link para o detalhe dessa festa no app: "Tô dentro" e "Não
+// rola" desenham o convite de verdade, e o toque em qualquer ponto abre a
+// festa em vez de não fazer nada.
+function htmlDoConvite(f, agora) {
+  if (!f) return '';
+  const dia = C.DIAS[f.dia];
+  // Quebra só antes de um "·", e a hora nunca desce sozinha na linha de baixo.
+  const onde = escapar(FT.ondeSemQuebra([f.casa, FT.precoNaLista(f), f.produtora]));
+  const rotulo = `Ver a festa do exemplo, ${f.nome}: ${dia.nome.toLowerCase()}, ${C.horaCheia(f.inicio)}, média de ${f.mediaIdade} anos, ${f.origemIdade}`;
+  return `<figure class="convite" aria-labelledby="convite-legenda">
+    <figcaption id="convite-legenda" class="vh">Exemplo de convite do finde, com uma festa fictícia</figcaption>
+    <a class="cv-cartao" href="/app?festa=${encodeURIComponent(f.id)}" aria-label="${escapar(rotulo)}">
+    <div class="cv cv-topo">
+      <span class="cv-marca" aria-hidden="true">finde<span class="ponto">.</span></span>
+      <span class="cv-rotulo">Convite · ${escapar(rotuloDaData(f, agora))}</span>
+      <span class="cv-titulo">Bora ${dia.id === 'sex' ? 'na' : 'no'} <i>${escapar(dia.frase)}?</i></span>
+    </div>
+    <div class="cv cv-media">
+      <span class="cv-hora-linha"><span class="cv-hora">${escapar(C.horaCheia(f.inicio))}</span><span class="cv-rotulo">Média ${escapar(f.mediaIdade)} anos</span></span>
+      <span class="cv-origem">${escapar(f.origemIdade)}</span>
+    </div>
+    <div class="cv cv-festa">
+      <span class="cv-nome">${escapar(f.nome)}</span>
+      <span class="cv-onde">${onde}</span>
+      <span class="cv-horario">${escapar(FT.horarioSemQuebra(C.fraseDoHorario(f)))}</span>
+    </div>
+    <div class="cv cv-botoes" aria-hidden="true">
+      <span class="cv-botao">Tô dentro</span>
+      <span class="cv-botao cv-botao--vazado">Não rola</span>
+    </div>
+    </a>
+    <p class="nota nota-1"><span class="nota-fio" aria-hidden="true"></span><span>Idade média do público, ${escapar(f.origemIdade)}</span></p>
+    <p class="nota nota-2"><span class="nota-fio" aria-hidden="true"></span><span>A hora que começa, enche e acaba</span></p>
+    <p class="nota nota-3"><span class="nota-fio" aria-hidden="true"></span><span>Seu grupo responde no próprio convite</span></p>
+  </figure>`;
+}
+
+// As linhas da lista, todas visíveis em "Todas"; o filtro de dia esconde as
+// outras. O preço vai num bloco que não quebra e leva o "·" no começo: numa
+// tela estreita a linha quebra antes do ponto, nunca deixa o ponto solto.
+function htmlDaLista(selecao, agora) {
+  return selecao.todas.map((f) => {
+    const preco = FT.precoNaLista(f);
+    const rotulo = `${C.DIAS[f.dia].nome}, ${C.hora(f.inicio)}: ${f.nome}, ${f.casa}, ${preco}. Média de ${f.mediaIdade} anos, ${f.origemIdade}.`;
+    return `<li data-dia="${f.dia}">
+      <a class="linha" href="/app?festa=${encodeURIComponent(f.id)}" aria-label="${escapar(rotulo)}">
+        <span class="linha-quando"><span class="linha-hora">${escapar(C.hora(f.inicio))}</span><span class="linha-dia">${escapar(rotuloDaData(f, agora, { mes: false }))}</span></span>
+        <span class="linha-meio"><span class="linha-nome">${escapar(f.nome)}</span><span class="linha-onde">${escapar(f.casa)} <span class="sem-quebra">· ${escapar(preco)}</span></span></span>
+        <span class="linha-media"><span class="linha-media-num">${escapar(f.mediaIdade)}</span><span class="linha-media-rot">Média</span><span class="linha-origem">${escapar(f.origemIdadeCurta)}</span></span>
+      </a>
+    </li>`;
+  }).join('\n');
+}
+
+function trocasDaLanding(base, agora) {
+  const selecao = selecaoDaLanding(base);
+  const convite = base.find((f) => f.id === FESTA_DO_CONVITE) || selecao.todas[0];
+  return {
+    __CONVITE__: htmlDoConvite(convite, agora),
+    __LISTA__: htmlDaLista(selecao, agora),
+    __VAZIO__: selecao.todas.length ? ' hidden' : '',
+  };
+}
+
+// O detalhe de uma festa sem pedido (o link da landing): o mesmo formato de
+// um item de opcoes, com um pedido neutro tirado da própria festa (o dia
+// dela, a janela em que ela cabe, idade de 18 a 50, sem teto). Sem a cara,
+// que só existe diante de um pedido de verdade.
+function opcaoSemPedido(f, agora) {
+  const pedido = (janela) => motor.completar({ dia: f.dia, janela, idade: { min: motor.IDADE_MIN, max: motor.IDADE_MAX }, teto: 'sem-limite' });
+  const opcoes = C.JANELAS.map((j) => motor.opcao(f, pedido(j.id)));
+  const o = { ...(opcoes.find((x) => x.atende) || opcoes[0]) };
+  delete o.cara;
+  // Sem pedido, nada fura: a festa de madrugada, que não cabe em janela
+  // nenhuma, também sai sem "depois da sua hora".
+  const motivos = o.motivos.filter((m) => !o.fora.includes(m));
+  return {
+    ...o, atende: true, fora: [], aviso: null, motivos, bloco: 'pedido',
+    data: (dataDaFesta(f, agora) || {}).data || null,
   };
 }
 
@@ -430,10 +581,17 @@ function criarServidor({
     }
     const p = planos.ler(id);
     const o = p.festa;
-    const dia = C.DIAS[o.festa.dia];
-    const titulo = `Bora ${dia.id === 'sex' ? 'na' : 'no'} ${dia.frase}? ${o.festa.nome}, ${o.hora} · média ${o.festa.mediaIdade}`;
-    const onde = o.festa.endereco && o.festa.endereco.texto ? `${o.festa.casa}, ${o.festa.endereco.texto}` : o.festa.casa;
-    const descricao = `${onde} · ${FT.precoNaLista(o.festa)}. ${o.horario}`;
+    const f = o.festa;
+    const dia = C.DIAS[f.dia];
+    // A prévia do link é a primeira coisa que o grupo vê: a média vai sempre
+    // com a origem (curta no título, inteira na descrição).
+    const temMedia = Number.isInteger(f.mediaIdade);
+    const curta = f.origemIdadeCurta || (o.origem && o.origem.curta);
+    const media = temMedia ? ` · média ${f.mediaIdade}${curta ? ` (${curta})` : ''}` : '';
+    const titulo = `Bora ${dia.id === 'sex' ? 'na' : 'no'} ${dia.frase}? ${f.nome}, ${o.hora}${media}`;
+    const onde = f.endereco && f.endereco.texto ? `${f.casa}, ${f.endereco.texto}` : f.casa;
+    const mediaLonga = temMedia ? ` Média de ${f.mediaIdade} anos${f.origemIdade ? `, ${f.origemIdade}` : ''}.` : '';
+    const descricao = `${onde} · ${FT.precoNaLista(f)}. ${o.horario}${mediaLonga}`;
     return enviarPagina(req, res, arquivo, { titulo, descricao });
   }
 
@@ -441,6 +599,14 @@ function criarServidor({
     const chave = `${req.method} ${pathname}`;
     let acao = rotas[chave];
     const m = pathname.match(/^\/api\/planos\/([^/]+)(?:\/(respostas))?$/);
+    const umaFesta = pathname.match(/^\/api\/festa\/([^/]+)$/);
+    if (!acao && umaFesta) {
+      if (req.method !== 'GET') return erro(res, 405, 'Esse caminho não aceita esse método.');
+      const id = umaFesta[1];
+      const festa = FORMATO_ID_FESTA.test(id) ? fonte.base().find((f) => f.id === id) : null;
+      if (!festa) return erro(res, 404, 'Essa festa não está na lista.');
+      return json(res, 200, { opcao: opcaoSemPedido(festa, new Date(relogio())) });
+    }
     if (!acao && m) {
       const [, id, sub] = m;
       if (!sub && req.method === 'GET') acao = () => [200, planos.ler(id)];
@@ -467,9 +633,14 @@ function criarServidor({
       if (pathname.startsWith('/api/')) return await api(req, res, pathname);
       if (req.method !== 'GET' && req.method !== 'HEAD') return erro(res, 405, 'Esse caminho não aceita esse método.');
       if (pathname === '/' || pathname === '/index.html') {
+        // A landing vem montada: o convite e a lista da semana saem daqui.
+        return enviarPagina(req, res, path.join(PUBLICO, 'landing.html'), { trocas: trocasDaLanding(fonte.base(), new Date(relogio())) });
+      }
+      if (pathname === '/app' || pathname === '/app/') {
         // Os dados da primeira tela vão junto com o HTML: uma ida e volta a menos.
         return enviarPagina(req, res, path.join(PUBLICO, 'index.html'), { dados: formulario(fonte.base()) });
       }
+      if (pathname === '/landing.html') return erro(res, 404, 'Não achei essa página.');
       const convite = pathname.match(/^\/p\/([^/]+)\/?$/);
       if (convite) return paginaDoConvite(req, res, convite[1]);
       if (pathname === '/plano.html') return erro(res, 404, 'Não achei essa página.');
@@ -488,4 +659,4 @@ if (require.main === module) {
   servidor.listen(porta, () => console.log(`[finde] no ar em http://localhost:${porta}`));
 }
 
-module.exports = { criarServidor, proximaPista, dataDaFesta };
+module.exports = { criarServidor, proximaPista, dataDaFesta, selecaoDaLanding, opcaoSemPedido };

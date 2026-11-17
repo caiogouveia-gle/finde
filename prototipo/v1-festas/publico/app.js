@@ -1,11 +1,13 @@
 'use strict';
-// O app do Finde: boas-vindas, formulário de cinco perguntas (uma por tela),
-// resultado que vira conversa e o convite pro grupo.
+// O app do Finde (/app): formulário de seis perguntas (uma por tela, sem
+// boas-vindas: quem chega veio da landing), resultado que vira conversa, o
+// detalhe da festa e o convite pro grupo. /app?festa=<id> abre direto o
+// detalhe de uma festa, sem pedido.
 
 (() => {
   const {
-    el, titulo, chamar, marca, lockup, rodape, quandoGrande, reduzir, hora, anunciar, idadeOrigem, mediaFalada, manterVisivel,
-    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks,
+    el, titulo, chamar, marca, rodape, reduzir, hora, anunciar, manterVisivel,
+    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite,
   } = window.Finde;
   const FT = window.FindeTexto;
   const $tela = document.getElementById('tela');
@@ -35,12 +37,18 @@
   const TRAVA_MS = 450;
   const trava = () => TRAVA_MS + (reduzir.matches ? AVANCO_MS : 0);
   const SESSAO = 'finde.sessao';
+  // A landing: para onde vão o wordmark e o "Voltar" da pergunta 1 e do
+  // detalhe aberto por link (este, direto na lista da landing).
+  const LANDING = '/';
+  const LANDING_LISTA = '/#festas';
 
   const estado = {
     form: null,
     respostas: { dia: null, janela: null, bairros: [], idade: null, teto: null, estilos: [] },
-    tela: 'inicio',
+    tela: 'pergunta',
     passo: 0,
+    // Aberto por /app?festa=<id>: o detalhe sem pedido, sem "sua janela".
+    avulsa: false,
     editando: null,
     criterios: null,
     resultado: null,
@@ -88,27 +96,48 @@
 
   const primeiraSemResposta = () => PERGUNTAS.findIndex((p) => p.tipo === 'um' && (estado.respostas[p.chave] === null || estado.respostas[p.chave] === undefined));
 
-  function ir(tela, { passo = 0, substituir = false } = {}) {
+  // Cada entrada do histórico guarda a sua altura (n): a pergunta 1 é 0. É
+  // por ela que Recomeçar volta até a pergunta 1 em vez de empilhar outra.
+  const nivel = () => (history.state && Number.isInteger(history.state.n) ? history.state.n : 0);
+  function empilhar(s) {
+    history.pushState({ ...s, n: nivel() + 1 }, '');
+  }
+
+  // Um pedido à rede vale enquanto a pessoa não sai dali: Voltar (do app ou
+  // do navegador) e Recomeçar abrem uma geração nova, e a resposta de uma
+  // geração velha é descartada, sem jogar ninguém de volta para a lista.
+  let geracao = 0;
+  function cancelarEspera() {
+    geracao += 1;
+    estado.ocupado = false;
+  }
+
+  function ir(tela, { passo = 0, substituir = false, deLista = false } = {}) {
     clearTimeout(estado.avancoPendente);
     if (estado.tela === 'resultado' && tela !== 'resultado') estado.rolagemLista = window.scrollY;
     estado.tela = tela;
     estado.passo = passo;
-    const s = { tela, passo, editando: estado.editando };
-    if (substituir) history.replaceState(s, '');
-    else history.pushState(s, '');
+    const s = { tela, passo, editando: estado.editando, deLista: deLista || undefined };
+    if (substituir) history.replaceState({ ...s, n: nivel() }, '');
+    else empilhar(s);
     desenhar();
   }
 
   window.addEventListener('popstate', (e) => {
-    // "Voltar" logo depois de um toque não é desfeito pelo avanço agendado.
+    // "Voltar" logo depois de um toque não é desfeito pelo avanço agendado, e
+    // a resposta que ainda estava a caminho não vale mais.
     clearTimeout(estado.avancoPendente);
-    const s = e.state || { tela: 'inicio', passo: 0 };
+    cancelarEspera();
+    const s = e.state || { tela: 'pergunta', passo: 0 };
     let { tela } = s;
     let passo = s.passo || 0;
     const veioDoDetalhe = estado.tela === 'festa' || estado.tela === 'mandar';
+    if (tela === 'inicio') tela = 'pergunta';
     if (tela === 'festa' && !estado.festa) tela = 'resultado';
-    if ((tela === 'resultado' && !estado.resultado) || (tela === 'mandar' && !estado.mandar)) tela = 'inicio';
-    if (tela === 'pergunta' && !estado.form) tela = 'inicio';
+    if ((tela === 'resultado' && !estado.resultado) || (tela === 'mandar' && !estado.mandar)) {
+      tela = 'pergunta';
+      passo = 0;
+    }
     if (tela === 'pergunta' && !s.editando) {
       const falta = primeiraSemResposta();
       if (falta >= 0 && falta < passo) passo = falta;
@@ -130,8 +159,10 @@
   // entrar: a tela chega com um fade curto, só no que muda. Depois de um
   // ajuste, nada pisca: só as festas novas aparecem.
   function desenhar({ focar = true, entrar = true, travar = entrar, rolagem = 0 } = {}) {
-    const telas = { inicio: telaInicio, pergunta: telaPergunta, resultado: telaResultado, festa: telaFesta, mandar: telaMandar };
-    const conteudo = (telas[estado.tela] || telaInicio)();
+    const telas = { pergunta: telaPergunta, resultado: telaResultado, festa: telaFesta, mandar: telaMandar };
+    // Sem o formulário ainda (página salva, rede lenta), a pergunta espera.
+    const tela = estado.tela === 'pergunta' && !estado.form ? telaCarregando : telas[estado.tela] || telaPergunta;
+    const conteudo = tela();
     if (entrar) conteudo.classList.add('entra');
     $tela.replaceChildren(conteudo);
     document.body.dataset.tela = estado.tela;
@@ -141,6 +172,7 @@
       if (alvo) alvo.focus({ preventScroll: true });
     }
     posicionar($tela);
+    medirBarra();
     // A trava conta a partir do quadro pintado: com CPU lenta, o desenho leva
     // tempo, e o segundo toque de um toque duplo ainda cai na tela nova.
     if (travar) {
@@ -150,37 +182,95 @@
     salvar();
   }
 
-  document.addEventListener('finde:tema', () => {
-    if (estado.tela === 'inicio' && $tela.firstChild) desenhar({ focar: false, entrar: false });
-  });
+  // A barra fixa do detalhe muda de altura com a fonte, a largura e o celular
+  // deitado: o vão que o conteúdo deixa para ela (--barra) é a altura medida,
+  // e a última linha nunca fica por baixo nem colada nela.
+  const raiz = document.documentElement;
+  const observador = typeof ResizeObserver === 'function'
+    ? new ResizeObserver((itens) => {
+      const alto = itens[0] && itens[0].target.getBoundingClientRect().height;
+      if (alto) raiz.style.setProperty('--barra', `${Math.ceil(alto)}px`);
+    })
+    : null;
+  function medirBarra() {
+    if (!observador) return;
+    observador.disconnect();
+    const barra = $tela.querySelector('.barra');
+    if (barra) observador.observe(barra);
+    else raiz.style.removeProperty('--barra');
+  }
 
+  // O wordmark leva à landing.
   function topo(direita) {
-    return el('header', { class: 'topo' }, marca(), direita || null);
+    return el('header', { class: 'topo' }, marca(LANDING), direita || null);
   }
 
   // Recomeçar: zera o pedido, a conversa, a lista e a festa aberta, e volta à
   // pergunta 1. Os convites já criados ficam (o mesmo link reabre).
   function botaoRecomecar() {
-    const b = el('button', { type: 'button', class: 'botao-texto', texto: 'Recomeçar', 'aria-label': 'Recomeçar o pedido do zero' });
+    const b = acaoC('button', { type: 'button', 'aria-label': 'Recomeçar o pedido do zero' }, 'Recomeçar');
     b.addEventListener('click', recomecar);
     return b;
   }
 
+  // Tocado no meio de uma espera, Recomeçar não é engolido: a espera é que
+  // cai. O histórico volta até a pergunta 1 (as perguntas e listas velhas
+  // ficam à frente, fora do caminho do voltar), e o voltar dela leva à landing.
   function recomecar() {
-    if (estado.ocupado) return;
     clearTimeout(estado.avancoPendente);
+    cancelarEspera();
     Object.assign(estado, {
       respostas: { dia: null, janela: null, bairros: [], idade: null, teto: null, estilos: [] },
       editando: null, criterios: null, resultado: null, fala: null, novas: [], mandar: null, festa: null, rolagemLista: 0,
+      tela: 'pergunta', passo: 0,
     });
-    // O histórico também recomeça: voltar da pergunta 1 leva ao início, nunca à lista velha.
-    history.replaceState({ tela: 'inicio', passo: 0 }, '');
-    ir('pergunta', { passo: 0 });
+    const n = nivel();
+    if (n > 0) {
+      salvar();
+      history.go(-n);
+      return;
+    }
+    ir('pergunta', { passo: 0, substituir: true });
+  }
+
+  // Na pergunta 1 e no detalhe aberto por link, "Voltar" leva à landing; no
+  // resto, volta uma tela.
+  function voltaParaLanding() {
+    return (estado.tela === 'pergunta' && estado.passo === 0 && !estado.editando) || (estado.tela === 'festa' && estado.avulsa);
+  }
+
+  const ehLanding = (url) => {
+    try {
+      const u = new URL(url, window.location.href);
+      return u.origin === window.location.origin && (u.pathname === '/' || u.pathname === '/index.html');
+    } catch {
+      return false;
+    }
+  };
+  // Quem chegou da landing volta pela história: ela reaparece no filtro e na
+  // rolagem em que estava, e o voltar do navegador não cai de novo no app. A
+  // landing está k entradas abaixo (a altura n desta tela, mais uma). Sem ela
+  // ali (link colado, aba nova), vai pelo endereço.
+  function voltarParaLanding(destino) {
+    const k = nivel() + 1;
+    const nav = window.navigation;
+    let pela = false;
+    if (nav && nav.currentEntry && typeof nav.entries === 'function') {
+      const alvo = nav.entries()[nav.currentEntry.index - k];
+      pela = Boolean(alvo && ehLanding(alvo.url));
+    } else {
+      pela = ehLanding(document.referrer) && history.length > k;
+    }
+    if (pela) history.go(-k);
+    else window.location.assign(destino);
   }
 
   function botaoVoltar() {
-    const b = el('button', { type: 'button', class: 'botao-texto', texto: 'Voltar' });
-    b.addEventListener('click', () => history.back());
+    const b = acaoC('button', { type: 'button' }, 'Voltar', { volta: true });
+    b.addEventListener('click', () => {
+      if (!voltaParaLanding()) history.back();
+      else voltarParaLanding(estado.tela === 'festa' ? LANDING_LISTA : LANDING);
+    });
     return b;
   }
 
@@ -202,36 +292,13 @@
     };
   }
 
-  // ------------------------------------------------------------ boas-vindas
+  // ------------------------------------------------------------ esperando
 
-  function proximaPista() {
-    const p = estado.form && estado.form.proxima;
-    return el('div', { class: 'proxima', id: 'proxima' },
-      el('p', { class: 'rotulo', texto: p ? p.linha : 'Abrindo a pista…' }),
-      el('p', { class: 'proxima-nome', texto: p ? p.nome : ' ' }),
-      el('p', { class: 'proxima-origem', texto: p && p.origem ? `Média ${p.origem}.` : ' ' }));
-  }
-
-  function telaInicio() {
-    const noite = document.documentElement.dataset.tema === 'noite' && window.FindeTema && window.FindeTema.pelaHora() === 'noite';
-    const ver = el('button', { type: 'button', id: 'ver-festas', class: 'botao botao--largo', texto: 'Ver festas do fim de semana' });
-    ver.addEventListener('click', () => {
-      if (!estado.form) return;
-      estado.editando = null;
-      ir('pergunta', { passo: 0 });
-    });
-    if (!estado.form) ver.disabled = true;
-    return el('div', { class: 'tela-inicio' },
-      lockup('', 'p', false),
-      el('section', { class: 'abre' },
-        el('p', { class: 'rotulo', texto: noite ? 'Hoje à noite' : 'Sex a dom · a partir das 17h00' }),
-        (() => { const h = titulo('h1', 'titulo titulo--abre', 'still going out. ', 'just differently.'); h.lang = 'en'; return h; })(),
-        el('hr', { class: 'fio' }),
-        el('p', {
-          class: 'texto',
-          texto: noite ? 'Ainda dá tempo: festas com gente da sua fase e hora boa pra voltar.' : 'Festas que começam no fim da tarde, com gente da sua fase.',
-        })),
-      proximaPista(), ver,
+  // O formulário ainda não chegou: uma linha de rótulo, e o resto espera.
+  function telaCarregando() {
+    return el('div', { class: 'tela-pergunta tela-carregando' },
+      topo(null),
+      el('p', { class: 'carregando', id: 'proxima', role: 'status', texto: 'Abrindo a pista…' }),
       rodape());
   }
 
@@ -540,7 +607,7 @@
     // Convite e sessões antigos falam em "faixa": reabre a pergunta da idade.
     if (chave === 'faixa') chave = 'idade';
     estado.editando = chave;
-    ir('pergunta', { passo: PERGUNTAS.findIndex((p) => p.chave === chave) });
+    ir('pergunta', { passo: PERGUNTAS.findIndex((p) => p.chave === chave), deLista: true });
   }
 
   // Depois de mudar uma pergunta: o resto do que foi conversado continua valendo.
@@ -570,6 +637,10 @@
       return;
     }
     estado.ocupado = true;
+    const minha = geracao;
+    // A pergunta reaberta a partir da lista volta para a entrada da lista,
+    // em vez de empilhar uma lista igual por cima da velha.
+    const daLista = substituir && history.state && history.state.deLista;
     mostrarErro('');
     const soltar = esperar(botao, 'Buscando…');
     let r;
@@ -578,6 +649,8 @@
     } catch {
       r = null;
     }
+    // A pessoa voltou ou recomeçou enquanto esperava: a resposta não vale.
+    if (minha !== geracao) return;
     estado.ocupado = false;
     if (!r || !r.ok || !r.dados) {
       soltar();
@@ -585,13 +658,20 @@
         ir('pergunta', { passo: Math.max(0, primeiraSemResposta()) });
         return;
       }
-      mostrarErro(r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toca de novo.');
+      mostrarErro(r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toque de novo.');
       return;
     }
     estado.criterios = r.dados.criterios;
     estado.resultado = r.dados;
     estado.fala = { voce: null, finde: r.dados.resposta };
     estado.novas = [];
+    if (daLista) {
+      estado.tela = 'resultado';
+      estado.rolagemLista = 0;
+      salvar();
+      history.back();
+      return;
+    }
     ir('resultado', { substituir });
   }
 
@@ -635,6 +715,7 @@
 
   // A janela pedida: da API (inicioMin, fimMax); sem ela, da tabela das janelas.
   function janelaPedida() {
+    if (estado.avulsa) return null;
     const c = estado.criterios || {};
     if (num(c.inicioMin) && num(c.fimMax)) return [c.inicioMin, c.fimMax];
     return JANELA[c.janela] || null;
@@ -679,41 +760,64 @@
     }
   }
 
-  // Uma entrada da programação: hora, média e origem à esquerda; à direita o
-  // nome, o aviso quando fura o pedido, o bairro com o preço e o porquê. Só o
-  // que serve para escolher (R2). O item inteiro abre o detalhe: o nome é o
-  // botão, e a área de toque dele cobre o item. Não há envio daqui (R3).
-  function entrada(o, i, primeiroBloco) {
+  // "% a sua cara" (contrato da frente CARA): opcao.cara = { pct, partes }.
+  // Sem cara (detalhe aberto por link, ou API antiga), não aparece nada.
+  function caraDe(o) {
+    const c = o && o.cara;
+    return c && Number.isInteger(c.pct) && c.pct >= 0 && c.pct <= 100 ? c : null;
+  }
+
+  // Uma entrada da programação, como a lista da landing no celular: a hora em
+  // serifa à esquerda (e quando enche); ao lado o nome, a casa com o preço, a
+  // média com a origem na mesma linha, "% a sua cara" (quando ela varia na
+  // lista) e o aviso quando fura o pedido. A coluna do app nunca passa de
+  // 432 px de texto, e uma terceira coluna só para a média espremia o cartão.
+  // O item inteiro abre o detalhe: o nome é o botão, e a área de toque dele
+  // cobre o item. Não há envio daqui (R3).
+  function entrada(o, i, primeiroBloco, comPct) {
     const f = o.festa;
     const primeiro = i === 0 && primeiroBloco;
     const nova = estado.novas.includes(f.id);
+    const cara = caraDe(o);
+    const pctVisivel = Boolean(comPct && cara);
     const abrir = el('button', { type: 'button', class: 'festa-abrir', texto: f.nome, 'aria-describedby': `linha-${f.id}` });
     abrir.addEventListener('click', () => abrirFesta(o));
     const aviso = typeof o.aviso === 'string' && o.aviso.trim() ? o.aviso.trim() : '';
-    // O que o aviso já disse não se repete no porquê.
+    // Sem a % (API antiga), o porquê continua dizendo o que distingue a festa.
     const dito = aviso.toLocaleLowerCase('pt-BR');
-    const motivos = (o.motivos || []).filter((m) => !dito || !dito.includes(String(m).toLocaleLowerCase('pt-BR')));
-    const lido = [o.linha, mediaFalada(f), FT.precoNaLista(f), o.patrocinada ? 'patrocinado' : null, nova ? 'nova na lista' : null].filter(Boolean).join(' · ');
+    const motivos = cara ? [] : (o.motivos || []).filter((m) => !dito || !dito.includes(String(m).toLocaleLowerCase('pt-BR')));
+    const temMedia = Number.isInteger(f.mediaIdade);
+    const origem = f.origemIdadeCurta || (o.origem && o.origem.curta) || '';
+    // A média uma vez só, com a origem: a linha da API já trazia "média N anos".
+    const lido = FT.cartaoFalado(o, { pct: pctVisivel ? cara.pct : null, nova });
     return el('li', { class: `festa${nova ? ' nova' : ''}`, 'data-festa': f.id },
       el('div', { class: 'festa-quando', 'aria-hidden': 'true' },
         hora(o.hora),
         num(f.esquenta) ? el('span', { class: 'enche', texto: `enche ${rotuloHora(f.esquenta)}` }) : null,
-        el('span', { class: 'media', texto: Number.isInteger(f.mediaIdade) ? `média ${f.mediaIdade}` : 'média não informada' }),
-        f.origemIdadeCurta ? el('span', { class: 'idade-origem', texto: f.origemIdadeCurta }) : idadeOrigem(f),
         o.patrocinada ? el('span', { class: 'marca-lateral', texto: 'Patrocinado' })
           : nova ? el('span', { class: 'marca-lateral nova-marca', texto: 'Nova' }) : null),
       el('div', { class: 'festa-o-que' },
         el('p', { class: 'vh', id: `linha-${f.id}`, texto: lido }),
         el('h2', { class: 'nome' }, abrir),
-        aviso ? el('p', { class: 'festa-aviso', texto: semQuebraNoPreco(aviso) }) : null,
-        // O "·" vai preso ao preço, para nunca ficar pendurado no fim da linha.
-        el('p', { class: 'onde', 'aria-hidden': 'true' }, `${o.bairro} `, el('span', { class: 'onde-preco', texto: `· ${FT.precoNaLista(f)}`.replace(/R\$ /g, 'R$\u00a0') })),
+        // Casa e preço com um "·" entre eles que some quando o preço desce de
+        // linha: nem ponto pendurado no fim, nem ponto abrindo a linha de baixo.
+        el('p', { class: 'onde', 'aria-hidden': 'true' },
+          el('span', { class: 'onde-linha' },
+            el('span', { class: 'onde-casa', texto: FT.casaComBairro(f.casa, o.bairro) }),
+            el('span', { class: 'onde-preco', texto: FT.precoNaLista(f).replace(/R\$ /g, 'R$ ') }))),
+        // "31 MÉDIA pela produtora": o número nunca sem a origem.
+        el('p', { class: 'festa-media', 'aria-hidden': 'true' },
+          el('span', { class: 'media-num', texto: temMedia ? String(f.mediaIdade) : '—' }),
+          el('span', { class: 'media-rotulo', texto: temMedia ? 'média' : 'sem média' }),
+          temMedia && origem ? el('span', { class: 'idade-origem', texto: origem }) : null),
+        pctVisivel ? el('p', { class: 'cara-pct', 'aria-hidden': 'true', texto: `${cara.pct}% a sua cara` }) : null,
         motivos.length ? el('p', { class: 'porque' },
           el('span', { class: 'vh', texto: 'Por que esta: ' }),
           // O "·" vai preso ao motivo seguinte, nunca pendurado no fim da linha.
-          motivos.flatMap((m, i) => [i ? ' ' : null, el('span', { class: 'item', texto: `${i ? '· ' : ''}${semQuebraNoPreco(m)}` })])) : null,
-        // O sinal visível de que o item abre: só no primeiro da lista.
-        primeiro ? el('span', { class: 'ver', 'aria-hidden': 'true', texto: 'Ver a festa' }) : null));
+          motivos.flatMap((m, k) => [k ? ' ' : null, el('span', { class: 'item', texto: `${k ? '· ' : ''}${semQuebraNoPreco(m)}` })])) : null),
+      aviso ? el('p', { class: 'festa-aviso', texto: semQuebraNoPreco(aviso) }) : null,
+      // O sinal visível de que o item abre: só no primeiro da lista.
+      primeiro ? el('span', { class: 'ver', 'aria-hidden': 'true' }, el('span', { texto: 'Ver a festa' }), seta()) : null);
   }
 
   // Os blocos da lista (R19, R21): primeiro o que cabe; depois, cada um com o
@@ -726,12 +830,14 @@
       if (!grupos.length || grupos[grupos.length - 1].bloco !== b) grupos.push({ bloco: b, itens: [] });
       grupos[grupos.length - 1].itens.push(o);
     }
+    // A % entra nos cartões só quando varia na lista (FT.pctNosCartoes).
+    const comPct = FT.pctNosCartoes(opcoes);
     return grupos.map((g, gi) => {
       const id = `bloco-${g.bloco}`;
       const nome = NOME_BLOCO[g.bloco];
       return el('section', { class: `bloco-lista bloco-lista--${g.bloco}`, 'aria-labelledby': nome ? id : null },
         nome ? el('h2', { class: 'rotulo bloco-rotulo', id, texto: nome }) : null,
-        el('ol', { class: 'festas', 'aria-label': nome ? null : 'Festas, em ordem de horário. Toque numa para ver o detalhe.' }, g.itens.map((o, i) => entrada(o, i, gi === 0))));
+        el('ol', { class: 'festas', 'aria-label': nome ? null : 'Festas, em ordem de horário. Toque numa para ver o detalhe.' }, g.itens.map((o, i) => entrada(o, i, gi === 0, comPct))));
     });
   }
 
@@ -771,8 +877,10 @@
       // Quem já marcou bairros não precisa do "mais perto de".
       if (!c.bairros || !c.bairros.length) lista.push(c.perto !== 'pinheiros' ? ['mais perto de Pinheiros', 'tem alguma mais perto de Pinheiros?'] : ['mais perto do Centro', 'tem alguma mais perto do Centro?']);
     }
+    // Os atalhos são respostas prontas, não ações secundárias: têm o desenho
+    // dos bairros da pergunta 3 (texto com sublinhado fino), não o C.
     return lista.map(([rotulo, frase]) => {
-      const b = el('button', { type: 'button', class: 'link', texto: rotulo });
+      const b = el('button', { type: 'button', class: 'atalho', texto: rotulo });
       b.addEventListener('click', () => ajustar(frase, { exibido: rotulo, origem: b }));
       return b;
     });
@@ -804,7 +912,7 @@
       e.preventDefault();
       const texto = campo.value.trim();
       if (!texto) {
-        local.textContent = 'Escreve o que quer mudar. Tipo: mais cedo.';
+        local.textContent = 'Escreva o que quer mudar. Por exemplo: mais cedo.';
         campo.focus();
         return;
       }
@@ -884,18 +992,21 @@
     if ($local) $local.textContent = '';
     mostrarErro('');
     const atuais = estado.resultado.opcoes.map((o) => o.festa.id);
+    const minha = geracao;
     let r;
     try {
       r = await chamar('/api/conversa', { criterios: estado.criterios, texto, atuais });
     } catch {
       r = null;
     }
+    // Recomeçou ou saiu da lista no meio: a resposta não vale.
+    if (minha !== geracao) return;
     estado.ocupado = false;
     soltar();
     if ($tela) $tela.removeAttribute('aria-busy');
     if (!r || !r.ok || !r.dados) {
       trocarResultado();
-      mostrarErro(r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toca de novo.');
+      mostrarErro(r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toque de novo.');
       return;
     }
     const d = r.dados;
@@ -951,16 +1062,21 @@
     const j = janelaPedida();
     // O encaixe no pedido, menos a idade, que tem a régua dela: o que a festa
     // fura (horário, preço, som), ou que ela cabe na janela.
-    const furos = (o.fora || []).filter((x) => !/da sua faixa$/.test(x));
+    const furos = estado.avulsa ? [] : (o.fora || []).filter((x) => !/da sua faixa$/.test(x));
     const aviso = furos.length ? `${furos.join('; ').replace(/^./, (x) => x.toUpperCase())}.` : '';
     const ate = j ? (j[1] % 24 === 0 ? 'à meia-noite' : `${j[1] % 24 < 2 ? 'à' : 'às'} ${rotuloHora(j[1])}`) : '';
-    // O encaixe diz o que a régua mostra: a festa que começa antes da janela
-    // (o motor aceita pela pista cheia) não "cabe", começa antes.
-    const suaJanela = j ? `sua janela, das ${rotuloHora(j[0])} ${ate}` : '';
-    let encaixe = aviso;
-    if (!encaixe && j) {
-      if (f.inicio < j[0]) encaixe = `Começa ${asHoras(f.inicio)}, antes da ${suaJanela}; a pista enche ${asHoras(f.esquenta)}.`;
-      else encaixe = `Cabe na ${suaJanela}.`;
+    // O encaixe diz o que a régua mostra: a festa que começa antes do horário
+    // pedido (o motor aceita pela pista cheia) não "cabe", começa antes. As
+    // palavras são as da pergunta e da cara: "seu horário".
+    const seuHorario = j ? `seu horário, das ${rotuloHora(j[0])} ${ate}` : '';
+    // Com "% a sua cara", as partes dela já dizem o encaixe de cada critério
+    // (horário e idade primeiro, o que fura incluído), logo abaixo da média:
+    // as frases de encaixe saem, para nada ser dito duas vezes.
+    const comCara = Boolean(!estado.avulsa && caraDe(o));
+    let encaixe = comCara ? '' : aviso;
+    if (!encaixe && j && !comCara) {
+      if (f.inicio < j[0]) encaixe = `Começa ${asHoras(f.inicio)}, antes do ${seuHorario}; a pista enche ${asHoras(f.esquenta)}.`;
+      else encaixe = `Cabe no ${seuHorario}.`;
     }
 
     const nome = el('h1', { class: 'festa-nome', id: 'festa-nome', tabindex: '-1', 'data-foco': '', texto: f.nome });
@@ -973,14 +1089,15 @@
         el('span', { class: 'detalhe-media-curta', texto: m.ausente ? 'média não informada' : `média ${m.numero} anos` })),
       el('p', { class: 'vh', texto: `${o.horario} ${m.ausente ? m.frase : `Média de ${m.numero} anos.`}` }),
       regua(f),
-      encaixe ? el('p', { class: `detalhe-encaixe${aviso ? ' detalhe-encaixe--fura' : ''}`, texto: encaixe }) : null,
+      encaixe ? el('p', { class: `detalhe-encaixe${encaixe === aviso ? ' detalhe-encaixe--fura' : ''}`, texto: encaixe }) : null,
       // A média contra a faixa pedida, de onde ela vem e quando foi conferida (R5).
       // A régua da média, logo abaixo de onde ela vem, e o encaixe na faixa.
       el('div', { class: 'detalhe-media' },
         reguaIdade(f),
         el('p', { class: 'media-origem' },
           m.ausente ? m.frase : `${m.origem ? m.origem.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')) : 'Origem não informada'}${m.quando ? `, ${m.quando}` : ''}.`),
-        m.ausente ? null : el('p', { class: 'idade-encaixe', texto: encaixeIdade(f) })));
+        m.ausente || estado.avulsa || comCara ? null : el('p', { class: 'idade-encaixe', texto: encaixeIdade(f) }),
+        blocoCara(o)));
 
     const quem = el('section', { class: 'detalhe-quem', 'aria-labelledby': 'festa-nome' },
       el('div', { class: 'ficha' },
@@ -1012,7 +1129,7 @@
   // A média contra a faixa pedida: o mesmo desenho da régua do horário, num
   // eixo de 18 a 50 anos. A faixa é o colchete rosé; a média, um ponto.
   function reguaIdade(f) {
-    const fx = estado.criterios && estado.criterios.idade;
+    const fx = !estado.avulsa && estado.criterios && estado.criterios.idade;
     if (!fx || !Number.isInteger(f.mediaIdade)) return null;
     const LIM = { min: 18, max: 50 };
     const x = (n) => ((Math.max(LIM.min, Math.min(LIM.max, n)) - LIM.min) / (LIM.max - LIM.min)) * 100;
@@ -1030,13 +1147,32 @@
 
   // "Dentro da sua faixa, de 28 a 35." / "2 anos acima da sua faixa, de 28 a 35."
   function encaixeIdade(f) {
-    const fx = estado.criterios && estado.criterios.idade;
+    const fx = !estado.avulsa && estado.criterios && estado.criterios.idade;
     if (!fx) return '';
     // Os números da faixa ficam nas pontas do colchete, logo acima.
     const fora = f.mediaIdade < fx.min ? fx.min - f.mediaIdade : f.mediaIdade > fx.max && fx.max < 50 ? f.mediaIdade - fx.max : 0;
     const faixa = `de ${fx.min} a ${fx.max}${fx.max >= 50 ? ' ou mais' : ''}`;
     if (!fora) return `Dentro da sua faixa, ${faixa}.`;
     return `${fora} ${fora === 1 ? 'ano' : 'anos'} ${f.mediaIdade < fx.min ? 'abaixo' : 'acima'} da sua faixa, ${faixa}.`;
+  }
+
+  // "% a sua cara" no detalhe, logo abaixo da média: o número e, critério
+  // por critério, na ordem do peso (o horário primeiro), se cabe, quase cabe
+  // ou não cabe. Quando algo não cabe inteiro, uma linha diz o que pesa mais,
+  // para a conta se deixar conferir.
+  const CABE = { true: 'Cabe', quase: 'Quase', false: 'Não cabe' };
+  function blocoCara(o) {
+    const cara = estado.avulsa ? null : caraDe(o);
+    if (!cara) return null;
+    const partes = FT.ordemDaCara(cara.partes).filter((x) => String(x.cabe) in CABE);
+    const peso = FT.pesoDaCara(cara);
+    return el('div', { class: 'cara' },
+      el('p', { class: 'cara-pct cara-pct--detalhe' }, el('span', { class: 'cara-num', texto: `${cara.pct}%` }), el('span', { texto: 'a sua cara' })),
+      peso ? el('p', { class: 'cara-peso', texto: peso }) : null,
+      partes.length ? el('ul', { class: 'cara-partes', 'aria-label': 'O que conta na porcentagem' },
+        partes.map((x) => el('li', { class: `cara-linha cara-linha--${x.cabe === true ? 'cabe' : x.cabe === false ? 'nao' : 'quase'}` },
+          el('span', { class: 'cara-rotulo', texto: CABE[String(x.cabe)] }),
+          el('span', { class: 'cara-texto', texto: semQuebraNoPreco(x.texto.trim()) })))) : null);
   }
 
   // A barra fixa (R9): à esquerda, a compra com o menor preço, ou o preço
@@ -1056,7 +1192,7 @@
       esquerda = linkFora(p.url, null, p.servico, ex, 'barra-preco barra-comprar');
       esquerda.replaceChildren(
         el('span', { class: 'barra-preco-valor', texto: `R$ ${p.valor}` }),
-        el('span', { class: 'barra-preco-rotulo barra-comprar-rotulo', texto: 'Comprar' }));
+        el('span', { class: 'barra-comprar-rotulo' }, el('span', { texto: 'Comprar' }), seta()));
       esquerda.setAttribute('aria-label', `Comprar ingresso no ${p.servico}, R$ ${p.valor}, abre fora do finde`);
     } else {
       const curto = { porta: ['na porta', `R$ ${p.valor}`], gratis: ['entrada', 'Grátis'], esgotado: ['ingresso', 'Esgotado'] }[p.tipo] || ['ingresso', 'A confirmar'];
@@ -1075,19 +1211,10 @@
     return `${DIA[dia].curto}, ${d} ${MESES[m - 1]}`;
   }
 
+  // A mensagem do grupo em texto corrido, sem caixa alta: a hora e a média
+  // (com a origem) abrem a linha da festa (FT.mensagem).
   function linhasDaMensagem(o, link, data) {
-    const f = o.festa;
-    return [
-      'Achei essa, bora?',
-      '',
-      `${dataCurta(data, f.dia)} · ${o.hora} · ${o.bairro}`.toLocaleUpperCase('pt-BR'),
-      f.nome,
-      `${f.casa} · ${FT.precoNaLista(f)}`,
-      Number.isInteger(f.mediaIdade) ? `Média de ${f.mediaIdade} anos${typeof f.origemIdade === 'string' && f.origemIdade ? `, ${f.origemIdade}` : ''}.` : 'Média de idade ainda não informada.',
-      '',
-      'Diz aqui se você tá dentro:',
-      link,
-    ];
+    return FT.mensagem({ data: dataCurta(data, o.festa.dia), hora: o.hora, bairro: o.bairro, festa: o.festa, link });
   }
 
   function lerNome() {
@@ -1107,36 +1234,43 @@
     } catch { /* tudo bem */ }
   }
 
-  // A tela de mandar já é a prévia do convite: "Convite de [nome]", o título e
-  // a festa. O convite criado fica lembrado por festa: voltar e mandar de novo
-  // reabre o mesmo link.
+  // A tela de mandar já é a prévia do convite: "Convite de [nome]" e o painel
+  // do convite como quem recebe vai ver. O convite criado fica lembrado por
+  // festa: voltar e mandar de novo reabre o mesmo link.
   function telaMandar() {
     const o = estado.mandar;
     const f = o.festa;
-    const d = DIA[f.dia];
     const convite = estado.convites[f.id];
     const nome = convite
       ? el('span', { class: 'nome-fixo', texto: convite.autor || 'você' })
       : el('input', {
         id: 'seu-nome', class: 'campo-nome', type: 'text', maxlength: '24', autocomplete: 'given-name',
-        placeholder: 'seu nome', value: lerNome(), enterkeyhint: 'done', 'aria-label': 'Seu nome, opcional', 'data-foco': '',
+        // O nome do campo começa pelo rótulo visível ("Convite de"); a dica
+        // vem como descrição.
+        placeholder: 'seu nome', value: lerNome(), enterkeyhint: 'done', 'data-foco': '',
+        'aria-labelledby': 'convite-de convite-de-mais', 'aria-describedby': 'dica-nome',
       });
+    const data = dataCurta((convite && convite.data) || o.data, f.dia);
 
     return el('div', { class: 'tela-mandar' },
       topo(botaoVoltar()),
       el('section', { class: 'cabeca' },
-        el('p', { class: 'de-quem' }, el('span', { class: 'rotulo', texto: 'Convite de' }), nome),
-        convite ? null : el('p', { class: 'dica-nome', texto: 'Com seu nome, você já entra na lista.' }),
-        titulo('h1', 'titulo titulo--pergunta', `Bora ${d.no} `, `${d.nome}?`),
-        el('hr', { class: 'fio' })),
-      el('article', { class: 'festa-convite', 'aria-labelledby': 'nome-festa' },
-        el('p', { class: 'vh', texto: `${o.linha.replace(/ · média \d+ anos$/, '')}, ${mediaFalada(f)}` }),
-        quandoGrande(o),
-        el('h2', { class: 'nome', id: 'nome-festa', texto: f.nome }),
-        el('p', { class: 'onde', texto: `${f.casa} · ${FT.precoNaLista(f)} · ${f.produtora}` }),
-        el('p', { class: 'sobre', texto: [o.horario, f.frase].filter(Boolean).join(' ') })),
+        el('p', { class: 'de-quem' },
+          el('span', { class: 'rotulo', id: 'convite-de', texto: 'Convite de' }),
+          convite ? null : el('span', { class: 'vh', id: 'convite-de-mais', texto: 'seu nome, opcional' }),
+          nome),
+        convite ? null : el('p', { class: 'dica-nome', id: 'dica-nome', texto: 'Com seu nome, você já conta como Tô dentro.' })),
+      painelConvite(o, { rotulo: `Convite · ${data}` }),
       convite ? blocoConvite(o, convite) : blocoCriar(o, nome),
       rodape());
+  }
+
+  // O convite precisa de um pedido. Aberto por link, não houve pedido: vai um
+  // neutro, tirado da própria festa (o dia dela, qualquer bairro, preço e som,
+  // e a faixa de idade inteira), para nada no convite dizer que ela fura.
+  function pedidoNeutro(f) {
+    const janela = f.inicio < 19 ? 'fim-de-tarde' : f.inicio < 22 ? 'comeco-da-noite' : 'noite';
+    return { dia: f.dia, janela, idade: { min: 18, max: 50 }, bairros: [], teto: 'sem-limite', estilos: [] };
   }
 
   function blocoCriar(o, campoNome) {
@@ -1145,23 +1279,39 @@
     criar.addEventListener('click', async () => {
       if (estado.ocupado) return;
       estado.ocupado = true;
+      const tocou = performance.now();
+      const minha = geracao;
       const soltar = esperar(criar, 'Criando…');
       const autor = campoNome.value.trim();
       let r;
       try {
-        r = await chamar('/api/planos', { criterios: estado.criterios, festa: o.festa.id, autor: autor || undefined });
+        const criterios = estado.avulsa || !estado.criterios ? pedidoNeutro(o.festa) : estado.criterios;
+        r = await chamar('/api/planos', { criterios, festa: o.festa.id, autor: autor || undefined });
       } catch {
         r = null;
       }
-      estado.ocupado = false;
+      const saiu = minha !== geracao;
+      if (!saiu) estado.ocupado = false;
       if (!r || r.status !== 201 || !r.dados) {
+        if (saiu) return;
         soltar();
-        erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toca de novo.';
+        erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toque de novo.';
         return;
       }
       guardar(autor, r.dados.id);
       estado.convites[o.festa.id] = { id: r.dados.id, url: new URL(r.dados.url, window.location.origin).href, autor, data: r.dados.data };
-      desenhar({ focar: false, entrar: false });
+      // Voltou no meio: o convite fica guardado (o mesmo link reabre), mas a
+      // tela em que a pessoa está não muda.
+      if (saiu) {
+        salvar();
+        return;
+      }
+      // "Mandar no WhatsApp" nasce quase onde estava "Criar o convite": o
+      // segundo toque de um toque duplo não pode cair nele. A trava vale a
+      // partir do quadro pintado e, como nas perguntas (avanço + trava), a
+      // partir do primeiro toque, mesmo com a rede rápida.
+      desenhar({ focar: false, entrar: false, travar: true });
+      travaAte = Math.max(travaAte, tocou + AVANCO_MS + trava());
       const p = document.getElementById('convite-pronto');
       if (p) p.focus({ preventScroll: true });
       const zap = document.getElementById('mandar-zap');
@@ -1183,7 +1333,9 @@
       texto: 'Mandar no WhatsApp',
     });
     const status = el('p', { class: 'status', role: 'status' });
-    const copiar = el('button', { type: 'button', class: 'link', texto: 'Copiar o link' });
+    // O par lado a lado é o mesmo C: 16 px, fio e seta nos dois.
+    const copiar = acaoC('button', { type: 'button' }, 'Copiar o link');
+    const abrirConvite = acaoC('a', { href: new URL(url).pathname }, 'Abrir o convite');
     copiar.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(url);
@@ -1195,9 +1347,7 @@
     return el('div', { class: 'bloco' },
       el('p', { class: 'rotulo', id: 'convite-pronto', tabindex: '-1', texto: 'O convite está pronto' }),
       zap,
-      el('div', { class: 'links' },
-        copiar,
-        el('a', { class: 'link', href: new URL(url).pathname, texto: 'Abrir o convite' })),
+      el('div', { class: 'links' }, copiar, abrirConvite),
       status,
       el('p', { class: 'previa', texto: linhasDaMensagem(o, curto, convite.data).join('\n') }));
   }
@@ -1214,33 +1364,113 @@
     }
   }
 
+  // /app?festa=<id>: se o endereço pediu uma festa, e o id dela já
+  // normalizado (FT.idDeFesta), ou null quando não tem forma de id.
+  function festaDoEndereco() {
+    const bruto = new URLSearchParams(window.location.search).get('festa');
+    return { pedida: bruto !== null, id: FT.idDeFesta(bruto) };
+  }
+
+  // Recarregar e o voltar/avançar do navegador devolvem a tela salva; um link
+  // novo para /app começa na pergunta 1 (a landing é a boas-vindas).
+  function chegouPorLink() {
+    try {
+      const n = performance.getEntriesByType('navigation')[0];
+      return !n || (n.type !== 'reload' && n.type !== 'back_forward');
+    } catch {
+      return true;
+    }
+  }
+
   async function iniciar() {
     estado.form = lerDadosIniciais();
     restaurar();
-    // Recarregar devolve a pessoa onde ela estava: o histórico ganha o início
-    // embaixo, e a tela salva em cima.
+    const pedida = festaDoEndereco();
+    if (pedida.pedida) {
+      // Link torto (caractere estranho, longo demais) diz o mesmo que o id
+      // que não existe, em vez de cair calado na pergunta 1.
+      if (pedida.id) abrirAvulsa(pedida.id);
+      else semFesta(true);
+      if (!estado.form) buscarFormulario();
+      return;
+    }
+    // O detalhe avulso da sessão não volta em /app sem ?festa: começa o pedido.
+    if (estado.avulsa) Object.assign(estado, { avulsa: false, tela: 'pergunta', passo: 0, festa: null, mandar: null, editando: null });
+    // Por link, só a lista volta, e só quando o link pede (/app?ver=lista,
+    // o "ver outras festas" do convite); as respostas de antes ficam marcadas.
+    const verLista = new URLSearchParams(window.location.search).get('ver') === 'lista';
+    if (chegouPorLink()) {
+      const lista = verLista && estado.resultado && estado.criterios;
+      Object.assign(estado, { tela: lista ? 'resultado' : 'pergunta', passo: 0, editando: null, festa: null, mandar: null, rolagemLista: 0 });
+    }
+    if (verLista) history.replaceState(history.state, '', '/app');
+    // Recarregar devolve a pessoa onde ela estava: o histórico ganha a
+    // pergunta 1 embaixo, e a tela salva em cima.
     const voltavel = (estado.tela === 'resultado' && estado.resultado)
       || (estado.tela === 'festa' && estado.festa && estado.resultado)
       || (estado.tela === 'mandar' && estado.mandar && estado.resultado)
       || (estado.tela === 'pergunta' && estado.form);
-    history.replaceState({ tela: 'inicio', passo: 0 }, '');
-    if (voltavel && estado.tela !== 'inicio') {
+    // Cada entrada leva a sua altura (n), como as de ir(): é por ela que
+    // Recomeçar volta até a pergunta 1 depois de recarregar.
+    history.replaceState({ tela: 'pergunta', passo: 0, n: 0 }, '');
+    if (voltavel && !(estado.tela === 'pergunta' && estado.passo === 0 && !estado.editando)) {
       if (estado.tela === 'pergunta') {
         const falta = primeiraSemResposta();
         if (!estado.editando && falta >= 0 && falta < estado.passo) estado.passo = falta;
       }
       // Pergunta: as anteriores ficam embaixo, para o "Voltar" andar uma a uma.
-      if (estado.tela === 'pergunta' && !estado.editando) for (let k = 0; k < estado.passo; k++) history.pushState({ tela: 'pergunta', passo: k }, '');
+      if (estado.tela === 'pergunta' && !estado.editando) for (let k = 1; k < estado.passo; k++) empilhar({ tela: 'pergunta', passo: k });
       // Detalhe e envio: a lista fica embaixo, para o voltar levar a ela.
-      if (estado.tela === 'festa' || estado.tela === 'mandar') history.pushState({ tela: 'resultado', passo: 0 }, '');
-      if (estado.tela === 'mandar' && estado.festa && estado.festa.festa.id === estado.mandar.festa.id) history.pushState({ tela: 'festa', passo: 0 }, '');
-      history.pushState({ tela: estado.tela, passo: estado.passo, editando: estado.editando }, '');
-      desenhar({ focar: false, travar: false });
+      if (estado.tela === 'festa' || estado.tela === 'mandar') empilhar({ tela: 'resultado', passo: 0 });
+      if (estado.tela === 'mandar' && estado.festa && estado.festa.festa.id === estado.mandar.festa.id) empilhar({ tela: 'festa', passo: 0 });
+      if (!(estado.tela === 'pergunta' && estado.passo === 0 && !estado.editando)) empilhar({ tela: estado.tela, passo: estado.passo, editando: estado.editando });
     } else {
-      estado.tela = 'inicio';
-      desenhar({ focar: false, travar: false });
+      Object.assign(estado, { tela: 'pergunta', passo: 0, editando: null });
     }
+    desenhar({ focar: false, travar: false });
     if (!estado.form) buscarFormulario();
+  }
+
+  // A festa do link não existe (ou o link veio torto): "Essa festa saiu." Sem
+  // rede: "Não consegui abrir a festa."
+  function semFesta(naoTem) {
+    estado.tela = 'carregando-festa';
+    const ver = el('a', { class: 'botao botao--largo', href: '/app?ver=lista', texto: 'Ver festas do fim de semana' });
+    const h1 = titulo('h1', 'titulo titulo--pergunta', naoTem ? 'Essa festa ' : 'Não consegui abrir a ', naoTem ? 'saiu.' : 'festa.');
+    $tela.replaceChildren(el('div', { class: 'tela-pergunta entra' },
+      topo(null),
+      el('section', { class: 'cabeca' },
+        h1,
+        el('hr', { class: 'fio' }),
+        el('p', { class: 'texto', texto: naoTem ? 'Ela não está mais na lista do fim de semana. Dê uma olhada nas outras.' : 'A conexão falhou no meio. Recarregue a página para tentar de novo.' })),
+      el('div', { class: 'pe' }, ver),
+      rodape()));
+    h1.focus({ preventScroll: true });
+  }
+
+  // O detalhe de uma festa, sem pedido (contrato: GET /api/festa/<id>).
+  // "Voltar" leva à landing; "Mandar pro grupo" continua valendo.
+  async function abrirAvulsa(id) {
+    estado.tela = 'carregando-festa';
+    $tela.replaceChildren(el('div', { class: 'tela-pergunta tela-carregando' },
+      topo(null), el('p', { class: 'carregando', role: 'status', texto: 'Abrindo a festa…' }), rodape()));
+    let r;
+    try {
+      r = await chamar(`/api/festa/${encodeURIComponent(id)}`);
+    } catch {
+      r = null;
+    }
+    const o = r && r.ok && r.dados && r.dados.opcao;
+    if (!o || !o.festa) {
+      semFesta(Boolean(r && r.status === 404));
+      return;
+    }
+    Object.assign(estado, { avulsa: true, festa: o, mandar: null, editando: null });
+    // A altura (n) da entrada fica: voltando do convite para a entrada do
+    // envio, o "Voltar" ainda sabe quantas telas há até a landing.
+    history.replaceState({ tela: 'festa', passo: 0, n: nivel() }, '');
+    estado.tela = 'festa';
+    desenhar({ travar: false });
   }
 
   // Sem os dados embutidos no HTML (página salva, por exemplo), busca. Sem
@@ -1264,7 +1494,7 @@
       return;
     }
     estado.form = r.dados;
-    if (estado.tela === 'inicio') desenhar({ focar: false, entrar: false });
+    if (estado.tela === 'pergunta') desenhar({ focar: false, entrar: false });
   }
   window.addEventListener('online', () => {
     if (!estado.form) buscarFormulario();

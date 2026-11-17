@@ -53,7 +53,7 @@ function sobreTeto(teto, antes) {
   return `Até R$ ${teto}, então.`;
 }
 
-// "Dança cedo, dorme bem." só quando tudo na tela acaba até a meia-noite.
+// Verdadeiro quando tudo na tela acaba até a meia-noite.
 const dormeBem = (opcoes) => opcoes.length > 0 && opcoes.every((o) => o.festa.fim <= 24);
 
 // O nome da faixa que vale: o intervalo do formulário, ou a faixa fixa.

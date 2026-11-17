@@ -15,6 +15,9 @@
 // A lista sai em ordem de horário; a patrocinada fica no lugar dela, nunca em primeiro.
 
 const C = require('./catalogo');
+// O "% a sua cara" (nucleo/cara.js) usa funções daqui; carrega na hora de
+// usar para não fechar um ciclo de require.
+const caraDe = (f, c) => require('./cara').cara(f, c);
 
 // Tolerância declarada: a pista cheia (o esquenta) pode cair até TOLERANCIA
 // horas antes do início da janela e até uma hora antes do fim; a festa precisa
@@ -216,6 +219,13 @@ function cabeNoHorario(f, janela, folga) {
     && f.fim <= volta;
 }
 
+// Se a festa fura o horário pedido: a janela (com a folga dada) e a hora de
+// voltar dita na conversa, que nunca afrouxa. A mesma régua vale no aviso,
+// na lista e no "% a sua cara".
+function furaHorario(f, c, folga = TOLERANCIA) {
+  return !cabeNoHorario(f, janelaPorId(c.janela), folga) || Boolean(c.voltaMax && f.fim > c.voltaMax);
+}
+
 const cabeNoPreco = (f, teto) => teto === 'sem-limite' || f.preco <= teto;
 
 // Distância, em anos, da média da festa até a faixa pedida (0 dentro dela).
@@ -329,11 +339,14 @@ function violacoes(f, c) {
   }
   if (c.estilos.length && !casaComEstilo(f, c)) v.push(afinidade(f, c) > 0 ? 'som parecido, não o pedido' : 'fora do seu som');
   if (!cabeNoPreco(f, c.teto)) v.push(`R$ ${f.preco - c.teto} acima do teto`);
+  // O horário pedido é "seu horário" (chegar) e "sua volta" (voltar), como na
+  // pergunta "A que horas chegar e voltar?"; o "% a sua cara" fala igual.
   const j = janelaPorId(c.janela);
-  if (f.esquenta < j.inicio - TOLERANCIA || f.fim < j.inicio + 2) v.push(`enche ${C.asHoras(f.esquenta)}, antes da sua hora`);
-  else if (f.esquenta > j.fim - 1 || f.inicio > j.fim - 2) v.push(`enche ${C.asHoras(f.esquenta)}, depois da sua hora`);
   const volta = c.voltaMax ? Math.min(c.voltaMax, j.fim) : j.fim;
-  if (f.fim > volta) v.push(`acaba ${C.asHoras(f.fim)}, depois da sua volta`);
+  if (f.esquenta < j.inicio - TOLERANCIA || f.fim < j.inicio + 2) v.push(`enche ${C.asHoras(f.esquenta)}, antes do seu horário`);
+  else if (f.esquenta > j.fim - 1 || f.inicio > j.fim - 2) v.push(`enche ${C.asHoras(f.esquenta)}, ${f.esquenta >= volta ? 'depois' : 'perto'} da sua volta`);
+  // Quem enche depois da sua volta já disse tudo: não repete o fim.
+  if (f.fim > volta && !(f.esquenta >= volta && f.esquenta > j.fim - 1)) v.push(`acaba ${C.asHoras(f.fim)}, depois da sua volta`);
   return v;
 }
 
@@ -417,8 +430,7 @@ function niveis(c) {
 // As dimensões que esta festa fura (vazio quando cabe no pedido).
 function foraDoPedido(f, c) {
   const fora = [];
-  const j = janelaPorId(c.janela);
-  if (!cabeNoHorario(f, j, TOLERANCIA) || (c.voltaMax && f.fim > c.voltaMax)) fora.push('horario');
+  if (furaHorario(f, c)) fora.push('horario');
   if (!cabeNoPreco(f, c.teto)) fora.push('preco');
   if (c.idade ? foraDaFaixa(f, c) > 0 : foraDaFaixa(f, c) > IDADE_TOLERADA) fora.push('idade');
   if (c.estilos.length && !casaComEstilo(f, c)) fora.push('estilo');
@@ -577,7 +589,9 @@ function escolher(criteriosBrutos, base) {
   const ordem = [...finais].sort((a, b) => posicaoDoBloco(a.festa, c) - posicaoDoBloco(b.festa, c)
     || a.festa.inicio - b.festa.inicio || pago(a) - pago(b) || a.festa.id.localeCompare(b.festa.id));
 
-  const opcoes = ordem.map((x) => opcao(x.festa, c));
+  // Cada opção leva o "% a sua cara" calculado pelo pedido. Só um campo a
+  // mais: não mexe em quais festas entram nem na ordem.
+  const opcoes = ordem.map((x) => ({ ...opcao(x.festa, c), cara: caraDe(x.festa, c) }));
   const afrouxou = DIMENSOES.filter((k) => ordem.some((x) => foraDoPedido(x.festa, c).includes(k)));
   const casam = ordem.filter((x) => casaComEstilo(x.festa, c)).length;
   const atendem = opcoes.filter((o) => o.atende).length;
@@ -604,6 +618,6 @@ function escolher(criteriosBrutos, base) {
 module.exports = {
   TOLERANCIA, TOLERANCIA_AFROUXADA, CHAVES_OBRIGATORIAS, DIMENSOES, QUASE_NA_FAIXA, IDADE_TOLERADA,
   sanearCriterios, falta, completar, resumoDoPedido, pedidoEmPartes, escolher, opcao, distancia, pontuar,
-  foraDoPedido, proximoDegrau, faixasVizinhas, cabeNoHorario, janelaPorId, impedimentoDoEstilo, casaComEstilo,
-  precoMinimo, juntar, vizinho, faixaDe, IDADE_MIN, IDADE_MAX, BLOCOS, deslocarIdade, faixaDoIntervalo, nomeIdade,
+  foraDoPedido, furaHorario, proximoDegrau, faixasVizinhas, cabeNoHorario, janelaPorId, impedimentoDoEstilo, casaComEstilo,
+  precoMinimo, juntar, vizinho, faixaDe, afinidade, IDADE_MIN, IDADE_MAX, BLOCOS, deslocarIdade, faixaDoIntervalo, nomeIdade,
 };
