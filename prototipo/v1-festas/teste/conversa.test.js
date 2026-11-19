@@ -17,7 +17,8 @@ let pasta;
 
 before(async () => {
   pasta = fs.mkdtempSync(path.join(os.tmpdir(), 'finde-conversa-'));
-  servidor = criarServidor({ varDir: pasta, log: mudo });
+  // Só a base fictícia: dados/reais.json, quando existe, fica fora (reais: null).
+  servidor = criarServidor({ varDir: pasta, log: mudo, reais: null });
   await new Promise((r) => servidor.listen(0, '127.0.0.1', r));
   raiz = `http://127.0.0.1:${servidor.address().port}`;
 });

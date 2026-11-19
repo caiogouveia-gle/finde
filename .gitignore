@@ -2,3 +2,5 @@ node_modules/
 var/
 .DS_Store
 *.log
+# Festas reais no app (ferramentas/reais.js): dado real, fora do git; entra na imagem do Fly.
+prototipo/v1-festas/dados/reais*

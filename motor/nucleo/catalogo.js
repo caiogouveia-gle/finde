@@ -23,7 +23,8 @@ const PRIORIDADE = {
 const NOME_FONTE = {
   envio: 'Enviado pela produtora',
   ical: 'Agenda da produtora',
-  indicacao: 'Indicado pelo grupo',
+  // Um link lido à mão na página pública do ingresso (fontes/indicacao.js).
+  indicacao: 'Lido na página do ingresso',
   'mapas-culturais': 'Mapa da Cultura',
   claude: 'Classificação automática (Claude)',
   regras: 'Classificação por regras',

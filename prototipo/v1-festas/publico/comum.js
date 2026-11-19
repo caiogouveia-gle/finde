@@ -165,13 +165,28 @@
   });
   setInterval(atualizarRotulos, 20 * 1000);
 
-  // Rodapé das telas: a nota do protótipo e o seletor de tema.
+  // Rodapé das telas: a nota do protótipo e o seletor de tema. A nota diz a
+  // verdade sobre as festas: só fictícias (o padrão), ou reais com exemplos
+  // marcados (o app, quando o servidor tem festa real), ou a festa do convite.
+  const NOTAS = {
+    ficticias: 'Protótipo · festas fictícias',
+    misto: 'Protótipo · festas reais; as marcadas como exemplo são fictícias',
+    real: 'Protótipo · festa real',
+  };
+  let nota = NOTAS.ficticias;
+  function definirNota(qual) {
+    nota = NOTAS[qual] || NOTAS.ficticias;
+  }
   function rodape() {
     return el('footer', { class: 'rodape' },
       el('div', { class: 'rodape-linha' },
-        el('p', { class: 'nota', texto: 'Protótipo · festas fictícias' }),
+        el('p', { class: nota.length > 32 ? 'nota nota--longa' : 'nota', texto: nota }),
         botaoTema()));
   }
+
+  // A marca de exemplo (festa fictícia no meio das reais): na lista, no
+  // detalhe e no convite. Texto, nunca só cor.
+  const marcaExemplo = (classe = '', texto = 'Exemplo') => el('span', { class: `marca-exemplo${classe ? ` ${classe}` : ''}`, texto });
 
   // De onde vem a média ("informada pela produtora"). Se a API não mandar,
   // a média aparece sozinha, sem "undefined".
@@ -208,6 +223,8 @@
     return el('article', { class: 'painel-convite', 'aria-labelledby': 'convite-titulo' },
       marca(marcaHref),
       el('p', { class: 'painel-rotulo', texto: rotulo }),
+      // Festa fictícia: o convite sai do app, e quem recebe não vê o rodapé.
+      f.real !== true ? el('p', { class: 'painel-exemplo' }, marcaExemplo('', 'Exemplo · festa fictícia')) : null,
       h1,
       el('p', { class: 'vh', texto: `${linhaSemMedia(o.linha)}, ${mediaFalada(f)}.` }),
       el('div', { class: 'painel-quando', 'aria-hidden': 'true' },
@@ -299,9 +316,20 @@
   const ausente = (texto) => el('p', { class: 'ausente', texto });
 
   // Onde (R6): endereço, bairro e o link do mapa.
+  // "Pinheiros, São Paulo" debaixo do endereço, sem repetir o que ele já diz.
+  function linhaDoBairro(texto, bairro) {
+    const sa = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const partes = [bairro && !sa(texto).includes(sa(bairro)) ? bairro : null, /s[aã]o paulo/i.test(texto) ? null : 'São Paulo'].filter(Boolean);
+    return partes.length ? el('span', { class: 'endereco-bairro', texto: partes.join(', ') }) : null;
+  }
+
   function blocoOnde(f, bairro, exemplo) {
     const e = f.endereco;
-    if (!e || typeof e.texto !== 'string' || !e.texto.trim()) return el('div', { class: 'bloco-onde' }, ausente('Endereço não informado.'));
+    if (!e || typeof e.texto !== 'string' || !e.texto.trim()) {
+      // Festa real: a fonte não deu o endereço. Diz onde procurar, sem inventar.
+      const texto = f.real ? (FT().preco(f).compra ? 'Endereço não divulgado. Confira na página do ingresso.' : 'Endereço não divulgado.') : 'Endereço não informado.';
+      return el('div', { class: 'bloco-onde' }, ausente(texto));
+    }
     const mapa = linkFora(FT().mapa(e, bairro), null, 'Google Maps', exemplo);
     if (mapa) {
       mapa.classList.add('link--seta');
@@ -309,7 +337,9 @@
       mapa.append(el('span', { texto: 'Abrir no mapa' }), seta());
     }
     return el('div', { class: 'bloco-onde' },
-      el('p', { class: 'endereco' }, e.texto, el('span', { class: 'endereco-bairro', texto: bairro ? `${bairro}, São Paulo` : 'São Paulo' })),
+      // A cidade uma vez só: quando o endereço já diz São Paulo, ela sai da
+      // linha de baixo, e o bairro que o endereço já diz também.
+      el('p', { class: 'endereco' }, e.texto, linhaDoBairro(e.texto, bairro)),
       mapa);
   }
 
@@ -317,20 +347,33 @@
   // linha, o lote (ou a regra do horário) e o que vem depois; onde se compra.
   // A compra em si fica na barra fixa do detalhe; o convite, que não tem
   // barra, pede o link aqui (comprar: true).
+  const valorOuGratis = (v) => (v === 0 ? 'Grátis' : FT().centavos(v));
   function blocoIngresso(f, exemplo, { comprar = false } = {}) {
     const p = FT().preco(f);
-    const linha = p.horario
+    // A linha do lote: a hora do preço, ou o lote, os esgotados e o depois; e
+    // o código, quando o lote só aparece pelo link de compra.
+    const doLote = p.horario
       ? p.horario.replace(/^./, (c) => c.toLocaleUpperCase('pt-BR'))
       : p.tipo === 'online' && p.lote ? [p.lote, p.nota, p.depois].filter(Boolean).join(' · ') : null;
+    const linha = [doLote, p.codigo ? 'só com código' : null].filter(Boolean).join(' · ') || null;
+    // Festa real lida à mão: de onde veio o preço e quando ele foi conferido.
+    const origem = f.real ? FT().origemDoPreco(f) : null;
     let onde = null;
     if (p.compra) onde = `Vende no ${p.servico}.`;
     else if (p.tipo === 'esgotado') onde = 'Os lotes esgotaram.';
     else if (p.tipo === 'sem-preco') onde = 'A venda ainda não abriu.';
+    // Por gênero: os dois preços, cada um com o rótulo.
+    const valor = p.genero
+      ? [el('span', { class: 'ingresso-valor', texto: valorOuGratis(p.genero.feminino) }), el('span', { class: 'ingresso-genero', texto: 'fem.' }),
+        el('span', { class: 'ingresso-valor', texto: valorOuGratis(p.genero.masculino) }), el('span', { class: 'ingresso-genero', texto: 'masc.' })]
+      : [el('span', { class: 'ingresso-valor', texto: p.texto })];
     return el('div', { class: `bloco-ingresso ingresso--${p.tipo}` },
-      el('p', { class: 'ingresso-preco' },
-        el('span', { class: 'ingresso-valor', texto: p.tipo === 'online' ? `R$ ${p.valor}` : p.texto }),
+      el('p', { class: 'ingresso-preco' }, ...valor,
         p.taxa ? el('span', { class: 'ingresso-taxa', texto: p.taxa }) : null),
       linha ? el('p', { class: 'ingresso-lote', texto: linha }) : null,
+      // A meia, a meia social, o comissário: cada um numa linha, com a condição.
+      ...p.outros.map((o) => el('p', { class: 'ingresso-condicao', texto: o.texto })),
+      origem ? el('p', { class: `ingresso-origem${origem.conferido ? '' : ' ingresso-origem--fora'}`, texto: origem.texto }) : null,
       // No convite, o link de compra já diz onde: a frase "Vende no X" sai.
       onde && !(comprar && p.compra) ? el('p', { class: 'ingresso-onde', texto: onde }) : null,
       comprar && p.compra ? linkForaC(p.url, `Comprar no ${p.servico}`, p.servico, exemplo) : null);
@@ -591,7 +634,7 @@
   const mov = { v: mv, pode, anima, animar, subir, fio, revelar, mascara, titulo: tituloPorLinha, painel, aoVer, soOpacidade, trocaNumero };
 
   window.Finde = {
-    el, titulo, chamar, site, marca, lockup, rodape, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
+    el, titulo, chamar, site, marca, lockup, rodape, definirNota, marcaExemplo, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
     linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite, mov,
   };
 })();

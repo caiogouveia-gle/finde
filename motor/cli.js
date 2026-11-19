@@ -21,7 +21,7 @@ const AJUDA = `Uso: node cli.js <comando>
   produtora criar "<nome>"                  cadastra uma produtora e mostra o token UMA vez
   produtora listar | produtora desativar <id>
   indicar <url> [--tipo festa|perfil|agenda|referencia] [--nome "..."]
-                                            guarda um link indicado pelo grupo em entrada/ para a leitura manual
+                                            guarda um link indicado em entrada/ para a leitura manual
   fontes                                    lista as fontes, ligadas e desligadas, com o motivo
   execucoes                                 as últimas execuções
   uso                                       gasto com o modelo e acessos à API

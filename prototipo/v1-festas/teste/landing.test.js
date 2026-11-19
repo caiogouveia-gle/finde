@@ -25,7 +25,8 @@ let raizVazia;
 let pasta;
 
 async function subir(opcoes) {
-  const s = criarServidor({ varDir: path.join(pasta, `var-${abertos.length}`), log: mudo, relogio: () => AGORA, ...opcoes });
+  // Só a base fictícia: dados/reais.json, quando existe, fica fora (reais: null).
+  const s = criarServidor({ varDir: path.join(pasta, `var-${abertos.length}`), log: mudo, relogio: () => AGORA, reais: null, ...opcoes });
   await new Promise((r) => s.listen(0, '127.0.0.1', r));
   abertos.push(s);
   return `http://127.0.0.1:${s.address().port}`;

@@ -212,8 +212,15 @@ test('a ordem e as festas não mudaram: a mesma lista de antes do campo novo, no
   assert.equal(linhas.length, 864);
   // Impressão digital tirada com o motor de antes do "% a sua cara" (16/11/2026).
   // Só muda se a base de festas ou a escolha do motor mudarem de propósito.
+  // 19/11/2026: o lote com hora ("R$ 45 até as 20h") não vale para quem chega
+  // depois dela, e 19 dos 864 pedidos mudam. Sem o `ate` dos lotes, a grade
+  // dá a impressão antiga: a mudança é só essa.
+  const digital = (b) => crypto.createHash('sha256')
+    .update([...grade()].map((p) => motor.escolher(p, b).opcoes.map((o) => o.festa.id).join(',')).join('\n')).digest('hex');
   assert.equal(crypto.createHash('sha256').update(linhas.join('\n')).digest('hex'),
-    '49b382ad527a7448676cf65041ebbd502f6cad2b82c882a8314d3a37253ea282');
+    'd3812d662809e6e5765a355e5b3ef1bb700dc2cfb7dc9d156b918d7ccbc0ba2e');
+  const semHora = base.map((f) => ({ ...f, lotes: f.lotes ? f.lotes.map(({ ate, ...l }) => l) : f.lotes }));
+  assert.equal(digital(semHora), '49b382ad527a7448676cf65041ebbd502f6cad2b82c882a8314d3a37253ea282');
   const video = motor.escolher({ dia: 'sab', janela: 'comeco-da-noite', faixa: '30-35', teto: 80, estilos: ['house-disco', 'pop-2000'] }, base);
   assert.deepEqual(video.opcoes.map((o) => o.festa.id), ['funk-ao-entardecer', 'sabado-groove', 'noite-aurora']);
   // Funk ao Entardecer começa às 18h e enche às 20h: cabe no horário, como o motor diz.

@@ -1,5 +1,5 @@
 {
-  "aviso": "Exemplo fictício de indicação do grupo. A festa, a casa, os links e a leitura são inventados.",
+  "aviso": "Exemplo fictício de link indicado, lido na página do ingresso. A festa, a casa, os links e a leitura são inventados.",
   "exemplo": true,
   "recebidaEm": "2026-11-16T21:40:00-03:00",
   "festas": [
@@ -8,7 +8,7 @@
       "origem": "https://www.instagram.com/finde_exemplo/",
       "leitura": [
         { "url": "https://www.instagram.com/finde_exemplo/", "lidoEm": "2026-11-16T21:50:00-03:00", "campos": ["nome", "instagram", "produtora"] },
-        { "url": "https://ingressos.example/baile-exemplo", "lidoEm": "2026-11-16T22:05:00-03:00", "campos": ["data", "inicio", "fim", "casa", "endereco", "lotes", "linkCompra", "idadeMinima"] }
+        { "url": "https://ingressos.example/baile-exemplo", "lidoEm": "2026-11-16T22:05:00-03:00", "campos": ["data", "inicio", "fim", "casa", "endereco", "lotes", "linkCompra", "idadeMinima"], "tipo": "ingresso", "nome": "Ingressos Exemplo" }
       ],
       "nome": "Baile Exemplo",
       "produtora": { "nome": "Coletivo Exemplo", "instagram": "@finde_exemplo" },

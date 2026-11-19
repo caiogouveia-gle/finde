@@ -37,7 +37,7 @@ Abre em `http://localhost:8764`. `curl localhost:8764/api/festas` devolve as fes
 | `node cli.js exportar [arquivo] [--todas] [--sem-exemplos]` | Os registros R14 num JSON (padrão `var/festas-r14.json`) |
 | `node cli.js produtora criar "<nome>"` | Cadastra uma produtora e mostra o token uma vez só |
 | `node cli.js produtora listar` · `produtora desativar <id>` | |
-| `node cli.js indicar <url> [--tipo festa\|perfil\|agenda\|referencia] [--nome "..."]` | Guarda um link indicado pelo grupo em `entrada/` para a leitura manual (ver "Indicação do grupo") |
+| `node cli.js indicar <url> [--tipo festa\|perfil\|agenda\|referencia] [--nome "..."]` | Guarda um link indicado em `entrada/` para a leitura manual (ver "Indicação: lido na página do ingresso") |
 | `node cli.js fontes` | Fontes ligadas e desligadas, com o motivo |
 | `node cli.js execucoes` | As últimas execuções |
 | `node cli.js uso` | Gasto com o modelo e acessos à API |
@@ -74,7 +74,7 @@ No Mac, um LaunchAgent não serve: o macOS não deixa um agente agendado ler `~/
 
 ## O que o motor entrega (R14)
 
-`GET /api/festas` devolve `{ contrato: "finde-r14/1", geradoEm, total, festas: [...] }`. Filtros: `de` e `ate` (`AAAA-MM-DD`, padrão de hoje em diante), `todas=1` (inclui o que a classificação disse que não é festa), `exemplos=0` (tira os fictícios). `GET /api/festas/:id` devolve um registro.
+`GET /api/festas` devolve `{ contrato: "finde-r14/2", geradoEm, total, festas: [...] }`. Filtros: `de` e `ate` (`AAAA-MM-DD`, padrão de hoje em diante), `todas=1` (inclui o que a classificação disse que não é festa), `exemplos=0` (tira os fictícios). `GET /api/festas/:id` devolve um registro.
 
 Cada registro:
 
@@ -83,11 +83,11 @@ Cada registro:
 | `id` | Estável entre coletas, no formato do protótipo (`[a-z0-9-]`, até 60) |
 | `nome`, `casa` | Texto |
 | `produtora` | `{ nome, instagram }` |
-| `endereco` | `{ texto, bairro, regiao, cidade }`; `bairro` e `regiao` com os ids do protótipo quando é um dos sete bairros dele |
+| `endereco` | `{ texto, bairro, regiao, cidade }`; `bairro` e `regiao` com os ids do protótipo quando é um dos sete bairros dele; `cidade` só do que a fonte diz (o campo `cidade`, o CEP da capital, a cidade com UF no endereço, como "Cotia/SP", ou um trecho "São Paulo"; bairro de São Paulo seguido de SP, como "Pinheiros - SP", é São Paulo), senão `null`. A versão `/2` do contrato marca essa regra: a `/1` gravava "São Paulo" fixo |
 | `data` | `AAAA-MM-DD` |
 | `inicio`, `pistaCheia`, `fim` | ISO com `-03:00`; fim depois da meia-noite já cai no dia seguinte |
-| `lotes` | `[{ nome, preco, disponivel, taxa?, ate? }]`; `disponivel` é `null` quando a fonte não diz; `taxa` em reais e `ate` (`HH:MM`, a hora em que o preço deixa de valer), os mesmos nomes da base do protótipo |
-| `precoAPartirDe` | `{ valor, lote, esgotadosAntes }`: o menor lote disponível (AE3 do detalhe) ou a porta |
+| `lotes` | `[{ nome, preco, disponivel, taxa?, ate?, condicoes? }]`; `disponivel` é `null` quando a fonte não diz; `taxa` em reais e `ate` (`HH:MM`, a hora em que o preço deixa de valer, também lida do nome, como "Hora Mágica (até 23:30)"), os mesmos nomes da base do protótipo; `condicoes`, o que o lote pede: `meia`, `meia-social` (também "solidário"), `feminino`, `masculino`, `comissario` e `codigo` (só aparece com um código), do nome do lote ou anotadas na leitura. Os dois gêneros no mesmo nome ("Homens e Mulheres") não são condição, e a negação ("Inteira (não é meia)") não vira meia |
+| `precoAPartirDe` | `{ valor, lote, esgotadosAntes, condicoes?, genero? }`: o menor lote disponível que qualquer pessoa compra, sem meia, meia social, gênero, comissário ou código (AE3 do detalhe), ou a porta. Só lote por gênero: o mais alto, com `genero: { feminino, masculino }`. Só lote com outra condição: o menor, com `condicoes` |
 | `esgotado`, `entradaNaPorta` | `true` quando todos os lotes acabaram e não há porta; `{ preco }` da porta |
 | `linkCompra`, `linkEvento`, `instagram`, `cartaz` | URLs http(s) ou `null` |
 | `lineup` | Lista de nomes, ou `null` quando ainda não foi divulgado |
@@ -98,7 +98,8 @@ Cada registro:
 | `ehFesta` | O que a fonte ou a classificação disse |
 | `exemplo` | `true` nos dados fictícios |
 | `classificacao` | `{ por, conferidoEm }`: quem decidiu o estilo (`envio`, `claude`, `regras`...) |
-| `fontes` | `[{ id, nome, url, conferidoEm }]`, para o rodapé do detalhe (R12) |
+| `fontes` | `[{ id, nome, url, conferidoEm }]`, para o rodapé do detalhe (R12). Na indicação, `url` é a página do ingresso lida por último (sem ela, a de onde veio o preço), sem código |
+| `paginas` | `[{ tipo, nome, url, lidoEm, campos }]`: cada página que a leitura manual abriu, com o que ela é (`ingresso`, `revenda`, `materia`, `oficial`, `instagram`, `outra`) e o que se leu nela. Vazio nas outras fontes |
 | `coletadoEm` | A última vez que alguma fonte confirmou a festa |
 | `campos` | Para cada campo presente, `{ fonte, conferidoEm }` (R17) |
 
@@ -113,12 +114,12 @@ Campo que nenhuma fonte trouxe sai `null` ou lista vazia, nunca inventado. Os in
 | Fonte | Estado | Por quê |
 |---|---|---|
 | Envio da produtora (arquivo em `entrada/` ou `POST /api/envios`) | Ligada | A produtora manda os próprios dados. É a fonte principal e a única que traz média de idade em qualquer origem |
-| Indicação do grupo (`entrada/indicacoes/`) | Ligada | Links que alguém do grupo manda, lidos e preenchidos à mão a partir da página pública. Não há coletor |
+| Indicação, "Lido na página do ingresso" (`entrada/indicacoes/`) | Ligada | Links que alguém do time manda, lidos e preenchidos à mão a partir da página pública. Não há coletor |
 | Mapas Culturais: SP Cultura e Mapa da Cultura | Ligada | APIs abertas, sem chave. Em 10/11/2026 o SP Cultura não respondia e o Mapa da Cultura não tinha nenhum evento na cidade nos 30 dias seguintes. O conector fica pronto para quando houver |
 | Agenda iCal da produtora | Desligada | Liga quando uma produtora informar o endereço `.ics` em `config/fontes.json` |
 | Instagram, Resident Advisor, Eventbrite, Sympla, Shotgun, DICE, Fever, Google Places, Sesc SP, Guia da Parik | Sem conector | Os termos proíbem coleta, não há API pública de listagem, ou o site bloqueia acesso automatizado. O motivo de cada uma está em `fontes/index.js` |
 
-Quando duas fontes falam do mesmo campo, vale a de maior prioridade: envio 100, iCal 80, indicação do grupo 70, Mapas Culturais 60, Claude 40, regras 20.
+Quando duas fontes falam do mesmo campo, vale a de maior prioridade: envio 100, iCal 80, indicação 70, Mapas Culturais 60, Claude 40, regras 20.
 
 ### O envio da produtora
 
@@ -150,11 +151,11 @@ curl -X POST localhost:8764/api/envios -H "Authorization: Bearer <token>" -H "Co
 
 O envio entra na coleta seguinte. O nome da produtora vem do cadastro, não do corpo.
 
-**Média de idade (R16).** Entra pelo envio, com origem: `produtora` (ela declara), `edicoes` (estimada pelas edições anteriores; pede `detalhe`) ou `avaliacoes` (pede `avaliacoes` com ao menos 5). Pela indicação do grupo, só a que a produtora publicou (ver "Indicação do grupo"). Média sem origem, ou vinda de qualquer outra fonte, é descartada com aviso na execução. O modelo nunca diz média: o esquema da resposta nem tem esse campo.
+**Média de idade (R16).** Entra pelo envio, com origem: `produtora` (ela declara), `edicoes` (estimada pelas edições anteriores; pede `detalhe`) ou `avaliacoes` (pede `avaliacoes` com ao menos 5). Pela indicação, só a que a produtora publicou (ver "Indicação: lido na página do ingresso"). Média sem origem, ou vinda de qualquer outra fonte, é descartada com aviso na execução. O modelo nunca diz média: o esquema da resposta nem tem esse campo.
 
-### Indicação do grupo
+### Indicação: lido na página do ingresso
 
-Quando alguém do grupo manda um link (pelo WhatsApp, por exemplo), ele entra assim:
+Quando alguém do time manda um link (pelo WhatsApp, por exemplo), ele entra assim:
 
 ```bash
 node cli.js indicar https://www.instagram.com/coletivo.x/            # perfil: vai para entrada/grupo/contatos.json
@@ -164,7 +165,7 @@ node cli.js indicar https://agenda.example/ --tipo agenda              # agenda 
 
 Sem `--tipo`, um perfil do Instagram vira `perfil` e o resto vira `festa`. O comando só registra o link; não abre a página.
 
-Para uma festa, alguém abre a página pública, lê e preenche o esqueleto com os campos do envio (nome, data, início e fim, casa, endereço, lotes, link de compra, Instagram) e anota cada leitura em `leitura`: a URL lida, a hora (`lidoEm`) e os campos que vieram dela. Cada campo do registro sai com o `conferidoEm` da leitura que o trouxe e a fonte "Indicado pelo grupo", com o link recebido como origem. Depois, `node cli.js coletar --fonte indicacao`. Exemplo fictício em `exemplos/indicacoes/`.
+Para uma festa, alguém abre a página pública, lê e preenche o esqueleto com os campos do envio (nome, data, início e fim, casa, endereço, lotes, link de compra, Instagram) e anota cada leitura em `leitura`: a URL lida, a hora (`lidoEm`) e os campos que vieram dela. Cada campo do registro sai com o `conferidoEm` da leitura que o trouxe e a fonte "Lido na página do ingresso" (id `indicacao`; o nome diz o que é, e não o grupo de quem usa o app), com o link recebido como origem. Escreva a cidade como a página diz (no endereço ou em `cidade`); sem ela, o app não põe a festa na lista de São Paulo. Cada leitura pode dizer o que a página é (`"tipo"`: `ingresso`, `revenda`, `materia`, `oficial`, `instagram` ou `outra`) e o nome dela (`"nome"`: "Billboard Brasil"); sem isso, o tipo sai do endereço (Ingresse, Sympla, Guichê Web e afins são `ingresso`; o resto é `outra`), e o app diz cada página pelo que ela é. O código de quem indicou (`passkey`, `cod`, `cupom` e afins) sai do link de compra, da fonte e das páginas: é de uma pessoa, e o app é público. Por isso o lote que só aparece com código fica na descrição, fora dos lotes, e o lote com código que entrar leva `"condicoes": ["codigo"]` e não vira o "a partir de". A cidade pode vir do texto da página ou do cartaz que ela publica; a leitura diz de onde. O estilo só sai do texto que descreve o som: curadoria a partir do lineup não entra em `estilos`. Depois, `node cli.js coletar --fonte indicacao`. Exemplo fictício em `exemplos/indicacoes/`.
 
 O preenchimento é manual de propósito: os termos do Instagram, do RA e das plataformas de ingresso não autorizam coleta automatizada (R15), e abrir dezenas de perfis por automação seria isso. Média de idade, só se a produtora a publicou, com `origem: "produtora"` e o `detalhe` de onde (R16); sem isso, fica vazia. Nada de quem indicou entra no registro nem no repositório: os arquivos ficam em `entrada/`, fora do git.
 
@@ -172,7 +173,7 @@ Os perfis de produtoras e casas ficam numa lista privada de quem contatar, `entr
 
 ## A classificação pelo Claude
 
-Para cada festa que chegou com texto e sem tudo estruturado, o motor pede ao Claude: se é festa, até dois estilos do catálogo, idade mínima, lineup, regras de entrada e a hora em que a pista enche, só o que o texto diz. A resposta vem em saída estruturada (`output_config.format`, esquema JSON) e é conferida campo a campo; fora do esquema, cai para regras. O texto da fonte vai entre marcas `<evento>` com a instrução de tratá-lo como dado.
+Para cada festa que chegou com texto e sem tudo estruturado, o motor pede ao Claude: se é festa, até dois estilos do catálogo, idade mínima, lineup, regras de entrada e a hora em que a pista enche, só o que o texto diz. O estilo sai só do que o texto diz do som: o nome do evento e os nomes do lineup não bastam ("Deu Samba" sem descrição do som fica sem estilo). As regras de palavras, sem a chave, seguem a mesma lei: o nome sai do texto antes da busca. O registro diz quem decidiu (`classificacao.por` e `campos.estilos.fonte`), e o app mostra o estilo das regras ou do Claude como inferência ("Parece ..., pela descrição da página"). A resposta vem em saída estruturada (`output_config.format`, esquema JSON) e é conferida campo a campo; fora do esquema, cai para regras. O texto da fonte vai entre marcas `<evento>` com a instrução de tratá-lo como dado.
 
 Gasto:
 
@@ -206,7 +207,7 @@ O `Dockerfile` instala o Litestream com versão e sha256 fixos, e `deploy/inicio
 node --test teste/
 ```
 
-59 testes, nenhum toca a rede nem a API paga: normalização (horário que cruza a meia-noite, preço em texto, Instagram, URLs, média de idade só com origem), o registro (prioridade entre fontes, campo ausente, menor lote disponível), a classificação com um cliente falso (saída estruturada, cache, resposta inválida, erro, teto da execução e do dia, sem chave), os conectores com respostas gravadas (Mapas Culturais, iCal, exemplos de envio e de indicação, com `conferidoEm` por leitura e taxa e hora-limite de lote), o comando `indicar`, a execução de ponta a ponta (AE1 a AE5 do plano, reexecução, trava) e a API num servidor em porta efêmera (token da produtora, corpo grande, CORS, uso sem IP).
+77 testes, nenhum toca a rede nem a API paga: normalização (horário que cruza a meia-noite, preço em texto, Instagram, URLs, média de idade só com origem), o registro (prioridade entre fontes, campo ausente, menor lote disponível), a classificação com um cliente falso (saída estruturada, cache, resposta inválida, erro, teto da execução e do dia, sem chave), os conectores com respostas gravadas (Mapas Culturais, iCal, exemplos de envio e de indicação, com `conferidoEm` por leitura e taxa e hora-limite de lote), o comando `indicar`, a execução de ponta a ponta (AE1 a AE5 do plano, reexecução, trava) e a API num servidor em porta efêmera (token da produtora, corpo grande, CORS, uso sem IP). `teste/ligacao.test.js` cobre as correções de 19/11, com dado inventado: cidade da fonte ou vazia (bairro com UF, CEP da capital, "SP" no campo), condição do lote e o "a partir de" sem ela (gêneros juntos, negação, código), a hora do nome do lote com ou sem minutos, o código fora do link, estilo que não sai do nome (com sufixo, separador sem espaço e nome da casa), o nome público da fonte e as `paginas`.
 
 ## Onde está cada coisa
 

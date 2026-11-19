@@ -1,5 +1,5 @@
 'use strict';
-// A fonte "indicado pelo grupo": leitura manual, data de conferência por campo,
+// A fonte "indicacao" (no app, "Lido na página do ingresso"): leitura manual, data de conferência por campo,
 // média de idade só declarada pela produtora, e o comando `indicar`.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -23,7 +23,14 @@ test('a indicação de exemplo vira registro com fonte "indicacao" e conferidoEm
   assert.equal(f.nome, 'Baile Exemplo');
   assert.equal(f.exemplo, true);
   assert.equal(f.data, '2026-11-14'); // "proximo-sabado" a partir de 10/11
-  assert.deepEqual(f.fontes.map((x) => [x.id, x.nome, x.url]), [['indicacao', 'Indicado pelo grupo', 'https://www.instagram.com/finde_exemplo/']]);
+  // O link da fonte é a página do ingresso lida, não o perfil indicado; cada
+  // página lida vai em `paginas`, com o que ela é.
+  assert.deepEqual(f.fontes.map((x) => [x.id, x.nome, x.url]), [['indicacao', 'Lido na página do ingresso', 'https://ingressos.example/baile-exemplo']]);
+  assert.deepEqual(f.paginas.map((x) => [x.tipo, x.nome, x.lidoEm]), [
+    ['ingresso', 'Ingressos Exemplo', '2026-11-16T22:05:00-03:00'],
+    ['instagram', 'Instagram', '2026-11-16T21:50:00-03:00'],
+  ]);
+  assert.deepEqual(f.paginas[0].campos, ['data', 'inicio', 'fim', 'casa', 'endereco', 'lotes', 'linkCompra', 'idadeMinima']);
   assert.equal(f.campos.nome.conferidoEm, '2026-11-16T21:50:00-03:00');
   assert.equal(f.campos.lotes.conferidoEm, '2026-11-16T22:05:00-03:00');
   assert.equal(f.campos.lotes.fonte, 'indicacao');

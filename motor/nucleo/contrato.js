@@ -5,8 +5,11 @@
 // campo que nenhuma fonte trouxe sai null, nunca inventado (R12).
 
 const { PRIORIDADE, NOME_FONTE, CAMPOS } = require('./catalogo');
+const { CONDICOES_DE_PESSOA } = require('./normalizar');
 
-const VERSAO_CONTRATO = 'finde-r14/1';
+// /2 (19/11/2026): a cidade do endereço é a que a fonte diz (null quando
+// não diz; a /1 gravava "São Paulo" fixo), e o registro traz `paginas`.
+const VERSAO_CONTRATO = 'finde-r14/2';
 
 // O banco guarda instantes em UTC (comparáveis como texto); o registro sai no
 // horário de São Paulo, "2026-11-10T13:30:00-03:00", como a base do protótipo.
@@ -33,15 +36,39 @@ function escolher(linhas) {
   return porCampo;
 }
 
-// Menor lote disponível (AE3 do plano do detalhe): esgotado não conta, e diz
-// quantos lotes mais baratos já esgotaram.
+// O "a partir de" (AE3 do plano do detalhe): o menor lote disponível que
+// qualquer pessoa compra. Lote com condição (meia, meia social, gênero,
+// comissário, código; normalizar.js) não conta: a FLOW sai pela inteira de
+// R$ 440, não pela meia social de R$ 220. Quando todo lote aberto é por
+// gênero, sai o mais alto (é o que vale para todo mundo no teto) e `genero`
+// traz os dois. Quando só há lote com outra condição, sai o menor deles, com
+// `condicoes` dizendo qual. Esgotado não conta, e diz quantos lotes mais
+// baratos, sem condição, já esgotaram.
+const GENEROS = ['feminino', 'masculino'];
+const conds = (l) => (Array.isArray(l.condicoes) ? l.condicoes : []);
+const dePessoa = (l) => conds(l).some((c) => CONDICOES_DE_PESSOA.includes(c));
+const menorDe = (ls) => ls.slice().sort((a, b) => a.preco - b.preco)[0] || null;
+
 function precoAPartirDe(lotes, porta) {
   if (Array.isArray(lotes) && lotes.length) {
-    const abertos = lotes.filter((l) => l.disponivel !== false).sort((a, b) => a.preco - b.preco);
+    const abertos = lotes.filter((l) => l.disponivel !== false);
     if (abertos.length) {
-      const menor = abertos[0];
-      const esgotadosAntes = lotes.filter((l) => l.disponivel === false && l.preco < menor.preco).length;
-      return { valor: menor.preco, lote: menor.nome, esgotadosAntes };
+      let escolhido = menorDe(abertos.filter((l) => !dePessoa(l)));
+      let genero = null;
+      if (!escolhido) {
+        const soGenero = abertos.filter((l) => conds(l).every((c) => !CONDICOES_DE_PESSOA.includes(c) || GENEROS.includes(c)));
+        const fem = menorDe(soGenero.filter((l) => conds(l).includes('feminino')));
+        const masc = menorDe(soGenero.filter((l) => conds(l).includes('masculino')));
+        if (fem && masc) {
+          escolhido = fem.preco >= masc.preco ? fem : masc;
+          genero = { feminino: { valor: fem.preco, lote: fem.nome }, masculino: { valor: masc.preco, lote: masc.nome } };
+        } else escolhido = menorDe(abertos);
+      }
+      const esgotadosAntes = lotes.filter((l) => l.disponivel === false && !dePessoa(l) && l.preco < escolhido.preco).length;
+      const saida = { valor: escolhido.preco, lote: escolhido.nome, esgotadosAntes };
+      if (conds(escolhido).length && !genero) saida.condicoes = conds(escolhido);
+      if (genero) saida.genero = genero;
+      return saida;
     }
     if (!porta) return null;
   }
@@ -88,6 +115,8 @@ function montarRegistro(festa, linhasValores, vinculos) {
     linkEvento: v('linkEvento'),
     instagram: v('instagram'),
     cartaz: v('cartaz'),
+    // As páginas que a leitura manual abriu: [{ tipo, nome, url, lidoEm, campos }].
+    paginas: (v('paginas') || []).map((p) => ({ ...p, lidoEm: paraSP(p.lidoEm) })),
     lineup: v('lineup'), // null = lineup ainda não divulgado
     estilos: v('estilos') || [],
     idadeMinima: v('idadeMinima'),

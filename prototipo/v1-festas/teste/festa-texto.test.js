@@ -238,7 +238,7 @@ test('/app?festa=<id>: caixa e espaço de um link copiado não derrubam o id; li
   for (const torto of ['a'.repeat(61), '<img src=x>', 'sexta sem pressa', '../etc', '', null, undefined, 42]) {
     assert.equal(T.idDeFesta(torto), null, String(torto));
   }
-  // O app não cai calado na pergunta 1: link torto mostra "Essa festa saiu.".
+  // O app não cai calado na pergunta 1: link torto mostra "Essa festa não está no Finde.".
   assert.match(APP, /if \(pedida\.id\) abrirAvulsa\(pedida\.id\);\s*else semFesta\(true\);/);
 });
 
@@ -247,6 +247,8 @@ test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na me
   const linhas = T.mensagem({ data: 'sáb, 21 nov', hora: '17h00', bairro: 'Pinheiros', festa: f, link: 'https://finde.example/p/abc' });
   assert.deepEqual(linhas, [
     'Achei essa, bora?',
+    // Fictícia: no grupo ninguém vê o rodapé do protótipo, então a mensagem diz.
+    '(Exemplo: festa fictícia do protótipo do Finde.)',
     '',
     'Sáb, 21 nov · 17h00 · média 30 anos (informada pela produtora)',
     'Disco ao Pôr do Sol',
@@ -260,9 +262,13 @@ test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na me
   assert.doesNotMatch(linhas.join('\n'), /\d+H\d*/);
   // A casa que não diz o bairro ganha o bairro; média sem origem e ausente.
   const sem = T.mensagem({ data: 'sex, 20 nov', hora: '18h00', bairro: 'Barra Funda', festa: festa({ casa: 'galpão', origemIdade: null }), link: 'x' });
-  assert.equal(sem[2], 'Sex, 20 nov · 18h00 · média 31 anos');
-  assert.match(sem[4], /^galpão · Barra Funda · /);
-  assert.equal(T.mensagem({ data: 'dom, 22 nov', hora: '16h00', bairro: 'Centro', festa: festa({ mediaIdade: null }), link: 'x' })[2], 'Dom, 22 nov · 16h00 · média de idade ainda não informada');
+  assert.equal(sem[3], 'Sex, 20 nov · 18h00 · média 31 anos');
+  assert.match(sem[5], /^galpão · Barra Funda · /);
+  assert.equal(T.mensagem({ data: 'dom, 22 nov', hora: '16h00', bairro: 'Centro', festa: festa({ mediaIdade: null }), link: 'x' })[3], 'Dom, 22 nov · 16h00 · média de idade ainda não informada');
+  // A real sai sem a linha de exemplo.
+  const real = T.mensagem({ data: 'sex, 20 nov', hora: '18h00', bairro: null, festa: festa({ real: true, exemplo: false }), link: 'x' });
+  assert.equal(real[1], '');
+  assert.doesNotMatch(real.join('\n'), /xemplo|fictícia/);
   // O app monta a mensagem por aqui, sem o toLocaleUpperCase de antes.
   assert.match(APP, /FT\.mensagem\(/);
   assert.doesNotMatch(APP.slice(APP.indexOf('function linhasDaMensagem')), /toLocaleUpperCase\('pt-BR'\),\s*\n\s*f\.nome/);

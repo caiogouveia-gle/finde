@@ -32,7 +32,7 @@ test('GET /api/festas devolve os registros R14 a partir de hoje', async () => {
   const r = await fetch(`${base}/api/festas`);
   assert.equal(r.status, 200);
   const j = await r.json();
-  assert.equal(j.contrato, 'finde-r14/1');
+  assert.equal(j.contrato, 'finde-r14/2');
   assert.equal(j.total, 4);
   const f = j.festas[0];
   for (const k of ['id', 'nome', 'produtora', 'casa', 'endereco', 'data', 'inicio', 'pistaCheia', 'fim', 'lotes', 'precoAPartirDe',

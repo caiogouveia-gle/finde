@@ -9,7 +9,7 @@
 
 (() => {
   const {
-    el, titulo, chamar, site, marca, rodape, reduzir, hora, anunciar, manterVisivel,
+    el, titulo, chamar, site, marca, rodape, definirNota, marcaExemplo, reduzir, hora, anunciar, manterVisivel,
     linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite, mov: M,
   } = window.Finde;
   const FT = window.FindeTexto;
@@ -988,9 +988,15 @@
     const r = estado.resultado;
     const d = DIA[estado.criterios.dia];
     if (!r.opcoes.length) return titulo('h1', 'titulo titulo--resultado', `Nada ${d.seu}`, `${d.nome}`, ', ainda.');
+    // Com a mistura, o título conta só as reais: exemplo não é festa do seu
+    // dia. Sem nenhuma real na lista, ele diz que são exemplos.
+    const temReal = r.opcoes.some((o) => o.exemplo === false);
+    if (r.misto && !temReal) return titulo('h1', 'titulo titulo--resultado', `Exemplos ${d.seu}`, `${d.nome}.`);
+    const cabe = (o) => o.atende && o.bloco === 'pedido';
     // Conta só as que cabem no pedido: vizinhas e fora da faixa vêm rotuladas.
-    const n = typeof r.noPedido === 'number' ? r.noPedido : typeof r.atendem === 'number' ? r.atendem : r.opcoes.length;
-    if (!n) return titulo('h1', 'titulo titulo--resultado', 'Nada do jeito que você ', 'pediu.');
+    const n = r.misto ? r.opcoes.filter((o) => o.exemplo === false && cabe(o)).length
+      : typeof r.noPedido === 'number' ? r.noPedido : typeof r.atendem === 'number' ? r.atendem : r.opcoes.length;
+    if (!n) return titulo('h1', 'titulo titulo--resultado', `${r.misto ? 'Nenhuma real' : 'Nada'} do jeito que você `, 'pediu.');
     return titulo('h1', 'titulo titulo--resultado', `${NUMERAL[n]} ${d.seu}`, `${d.nome}.`);
   }
 
@@ -1061,6 +1067,18 @@
       j ? el('div', { class: 'rg-baixo' }, baixo) : null);
   }
 
+  // O que a régua não diz: o fim e a pista cheia que a fonte não divulgou.
+  function vazioDoHorario(f) {
+    const semFim = !num(f.fim);
+    const semPico = !num(f.esquenta);
+    if (!semFim && !semPico) return null;
+    const texto = [semPico ? 'Pista cheia não informada.' : null, semFim ? 'A hora de acabar não foi divulgada.' : null].filter(Boolean).join(' ');
+    const p = ausente(texto);
+    p.setAttribute('aria-hidden', 'true');
+    p.classList.add('detalhe-vazio');
+    return p;
+  }
+
   // Posição pelo CSSOM (a CSP não deixa atributo style).
   function posicionar(raiz) {
     for (const s of raiz.querySelectorAll('[data-l]')) {
@@ -1099,10 +1117,18 @@
     const origem = f.origemIdadeCurta || (o.origem && o.origem.curta) || '';
     // A média uma vez só, com a origem: a linha da API já trazia "média N anos".
     const lido = FT.cartaoFalado(o, { pct: pctVisivel ? cara.pct : null, nova });
-    return el('li', { class: `festa${nova ? ' nova' : ''}`, 'data-festa': f.id },
+    // Festa fictícia no meio das reais: "Exemplo", em texto, na coluna da hora.
+    const exemplo = o.exemplo === true;
+    // Festa real de outra semana (o dia pedido ainda não tem real): a data.
+    const data = o.dataDistante ? FT.dataDoCartao(o.data, f.dia) : null;
+    // A % de uma festa real sem algum dado pedido conta o que falta pela metade.
+    const pctTexto = pctVisivel ? `${cara.pct}% a sua cara${cara.semDado && cara.semDado.length ? ', sem todos os dados' : ''}` : '';
+    return el('li', { class: `festa${nova ? ' nova' : ''}${exemplo ? ' festa--exemplo' : ''}`, 'data-festa': f.id },
       el('div', { class: 'festa-quando', 'aria-hidden': 'true' },
         hora(o.hora),
+        data ? el('span', { class: 'enche festa-data', texto: data }) : null,
         num(f.esquenta) ? el('span', { class: 'enche', texto: `enche ${rotuloHora(f.esquenta)}` }) : null,
+        exemplo ? marcaExemplo('marca-lateral') : null,
         o.patrocinada ? el('span', { class: 'marca-lateral', texto: 'Patrocinado' })
           : nova ? el('span', { class: 'marca-lateral nova-marca', texto: 'Nova' }) : null),
       el('div', { class: 'festa-o-que' },
@@ -1112,14 +1138,15 @@
         // linha: nem ponto pendurado no fim, nem ponto abrindo a linha de baixo.
         el('p', { class: 'onde', 'aria-hidden': 'true' },
           el('span', { class: 'onde-linha' },
-            el('span', { class: 'onde-casa', texto: FT.casaComBairro(f.casa, o.bairro) }),
+            // Festa real sem casa nem bairro: diz que não se sabe onde.
+            el('span', { class: 'onde-casa', texto: FT.casaComBairro(f.casa, o.bairro) || 'local não divulgado' }),
             el('span', { class: 'onde-preco', texto: FT.precoNaLista(f).replace(/R\$ /g, 'R$ ') }))),
         // "31 MÉDIA pela produtora": o número nunca sem a origem.
         el('p', { class: 'festa-media', 'aria-hidden': 'true' },
           el('span', { class: 'media-num', texto: temMedia ? String(f.mediaIdade) : '—' }),
           el('span', { class: 'media-rotulo', texto: temMedia ? 'média' : 'sem média' }),
           temMedia && origem ? el('span', { class: 'idade-origem', texto: origem }) : null),
-        pctVisivel ? el('p', { class: 'cara-pct', 'aria-hidden': 'true', texto: `${cara.pct}% a sua cara` }) : null,
+        pctVisivel ? el('p', { class: 'cara-pct', 'aria-hidden': 'true', texto: pctTexto }) : null,
         motivos.length ? el('p', { class: 'porque' },
           el('span', { class: 'vh', texto: 'Por que esta: ' }),
           // O "·" vai preso ao motivo seguinte, nunca pendurado no fim da linha.
@@ -1136,14 +1163,19 @@
     const grupos = [];
     for (const o of opcoes) {
       const b = o.bloco || 'pedido';
-      if (!grupos.length || grupos[grupos.length - 1].bloco !== b) grupos.push({ bloco: b, itens: [] });
+      const ex = o.exemplo === true;
+      const ultimo = grupos[grupos.length - 1];
+      if (!ultimo || ultimo.bloco !== b || ultimo.exemplo !== ex) grupos.push({ bloco: b, exemplo: ex, itens: [] });
       grupos[grupos.length - 1].itens.push(o);
     }
     // A % entra nos cartões só quando varia na lista (FT.pctNosCartoes).
     const comPct = FT.pctNosCartoes(opcoes);
+    // Com festa real na lista, os exemplos vêm depois, num trecho rotulado.
+    const temReal = opcoes.some((o) => o.exemplo === false);
     return grupos.map((g, gi) => {
-      const id = `bloco-${g.bloco}`;
-      const nome = NOME_BLOCO[g.bloco];
+      const exemplos = temReal && g.exemplo;
+      const id = `bloco-${exemplos ? 'exemplo-' : ''}${g.bloco}`;
+      const nome = exemplos ? `Exemplos · ${NOME_BLOCO[g.bloco] || 'festas fictícias'}` : NOME_BLOCO[g.bloco];
       return el('section', { class: `bloco-lista bloco-lista--${g.bloco}`, 'aria-labelledby': nome ? id : null },
         nome ? el('h2', { class: 'rotulo bloco-rotulo', id, texto: nome }) : null,
         el('ol', { class: 'festas', 'aria-label': nome ? null : 'Festas, em ordem de horário. Toque numa para ver o detalhe.' }, g.itens.map((o, i) => entrada(o, i, gi === 0, comPct))));
@@ -1347,7 +1379,7 @@
 
   // "sáb, 14 nov · Pinheiros"
   function dataLonga(o) {
-    return `${dataCurta(o.data, o.festa.dia)} · ${o.bairro}`;
+    return o.bairro ? `${dataCurta(o.data, o.festa.dia)} · ${o.bairro}` : dataCurta(o.data, o.festa.dia);
   }
 
   function secao(classe, rotulo, ...filhos) {
@@ -1368,6 +1400,9 @@
     const som = FT.som(f);
     const regras = FT.regrasFrase(f);
     const fontes = FT.fontes(f);
+    // Festa real lida à mão: cada página pelo que ela é (ingresso, matéria,
+    // revenda, Instagram), com o que se leu nela e quando.
+    const paginas = FT.paginas(f);
     const j = janelaPedida();
     // O encaixe no pedido, menos a idade, que tem a régua dela: o que a festa
     // fura (horário, preço, som), ou que ela cabe na janela.
@@ -1384,7 +1419,8 @@
     const comCara = Boolean(!estado.avulsa && caraDe(o));
     let encaixe = comCara ? '' : aviso;
     if (!encaixe && j && !comCara) {
-      if (f.inicio < j[0]) encaixe = `Começa ${asHoras(f.inicio)}, antes do ${seuHorario}; a pista enche ${asHoras(f.esquenta)}.`;
+      if (f.inicio < j[0] && !num(f.esquenta)) encaixe = `Começa ${asHoras(f.inicio)}, perto do ${seuHorario}.`;
+      else if (f.inicio < j[0]) encaixe = `Começa ${asHoras(f.inicio)}, antes do ${seuHorario}; a pista enche ${asHoras(f.esquenta)}.`;
       else encaixe = `Cabe no ${seuHorario}.`;
     }
 
@@ -1392,19 +1428,26 @@
 
     // Horário primeiro e a média junto (regra 3 da voz), depois a régua.
     const quando = el('section', { class: 'detalhe-quando', 'aria-label': 'Quando e para quem' },
+      // Fictícia no meio das reais: diz que é exemplo antes de tudo.
+      o.exemplo === true ? el('p', { class: 'marca-exemplo-linha' }, marcaExemplo('', 'Exemplo · festa fictícia')) : null,
       el('p', { class: 'rotulo', texto: dataLonga(o) }),
       el('p', { class: 'detalhe-hora', 'aria-hidden': 'true' },
         hora(o.hora),
         el('span', { class: 'detalhe-media-curta', texto: m.ausente ? 'média não informada' : `média ${m.numero} anos` })),
       el('p', { class: 'vh', texto: `${o.horario} ${m.ausente ? m.frase : `Média de ${m.numero} anos.`}` }),
       regua(f),
+      // Sem a régua (festa real sem o fim) ou sem a pista cheia, o vazio
+      // aparece à vista; o leitor de tela já ouviu a frase do horário acima.
+      vazioDoHorario(f),
       encaixe ? el('p', { class: `detalhe-encaixe${encaixe === aviso ? ' detalhe-encaixe--fura' : ''}`, texto: encaixe }) : null,
       // A média contra a faixa pedida, de onde ela vem e quando foi conferida (R5).
       // A régua da média, logo abaixo de onde ela vem, e o encaixe na faixa.
       el('div', { class: 'detalhe-media' },
         reguaIdade(f),
-        el('p', { class: 'media-origem' },
-          m.ausente ? m.frase : `${m.origem ? m.origem.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')) : 'Origem não informada'}${m.quando ? `, ${m.quando}` : ''}.`),
+        // Sem média, o vazio já está ao lado da hora ("média não informada"):
+        // a frase não se repete aqui.
+        m.ausente ? null : el('p', { class: 'media-origem' },
+          `${m.origem ? m.origem.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')) : 'Origem não informada'}${m.quando ? `, ${m.quando}` : ''}.`),
         m.ausente || estado.avulsa || comCara ? null : el('p', { class: 'idade-encaixe', texto: encaixeIdade(f) }),
         blocoCara(o)));
 
@@ -1413,8 +1456,9 @@
         cartaz(f),
         el('div', { class: 'ficha-texto' },
           nome,
-          el('p', { class: 'ficha-produtora', texto: f.produtora }),
-          el('p', { class: 'ficha-casa', texto: f.casa }))),
+          // Festa real sem produtora ou sem casa: o vazio aparece, não some.
+          f.produtora ? el('p', { class: 'ficha-produtora', texto: f.produtora }) : ausente('Produtora não informada.'),
+          f.casa ? el('p', { class: 'ficha-casa', texto: f.casa }) : ausente('Casa não divulgada.'))),
       f.frase ? el('p', { class: 'ficha-frase', texto: f.frase }) : null,
       blocoOnde(f, o.bairro, ex));
 
@@ -1427,10 +1471,13 @@
       regras ? secao('detalhe-entrada', 'Para entrar', el('p', { class: 'secao-texto', texto: regras })) : null,
       secao('detalhe-som', 'Som', el('p', { class: 'secao-texto', texto: som.frase })),
       el('footer', { class: 'detalhe-fontes', 'aria-label': 'De onde vêm estes dados' },
-        fontes.length
-          ? el('p', { class: 'fontes' }, el('span', { class: 'rotulo', texto: 'Demais dados' }), ' ',
-            fontes.map((x, i) => [i ? '; ' : '', x.nome, x.quando ? `, ${x.quando}` : '']).flat(), '.')
-          : ausente('Fonte não informada.')),
+        paginas.length
+          ? el('p', { class: 'fontes' }, el('span', { class: 'rotulo', texto: 'Fontes' }), ' ',
+            paginas.map((x, i) => [i ? '; ' : '', x.nome, x.lido ? `: ${x.lido}` : '', x.quando ? `, ${x.quando}` : '']).flat(), '.')
+          : fontes.length
+            ? el('p', { class: 'fontes' }, el('span', { class: 'rotulo', texto: 'Demais dados' }), ' ',
+              fontes.map((x, i) => [i ? '; ' : '', x.nome, x.quando ? `, ${x.quando}` : '']).flat(), '.')
+            : ausente('Fonte não informada.')),
       rodape(),
       barraDaFesta(o, ex));
   }
@@ -1469,17 +1516,23 @@
   // por critério, na ordem do peso (o horário primeiro), se cabe, quase cabe
   // ou não cabe. Quando algo não cabe inteiro, uma linha diz o que pesa mais,
   // para a conta se deixar conferir.
-  const CABE = { true: 'Cabe', quase: 'Quase', false: 'Não cabe' };
+  const CABE = { true: 'Cabe', quase: 'Quase', false: 'Não cabe', null: 'Sem dado' };
   function blocoCara(o) {
     const cara = estado.avulsa ? null : caraDe(o);
     if (!cara) return null;
-    const partes = FT.ordemDaCara(cara.partes).filter((x) => String(x.cabe) in CABE);
+    // O critério sem dado já está na frase de semDado ("Sem dado, conta pela
+    // metade: a idade."): a linha dele sai da lista, para não dizer duas vezes.
+    const partes = FT.ordemDaCara(cara.partes).filter((x) => String(x.cabe) in CABE && x.cabe !== null);
     const peso = FT.pesoDaCara(cara);
+    // Festa real: o que ela não informa conta pela metade, e a frase diz.
+    const semDado = FT.semDadoDaCara(cara);
+    const classe = (x) => (x.cabe === true ? 'cabe' : x.cabe === false ? 'nao' : x.cabe === null ? 'sem-dado' : 'quase');
     return el('div', { class: 'cara' },
-      el('p', { class: 'cara-pct cara-pct--detalhe' }, el('span', { class: 'cara-num', texto: `${cara.pct}%` }), el('span', { texto: 'a sua cara' })),
+      el('p', { class: 'cara-pct cara-pct--detalhe' }, el('span', { class: 'cara-num', texto: `${cara.pct}%` }), el('span', { texto: semDado ? 'a sua cara, sem todos os dados' : 'a sua cara' })),
       peso ? el('p', { class: 'cara-peso', texto: peso }) : null,
+      semDado ? el('p', { class: 'cara-peso', texto: semDado }) : null,
       partes.length ? el('ul', { class: 'cara-partes', 'aria-label': 'O que conta na porcentagem' },
-        partes.map((x) => el('li', { class: `cara-linha cara-linha--${x.cabe === true ? 'cabe' : x.cabe === false ? 'nao' : 'quase'}` },
+        partes.map((x) => el('li', { class: `cara-linha cara-linha--${classe(x)}` },
           el('span', { class: 'cara-rotulo', texto: CABE[String(x.cabe)] }),
           el('span', { class: 'cara-texto', texto: semQuebraNoPreco(x.texto.trim()) })))) : null);
   }
@@ -1500,11 +1553,11 @@
     if (p.compra) {
       esquerda = linkFora(p.url, null, p.servico, ex, 'barra-preco barra-comprar');
       esquerda.replaceChildren(
-        el('span', { class: 'barra-preco-valor', texto: `R$ ${p.valor}` }),
+        el('span', { class: 'barra-preco-valor', texto: p.curto || p.texto }),
         el('span', { class: 'barra-comprar-rotulo' }, el('span', { texto: 'Comprar' }), seta()));
-      esquerda.setAttribute('aria-label', `Comprar ingresso no ${p.servico}, R$ ${p.valor}, abre fora do finde`);
+      esquerda.setAttribute('aria-label', `Comprar ingresso no ${p.servico}, ${p.texto}, abre fora do finde`);
     } else {
-      const curto = { porta: ['na porta', `R$ ${p.valor}`], gratis: ['entrada', 'Grátis'], esgotado: ['ingresso', 'Esgotado'] }[p.tipo] || ['ingresso', 'A confirmar'];
+      const curto = { porta: ['na porta', p.curto], gratis: ['entrada', 'Grátis'], esgotado: ['ingresso', 'Esgotado'] }[p.tipo] || ['ingresso', 'A confirmar'];
       esquerda = el('p', { class: 'barra-preco' },
         el('span', { class: 'barra-preco-valor', texto: curto[1] }),
         el('span', { class: 'barra-preco-rotulo', texto: curto[0] }));
@@ -1693,8 +1746,13 @@
     }
   }
 
+  // O rodapé diz a verdade sobre as festas: com festa real no servidor, as
+  // fictícias são exemplos marcados.
+  const notaDoForm = (form) => definirNota(form && form.misto ? 'misto' : 'ficticias');
+
   async function iniciar() {
     estado.form = lerDadosIniciais();
+    notaDoForm(estado.form);
     restaurar();
     const pedida = festaDoEndereco();
     if (pedida.pedida) {
@@ -1743,18 +1801,21 @@
     if (!estado.form) buscarFormulario();
   }
 
-  // A festa do link não existe (ou o link veio torto): "Essa festa saiu." Sem
-  // rede: "Não consegui abrir a festa."
-  function semFesta(naoTem) {
+  // A festa do link não está no Finde (saiu, nunca entrou por ser de outra
+  // cidade, ou o link veio torto): "Essa festa não está no Finde." Sem rede:
+  // "Não consegui abrir a festa."
+  // Festa real que já foi (passou: true): "Essa festa já passou."
+  function semFesta(naoTem, passou = false) {
     estado.tela = 'carregando-festa';
     const ver = el('a', { class: 'botao botao--largo', href: '/app?ver=lista', texto: 'Ver festas do fim de semana' });
-    const h1 = titulo('h1', 'titulo titulo--pergunta', naoTem ? 'Essa festa ' : 'Não consegui abrir a ', naoTem ? 'saiu.' : 'festa.');
+    const h1 = passou ? titulo('h1', 'titulo titulo--pergunta', 'Essa festa já ', 'passou.')
+      : titulo('h1', 'titulo titulo--pergunta', naoTem ? 'Essa festa não está ' : 'Não consegui abrir a ', naoTem ? 'no Finde.' : 'festa.');
     $tela.replaceChildren(el('div', { class: 'tela-pergunta entra' },
       topo(null),
       el('section', { class: 'cabeca' },
         h1,
         el('hr', { class: 'fio' }),
-        el('p', { class: 'texto', texto: naoTem ? 'Ela não está mais na lista do fim de semana. Dê uma olhada nas outras.' : 'A conexão falhou no meio. Recarregue a página para tentar de novo.' })),
+        el('p', { class: 'texto', texto: passou ? 'Ela já aconteceu. Dê uma olhada nas deste fim de semana.' : naoTem ? 'Ela não está na lista do fim de semana. Dê uma olhada nas outras.' : 'A conexão falhou no meio. Recarregue a página para tentar de novo.' })),
       el('div', { class: 'pe' }, ver),
       rodape()));
     h1.focus({ preventScroll: true });
@@ -1774,7 +1835,7 @@
     }
     const o = r && r.ok && r.dados && r.dados.opcao;
     if (!o || !o.festa) {
-      semFesta(Boolean(r && r.status === 404));
+      semFesta(Boolean(r && r.status === 404), Boolean(r && r.dados && r.dados.passou));
       return;
     }
     Object.assign(estado, { avulsa: true, festa: o, mandar: null, editando: null });
@@ -1806,6 +1867,7 @@
       return;
     }
     estado.form = r.dados;
+    notaDoForm(estado.form);
     if (estado.tela === 'pergunta') desenhar({ focar: false, entrar: false });
   }
   window.addEventListener('online', () => {

@@ -71,6 +71,7 @@ async function coletarInstancia(inst, { fetch, agora, config }) {
         casa: s.name,
         endereco: endereco(s),
         bairro: s.En_Bairro,
+        cidade: s.En_Municipio,
         data: o.starts_on,
         inicio,
         fim,

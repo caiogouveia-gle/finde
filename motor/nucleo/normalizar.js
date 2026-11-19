@@ -86,6 +86,48 @@ function horario(data, hhmm, depoisDe = null) {
   return `${dia}T${h}:${mm}:00${FUSO}`;
 }
 
+// O que um lote pede de quem compra, pelo nome que a fonte deu ou pelo campo
+// `condicoes` que a leitura anotou. "De pessoa" (meia, meia social, gênero,
+// comissário) não é preço de todo mundo: não vira o "a partir de" (contrato.js).
+// "codigo" é o lote que só aparece com um código. O link público sai sem
+// código (semCodigo), então esse lote também não é preço de todo mundo.
+const CONDICOES = ['meia', 'meia-social', 'feminino', 'masculino', 'comissario', 'codigo'];
+const CONDICOES_DE_PESSOA = ['meia', 'meia-social', 'feminino', 'masculino', 'comissario', 'codigo'];
+function condicoesDoLote(nome, declaradas) {
+  // "Inteira (não é meia)": a negação sai antes de procurar a condição.
+  const t = semAcento(typeof nome === 'string' ? nome : '').replace(/\b(?:nao|sem)\s+(?:e\s+)?(?:meia|desconto)(?:[\s-]*(?:social|entrada))?/g, ' ');
+  const c = new Set(Array.isArray(declaradas) ? declaradas.filter((x) => CONDICOES.includes(x)) : []);
+  if (/meia[\s-]*social|solidari|\+\s*\d+\s*kg|\balimento\b/.test(t)) c.add('meia-social');
+  else if (/\bmeia\b|meia[\s-]entrada|\bestudante/.test(t) && !/\binteira\b/.test(t)) c.add('meia');
+  // Os dois gêneros no mesmo nome ("Homens e Mulheres") é lote para todo mundo.
+  const fem = /\bfemin|\bfem\b|\bmulher/.test(t);
+  const masc = /\bmasculin|\bmasc\b|\bhomem\b|\bhomens\b/.test(t);
+  if (fem && !masc) c.add('feminino');
+  if (masc && !fem) c.add('masculino');
+  if (/comissari/.test(t)) c.add('comissario');
+  if (/\bcodigo\b|\bcupom\b/.test(t)) c.add('codigo');
+  if (c.has('meia-social')) c.delete('meia');
+  return CONDICOES.filter((x) => c.has(x));
+}
+
+// O código de quem indicou (passkey, cod, cupom) sai do link que vai ao
+// público: é de uma pessoa, e o repositório e o app são públicos.
+const PARAMETROS_DE_CODIGO = /^(passkey|cod|codigo|code|coupon|cupom|utm_.*)$/i;
+function semCodigo(v) {
+  const u = url(v);
+  if (!u) return null;
+  const p = new URL(u);
+  for (const k of [...p.searchParams.keys()]) if (PARAMETROS_DE_CODIGO.test(k)) p.searchParams.delete(k);
+  return p.toString();
+}
+
+// "Hora Mágica (até 23:30)" -> "23:30"; "até 0h" -> "00:00"; "até as 1h"
+// -> "01:00": a hora que o próprio nome do lote dá.
+function ateDoNome(nome) {
+  const m = semAcento(typeof nome === 'string' ? nome : '').match(/\bate (?:as |a )?([01]?\d|2[0-3])(?::([0-5]\d)|h([0-5]\d)?)(?!\d)/);
+  return m ? `${m[1].padStart(2, '0')}:${m[2] || m[3] || '00'}` : null;
+}
+
 function lotes(lista, avisos) {
   if (!Array.isArray(lista)) return null;
   const saida = [];
@@ -96,7 +138,7 @@ function lotes(lista, avisos) {
       continue;
     }
     const lote = {
-      nome: texto(l.nome, 40) || `${saida.length + 1}º lote`,
+      nome: texto(l.nome, 80) || `${saida.length + 1}º lote`,
       preco: p,
       disponivel: typeof l.disponivel === 'boolean' ? l.disponivel : null,
     };
@@ -104,13 +146,17 @@ function lotes(lista, avisos) {
     // que aquele preço deixa de valer.
     if (l.taxa !== undefined && l.taxa !== null) {
       const t = preco(l.taxa);
-      if (t !== null && t <= 200) lote.taxa = t;
+      // A taxa passa de R$ 200 em setor caro (15% de R$ 4.750); o que não
+      // serve é taxa maior que o próprio ingresso.
+      if (t !== null && t <= Math.max(200, p)) lote.taxa = t;
       else avisos.push('taxa de lote inválida ignorada');
     }
     if (l.ate !== undefined && l.ate !== null) {
       if (typeof l.ate === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(l.ate)) lote.ate = l.ate;
       else avisos.push('hora-limite de lote inválida ignorada');
-    }
+    } else if (ateDoNome(l.nome)) lote.ate = ateDoNome(l.nome);
+    const cs = condicoesDoLote(l.nome, l.condicoes);
+    if (cs.length) lote.condicoes = cs;
     saida.push(lote);
   }
   return saida.length ? saida : null;
@@ -125,7 +171,7 @@ function idadeMinima(v) {
 }
 
 // R16: a média só entra com origem declarada. Pelo envio, a produtora declara
-// em qualquer das três origens; pela indicação do grupo, só vale o que a
+// em qualquer das três origens; pelo link indicado, só vale o que a
 // produtora publicou (origem "produtora", com o detalhe de onde).
 function mediaIdade(v, fonte, avisos) {
   if (v === undefined || v === null) return null;
@@ -166,6 +212,73 @@ function mediaIdade(v, fonte, avisos) {
   return saida;
 }
 
+// A cidade, só do que a fonte diz: o campo `cidade`, o CEP da capital (01000
+// a 05999 e 08000 a 08499), a cidade com a UF no endereço ("Cotia/SP",
+// "Olinda - PE"), ou um trecho "São Paulo" no endereço. Bairro de São Paulo
+// seguido de SP ("Pinheiros - SP") é São Paulo; bairro sem UF não diz a
+// cidade. Sem nada disso, null: o app não põe na lista de São Paulo o que
+// não sabe se é de São Paulo.
+const UFS = 'AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO';
+const SAO_PAULO = 'São Paulo';
+const ehSaoPaulo = (t) => /^(?:sao paulo|sampa|sp)$/.test(semAcento(t).replace(/[\s.]+/g, ' ').trim());
+function cidade(b) {
+  const declarada = texto(b.cidade, 80);
+  if (declarada) {
+    const semUf = declarada.replace(new RegExp(`\\s*[,/–-]?\\s*\\b(?:${UFS})$`), '').trim();
+    if (ehSaoPaulo(declarada) || ehSaoPaulo(semUf)) return SAO_PAULO;
+    return semUf || declarada;
+  }
+  const t = texto(b.endereco, 200);
+  if (!t) return null;
+  const cep = t.match(/\b(\d{5})-?\d{3}\b/);
+  if (cep) {
+    const n = Number(cep[1]);
+    if ((n >= 1000 && n <= 5999) || (n >= 8000 && n <= 8499)) return SAO_PAULO;
+  }
+  const comUf = [...t.matchAll(new RegExp(`([A-Za-zÀ-ÿ'. ]{2,40}?)\\s*[/,–-]\\s*(${UFS})\\b(?![A-Za-zÀ-ÿ])`, 'g'))]
+    .map((m) => ({ nome: m[1].trim(), uf: m[2] })).filter((c) => c.nome && !/\d/.test(c.nome)).pop();
+  if (comUf) {
+    if (ehSaoPaulo(comUf.nome)) return SAO_PAULO;
+    // "Consolação - SP": o bairro não é a cidade.
+    if (acharBairro(comUf.nome)) return comUf.uf === 'SP' ? SAO_PAULO : null;
+    return comUf.nome;
+  }
+  // "Complexo Canindé, São Paulo", "Rua X, 10 São Paulo SP".
+  const trechos = t.split(/\s*(?:[,|;()]|\s[-–]\s)\s*/);
+  if (trechos.some((x) => /^(?:\d[\d.]*\s+)?sao paulo(?:\s*[/-]?\s*sp)?$/.test(semAcento(x).trim()))) return SAO_PAULO;
+  return null;
+}
+
+// As páginas que a leitura manual abriu, cada uma com o que é (página do
+// ingresso, revenda, matéria, site oficial, Instagram) e o que se leu nela.
+// O rodapé do app diz cada uma pelo nome; o preço diz de onde veio.
+const TIPOS_PAGINA = ['ingresso', 'revenda', 'materia', 'oficial', 'instagram', 'outra'];
+const CAMPOS_PAGINA = ['nome', 'produtora', 'casa', 'endereco', 'data', 'inicio', 'pistaCheia', 'fim', 'lotes', 'entradaNaPorta',
+  'linkCompra', 'linkEvento', 'instagram', 'cartaz', 'lineup', 'estilos', 'idadeMinima', 'regras', 'ehFesta', 'descricao'];
+function paginas(lista, avisos) {
+  if (!Array.isArray(lista)) return null;
+  const saida = [];
+  for (const x of lista.slice(0, 12)) {
+    const u = x && semCodigo(x.url);
+    const quando = x && typeof x.lidoEm === 'string' && !Number.isNaN(Date.parse(x.lidoEm)) ? new Date(Date.parse(x.lidoEm)).toISOString() : null;
+    if (!u || !quando || !TIPOS_PAGINA.includes(x.tipo)) {
+      avisos.push('página lida sem link, hora ou tipo válido ignorada');
+      continue;
+    }
+    const campos = Array.isArray(x.campos) ? [...new Set(x.campos.filter((c) => CAMPOS_PAGINA.includes(c)))] : [];
+    // A mesma página lida duas vezes vira uma, com a leitura mais nova.
+    const igual = saida.find((y) => y.url === u && y.tipo === x.tipo);
+    if (igual) {
+      igual.campos = [...new Set([...igual.campos, ...campos])];
+      if (quando > igual.lidoEm) igual.lidoEm = quando;
+      continue;
+    }
+    saida.push({ tipo: x.tipo, nome: texto(x.nome, 60), url: u, lidoEm: quando, campos });
+  }
+  saida.sort((a, b) => b.lidoEm.localeCompare(a.lidoEm));
+  return saida.length ? saida : null;
+}
+
 // O bruto de qualquer fonte -> { campos, avisos }. Campo ausente não entra.
 function normalizarItem(b, fonte) {
   const avisos = [];
@@ -183,12 +296,13 @@ function normalizarItem(b, fonte) {
   por('casa', texto(b.casa, 120));
   const endTexto = texto(b.endereco, 200);
   const achado = acharBairro(b.bairro, b.endereco, b.casa);
-  if (endTexto || achado) {
+  const daCidade = cidade(b);
+  if (endTexto || achado || daCidade) {
     por('endereco', {
       texto: endTexto,
       bairro: achado ? achado.bairro : null,
       regiao: achado ? achado.regiao : null,
-      cidade: 'São Paulo',
+      cidade: daCidade,
     });
   }
 
@@ -211,8 +325,11 @@ function normalizarItem(b, fonte) {
     if (p !== null) por('entradaNaPorta', { preco: p });
   }
 
-  por('linkCompra', url(b.linkCompra));
-  por('linkEvento', url(b.linkEvento));
+  // Na indicação, o link sai sem o código de quem indicou (semCodigo).
+  const limpa = fonte === 'indicacao' ? semCodigo : url;
+  por('linkCompra', limpa(b.linkCompra));
+  por('linkEvento', limpa(b.linkEvento));
+  por('paginas', paginas(b.paginas, avisos));
   por('instagram', instagram(b.instagram));
   por('cartaz', url(b.cartaz));
   if (Array.isArray(b.lineup)) {
@@ -249,4 +366,7 @@ function novoId(nome, data, semente) {
   return `${base}-${dia}-${h}`;
 }
 
-module.exports = { normalizarItem, novoId, slug, preco, instagram, url, horario, idadeMinima, texto };
+module.exports = {
+  normalizarItem, novoId, slug, preco, instagram, url, horario, idadeMinima, texto, cidade, condicoesDoLote, ateDoNome, semCodigo, paginas,
+  CONDICOES, CONDICOES_DE_PESSOA, TIPOS_PAGINA,
+};

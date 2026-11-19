@@ -379,7 +379,7 @@ test('app: a API, o detalhe sem pedido e os convites continuam', async () => {
   const convite = await pedir(raiz.app, url);
   assert.equal(convite.status, 200);
   assert.match(convite.corpo, /<script src="\/plano\.js" defer><\/script>/);
-  assert.match(convite.corpo, /<meta property="og:title" content="Bora no sábado\? Sábado Groove/);
+  assert.match(convite.corpo, /<meta property="og:title" content="Exemplo · Bora no sábado\? Sábado Groove/);
   conferirEnderecos('app /p/<id>', 'plano.html', convite.corpo, ENDERECOS.app);
   assert.equal((await pedir(raiz.app, '/p/naoexiste')).status, 404);
   const fora = await pedir(raiz.app, '/fora.html?servico=Instagram&para=https%3A%2F%2Fwww.instagram.com%2Fx%2F');

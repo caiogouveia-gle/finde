@@ -298,6 +298,9 @@ button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action
 .texto { font-size: 16px; line-height: 1.55; color: var(--corrido); max-width: 28ch; text-wrap: pretty; }
 .dica { font-size: 14px; line-height: 1.5; color: var(--corrido); }
 .nota { font-size: 13px; color: var(--rotulo); white-space: nowrap; }
+/* A nota da mistura ("festas reais; as marcadas como exemplo são fictícias")
+   não cabe numa linha a 390 px: quebra, e o seletor de tema desce. */
+.nota--longa { white-space: normal; max-width: 34ch; padding: var(--e2) 0; line-height: 1.4; }
 
 /* Ação secundária (opção C do manual): o texto em 16 px sobre um fio rosé,
    com a seta de 16 px a 12 px do texto quando a ação é sozinha. O alvo de
@@ -616,6 +619,21 @@ p.carregando {
 .festa-o-que { display: flex; flex-direction: column; min-width: 0; }
 .festa .nome { font: 400 22px/1.1 var(--serifa); letter-spacing: 0; color: var(--tinta); text-wrap: pretty; overflow-wrap: break-word; }
 .marca-lateral { margin-bottom: var(--e1); }
+/* Festa fictícia no meio das reais: "EXEMPLO" na coluna da hora, como um
+   carimbo de impresso (fio fino, sem canto, sem fundo), e na cor da tinta,
+   para ser lido antes da hora. No detalhe, a mesma marca abre a página. */
+.marca-exemplo {
+  align-self: flex-start;
+  padding: 2px 5px 1px;
+  border: .5px solid var(--tinta);
+  font-size: 10px; font-weight: 500; line-height: 1.35; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--tinta);
+  white-space: nowrap;
+}
+.festa-quando .marca-exemplo.marca-lateral { margin: 2px 0 0; color: var(--tinta); }
+.marca-exemplo-linha { margin: 0; }
+/* A data de uma festa real de outra semana, logo abaixo da hora. */
+.festa-data { color: var(--tinta); }
 /* Casa e preço: o "·" entre eles mora na margem esquerda do preço. Quando o
    preço desce de linha, essa margem cai fora da caixa (overflow: hidden), e
    o ponto some: nem pendurado no fim da linha, nem abrindo a de baixo. */
@@ -761,6 +779,8 @@ p.carregando {
 .cara-rotulo { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
 .cara-texto { font-size: 14px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
 .cara-linha--nao .cara-texto { color: var(--corrido); }
+/* O que a festa real não informa: conta pela metade, na cor do rótulo. */
+.cara-linha--sem-dado .cara-texto { color: var(--rotulo); }
 /* Tela baixa (SE, 568 px): a hora encolhe para o nome caber antes da barra. */
 @media (max-height: 660px) {
   .detalhe-hora .hora { font-size: 48px; }
@@ -806,7 +826,16 @@ h2.secao-rotulo { margin: 0; }
 .ingresso--porta .ingresso-valor, .ingresso--esgotado .ingresso-valor, .ingresso--sem-preco .ingresso-valor { font-size: 30px; line-height: 1.1; }
 .ingresso-taxa { font-size: 13px; color: var(--rotulo); }
 .ingresso-lote { font-size: 14px; line-height: 1.45; color: var(--tinta); }
+/* Por gênero, os dois preços: o rótulo curto colado no valor. */
+.ingresso-genero { font-size: 13px; color: var(--rotulo); margin-left: calc(-1 * var(--e3) + 4px); }
+.ingresso-genero + .ingresso-valor { margin-left: var(--e2, 8px); }
+/* A meia, a meia social e o comissário: à parte, com a condição. */
+.ingresso-condicao { font-size: 14px; line-height: 1.45; color: var(--rotulo); }
 .ingresso-onde { font-size: 14px; line-height: 1.45; color: var(--corrido); }
+/* De onde veio o preço; o que não foi conferido no ingresso leva o fio de aviso. */
+.ingresso-origem { font-size: 13px; line-height: 1.45; color: var(--rotulo); max-width: 40ch; }
+.ingresso-origem--fora { position: relative; padding-left: 18px; color: var(--tinta); }
+.ingresso-origem--fora::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
 .bloco-ingresso .link { align-self: flex-start; }
 .bloco-ingresso > .link:last-child { margin-bottom: -12px; }
 
@@ -971,6 +1000,8 @@ h2.secao-rotulo { margin: 0; }
 .painel-convite .marca { font-size: 36px; align-self: flex-start; }
 /* "Convite de <nome>": um nome de 24 letras sem espaço quebra dentro do painel. */
 .painel-rotulo { padding-top: var(--e2); font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); overflow-wrap: anywhere; }
+/* Festa fictícia no convite: a marca de exemplo logo abaixo do rótulo. */
+.painel-exemplo { margin: 0; display: flex; }
 .painel-titulo { font: 400 36px/1 var(--serifa); letter-spacing: -.005em; color: var(--tinta); text-wrap: balance; }
 .painel-titulo em { font-style: italic; }
 .painel-quando { display: flex; flex-direction: column; gap: 6px; margin-top: var(--e2); padding-top: 14px; border-top: .5px solid var(--fio-off); }

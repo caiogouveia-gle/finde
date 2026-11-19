@@ -1,5 +1,5 @@
 'use strict';
-// Os campos do registro finde-r14/1 (motor/nucleo/contrato.js) na base
+// Os campos do registro finde-r14/2 (motor/nucleo/contrato.js) na base
 // fictícia: validação campo a campo, o que segue para a API e o relógio da
 // base fictícia.
 const { test } = require('node:test');

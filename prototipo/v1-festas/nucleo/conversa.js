@@ -23,6 +23,10 @@ function abertura(resultado) {
   if (resultado.aviso) return resultado.aviso;
   const ops = resultado.opcoes.filter((o) => !o.patrocinada);
   if (ops.length < 2) return '';
+  // Festa real sem pista cheia ou sem preço não entra na comparação: "a
+  // primeira enche antes" precisa de todas as horas.
+  const num = (x) => typeof x === 'number' && Number.isFinite(x);
+  if (!ops.every((o) => num(o.festa.esquenta) && num(o.festa.preco))) return '';
   const unico = (valores, alvo) => valores.filter((v) => v === alvo).length === 1;
   const esq = ops.map((o) => o.festa.esquenta);
   const precos = ops.map((o) => o.festa.preco);
@@ -36,8 +40,10 @@ function abertura(resultado) {
   return f.join(' ');
 }
 
-function sobrePerto(ref, opcoes) {
-  if (!opcoes.length) return '';
+function sobrePerto(ref, todas) {
+  // Festa sem bairro não tem distância: fica fora da conta.
+  const opcoes = todas.filter((o) => typeof o.distancia === 'number');
+  if (!opcoes.length) return todas.length ? `Não sei o bairro ${todas.length === 1 ? 'dela' : 'delas'}.` : '';
   const perto = opcoes.filter((o) => o.distancia <= PERTO_MIN);
   if (!perto.length) return `A mais perto fica a ${Math.min(...opcoes.map((o) => o.distancia))} min ${ref.de}.`;
   const max = Math.max(...perto.map((o) => o.distancia));
@@ -54,7 +60,7 @@ function sobreTeto(teto, antes) {
 }
 
 // Verdadeiro quando tudo na tela acaba até a meia-noite.
-const dormeBem = (opcoes) => opcoes.length > 0 && opcoes.every((o) => o.festa.fim <= 24);
+const dormeBem = (opcoes) => opcoes.length > 0 && opcoes.every((o) => typeof o.festa.fim === 'number' && o.festa.fim <= 24);
 
 // O nome da faixa que vale: o intervalo do formulário, ou a faixa fixa.
 const nomeDaFaixa = (c) => (c.idade ? `${c.idade.min} a ${c.idade.max}${c.idade.max >= 50 ? ' ou mais' : ''}` : C.nomeFaixa(c.faixa));

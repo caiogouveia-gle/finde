@@ -29,7 +29,13 @@ const QUASE_ANOS = M.QUASE_NA_FAIXA;
 // Preço "quase": até 20% acima do teto (conta em inteiros: acima × 5 ≤ teto).
 const QUASE_PRECO_DIVISOR = 5;
 
-const credito = (cabe) => (cabe === true ? 1 : cabe === 'quase' ? 0.5 : 0);
+// Festa real pode não ter o dado de um critério pedido (a média, o bairro, o
+// preço, o som). Esse critério entra nas partes com cabe: null ("não se sabe")
+// e conta pela metade, como um 'quase': tirá-lo da conta dava 100% a festa que
+// só se sabe o horário, e contar zero puniria a festa pelo que a fonte não
+// disse. Assim, festa com dado faltando nunca chega a 100%.
+const num = (x) => typeof x === 'number' && Number.isFinite(x);
+const credito = (cabe) => (cabe === true ? 1 : cabe === 'quase' || cabe === null ? 0.5 : 0);
 
 const HORAS = ['', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze'];
 
@@ -72,6 +78,8 @@ function horario(f, c) {
   const comeca = `começa ${C.asHoras(f.inicio)}`;
   if (cabe !== true) return { cabe, texto: furoDoHorario(f, c, j) || `${comeca}, fora do seu horário` };
   if (f.inicio >= j.inicio) return { cabe, texto: `${comeca}, no seu horário` };
+  // Sem a pista cheia: começa até uma hora antes de você chegar.
+  if (!num(f.esquenta)) return { cabe, texto: `${comeca}, perto do seu horário` };
   // Começa antes de você chegar: o que conta é a pista cheia (a régua logo
   // acima mostra as duas horas).
   return { cabe, texto: f.esquenta >= j.inicio ? `enche ${C.asHoras(f.esquenta)}, no seu horário` : 'você chega com a pista cheia' };
@@ -84,18 +92,22 @@ function furoDoHorario(f, c, j) {
   const volta = c.voltaMax ? Math.min(j.fim, c.voltaMax) : j.fim;
   const depoisDaVolta = (d) => (d ? `${emHoras(d)} depois da sua volta` : 'na hora da sua volta');
   const furos = [];
-  if (f.fim < j.inicio + 2) {
+  // Sem a pista cheia, a chegada é o começo; sem o fim, a régua do fim não fala.
+  const temFim = num(f.fim);
+  const chega = num(f.esquenta) ? f.esquenta : f.inicio;
+  const enche = num(f.esquenta) ? 'enche' : 'começa';
+  if (temFim && f.fim < j.inicio + 2) {
     furos.push(f.fim <= j.inicio
       ? `acaba ${C.asHoras(f.fim)}, antes do seu horário`
       : `acaba ${C.asHoras(f.fim)}, só ${emHoras(f.fim - j.inicio)} depois que você chega`);
-  } else if (f.esquenta < j.inicio - M.TOLERANCIA) {
-    furos.push(`enche ${C.asHoras(f.esquenta)}, ${emHoras(j.inicio - f.esquenta)} antes do seu horário`);
-  } else if (f.esquenta > j.fim - 1 || f.inicio > j.fim - 2) {
-    if (f.esquenta >= volta) furos.push(`enche ${C.asHoras(f.esquenta)}, ${depoisDaVolta(f.esquenta - volta)}`);
-    else if (f.esquenta > j.fim - 1) furos.push(`enche ${C.asHoras(f.esquenta)}, só ${emHoras(volta - f.esquenta)} antes da sua volta`);
+  } else if (chega < j.inicio - M.TOLERANCIA) {
+    furos.push(`${enche} ${C.asHoras(chega)}, ${emHoras(j.inicio - chega)} antes do seu horário`);
+  } else if (chega > j.fim - 1 || f.inicio > j.fim - 2) {
+    if (chega >= volta) furos.push(`${enche} ${C.asHoras(chega)}, ${depoisDaVolta(chega - volta)}`);
+    else if (chega > j.fim - 1) furos.push(`${enche} ${C.asHoras(chega)}, só ${emHoras(volta - chega)} antes da sua volta`);
     else furos.push(`começa ${C.asHoras(f.inicio)}, só ${emHoras(volta - f.inicio)} antes da sua volta`);
   }
-  if (f.fim > volta && !(furos[0] || '').startsWith('acaba')) {
+  if (M.fimLimita(f) && f.fim > volta && !(furos[0] || '').startsWith('acaba')) {
     furos.push(furos.length ? `acaba ${C.asHoras(f.fim)}` : `acaba ${C.asHoras(f.fim)}, ${depoisDaVolta(f.fim - volta)}`);
   }
   return furos.join(', e ');
@@ -108,6 +120,7 @@ function idade(f, c) {
   if (c.idade && c.idade.min <= M.IDADE_MIN && c.idade.max >= M.IDADE_MAX) return null;
   const fx = M.faixaDe(c);
   if (!fx) return null;
+  if (!num(f.mediaIdade)) return { cabe: null, texto: 'média de idade não informada' };
   if (f.mediaIdade >= fx.min && f.mediaIdade <= fx.max) return { cabe: true, texto: 'média dentro da sua faixa' };
   const abaixo = f.mediaIdade < fx.min;
   const d = abaixo ? fx.min - f.mediaIdade : f.mediaIdade - fx.max;
@@ -120,6 +133,7 @@ function idade(f, c) {
 // Bairro marcado = cabe; vizinho de um marcado (a mesma noção do motor) = quase.
 function bairro(f, c) {
   if (!c.bairros || !c.bairros.length) return null;
+  if (!f.bairro) return { cabe: null, texto: 'bairro não informado' };
   const b = C.BAIRROS[f.bairro];
   const onde = b ? b.em : `em ${f.bairro}`;
   const um = c.bairros.length === 1;
@@ -136,19 +150,22 @@ function bairro(f, c) {
 // Até o teto = cabe; até 20% acima = quase.
 function preco(f, c) {
   if (c.teto === undefined || c.teto === null || c.teto === 'sem-limite') return null;
-  const valor = C.reais(f.preco);
+  if (!num(f.preco)) return { cabe: null, texto: 'preço não informado' };
+  // O preço de quem chega no começo da janela (lote com hora vencida não vale).
+  const pago = M.precoPara(f, c);
+  const valor = C.reais(pago);
   if (c.teto === 0) {
-    return f.preco === 0
+    return pago === 0
       ? { cabe: true, texto: 'grátis, como você pediu' }
       : { cabe: false, texto: `${valor}, e você pediu só de graça` };
   }
-  if (f.preco <= c.teto) {
-    return { cabe: true, texto: `${valor}, ${f.preco === c.teto ? 'bem no seu teto' : 'abaixo do seu teto'}` };
+  if (pago <= c.teto) {
+    return { cabe: true, texto: `${valor}, ${pago === c.teto ? 'bem no seu teto' : 'abaixo do seu teto'}` };
   }
-  const acima = f.preco - c.teto;
+  const acima = Math.round((pago - c.teto) * 100) / 100;
   return {
     cabe: acima * QUASE_PRECO_DIVISOR <= c.teto ? 'quase' : false,
-    texto: `${valor}, R$ ${acima} acima do seu teto`,
+    texto: `${valor}, ${C.reais(acima)} acima do seu teto`,
   };
 }
 
@@ -157,37 +174,49 @@ function preco(f, c) {
 // que ele lembra.
 function som(f, c) {
   if (!c.estilos || !c.estilos.length) return null;
+  if (!f.estilos || !f.estilos.length) return { cabe: null, texto: 'som não informado' };
   const um = c.estilos.length === 1;
   const casou = f.estilos.find((e) => c.estilos.includes(e));
-  if (casou) return { cabe: true, texto: `${nomeDoSom(casou)}, ${um ? 'como' : 'um dos que'} você pediu` };
+  // Estilo lido da descrição (regras ou Claude), não dito pela página: "parece".
+  const parece = f.estilosInferidos === true ? 'parece ' : '';
+  if (casou) return { cabe: true, texto: `${parece}${nomeDoSom(casou)}, ${um ? 'como' : 'um dos que'} você pediu` };
   const afinidade = (p, e) => (C.AFINIDADE[p] || {})[e] || 0;
   const lembra = (e) => Math.max(0, ...c.estilos.map((p) => afinidade(p, e)));
   const maisPerto = f.estilos.reduce((a, e) => (lembra(e) > lembra(a) ? e : a), f.estilos[0]);
   if (lembra(maisPerto) > 0) {
     const pedido = c.estilos.reduce((a, p) => (afinidade(p, maisPerto) > afinidade(a, maisPerto) ? p : a), c.estilos[0]);
-    return { cabe: false, texto: `${nomeDoSom(maisPerto)}, parecido com ${nomeDoSom(pedido)}` };
+    return { cabe: false, texto: `${parece}${nomeDoSom(maisPerto)}, parecido com ${nomeDoSom(pedido)}` };
   }
-  return { cabe: false, texto: `${nomeDoSom(maisPerto)}, fora ${um ? 'do que' : 'dos que'} você pediu` };
+  return { cabe: false, texto: `${parece}${nomeDoSom(maisPerto)}, fora ${um ? 'do que' : 'dos que'} você pediu` };
 }
 
 const AVALIAR = { horario, idade, bairro, preco, som };
 
-// cara(festa, criteriosCompletos) -> { pct, partes: [{ criterio, cabe, texto }] } | null
+// cara(festa, criteriosCompletos) -> { pct, partes: [{ criterio, cabe, texto }], semDado? } | null
 // null só quando nada foi pedido (não acontece numa lista do motor: a janela é obrigatória).
+// semDado: os critérios pedidos que a festa não informa (contam pela metade).
+// pct null quando a festa não informa nenhum critério pedido.
 function cara(f, c) {
   const partes = [];
+  const semDado = [];
   let soma = 0;
   let pesos = 0;
+  let conhecidos = 0;
   for (const criterio of CRITERIOS) {
     const r = AVALIAR[criterio](f, c);
     if (!r) continue;
     partes.push({ criterio, cabe: r.cabe, texto: r.texto });
+    if (r.cabe === null) semDado.push(criterio);
+    else conhecidos += 1;
     pesos += PESOS[criterio];
     soma += PESOS[criterio] * credito(r.cabe);
   }
   if (!pesos) return null;
-  const pct = Math.max(0, Math.min(100, Math.round((soma * 100) / pesos)));
-  return { pct, partes };
+  if (!conhecidos) return { pct: null, partes, semDado };
+  // Arredonda para baixo quando falta dado: 99,5 não vira 100.
+  const bruto = (soma * 100) / pesos;
+  const pct = Math.max(0, Math.min(semDado.length ? 99 : 100, Math.round(bruto)));
+  return semDado.length ? { pct, partes, semDado } : { pct, partes };
 }
 
 module.exports = { cara, PESOS, CRITERIOS, emHoras, emAnos, nomeDoSom };

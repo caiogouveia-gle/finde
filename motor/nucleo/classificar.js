@@ -12,7 +12,8 @@ const { ESTILOS } = require('./catalogo');
 const { custoUsd, estimarUsd } = require('./custo');
 const { semAcento } = require('./bairros');
 
-const VERSAO_PROMPT = 'classificar/1';
+// /2: o estilo sai só do que o texto diz do som, nunca do nome do evento.
+const VERSAO_PROMPT = 'classificar/2';
 // O modelo padrão mora só aqui. Claude Haiku 5.5, decisão do Caio em 10/11/2026;
 // FINDE_MODELO troca por outro.
 const MODELO_PADRAO = 'claude-haiku-5-5';
@@ -43,7 +44,7 @@ O texto do evento vem de fontes externas, entre as marcas <evento> e </evento>. 
 Use apenas o que o texto diz. Quando algo não estiver no texto, devolva null ou lista vazia.
 
 - ehFesta: true para festa, baile, balada, noite com DJ ou banda para dançar, after, roda de samba com pista. false para exposição, teatro, cinema, palestra, oficina, curso, concurso, evento infantil, feira, concerto sentado.
-- estilos: até dois, só desta lista: house-disco (house, disco, nu-disco), pop-2000 (pop, hits, flashback dos anos 2000), mpb-samba (MPB, samba, pagode, choro), funk (funk carioca, baile funk), indie-rock (indie, rock, alternativo, punk), eletronica (techno, trance, minimal, eletrônica em geral). Lista vazia se o som não estiver claro.
+- estilos: até dois, só desta lista: house-disco (house, disco, nu-disco), pop-2000 (pop, hits, flashback dos anos 2000), mpb-samba (MPB, samba, pagode, choro), funk (funk carioca, baile funk), indie-rock (indie, rock, alternativo, punk), eletronica (techno, trance, minimal, eletrônica em geral). Só quando o Texto descreve o som. O nome do evento e os nomes do lineup não bastam: "Deu Samba" sem texto sobre o som dá lista vazia, e não vale o que você sabe de um artista. Lista vazia se o som não estiver claro.
 - idadeMinima: a idade mínima de entrada, só se o texto disser (ex.: "proibida a entrada de menores de 18" vale 18). "Livre" vale null.
 - lineup: nomes de DJs, bandas e artistas que o texto anuncia. Lista vazia se não houver.
 - documento, vestimenta, lista: a regra de entrada em uma frase curta, só se o texto disser.
@@ -66,10 +67,41 @@ const NAO_FESTA = ['exposicao', 'teatro', 'peca', 'oficina', 'palestra', 'curso'
 
 const temPalavra = (texto, p) => new RegExp(`(^|[^a-z0-9])${p.replace(/[-\s]/g, '[-\\s]')}([^a-z0-9]|$)`).test(texto);
 
+// O nome do evento sai do texto antes de procurar o estilo: "Deu Samba" não
+// diz que a festa toca samba, e a descrição costuma repetir o nome. O lineup
+// também fica de fora (nome de artista não é descrição do som). Para dizer se
+// é festa, o nome conta.
+// O nome da casa também sai ("Casa do Samba" não diz o som da noite).
+// O nome se parte nos separadores, com ou sem espaço ("Disco Inferno:
+// Halloween", "Funk Room #3"), e cada trecho de duas palavras ou mais sai do
+// texto, do mais longo ao mais curto: "Rock in Rio Day 2" some de "o Rock in
+// Rio Day volta", e "Funk Room" some de "Funk Room de volta".
+function trechosDoNome(nome) {
+  const n = semAcento(nome || '').replace(/[^a-z0-9\s:#()|·,–-]/g, ' ');
+  const saida = new Set();
+  for (const parte of n.split(/[:#()|·,–]|\s-\s|-(?=\s|$)/)) {
+    const ps = parte.trim().split(/\s+/).filter(Boolean);
+    if (ps.join(' ').length >= 4) saida.add(ps.join(' '));
+    for (let i = 0; i < ps.length; i += 1) {
+      for (let j = i + 2; j <= ps.length; j += 1) {
+        const trecho = ps.slice(i, j).join(' ');
+        if (trecho.length >= 6) saida.add(trecho);
+      }
+    }
+  }
+  return [...saida].sort((a, b) => b.length - a.length);
+}
+function semONome(t, nome, casa = null) {
+  const trechos = [...trechosDoNome(nome), ...trechosDoNome(casa)].sort((a, b) => b.length - a.length);
+  // Só palavra inteira: "samba" do nome não come "sambadinha".
+  return trechos.reduce((acc, p) => acc.replace(new RegExp(`(^|[^a-z0-9])${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')}(?=[^a-z0-9]|$)`, 'g'), '$1 '), t);
+}
+
 function porRegras(entrada) {
   const t = semAcento([entrada.nome, entrada.texto, (entrada.lineup || []).join(' ')].join(' \n '));
+  const descricao = semONome(semAcento(entrada.texto || ''), entrada.nome, entrada.casa);
   const estilos = Object.entries(PALAVRAS_ESTILO)
-    .map(([id, ps]) => [id, ps.filter((p) => temPalavra(t, p)).length])
+    .map(([id, ps]) => [id, ps.filter((p) => temPalavra(descricao, p)).length])
     .filter(([, n]) => n > 0)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 2)
@@ -248,4 +280,4 @@ function criarClassificador({
   };
 }
 
-module.exports = { criarClassificador, criarClienteClaude, porRegras, validarResposta, modeloAtual, ESQUEMA, SISTEMA, MODELO_PADRAO };
+module.exports = { criarClassificador, criarClienteClaude, porRegras, semONome, validarResposta, modeloAtual, ESQUEMA, SISTEMA, MODELO_PADRAO };

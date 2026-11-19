@@ -5,7 +5,7 @@
 // com ela oculta; uma leitura velha nunca desfaz a resposta da própria pessoa.
 
 (() => {
-  const { el, chamar, site, marca, rodape, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite, mov: M } = window.Finde;
+  const { el, chamar, site, marca, rodape, definirNota, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite, mov: M } = window.Finde;
   const $tela = document.getElementById('tela');
   const id = decodeURIComponent(window.location.pathname.split('/')[2] || '');
 
@@ -177,6 +177,8 @@
   // ------------------------------------------------------------ desenho
 
   function montar() {
+    // O rodapé diz se a festa do convite é real ou fictícia.
+    definirNota(plano && plano.festa && plano.festa.festa && plano.festa.festa.exemplo === false ? 'real' : 'ficticias');
     const o = plano.festa;
     const f = o.festa;
     const nome = el('input', {

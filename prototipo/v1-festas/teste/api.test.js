@@ -264,8 +264,8 @@ test('/p/:id: 404 quando não existe; quando existe, as metas de compartilhament
   const sim = await chamar('GET', `/p/${criado.corpo.id}`);
   assert.equal(sim.status, 200);
   // A prévia do link (o que o grupo vê primeiro) traz a média com a origem.
-  assert.match(sim.corpo, /<meta property="og:title" content="Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)">/);
-  assert.match(sim.corpo, /<title>Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)<\/title>/);
+  assert.match(sim.corpo, /<meta property="og:title" content="Exemplo · Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)">/);
+  assert.match(sim.corpo, /<title>Exemplo · Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)<\/title>/);
   assert.match(sim.corpo, /<meta property="og:description" content="[^"]*Média de 31 anos, informada pela produtora\.">/);
   assert.match(sim.corpo, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png">/);
   assert.equal((await chamar('GET', '/plano.html')).status, 404);

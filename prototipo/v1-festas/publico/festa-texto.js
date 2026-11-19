@@ -1,6 +1,6 @@
 'use strict';
 // As frases do detalhe da festa e do convite, a partir do registro
-// finde-r14/1: preço e lote, média e origem, som, regras de entrada, fontes e
+// finde-r14/2: preço e lote, média e origem, som, regras de entrada, fontes e
 // o destino de cada link. Puro, sem DOM: roda no navegador (window.FindeTexto)
 // e no node --test (module.exports).
 
@@ -30,9 +30,10 @@
     [/(^|\.)instagram\.com$/, 'Instagram'],
   ];
 
-  const reais = (v) => (v === 0 ? 'grátis' : `R$ ${v}`);
-  // 6 -> "R$ 6"; 7.5 -> "R$ 7,50".
+  // 6 -> "R$ 6"; 7.5 -> "R$ 7,50". Preço de festa real pode ter centavos.
   const centavos = (v) => (Number.isInteger(v) ? `R$ ${v}` : `R$ ${v.toFixed(2).replace('.', ',')}`);
+  const reais = (v) => (v === 0 ? 'grátis' : centavos(v));
+  const valor = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
 
   // "21:00" -> "até as 21h"; "00:00" -> "até a meia-noite"; "01:30" -> "até a 1h30".
   function ateAs(hhmm) {
@@ -79,43 +80,157 @@
     return `${lista(ordinais)} lotes esgotados`;
   }
 
-  // O preço que a pessoa paga hoje: o menor lote disponível (o esgotado não
-  // conta), a porta quando não há lote, ou o preço da lista numa festa antiga.
+  // O lote seguinte no tempo: o mesmo ingresso com o número de lote maior.
+  // "2º lote, unissex" -> { n: 2, tipo: "unissex" }; "Lote 02, feminino" ->
+  // { n: 2, tipo: "feminino" }. Sem número de lote, null: aí não dá para
+  // dizer o que vem depois, e "Backstage" não vira o "depois" da pista.
+  const ORDINAL = /(\d+)\s*[º°ªo]?\s*lote\b|\blote\s*(\d+)/i;
+  function loteNoTempo(nome) {
+    const m = typeof nome === 'string' && nome.match(ORDINAL);
+    if (!m) return null;
+    const tipo = nome.replace(m[0], ' ').toLocaleLowerCase('pt-BR').replace(/[\s,;()·…-]+/g, ' ').trim();
+    return { n: Number(m[1] || m[2]), tipo };
+  }
+  function loteSeguinte(lotes, menor) {
+    // (os lotes de pessoa já saem antes; ver preco)
+    const este = loteNoTempo(menor.nome);
+    if (!este) return null;
+    return lotes.map((l) => [l, loteNoTempo(l.nome)])
+      .filter(([l, x]) => x && x.tipo === este.tipo && x.n > este.n && l.disponivel !== false && l.preco > menor.preco)
+      .sort((a, b) => a[1].n - b[1].n)
+      .map(([l]) => l)[0] || null;
+  }
+
+  // O que o lote pede de quem compra: o campo `condicoes` do motor ou o nome
+  // do lote. A mesma regra de motor/nucleo/normalizar.js (condicoesDoLote; um
+  // teste confere que batem). Lote com condição (de pessoa ou de código) não
+  // é preço de todo mundo: o link público sai sem o código de quem indicou.
+  const CONDICOES = ['meia', 'meia-social', 'feminino', 'masculino', 'comissario', 'codigo'];
+  const DE_PESSOA = ['meia', 'meia-social', 'feminino', 'masculino', 'comissario', 'codigo'];
+  const GENEROS = ['feminino', 'masculino'];
+  const ROTULO_CONDICAO = {
+    meia: 'Meia-entrada', 'meia-social': 'Meia social', feminino: 'Feminino', masculino: 'Masculino', comissario: 'Com comissário', codigo: 'Com código',
+  };
+  const semAcento = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  function condicoesDoLote(l) {
+    // "Inteira (não é meia)": a negação sai antes de procurar a condição.
+    const t = semAcento(l && l.nome).replace(/\b(?:nao|sem)\s+(?:e\s+)?(?:meia|desconto)(?:[\s-]*(?:social|entrada))?/g, ' ');
+    const c = new Set(l && Array.isArray(l.condicoes) ? l.condicoes.filter((x) => CONDICOES.includes(x)) : []);
+    if (/meia[\s-]*social|solidari|\+\s*\d+\s*kg|\balimento\b/.test(t)) c.add('meia-social');
+    else if (/\bmeia\b|meia[\s-]entrada|\bestudante/.test(t) && !/\binteira\b/.test(t)) c.add('meia');
+    // Os dois gêneros no mesmo nome ("Homens e Mulheres") é lote para todo mundo.
+    const fem = /\bfemin|\bfem\b|\bmulher/.test(t);
+    const masc = /\bmasculin|\bmasc\b|\bhomem\b|\bhomens\b/.test(t);
+    if (fem && !masc) c.add('feminino');
+    if (masc && !fem) c.add('masculino');
+    if (/comissari/.test(t)) c.add('comissario');
+    if (/\bcodigo\b|\bcupom\b/.test(t)) c.add('codigo');
+    if (c.has('meia-social')) c.delete('meia');
+    return CONDICOES.filter((x) => c.has(x));
+  }
+  const dePessoa = (l) => condicoesDoLote(l).some((c) => DE_PESSOA.includes(c));
+  const menorDe = (ls) => ls.slice().sort((a, b) => a.preco - b.preco)[0] || null;
+  // "General Admission, meia social (+1 kg)" -> "General Admission (+1 kg)":
+  // o nome sem a palavra da condição, que o rótulo já diz.
+  const semCondicao = (nome) => String(nome || '')
+    .replace(/\b(meia[\s-]*social|meia[\s-]entrada|meia|solid[aá]ri[oa]|comiss[aá]rios?|feminin[oa]s?|masculin[oa]s?|c[oó]digo|cupom)(?![\p{L}\d])/giu, '')
+    .replace(/\s*[,;·-]\s*(?=\()/g, ' ').replace(/\s*[,;·-]\s*(?=[,;·)]|$)/g, '').replace(/^\s*[,;·-]\s*/, '').replace(/\(\s*\)/g, '').replace(/\s{2,}/g, ' ').trim();
+  // "1º lote, feminino" e "1º lote, masculino" -> "1º lote".
+  const semGenero = (nome) => String(nome || '').replace(/[,;·(\s-]*\b(feminin[oa]s?|masculin[oa]s?|fem\.?|masc\.?)\b\)?/gi, '').replace(/[\s,;·-]+$/, '').trim();
+
+  // O preço que a pessoa paga hoje: o menor lote disponível que qualquer
+  // pessoa compra (sem meia, meia social, gênero ou comissário); a porta
+  // quando não há lote; ou o preço da lista numa festa antiga. Quando todo
+  // lote aberto é por gênero, os dois, e `valor` é o mais alto, o que vale
+  // para todo mundo no teto. É a conta do precoAPartirDe do motor.
+  // `outros`: os lotes com condição de pessoa, um por condição, para o
+  // detalhe dizer à parte ("Meia social: R$ 220, ..."). `codigo`: o único
+  // lote aberto pede um código, que o link público não traz.
   function preco(f) {
     const lotes = Array.isArray(f.lotes) ? f.lotes : null;
-    const porta = f.entradaNaPorta && Number.isInteger(f.entradaNaPorta.preco) ? f.entradaNaPorta : null;
+    const porta = f.entradaNaPorta && valor(f.entradaNaPorta.preco) ? f.entradaNaPorta : null;
     const linkCompra = urlSegura(f.linkCompra) ? f.linkCompra : null;
-    const base = { valor: null, lote: null, nota: null, horario: null, taxa: null, depois: null, compra: false, servico: null, url: null };
+    const base = {
+      valor: null, lote: null, nota: null, horario: null, taxa: null, depois: null, compra: false, servico: null, url: null,
+      genero: null, condicao: null, codigo: false, outros: [], curto: null,
+    };
     if (lotes && lotes.length) {
-      const abertos = lotes.filter((l) => l.disponivel !== false).slice().sort((a, b) => a.preco - b.preco);
+      const abertos = lotes.filter((l) => l.disponivel !== false);
       if (abertos.length) {
-        const menor = abertos[0];
-        const antes = lotes.filter((l) => l.disponivel === false && l.preco < menor.preco).map((l) => l.nome);
+        let menor = menorDe(abertos.filter((l) => !dePessoa(l)));
+        let genero = null;
+        let condicao = null;
+        if (!menor) {
+          const soGenero = abertos.filter((l) => condicoesDoLote(l).every((c) => !DE_PESSOA.includes(c) || GENEROS.includes(c)));
+          const fem = menorDe(soGenero.filter((l) => condicoesDoLote(l).includes('feminino')));
+          const masc = menorDe(soGenero.filter((l) => condicoesDoLote(l).includes('masculino')));
+          if (fem && masc) {
+            genero = { feminino: fem, masculino: masc };
+            menor = fem.preco >= masc.preco ? fem : masc;
+          } else {
+            menor = menorDe(abertos);
+            const c = condicoesDoLote(menor).find((x) => DE_PESSOA.includes(x));
+            condicao = c ? ROTULO_CONDICAO[c].toLocaleLowerCase('pt-BR') : null;
+          }
+        }
+        const antes = lotes.filter((l) => l.disponivel === false && !dePessoa(l) && l.preco < menor.preco).map((l) => l.nome);
         // Preço por horário: o lote vale até uma hora, e depois vem o próximo.
         let horario = null;
-        const limite = ateAs(menor.ate);
+        const limite = genero ? null : ateAs(menor.ate);
         if (limite) {
-          const depois = lotes.slice(lotes.indexOf(menor) + 1).find((l) => l.disponivel !== false && l.preco > menor.preco);
+          // Aqui o lote é definido pela hora: o de depois é o seguinte da lista.
+          const depois = lotes.slice(lotes.indexOf(menor) + 1).find((l) => l.disponivel !== false && !dePessoa(l) && l.preco > menor.preco);
           horario = depois ? `${limite}; depois, ${reais(depois.preco)}` : limite;
         }
-        const taxa = typeof menor.taxa === 'number' && menor.taxa > 0 ? `+ ${centavos(menor.taxa)} de taxa` : null;
-        if (menor.preco === 0) return { ...base, tipo: 'gratis', valor: 0, texto: 'Grátis', horario, taxa: null };
-        const seguinte = horario ? null : lotes.slice(lotes.indexOf(menor) + 1).find((l) => l.disponivel !== false && l.preco > menor.preco);
+        const taxaDe = (l) => (typeof l.taxa === 'number' && l.taxa > 0 ? l.taxa : null);
+        let taxa = taxaDe(menor) ? `+ ${centavos(taxaDe(menor))} de taxa` : null;
+        if (genero) {
+          const tf = taxaDe(genero.feminino);
+          const tm = taxaDe(genero.masculino);
+          taxa = tf && tm ? `+ ${centavos(tf)} e ${centavos(tm)} de taxa` : null;
+        }
+        // Os lotes de pessoa que não são o preço mostrado: o mais barato de cada condição.
+        const outros = [];
+        for (const c of DE_PESSOA) {
+          if (genero && GENEROS.includes(c)) continue;
+          const l = menorDe(abertos.filter((x) => x !== menor && condicoesDoLote(x).includes(c)));
+          if (!l || outros.some((o) => o.lote === l.nome)) continue;
+          // "Meia social: R$ 220, General Admission (+1 kg)." O rótulo é a
+          // palavra da página ("solidário" fica solidário); o resto do nome
+          // diz de qual setor e o que a condição pede.
+          const rotulo = c === 'meia-social' && /solidari/.test(semAcento(l.nome)) ? 'Solidário' : ROTULO_CONDICAO[c];
+          const resto = semCondicao(l.nome);
+          outros.push({ condicao: c, valor: l.preco, lote: l.nome, texto: `${rotulo}: ${reais(l.preco)}${resto ? `${resto.startsWith('(') ? ' ' : ', '}${resto}` : ''}.` });
+        }
+        const codigo = condicoesDoLote(menor).includes('codigo') || Boolean(genero && [genero.feminino, genero.masculino].some((l) => condicoesDoLote(l).includes('codigo')));
+        if (menor.preco === 0 && !genero) return { ...base, tipo: 'gratis', valor: 0, texto: 'Grátis', horario, taxa: null, outros, codigo, curto: 'Grátis' };
+        const seguinte = horario || genero ? null : loteSeguinte(lotes.filter((l) => !dePessoa(l) || l === menor), menor);
+        // Lote de gênero grátis diz "grátis", nunca "R$ 0".
+        const texto = genero ? `${reais(genero.feminino.preco)} fem. · ${reais(genero.masculino.preco)} masc.` : centavos(menor.preco);
+        const curtoDe = (v, segundo) => (v === 0 ? 'grátis' : segundo ? centavos(v).replace('R$ ', '') : centavos(v));
+        const curtoGenero = genero
+          ? `${curtoDe(genero.feminino.preco, false)}/${curtoDe(genero.masculino.preco, genero.feminino.preco !== 0)}`
+          : null;
+        const loteDoGenero = genero && semGenero(genero.feminino.nome) === semGenero(genero.masculino.nome) ? semGenero(genero.feminino.nome) : null;
         return {
-          ...base, tipo: 'online', valor: menor.preco, texto: `R$ ${menor.preco}`, lote: horario ? null : menor.nome,
+          ...base, tipo: 'online', valor: menor.preco, texto,
+          curto: genero ? curtoGenero : centavos(menor.preco),
+          lote: genero ? loteDoGenero || null : horario ? null : menor.nome,
           nota: notaEsgotados(antes), horario, taxa, depois: seguinte ? `depois, ${reais(seguinte.preco)}` : null,
+          genero: genero ? { feminino: genero.feminino.preco, masculino: genero.masculino.preco } : null,
+          condicao, codigo, outros,
           compra: Boolean(linkCompra), servico: servico(linkCompra), url: linkCompra,
         };
       }
       if (!porta) return { ...base, tipo: 'esgotado', texto: 'Esgotado', nota: notaEsgotados(lotes.map((l) => l.nome)) };
     }
     if (porta) {
-      if (porta.preco === 0) return { ...base, tipo: 'gratis', valor: 0, texto: 'Grátis, na porta' };
-      return { ...base, tipo: 'porta', valor: porta.preco, texto: `Entrada na porta, R$ ${porta.preco}` };
+      if (porta.preco === 0) return { ...base, tipo: 'gratis', valor: 0, texto: 'Grátis, na porta', curto: 'Grátis' };
+      return { ...base, tipo: 'porta', valor: porta.preco, texto: `Entrada na porta, ${centavos(porta.preco)}`, curto: centavos(porta.preco) };
     }
-    if (Number.isInteger(f.preco)) {
-      if (f.preco === 0) return { ...base, tipo: 'gratis', valor: 0, texto: 'Grátis' };
-      return { ...base, tipo: 'online', valor: f.preco, texto: `R$ ${f.preco}` };
+    if (valor(f.preco)) {
+      if (f.preco === 0) return { ...base, tipo: 'gratis', valor: 0, texto: 'Grátis', curto: 'Grátis' };
+      return { ...base, tipo: 'online', valor: f.preco, texto: centavos(f.preco), curto: centavos(f.preco) };
     }
     return { ...base, tipo: 'sem-preco', texto: 'Preço ainda não informado' };
   }
@@ -124,9 +239,15 @@
     const p = preco(f);
     const ate = p.horario ? p.horario.split(';')[0] : null;
     if (p.tipo === 'gratis') return ate ? `grátis ${ate}` : 'grátis';
-    if (p.tipo === 'online' && ate) return `R$ ${p.valor} ${ate}`;
-    if (p.tipo === 'porta') return `R$ ${p.valor} na porta`;
-    if (p.tipo === 'online') return Array.isArray(f.lotes) && f.lotes.length > 1 ? `a partir de ${reais(p.valor)}` : reais(p.valor);
+    if (p.tipo === 'online' && ate) return `${centavos(p.valor)} ${ate}`;
+    if (p.tipo === 'porta') return `${centavos(p.valor)} na porta`;
+    if (p.tipo === 'online' && p.genero) return p.texto;
+    if (p.tipo === 'online' && p.condicao) return `${reais(p.valor)}, ${p.condicao}`;
+    if (p.tipo === 'online') {
+      // "a partir de" só quando há outro lote que qualquer pessoa compra.
+      const livres = Array.isArray(f.lotes) ? f.lotes.filter((l) => l.disponivel !== false && !dePessoa(l)) : [];
+      return livres.length > 1 ? `a partir de ${reais(p.valor)}` : reais(p.valor);
+    }
     return p.texto.toLocaleLowerCase('pt-BR');
   }
 
@@ -153,7 +274,10 @@
     }
     const c = f.campos && f.campos.mediaIdade;
     const quando = c ? ha(c.conferidoEm, agora) : null;
-    const origem = typeof f.origemIdade === 'string' && f.origemIdade.trim() ? f.origemIdade.trim() : null;
+    const base = typeof f.origemIdade === 'string' && f.origemIdade.trim() ? f.origemIdade.trim() : null;
+    // Festa real: de onde a produtora publicou ("no post de 12/11").
+    const detalhe = base && typeof f.origemDetalhe === 'string' && f.origemDetalhe.trim() ? f.origemDetalhe.trim() : null;
+    const origem = detalhe ? `${base}, ${detalhe}` : base;
     return {
       ausente: false, numero: f.mediaIdade, texto: `média ${f.mediaIdade} anos`, origem, quando: quando ? `conferida ${quando}` : null,
       // "Média de 32 anos, informada pela produtora."
@@ -167,8 +291,13 @@
     const lineup = Array.isArray(f.lineup) && f.lineup.length ? f.lineup.slice() : null;
     const nomes2 = lineup ? lista(lineup) : null;
     // "House e disco, com Duda Maré e Tati Varanda." / "House e disco. Lineup ainda não divulgado."
-    const frase = lineup ? `${estilos}${estilos ? ', com ' : 'Com '}${nomes2}.` : `${estilos ? `${estilos}. ` : ''}Lineup ainda não divulgado.`;
-    return { estilos, lineup, aviso: lineup ? null : 'Lineup ainda não divulgado.', frase };
+    // Festa real sem som classificado: "Som não informado." em vez de nada.
+    // Estilo que veio da classificação (regras ou Claude), e não da página ou
+    // da produtora: é leitura da descrição, e a frase diz que é.
+    const inferido = Boolean(estilos && f.estilosInferidos === true);
+    const somDito = inferido ? `Parece ${/^\p{Lu}{2}/u.test(estilos) ? estilos : estilos.charAt(0).toLocaleLowerCase('pt-BR') + estilos.slice(1)}, pela descrição da página` : estilos;
+    const frase = lineup ? (somDito ? `${somDito}, com ${nomes2}.` : `Som não informado. Lineup: ${nomes2}.`) : `${somDito ? `${somDito}. ` : 'Som não informado. '}Lineup ainda não divulgado.`;
+    return { estilos, inferido, lineup, aviso: lineup ? null : 'Lineup ainda não divulgado.', frase };
   }
 
   function regras(f) {
@@ -198,6 +327,63 @@
         const quando = ha(x.conferidoEm, agora);
         return { nome: x.nome, quando: quando ? `${FEMININO.has(x.id) ? 'conferida' : 'conferido'} ${quando}` : null };
       });
+  }
+
+  // As páginas que a leitura manual abriu (registro `paginas`), cada uma
+  // pelo que ela é, com o que se leu nela e quando. O rodapé do detalhe.
+  const PAGINA = {
+    ingresso: { rotulo: 'Página do ingresso', na: 'na página do ingresso', lida: 'lida' },
+    revenda: { rotulo: 'Revenda', na: 'na revenda', lida: 'lida' },
+    materia: { rotulo: 'Matéria', na: 'na matéria', lida: 'lida' },
+    oficial: { rotulo: 'Site oficial', na: 'no site oficial', lida: 'lido' },
+    instagram: { rotulo: 'Instagram', na: 'no Instagram', lida: 'lido' },
+    outra: { rotulo: 'Página', na: 'na página', lida: 'lida' },
+  };
+  // O que cada campo lido é, em palavras; a ordem é a do detalhe.
+  const LIDO = [
+    [['data'], 'data'], [['inicio', 'fim', 'pistaCheia'], 'horário'], [['casa', 'endereco'], 'lugar'], [['lotes', 'entradaNaPorta'], 'preço'],
+    [['lineup'], 'lineup'], [['idadeMinima', 'regras'], 'regras de entrada'], [['descricao'], 'descrição'],
+  ];
+  const nomeDaPagina = (x) => {
+    const t = PAGINA[x.tipo] || PAGINA.outra;
+    const nome = typeof x.nome === 'string' && x.nome.trim() && x.nome.trim() !== t.rotulo ? x.nome.trim() : null;
+    return { ...t, nome };
+  };
+  function paginas(f, agora = Date.now()) {
+    return (Array.isArray(f.paginas) ? f.paginas : [])
+      .filter((x) => x && typeof x.tipo === 'string' && typeof x.lidoEm === 'string')
+      .slice()
+      .sort((a, b) => Date.parse(b.lidoEm) - Date.parse(a.lidoEm))
+      .map((x) => {
+        const t = nomeDaPagina(x);
+        const campos = Array.isArray(x.campos) ? x.campos : [];
+        const lido = LIDO.filter(([cs]) => cs.some((c) => campos.includes(c))).map(([, nome]) => nome);
+        const quando = ha(x.lidoEm, agora);
+        // "Matéria (Billboard Brasil): preço e lineup, lida há 10 min"
+        return {
+          tipo: x.tipo,
+          nome: `${t.rotulo}${t.nome ? ` (${t.nome})` : ''}`,
+          lido: lido.length ? lista(lido) : null,
+          quando: quando ? `${t.lida} ${quando}` : null,
+        };
+      });
+  }
+
+  // De onde veio o preço: a página que deu os lotes por último. Festa real
+  // lida à mão; null sem `paginas` ou sem página de preço.
+  function origemDoPreco(f, agora = Date.now()) {
+    const ps = (Array.isArray(f.paginas) ? f.paginas : [])
+      .filter((x) => x && Array.isArray(x.campos) && x.campos.includes('lotes') && typeof x.lidoEm === 'string')
+      .sort((a, b) => Date.parse(b.lidoEm) - Date.parse(a.lidoEm));
+    if (!ps.length) return null;
+    const x = ps[0];
+    const t = nomeDaPagina(x);
+    const quando = ha(x.lidoEm, agora);
+    if (x.tipo === 'ingresso') return { conferido: true, texto: `Preço conferido na página do ingresso${quando ? `, ${quando}` : ''}.` };
+    return {
+      conferido: false,
+      texto: `Preço lido ${t.na}${t.nome ? ` ${x.tipo === 'materia' ? 'da ' : ''}${t.nome}` : ''}${quando ? `, ${quando}` : ''}; não conferido na página do ingresso.`,
+    };
   }
 
   // Para onde o link leva. Festa de exemplo: a página de saída do protótipo,
@@ -251,8 +437,18 @@
   // cartão e as marcas.
   function cartaoFalado(o, { pct = null, nova = false } = {}) {
     const f = o.festa;
-    return [linhaSemMedia(o.linha), mediaFalada(f), precoNaLista(f), Number.isInteger(pct) ? `${pct}% a sua cara` : null,
+    return [o.exemplo === true ? 'exemplo, festa fictícia' : null, linhaSemMedia(o.linha), o.dataDistante && o.data ? dataDoCartao(o.data, f.dia) : null,
+      mediaFalada(f), precoNaLista(f), Number.isInteger(pct) ? `${pct}% a sua cara` : null,
       o.patrocinada ? 'patrocinado' : null, nova ? 'nova na lista' : null].filter(Boolean).join(' · ');
+  }
+
+  // "sáb, 28 nov": a data de uma festa real que não é a do próximo dia pedido.
+  const DIA_CURTO = { sex: 'sex', sab: 'sáb', dom: 'dom' };
+  const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  function dataDoCartao(iso, dia) {
+    const m = typeof iso === 'string' && iso.match(/^\d{4}-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    return `${DIA_CURTO[dia] ? `${DIA_CURTO[dia]}, ` : ''}${Number(m[2])} ${MESES[Number(m[1]) - 1]}`;
   }
 
   // "Casa · Bairro", quando a casa não diz o bairro.
@@ -270,12 +466,16 @@
       ? `média ${f.mediaIdade} anos${origem ? ` (${origem})` : ''}`
       : 'média de idade ainda não informada';
     const quando = [data, hora, media].filter(Boolean).join(' · ');
+    // Festa fictícia: o grupo não vê o rodapé do protótipo, então a mensagem diz.
+    const ficticia = f.real !== true;
     return [
       'Achei essa, bora?',
+      ...(ficticia ? ['(Exemplo: festa fictícia do protótipo do Finde.)'] : []),
       '',
       quando.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')),
       f.nome,
-      `${casaComBairro(f.casa, bairro)} · ${precoNaLista(f)}`,
+      // Festa real sem casa nem bairro: só o preço, sem "·" sobrando.
+      [casaComBairro(f.casa, bairro), precoNaLista(f)].filter(Boolean).join(' · '),
       '',
       'Diz aqui se você tá dentro:',
       link,
@@ -304,12 +504,21 @@
   // "Conta mais o horário, depois a idade e o bairro." Só quando ajuda a
   // conferir a conta: dois critérios ou mais, e algum que não cabe inteiro.
   function pesoDaCara(cara) {
-    const partes = ordemDaCara(cara && cara.partes);
+    // O que não se sabe fica na frase de semDadoDaCara.
+    const partes = ordemDaCara(cara && cara.partes).filter((x) => x.cabe !== null);
     if (partes.length < 2 || partes.every((x) => x.cabe === true)) return '';
     const nomes = partes.map((x) => CARA_NOME[x.criterio]).filter(Boolean);
     if (nomes.length < 2) return '';
     const resto = nomes.slice(1);
     return `Conta mais ${nomes[0]}, depois ${lista(resto)}.`;
+  }
+
+  // "Sem dado, conta pela metade: a idade e o som." Quando a festa real
+  // não informa algum critério pedido (cara.semDado, nucleo/cara.js).
+  function semDadoDaCara(cara) {
+    const ids = cara && Array.isArray(cara.semDado) ? cara.semDado : [];
+    const nomes = CARA_ORDEM.filter((k) => ids.includes(k)).map((k) => CARA_NOME[k]);
+    return nomes.length ? `Sem dado, conta pela metade: ${lista(nomes)}.` : '';
   }
 
   // A frase do horário no desenho (painel do convite, convite da landing):
@@ -345,8 +554,8 @@
   }
 
   return {
-    preco, precoNaLista, ha, media, som, regras, regrasFrase, fontes, servico, usuario, destino, links, mapa, ESTILOS,
-    idDeFesta, casaComBairro, mensagem, CARA_ORDEM, ordemDaCara, pesoDaCara, pctNosCartoes, mediaFalada, linhaSemMedia, cartaoFalado,
+    preco, precoNaLista, centavos, condicoesDoLote, CONDICOES, DE_PESSOA, ha, media, som, regras, regrasFrase, fontes, paginas, origemDoPreco, servico, usuario, destino, links, mapa, ESTILOS,
+    idDeFesta, casaComBairro, mensagem, CARA_ORDEM, ordemDaCara, pesoDaCara, semDadoDaCara, dataDoCartao, pctNosCartoes, mediaFalada, linhaSemMedia, cartaoFalado,
     horarioSemQuebra, ondeSemQuebra,
   };
 });

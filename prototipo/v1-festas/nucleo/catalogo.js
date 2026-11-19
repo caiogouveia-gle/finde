@@ -152,8 +152,10 @@ function ateAs(h) {
   return asHoras(h).replace(/^às /, 'até as ').replace(/^à /, 'até a ');
 }
 
+// 80 -> "R$ 80"; 469.9 -> "R$ 469,90" (preço real pode ter centavos).
 function reais(valor) {
-  return valor === 0 ? 'grátis' : `R$ ${valor}`;
+  if (valor === 0) return 'grátis';
+  return Number.isInteger(valor) ? `R$ ${valor}` : `R$ ${Number(valor).toFixed(2).replace('.', ',')}`;
 }
 
 function rotuloTeto(teto) {
@@ -173,14 +175,24 @@ function nomeEstilo(id) {
 }
 
 // "Sáb · 19h00 · Pinheiros · média 31 anos": horário primeiro, idade junto (regra 3 da voz).
+// Festa real sem bairro ou sem média: o trecho sai, nunca vira um padrão.
 function linhaDaFesta(f) {
-  return `${DIAS[f.dia].curto} · ${horaCheia(f.inicio)} · ${BAIRROS[f.bairro].nome} · média ${f.mediaIdade} anos`;
+  const partes = [DIAS[f.dia].curto, horaCheia(f.inicio)];
+  if (f.bairro && BAIRROS[f.bairro]) partes.push(BAIRROS[f.bairro].nome);
+  if (Number.isInteger(f.mediaIdade)) partes.push(`média ${f.mediaIdade} anos`);
+  return partes.join(' · ');
 }
 
 // "Começa às 19h, a pista enche às 21h e acaba à 1h." Um nome só para o
 // melhor momento da festa: a pista cheia.
+// Festa real sem a pista cheia ou sem o fim diz o que se sabe e o que não
+// foi divulgado.
 function fraseDoHorario(f) {
-  return `Começa ${asHoras(f.inicio)}, a pista enche ${asHoras(f.esquenta)} e acaba ${asHoras(f.fim)}.`;
+  const n = (x) => typeof x === 'number' && Number.isFinite(x);
+  if (n(f.esquenta) && n(f.fim)) return `Começa ${asHoras(f.inicio)}, a pista enche ${asHoras(f.esquenta)} e acaba ${asHoras(f.fim)}.`;
+  if (n(f.fim)) return `Começa ${asHoras(f.inicio)} e acaba ${asHoras(f.fim)}.`;
+  if (n(f.esquenta)) return `Começa ${asHoras(f.inicio)} e a pista enche ${asHoras(f.esquenta)}. A hora de acabar não foi divulgada.`;
+  return `Começa ${asHoras(f.inicio)}. A hora de acabar não foi divulgada.`;
 }
 
 // De onde vem a média de idade. O número nunca aparece sem a origem.

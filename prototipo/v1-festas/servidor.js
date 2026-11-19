@@ -22,6 +22,7 @@ const conversa = require('./nucleo/conversa');
 const { entender } = require('./nucleo/entender');
 const { prepararBase, lerBase, deslocarDatas } = require('./nucleo/base');
 const { criarPlanos, ErroPlano } = require('./nucleo/planos');
+const R = require('./nucleo/reais');
 const FT = require('./publico/festa-texto');
 
 const RAIZ = __dirname;
@@ -113,6 +114,41 @@ function criarFonteDaBase(caminho, log, relogio) {
   }
 
   return { base: carregar };
+}
+
+// As festas reais (nucleo/reais.js): o export do motor, convertido para o
+// formato da base. Arquivo que falta não é erro: o app segue só com a base
+// fictícia, como antes. Relido quando o arquivo muda; o filtro do que já
+// passou é feito a cada pedido, pelo relógio, e não aqui.
+function criarFonteDosReais(caminho, log) {
+  let atual = { festas: [], marca: null };
+  function carregar() {
+    if (!caminho) return atual.festas;
+    let marca;
+    try {
+      marca = fs.statSync(caminho).mtimeMs;
+    } catch {
+      marca = 'sem-arquivo';
+    }
+    if (marca === atual.marca) return atual.festas;
+    let festas = [];
+    if (marca === 'sem-arquivo') {
+      log.info(`[finde] sem festas reais (${caminho} não existe); só a base fictícia`);
+    } else {
+      try {
+        const r = R.converterExport(JSON.parse(fs.readFileSync(caminho, 'utf8')));
+        festas = r.festas;
+        for (const a of r.avisos) log.warn(`[finde] reais: ${a}`);
+        for (const x of r.fora) log.info(`[finde] reais: fora "${x.id}" (${x.motivo})`);
+        log.info(`[finde] reais: ${festas.length} festas de ${caminho}`);
+      } catch (e) {
+        log.warn(`[finde] as festas reais de ${caminho} não abriram (${e.message}); sigo só com a base fictícia`);
+      }
+    }
+    atual = { festas, marca };
+    return festas;
+  }
+  return { festas: carregar };
 }
 
 // ---------------------------------------------------------------- respostas
@@ -458,7 +494,7 @@ function proximaPista(base, agora = new Date()) {
   return f ? { linha: C.linhaDaFesta(f), nome: f.nome, origem: f.origemIdade } : null;
 }
 
-function formulario(base) {
+function formulario(base, reais = 0) {
   const porDia = Object.fromEntries(C.ORDEM_DIAS.map((d) => [d, base.filter((f) => f.dia === d).length]));
   const inicios = base.map((f) => f.inicio);
   return {
@@ -466,7 +502,11 @@ function formulario(base) {
     porDia,
     abreMaisCedo: inicios.length ? C.hora(Math.min(...inicios)) : null,
     proxima: proximaPista(base),
-    ficticia: true,
+    // Com festa real vigente, a lista mistura: reais primeiro, e as
+    // fictícias que completam vêm marcadas como exemplo.
+    ficticia: !reais,
+    misto: reais > 0,
+    reais,
     dias: C.ORDEM_DIAS.map((id) => ({ id, rotulo: C.DIAS[id].nome })),
     janelas: C.JANELAS.map((j) => ({ id: j.id, rotulo: `${j.rotulo} · ${j.nome}` })),
     faixas: C.FAIXAS.map((f) => ({ id: f.id, rotulo: f.rotulo })),
@@ -545,7 +585,7 @@ function festaDoConvite(base) {
 // um item de opcoes, com um pedido neutro tirado da própria festa (o dia
 // dela, a janela em que ela cabe, idade de 18 a 50, sem teto). Sem a cara,
 // que só existe diante de um pedido de verdade.
-function opcaoSemPedido(f, agora) {
+function opcaoSemPedido(f, agora, { misto = false } = {}) {
   const pedido = (janela) => motor.completar({ dia: f.dia, janela, idade: { min: motor.IDADE_MIN, max: motor.IDADE_MAX }, teto: 'sem-limite' });
   const opcoes = C.JANELAS.map((j) => motor.opcao(f, pedido(j.id)));
   const o = { ...(opcoes.find((x) => x.atende) || opcoes[0]) };
@@ -553,15 +593,24 @@ function opcaoSemPedido(f, agora) {
   // Sem pedido, nada fura: a festa de madrugada, que não cabe em janela
   // nenhuma, também sai sem "depois da sua hora".
   const motivos = o.motivos.filter((m) => !o.fora.includes(m));
+  const marca = misto ? { exemplo: !f.real } : {};
   return {
-    ...o, atende: true, fora: [], aviso: null, motivos, bloco: 'pedido',
-    data: (dataDaFesta(f, agora) || {}).data || null,
+    ...o, atende: true, fora: [], incertos: [], aviso: null, motivos, bloco: 'pedido', ...marca,
+    data: f.real ? f.data : (dataDaFesta(f, agora) || {}).data || null,
   };
 }
 
-function criarServidor({
+function criarServidor(opcoes = {}) {
+  return montarServidor({ ...opcoes, outraBase: opcoes.dados !== undefined });
+}
+
+function montarServidor({
+  outraBase = false,
   dados = process.env.FINDE_DADOS || path.join(RAIZ, 'dados', 'festas.json'),
   varDir = process.env.FINDE_VAR || path.join(RAIZ, 'var'),
+  // As festas reais: FINDE_REAIS, ou dados/reais.json ao lado da base. Quem
+  // passa outra base (os testes) passa também as reais, ou fica sem elas.
+  reais,
   log = console,
   relogio = () => Date.now(),
   site = process.env.FINDE_SITE,
@@ -578,21 +627,66 @@ function criarServidor({
       : '[finde] landing em / e app em /app');
   const fonte = criarFonteDaBase(path.resolve(dados), log, relogio);
   fonte.base();
+  const caminhoReais = reais !== undefined ? reais
+    : process.env.FINDE_REAIS || (outraBase ? null : path.join(RAIZ, 'dados', 'reais.json'));
+  const fonteReais = criarFonteDosReais(caminhoReais ? path.resolve(caminhoReais) : null, log);
+  // A real cujo id já é de uma fictícia fica fora, com aviso: o link, o
+  // convite e a lista confundiriam as duas.
+  const colidiram = new Set();
+  function reaisSemColisao() {
+    const ids = new Set(fonte.base().map((f) => f.id));
+    return fonteReais.festas().filter((f) => {
+      if (!ids.has(f.id)) return true;
+      if (!colidiram.has(f.id)) {
+        colidiram.add(f.id);
+        log.warn(`[finde] reais: fora "${f.id}" (id da base fictícia)`);
+      }
+      return false;
+    });
+  }
+  reaisSemColisao();
+  // As reais que não passaram, pelo relógio de agora (não o da subida).
+  const reaisVigentes = () => R.vigentes(reaisSemColisao(), relogio());
+  // Para achar uma festa pelo id: a base fictícia e as reais (passadas também,
+  // para o convite e o link dizerem que ela passou).
+  const acharFesta = (id) => fonte.base().find((f) => f.id === id) || reaisSemColisao().find((f) => f.id === id) || null;
+  // A base de um pedido: as fictícias e as reais do dia pedido.
+  const baseDoPedido = (c) => [...R.reaisDoDia(reaisVigentes(), c.dia, relogio()).festas, ...fonte.base()];
   // A landing sozinha não abre convite nenhum: os convites moram no app.
-  const planos = temApp ? criarPlanos(path.resolve(varDir), { log }) : null;
+  // Os convites usam o mesmo relógio: "passou" é o do servidor.
+  const planos = temApp ? criarPlanos(path.resolve(varDir), { log, agora: () => new Date(relogio()).toISOString() }) : null;
 
   // Cada opção leva a data da festa: o detalhe abre com ela (R4). Fica aqui
   // para valer nos três caminhos da conversa.
+  // Com festa real vigente, a lista mistura (nucleo/reais.js, misturar):
+  // primeiro as reais do dia pedido, na próxima data dele (ou na seguinte,
+  // dizendo a data); depois, até três, as fictícias, marcadas como exemplo.
   function resultado(criterios) {
     const base = fonte.base();
-    if (!base.length) return { opcoes: [], afrouxou: [], aviso: 'A lista de festas está vazia agora. Volte daqui a pouco.' };
-    const r = motor.escolher(criterios, base);
-    const agora = new Date(relogio());
-    return { ...r, opcoes: r.opcoes.map((o) => ({ ...o, data: (dataDaFesta(o.festa, agora) || {}).data || null })) };
+    const agoraMs = relogio();
+    const agora = new Date(agoraMs);
+    const comData = (o) => ({ ...o, data: o.festa.real ? o.festa.data : (dataDaFesta(o.festa, agora) || {}).data || null });
+    const vigentes = reaisVigentes();
+    if (!vigentes.length) {
+      if (!base.length) return { opcoes: [], afrouxou: [], aviso: 'A lista de festas está vazia agora. Volte daqui a pouco.' };
+      const r = motor.escolher(criterios, base);
+      return { ...r, opcoes: r.opcoes.map(comData) };
+    }
+    const doDia = R.reaisDoDia(vigentes, criterios.dia, agoraMs);
+    const real = doDia.festas.length ? motor.escolher(criterios, doDia.festas) : null;
+    const ficticio = base.length ? motor.escolher(criterios, base) : null;
+    const m = R.misturar({ real, ficticio, dia: criterios.dia, data: doDia.data, distante: doDia.distante, noDia: doDia.festas.length });
+    if (!m.opcoes.length && !m.aviso) m.aviso = 'A lista de festas está vazia agora. Volte daqui a pouco.';
+    return { ...m, opcoes: m.opcoes.map(comData) };
   }
 
+  // A fala do Finde mais a nota da mistura (o que é real e o que é exemplo).
+  // Sem real na lista, a nota vem antes ("Ainda não tenho festa real no
+  // domingo."); com real, depois da fala.
+  const comNota = (fala, r) => (r && r.nota && !r.reais ? [r.nota, fala] : [fala, r && r.nota]).filter(Boolean).join(' ');
+
   const rotas = {
-    'GET /api/formulario': () => [200, formulario(fonte.base())],
+    'GET /api/formulario': () => [200, formulario(fonte.base(), reaisVigentes().length)],
 
     'POST /api/festas': (corpo) => {
       const criterios = exigirCriterios(corpo.criterios);
@@ -600,7 +694,7 @@ function criarServidor({
       if (r.oferta) criterios.oferta = r.oferta.frase;
       return [200, {
         criterios, pedido: motor.resumoDoPedido(criterios), pedidoPartes: motor.pedidoEmPartes(criterios),
-        ...r, resposta: conversa.abertura(r),
+        ...r, resposta: comNota(conversa.abertura(r), r),
       }];
     },
 
@@ -609,14 +703,14 @@ function criarServidor({
       if (typeof corpo.texto !== 'string' || !corpo.texto.trim()) throw new ErroPlano(400, 'Escreva o que quer mudar.');
       if (corpo.texto.length > LIMITE_TEXTO) throw new ErroPlano(400, 'Frase longa demais. Tente em poucas palavras.');
       const antesIds = idsNaTela(corpo.atuais);
-      const base = fonte.base();
-      const porId = new Map(base.map((f) => [f.id, f]));
+      const porId = new Map([...reaisSemColisao(), ...fonte.base()].map((f) => [f.id, f]));
       const naTela = antesIds.map((id) => porId.get(id)).filter(Boolean);
       const contexto = {
         ...antes,
         mostradas: antesIds,
-        estilosMostrados: naTela.map((f) => f.estilos[0]),
-        precosMostrados: naTela.map((f) => f.preco),
+        // Festa real sem som ou sem preço não entra nessas contas.
+        estilosMostrados: naTela.map((f) => f.estilos[0]).filter(Boolean),
+        precosMostrados: naTela.map((f) => f.preco).filter((p) => typeof p === 'number'),
       };
 
       let { mudar, pedidos, duvida, diaRecusado } = entender(corpo.texto, contexto);
@@ -642,6 +736,7 @@ function criarServidor({
       const depois = motor.completar({ ...antes, ...mudanca });
       delete depois.oferta;
       depois.firmes = conversa.firmesDe(antes, depois);
+      const base = baseDoPedido(depois);
       let r = resultado(depois);
       const anterior = () => resultado(antes);
       const nomeDe = (id) => (porId.get(id) ? porId.get(id).nome : id);
@@ -693,7 +788,7 @@ function criarServidor({
         ...final,
         aviso: fala.entendeu ? final.aviso : undefined,
         oferta,
-        resposta: fala.texto,
+        resposta: fala.entendeu ? comNota(fala.texto, final) : fala.texto,
         entendeu: fala.entendeu,
         entraram: fala.entraram,
         sairam: fala.sairam,
@@ -703,11 +798,13 @@ function criarServidor({
     'POST /api/planos': (corpo) => {
       const criterios = exigirCriterios(corpo.criterios);
       if (typeof corpo.festa !== 'string' || !FORMATO_ID_FESTA.test(corpo.festa)) throw new ErroPlano(400, 'Diga qual festa mandar.');
-      const festa = fonte.base().find((f) => f.id === corpo.festa);
-      if (!festa) throw new ErroPlano(400, 'Essa festa não está mais na lista.');
+      const festa = acharFesta(corpo.festa);
+      if (!festa) throw new ErroPlano(400, 'Essa festa não está na lista.');
+      if (festa.real && R.passou(festa, relogio())) throw new ErroPlano(400, 'Essa festa já passou.');
       const plano = planos.criar({
         festa: motor.opcao(festa, criterios), pedido: motor.resumoDoPedido(criterios), autor: corpo.autor,
-        quando: dataDaFesta(festa, new Date(relogio())),
+        // A festa real tem data; a fictícia vai para o próximo dia dela.
+        quando: festa.real ? R.quandoDaReal(festa) : dataDaFesta(festa, new Date(relogio())),
       });
       return [201, { id: plano.id, url: `/p/${plano.id}`, data: plano.data }];
     },
@@ -717,7 +814,11 @@ function criarServidor({
 
   // A landing vem montada: o convite do herói sai daqui.
   const landing = (req, res) => pagina(req, res, 'landing.html', {
-    trocas: { __CONVITE__: htmlDoConvite(festaDoConvite(fonte.base()), new Date(relogio())) },
+    trocas: {
+      __CONVITE__: htmlDoConvite(festaDoConvite(fonte.base()), new Date(relogio())),
+      // O convite do herói é sempre fictício; o app pode já ter festas reais.
+      __NOTA_PROTOTIPO__: reaisVigentes().length ? 'Protótipo · o convite acima é fictício; o app já tem festas reais' : 'Protótipo · festas fictícias',
+    },
     cabecalhos: REFERRER_DA_LANDING,
   });
 
@@ -727,7 +828,7 @@ function criarServidor({
   }, Buffer.from(trocarEnderecos(NAO_ACHEI, enderecos), 'utf8'));
 
   // Os dados da primeira tela vão junto com o HTML: uma ida e volta a menos.
-  const app = (req, res) => pagina(req, res, 'index.html', { dados: formulario(fonte.base()) });
+  const app = (req, res) => pagina(req, res, 'index.html', { dados: formulario(fonte.base(), reaisVigentes().length) });
 
   // /p/:id: 404 de verdade quando o convite não existe; quando existe, as
   // metas de compartilhamento dizem a festa.
@@ -744,10 +845,15 @@ function criarServidor({
     const temMedia = Number.isInteger(f.mediaIdade);
     const curta = f.origemIdadeCurta || (o.origem && o.origem.curta);
     const media = temMedia ? ` · média ${f.mediaIdade}${curta ? ` (${curta})` : ''}` : '';
-    const titulo = `Bora ${dia.id === 'sex' ? 'na' : 'no'} ${dia.frase}? ${f.nome}, ${o.hora}${media}`;
-    const onde = f.endereco && f.endereco.texto ? `${f.casa}, ${f.endereco.texto}` : f.casa;
+    // Festa fictícia: a prévia diz que é exemplo antes de tudo, porque no
+    // grupo ninguém vê o rodapé do protótipo.
+    const ficticia = f.real !== true;
+    const titulo = `${ficticia ? 'Exemplo · ' : ''}Bora ${dia.id === 'sex' ? 'na' : 'no'} ${dia.frase}? ${f.nome}, ${o.hora}${media}`;
+    // Festa real sem casa ou sem endereço: o que tem, sem "null".
+    const onde = [f.casa, f.endereco && f.endereco.texto].filter(Boolean).join(', ') || 'Endereço não divulgado';
     const mediaLonga = temMedia ? ` Média de ${f.mediaIdade} anos${f.origemIdade ? `, ${f.origemIdade}` : ''}.` : '';
-    const descricao = `${onde} · ${FT.precoNaLista(f)}. ${o.horario}${mediaLonga}`;
+    const ondeFrase = ficticia ? `Festa fictícia, exemplo do protótipo. ${onde.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR'))}` : onde;
+    const descricao = `${ondeFrase} · ${FT.precoNaLista(f)}. ${o.horario}${mediaLonga}`;
     return pagina(req, res, 'plano.html', { titulo, descricao });
   }
 
@@ -759,9 +865,11 @@ function criarServidor({
     if (!acao && umaFesta) {
       if (req.method !== 'GET') return erro(res, 405, 'Esse caminho não aceita esse método.');
       const id = umaFesta[1];
-      const festa = FORMATO_ID_FESTA.test(id) ? fonte.base().find((f) => f.id === id) : null;
+      const festa = FORMATO_ID_FESTA.test(id) ? acharFesta(id) : null;
       if (!festa) return erro(res, 404, 'Essa festa não está na lista.');
-      return json(res, 200, { opcao: opcaoSemPedido(festa, new Date(relogio())) });
+      // Festa real que já foi: 404 que diz que passou, e o app diz isso.
+      if (festa.real && R.passou(festa, relogio())) return erro(res, 404, 'Essa festa já passou.', { passou: true });
+      return json(res, 200, { opcao: opcaoSemPedido(festa, new Date(relogio()), { misto: reaisVigentes().length > 0 }) });
     }
     if (!acao && m) {
       const [, id, sub] = m;
