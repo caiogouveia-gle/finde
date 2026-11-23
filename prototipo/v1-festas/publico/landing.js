@@ -1,47 +1,137 @@
 'use strict';
-// A landing: o formulário de e-mail, que é visual, e o movimento da página.
-// O formulário confere o formato e avisa que é protótipo: não envia nem guarda
-// nada. O resto da página é HTML pronto; o botão do herói leva ao protótipo
-// por um link comum.
+// A landing: a demo em três toques, o menu e o movimento da página. O resto é
+// HTML pronto; os botões do app são links comuns.
 //
-// O script carrega no <head>, sem defer: ele põe a classe .mov na raiz antes
-// da primeira pintura, e só com ela o CSS esconde o que vai entrar. Sem
-// JavaScript, com movimento reduzido ou sem IntersectionObserver, a classe
-// não entra e a página aparece pronta. Se algo falhar no meio, a classe sai.
+// O script carrega no <head>, sem defer: ele põe .js e .mov na raiz antes da
+// primeira pintura. Com .js, a demo troca de tela pelos passos (sem ele, as
+// telas correm de lado com o dedo) e o menu do celular abre. Só com .mov o
+// CSS esconde o que vai entrar. Sem JavaScript, com movimento reduzido ou sem
+// IntersectionObserver, .mov não entra e a página aparece pronta. Se algo
+// falhar no meio, a classe sai.
 
 (() => {
-  function iniciarFormulario() {
-    const form = document.getElementById('form-lista');
-    if (!form) return;
-    const campo = document.getElementById('email');
-    const erro = document.getElementById('email-erro');
-    const aviso = document.getElementById('aviso-prototipo');
-    const FORMATO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    // Sem JavaScript o botão fica desligado: nada sai da página.
-    form.querySelector('button[type="submit"]').disabled = false;
+  if (typeof document !== 'undefined' && document.documentElement) document.documentElement.classList.add('js');
 
-    function limparErro() {
-      campo.removeAttribute('aria-invalid');
-      erro.textContent = '';
+  const semMovimento = () => typeof window === 'undefined' || typeof window.matchMedia !== 'function'
+    || !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
+  // ---------------------------------------------------------------- demo
+
+  // Três telas num trilho: a lista, a festa e o convite no grupo. Os passos à
+  // esquerda, os toques dentro do celular e o "Tô dentro" do cartão do herói
+  // levam à tela de cada um. Na terceira, as respostas chegam uma a uma.
+  function iniciarDemo() {
+    const telas = document.getElementById('telas');
+    const demo = document.getElementById('demo');
+    if (!telas || !demo) return;
+    const quadros = [...telas.children];
+    const passos = [...document.querySelectorAll('#passos [data-passo]')];
+    const respostas = [...document.querySelectorAll('#respostas li')];
+    const placar = document.getElementById('placar');
+    const status = document.getElementById('demo-status');
+    let atual = 0;
+    let visto = false;
+    let relogios = [];
+
+    function irPara(n, { anunciar = true } = {}) {
+      const vinhaDeDentro = telas.contains(document.activeElement);
+      atual = n;
+      telas.style.transform = `translateX(${-100 * n}%)`;
+      quadros.forEach((t, i) => {
+        const aqui = i === n;
+        t.toggleAttribute('inert', !aqui);
+        t.setAttribute('aria-hidden', String(!aqui));
+        t.classList.toggle('ativa', aqui && visto);
+      });
+      passos.forEach((b, i) => {
+        b.classList.toggle('ativo', i === n);
+        b.classList.toggle('feito', i < n);
+        if (i === n) b.setAttribute('aria-current', 'step');
+        else b.removeAttribute('aria-current');
+      });
+      relogios.forEach(clearTimeout);
+      relogios = [];
+      respostas.forEach((li) => li.classList.remove('chegou'));
+      if (placar) placar.classList.remove('chegou');
+      if (n === 2) {
+        const passo = semMovimento() ? 0 : 550;
+        respostas.forEach((li, i) => relogios.push(setTimeout(() => li.classList.add('chegou'), passo && 350 + i * passo)));
+        if (placar) relogios.push(setTimeout(() => placar.classList.add('chegou'), passo && 350 + respostas.length * passo));
+      }
+      if (anunciar && status) status.textContent = quadros[n] ? quadros[n].getAttribute('aria-label') || '' : '';
+      // Quem tocou dentro do celular continua lá: o foco vai à tela nova.
+      if (vinhaDeDentro && quadros[n]) {
+        const alvo = quadros[n].querySelector('button, a');
+        if (alvo) alvo.focus({ preventScroll: true });
+      }
     }
 
-    form.addEventListener('submit', (e) => {
+    demo.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-passo]');
+      if (b) irPara(Number(b.dataset.passo));
+    });
+    const reinicia = document.getElementById('demo-reinicia');
+    if (reinicia) reinicia.addEventListener('click', () => irPara(0));
+    // Do cartão do herói, vai direto ao celular (numa coluna só, ele fica
+    // embaixo dos passos).
+    const aparelho = demo.querySelector('.aparelho');
+    document.querySelectorAll('[data-ir-passo]').forEach((a) => a.addEventListener('click', (e) => {
+      irPara(Number(a.dataset.irPasso));
+      if (!aparelho) return;
       e.preventDefault();
-      const valor = campo.value.trim();
-      if (!FORMATO.test(valor)) {
-        campo.setAttribute('aria-invalid', 'true');
-        erro.textContent = valor ? 'Esse e-mail parece incompleto.' : 'Escreva o seu e-mail.';
-        aviso.textContent = '';
-        campo.focus();
-        return;
-      }
-      limparErro();
-      campo.value = '';
-      aviso.textContent = 'Isto é um protótipo: seu e-mail não foi enviado nem guardado.';
+      aparelho.scrollIntoView({ block: 'center', behavior: semMovimento() ? 'auto' : 'smooth' });
+    }));
+    irPara(0, { anunciar: false });
+
+    // O toque que pede o dedo só pulsa quando a demo chega à tela.
+    const acender = () => {
+      if (visto) return;
+      visto = true;
+      quadros[atual].classList.add('ativa');
+    };
+    if (typeof window.IntersectionObserver === 'function') {
+      const io = new IntersectionObserver((es) => {
+        if (es.some((e) => e.isIntersecting)) { io.disconnect(); acender(); }
+      }, { rootMargin: '0px 0px -20% 0px' });
+      io.observe(telas);
+    } else acender();
+  }
+
+  // ---------------------------------------------------------------- menu
+
+  // No celular, as seções ficam atrás de um botão. Em toda largura, o item da
+  // seção que está na tela fica marcado.
+  function iniciarMenu() {
+    const botao = document.getElementById('menu-botao');
+    const movel = document.getElementById('menu-movel');
+    if (!botao || !movel) return;
+    const fechar = () => { movel.hidden = true; botao.setAttribute('aria-expanded', 'false'); botao.setAttribute('aria-label', 'Abrir o menu'); };
+    botao.addEventListener('click', () => {
+      const abrir = movel.hidden;
+      movel.hidden = !abrir;
+      botao.setAttribute('aria-expanded', String(abrir));
+      botao.setAttribute('aria-label', abrir ? 'Fechar o menu' : 'Abrir o menu');
     });
-    campo.addEventListener('input', () => {
-      if (campo.hasAttribute('aria-invalid')) limparErro();
+    movel.addEventListener('click', (e) => { if (e.target.closest('a')) fechar(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !movel.hidden) { fechar(); botao.focus(); }
     });
+
+    if (typeof window.IntersectionObserver !== 'function') return;
+    const itens = [...document.querySelectorAll('.menu-item')];
+    const secoes = itens.map((a) => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        itens.forEach((a) => {
+          const aqui = a.getAttribute('href') === `#${e.target.id}`;
+          a.classList.toggle('ativo', aqui);
+          if (aqui) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    secoes.forEach((s) => io.observe(s));
   }
 
   // ---------------------------------------------------------------- movimento
@@ -52,8 +142,7 @@
     if (typeof window === 'undefined' || !document.documentElement) return null;
     const raiz = document.documentElement;
     const pode = typeof window.IntersectionObserver === 'function'
-      && typeof window.matchMedia === 'function'
-      && window.matchMedia('(prefers-reduced-motion: no-preference)').matches
+      && !semMovimento()
       && typeof Element !== 'undefined' && 'animate' in Element.prototype;
     if (!pode) return null;
     raiz.classList.add('mov');
@@ -233,7 +322,6 @@
 
   function iniciarMovimento(m) {
     lerTempos();
-    const largo = window.matchMedia('(min-width: 641px)');
     const ms = (n) => `${Math.round(n)}ms`;
     const $ = (s, d = document) => d.querySelector(s);
     const $$ = (s, d = document) => [...d.querySelectorAll(s)];
@@ -242,12 +330,12 @@
     // espera a vez, para nunca correr junto dela.
     let chegadaAte = 0;
     let t0 = 0;
-    const convite = $('.convite');
-    // Quando o convite começa a abrir na chegada: lado a lado, logo depois do
-    // botão do app; numa coluna só, ele fica embaixo do botão e espera o herói.
-    const CONVITE_LARGO = 400;
-    const CONVITE_ESTREITO = 900;
     const espera = () => Math.max(0, chegadaAte - agora());
+    // A foto do herói abre logo depois do botão do app, quando está ao lado
+    // do texto; numa coluna só, ela fica embaixo e espera o herói.
+    const FOTO_LARGO = 400;
+    const FOTO_ESTREITO = 900;
+    const largo = window.matchMedia('(min-width: 861px)');
 
     // Chegada: a marca e o rótulo acendem, o título sobe por linha, e o texto
     // e os botões acendem com a segunda linha. O botão está pleno em 680 ms.
@@ -257,77 +345,49 @@
       entrar(document.body, fim, 'chegou', 'chegou-fim');
       clearTimeout(m.socorro);
       chegadaAte = t0 + fim;
-      // O convite na tela desde já faz parte da chegada: reserva o tempo dele
-      // (e o das anotações, lado a lado) antes de qualquer outro bloco pedir a vez.
-      const cartao = convite && $('.cv-cartao', convite);
-      if (cartao && cartao.getBoundingClientRect().top < window.innerHeight * 1.06) {
-        const cv = (largo.matches ? CONVITE_LARGO : CONVITE_ESTREITO) + 420 + T.bloco;
-        chegadaAte = Math.max(chegadaAte, t0 + cv + (largo.matches ? 2 * 60 + T.estado : 0));
-      }
     };
 
-    // O convite em quatro tempos: o painel (que já traz a marca e o rótulo),
-    // "Bora na sexta?", a hora e a idade, os botões. As anotações esperam o
-    // cartão assentar.
-    let conviteAte = 0;
-    const montarConvite = (base) => {
-      if (!convite || convite.classList.contains('ja')) return;
-      convite.style.setProperty('--base', ms(base));
-      let fim = base + 600 + T.estado;
-      fim = Math.max(fim, partir($('.cv-titulo', convite), base + 160, { dur: T.bloco }));
-      fim = Math.max(fim, partir($('.cv-hora', convite), base + 360, { dur: T.bloco }));
-      fim = Math.max(fim, partir($('.cv-hora-linha .cv-rotulo', convite), base + 420, { dur: T.bloco }));
-      conviteAte = agora() + fim;
-      entrar(convite, fim);
-      if (largo.matches) {
-        const notas = fim;
-        convite.style.setProperty('--notas', ms(notas));
-        entrar(convite, notas + 200 + 2 * 60 + T.estado, 'ja-notas', 'fim-notas');
-        // Os pilares podem entrar quando os fios das anotações acabarem.
-        chegadaAte = Math.max(chegadaAte, agora() + notas + 2 * 60 + T.estado);
-      } else {
-        chegadaAte = Math.max(chegadaAte, conviteAte);
-      }
+    // A foto abre e o cartão chega depois, com a hora subindo da máscara.
+    const abrirFoto = (foto, base) => {
+      foto.style.setProperty('--base', ms(base));
+      const fim = Math.max(base + T.titulo, partir($('.destaque-hora', foto), base + 560, { dur: T.bloco }));
+      entrar(foto, fim);
+      chegadaAte = Math.max(chegadaAte, agora() + Math.min(fim, base + 600));
     };
 
     const iniciar = () => {
       chegada();
-      if (convite) {
-        observar([$('.cv-cartao', convite)], () => montarConvite(Math.max(0, t0 + (largo.matches ? CONVITE_LARGO : CONVITE_ESTREITO) - agora())));
-        // Numa coluna só, as anotações ficam embaixo do cartão e entram quando chegam.
-        if (!largo.matches) {
-          observar([$('.nota-1', convite)], () => {
-            if (!convite.classList.contains('ja')) montarConvite(0);
-            const notas = Math.max(0, conviteAte - agora());
-            convite.style.setProperty('--notas', ms(notas));
-            entrar(convite, notas + 2 * 60 + T.estado + 200, 'ja-notas', 'fim-notas');
-          });
-        }
+      const foto = $('.foto');
+      if (foto) {
+        const naTela = foto.getBoundingClientRect().top < window.innerHeight * 1.06;
+        if (naTela) chegadaAte = Math.max(chegadaAte, t0 + (largo.matches ? FOTO_LARGO : FOTO_ESTREITO) + 600);
+        observar([foto], (el) => abrirFoto(el, Math.max(0, t0 + (largo.matches ? FOTO_LARGO : FOTO_ESTREITO) - agora())));
       }
 
       // Rolagem: cada bloco entra uma vez. Se aparecer durante a chegada,
       // espera ela acabar; se entrar junto de outro, vem um passo depois.
+      observar([$('.demo')], (el) => {
+        const base = espera();
+        el.style.setProperty('--base', ms(base));
+        const fim = Math.max(base + 600 + T.estado, partir($('h2', el), base + 160, { dur: T.titulo }));
+        entrar(el, Math.max(fim, base + T.titulo));
+      });
+      observar([$('.como')], (el) => {
+        const base = espera();
+        el.style.setProperty('--base', ms(base));
+        const fim = Math.max(base + 900 + T.estado, partir($('.como-texto h2', el), base + 240, { dur: T.titulo }));
+        entrar(el, fim);
+      });
       observar($$('.pilar'), (pilar, i) => {
         const base = espera() + i * T.passo;
         pilar.style.setProperty('--base', ms(base));
-        const fim = Math.max(base + T.titulo, partir($('h2', pilar), base + 160, { dur: T.titulo }));
+        const fim = Math.max(base + T.titulo, partir($('h3', pilar), base + 160, { dur: T.titulo }));
         entrar(pilar, fim);
       });
-      observar([$('.pilares-acao')], (el) => {
-        const base = espera() + 200;
-        el.style.setProperty('--base', ms(base));
-        entrar(el, base + T.estado);
-      });
-      observar([$('.manifesto')], (el) => {
+      observar([$('.final')], (el) => {
         const base = espera();
         el.style.setProperty('--base', ms(base));
-        const fim = Math.max(base + 600 + T.estado, partir($('.manifesto-assinatura', el), base, { tarde: '.manifesto-assinatura span', passo: 0 }));
-        entrar(el, fim);
-      });
-      observar([$('.inscricao')], (el) => {
-        const base = espera();
-        el.style.setProperty('--base', ms(base));
-        const fim = Math.max(base + 360 + T.estado, partir($('h2', el), base));
+        const fim = Math.max(base + 720 + 4 * T.passo + T.estado, partir($('.manifesto-assinatura', el), base, { tarde: '.manifesto-assinatura span', passo: 0 }));
         entrar(el, fim);
       });
       observar([$('.rodape')], (el) => {
@@ -341,11 +401,11 @@
       document.addEventListener('focusin', (e) => {
         const alvo = e.target;
         if (!alvo || typeof alvo.closest !== 'function') return;
-        if (!document.body.classList.contains('chegou-fim') && alvo.closest('.topo, .hero-texto')) {
+        if (!document.body.classList.contains('chegou-fim') && alvo.closest('.menu, .hero-texto')) {
           document.body.classList.add('chegou', 'chegou-fim');
           voltarDentro($('.hero h1'));
         }
-        const bloco = alvo.closest('.pilar, .pilares-acao, .manifesto, .inscricao, .rodape');
+        const bloco = alvo.closest('.foto, .demo, .como, .pilar, .final, .rodape');
         if (bloco && !bloco.classList.contains('fim')) {
           bloco.classList.add('ja', 'fim');
           voltarDentro(bloco);
@@ -380,7 +440,8 @@
 
   const movimento = prepararMovimento();
   const quandoPronto = () => {
-    iniciarFormulario();
+    try { iniciarDemo(); } catch (e) { /* a demo fica na primeira tela */ }
+    try { iniciarMenu(); } catch (e) { /* o menu do celular fica fechado */ }
     if (movimento && !movimento.desistiu) {
       try { iniciarMovimento(movimento); } catch (e) { movimento.desistir(); }
     }

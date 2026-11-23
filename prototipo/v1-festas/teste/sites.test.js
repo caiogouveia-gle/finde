@@ -181,12 +181,13 @@ test('fly.toml é a landing e fly.app.toml é o app: cada um aponta para o outro
 
 // ---------------------------------------------------------------- só a landing
 
-test('landing: / e /index.html servem a landing, com o convite do herói', async () => {
+test('landing: / e /index.html servem a landing, com o cartão do herói e a demo', async () => {
   const r = await pedir(raiz.landing, '/');
   assert.equal(r.status, 200);
   assert.match(r.cabecalhos['content-type'], /text\/html/);
   assert.ok(ehLanding(r.corpo));
-  assert.match(r.corpo, /<figure class="convite"/);
+  assert.match(r.corpo, /<div class="destaque"/);
+  assert.match(r.corpo, /<div class="aparelho"/);
   assert.equal((await pedir(raiz.landing, '/index.html')).corpo, r.corpo);
   assert.equal((await pedir(raiz.landing, '/', { metodo: 'HEAD' })).status, 200);
 });
@@ -397,11 +398,11 @@ test('app: serve os estáticos do app e nenhum landing.*', async () => {
   }
 });
 
-test('app: a landing não vaza (nem a página, nem o convite do herói)', async () => {
+test('app: a landing não vaza (nem a página, nem o cartão do herói, nem a demo)', async () => {
   for (const c of ['/', '/index.html', '/app', '/landing.html']) {
     const r = await pedir(raiz.app, c);
     assert.ok(!ehLanding(r.corpo), c);
-    assert.doesNotMatch(r.corpo, /<figure class="convite"|__CONVITE__|landing\.js/, c);
+    assert.doesNotMatch(r.corpo, /class="destaque"|class="aparelho"|__DESTAQUE__|__DEMO__|landing\.js/, c);
   }
 });
 
@@ -471,21 +472,14 @@ test('endereços com & e aspas saem escapados, e o 302 junta a query do endereç
   }
 });
 
-test('o convite do herói é ilustração: nada nele é link nem botão', async () => {
+test('o cartão do herói e a demo saem da base fictícia e dizem que são exemplo', async () => {
   const { corpo } = await pedir(raiz.landing, '/');
-  const convite = corpo.slice(corpo.indexOf('<figure class="convite"'), corpo.indexOf('</figure>') + 9);
-  assert.match(convite, /<span class="cv-nome">Sexta Sem Pressa<\/span>/);
-  assert.match(convite, /Convite · sex, 20 nov/);
-  assert.doesNotMatch(convite, /<a\b|<button\b|href=|tabindex=/);
-  // "Tô dentro" e "Não rola" têm cara de botão, ficam fora da leitura um a um,
-  // e o par tem um nome só.
-  const par = convite.match(/<div class="cv cv-botoes" role="img" aria-label="([^"]+)">([\s\S]*?)<\/div>/);
-  assert.ok(par, 'o par de respostas tem nome');
-  assert.match(par[1], /Tô dentro ou Não rola/);
-  assert.match(par[2], /<span class="cv-botao" aria-hidden="true">Tô dentro<\/span>/);
-  assert.match(par[2], /<span class="cv-botao cv-botao--vazado" aria-hidden="true">Não rola<\/span>/);
-  // Quem olha a tela lê que é exemplo e que a festa é fictícia; o leitor de
-  // tela ouve isso uma vez, pela figcaption.
-  assert.match(convite, /<p class="cv-legenda rotulo" aria-hidden="true">Exemplo de convite · festa fictícia<\/p>\s*<\/figure>$/);
-  assert.match(convite, /<figcaption id="convite-legenda" class="vh">Exemplo de convite do finde, com uma festa fictícia<\/figcaption>/);
+  const d = corpo.slice(corpo.indexOf('<div class="destaque"'), corpo.indexOf('<section class="demo'));
+  assert.match(d, /<span class="destaque-nome">Sexta Sem Pressa<\/span>/);
+  assert.match(d, /sex, 20 nov · Pinheiros/);
+  assert.match(d, /Exemplo · festa fictícia/);
+  // O único link do cartão desce à demo, na mesma página.
+  assert.deepEqual([...d.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), ['#demo']);
+  assert.match(corpo, /Demo · festas fictícias/);
+  assert.match(corpo, /role="group" aria-label="Demonstração do app finde, com festas fictícias"/);
 });

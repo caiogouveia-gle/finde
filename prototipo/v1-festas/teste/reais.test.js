@@ -455,8 +455,8 @@ test('servidor: a prévia do convite de fictícia diz que é exemplo; a de real,
   const pr = (await chamar('GET', `/p/${real.corpo.id}`)).corpo;
   assert.match(pr, /<meta property="og:title" content="Bora na sexta\? Festa Teste/);
   assert.doesNotMatch(pr.match(/<meta property="og:description" content="([^"]*)"/)[1], /fictícia|xemplo/);
-  // A landing diz que o convite dela é fictício e que o app já tem reais.
+  // A landing diz que as festas dela são fictícias e que o app já tem reais.
   const landing = (await chamar('GET', '/')).corpo;
-  assert.match(landing, /Protótipo · o convite acima é fictício; o app já tem festas reais/);
+  assert.match(landing, /Protótipo · as festas desta página são fictícias; o app já tem festas reais/);
   assert.doesNotMatch(landing, /__NOTA_PROTOTIPO__/);
 });

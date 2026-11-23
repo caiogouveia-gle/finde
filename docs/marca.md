@@ -2,6 +2,8 @@
 
 Resumo do manual de identidade visual (v1, 2026), na versão atualizada pela chefe de design do grupo e lida em 16/11/2026. Fonte: https://claude.ai/artifact/GC1UPsGojARZKsSrUc3hET
 
+A landing segue um desenho mais novo da chefe de design, lido em 23/11/2026: https://claude.ai/artifact/9pW3Uetj7EEgHp8VieZwS8 (ver "Landing do desenho de 23/11/2026").
+
 As decisões de [`decisoes.md`](decisoes.md) valem acima das pranchas. Onde o protótipo não segue o desenho, este resumo diz o que mudou e por quê.
 
 ## Pranchas
@@ -48,6 +50,7 @@ As decisões de [`decisoes.md`](decisoes.md) valem acima das pranchas. Onde o pr
 | Texto corrido | `#6B3A3F` | Parágrafos |
 | Fios inativos | `#D7BFB4` | Divisórias e estados inativos |
 | Secundário sobre bordô | `#D9C2BA` | Casa, preço e texto de apoio sobre bordô. Vem da prancha da landing; a prancha de cores ainda não lista |
+| Nude claro | `#F3EBE3` | Fundo do cartão da festa sobre a foto do herói. Vem do desenho de 23/11/2026; a prancha de cores não lista |
 
 Proporção: nude 60, bordô 25, rosé 10, grafite 5. O app abre em modo dia e passa para o modo noite a partir das 18h.
 
@@ -74,7 +77,40 @@ Exemplo de evento: `QUI · 19H00 · PINHEIROS · MÉDIA 30 ANOS` / **Disco ao p�
 - **Boas-vindas (modo dia):** rótulo HOJE · A PARTIR DAS 19H; título "A pista abre *antes.*"; fio rosé; texto curto; dois botões, "Ver festas de hoje" e "Entrar". A prancha ainda desenha os dois em pílula (raio 22 px) e usa no título uma linha que não foi aprovada. No protótipo a porta de entrada é a landing da prancha 08, o app começa na primeira pergunta e os botões são o D e o C da prancha 09.
 - **Pré-quiz:** uma pergunta por tela, barra de progresso em segmentos (bordô ativo, `#D7BFB4` inativo), rótulo "1 DE 4", título em Instrument Serif com itálico ("A festa boa começa *às…*"), opções em lista separadas por fios rosé finos, a escolhida em DM Sans 500, botão "Continuar". Na prancha o botão é pílula; no protótipo, o D.
 
+## Landing do desenho de 23/11/2026
+
+Desenho novo da landing, publicado pela chefe de design à parte do manual. Página única em modo dia, com 1440 px de largura máxima e margens de 20 a 80 px. Na ordem do desenho:
+
+1. **Menu fixo:** wordmark, "Guia da semana · Nº 01" separado por um fio rosé, os links Demo, Como funciona e Instagram, e o botão "Abrir o app ››". No celular, as seções vão para um menu atrás de um botão.
+2. **Herói:** rótulo APP DE FESTAS EM SÃO PAULO; título "Festas que começam no seu horário, com gente da sua idade"; texto "Antes de sair de casa, você vê a que horas cada festa começa, enche e acaba, e a idade média de quem vai. Achou a sua, manda pro grupo."; botão "Achar a minha festa ››", que desce até a demo, e o link "ou siga @heyfinde". À direita, a foto de três amigas no sofá olhando a lista do finde no celular (a tela do app desenhada sobre a foto), e um cartão claro sobre a foto com SEX 20 · PINHEIROS, 18h00, Sexta Sem Pressa, "Média de 32 anos" e "Tô dentro".
+3. **Demo clicável** (fólio "Demo · festa fictícia", p. 2): "Experimente em três toques", três passos (Escolha a festa; Veja a hora e a turma; Chame o grupo) e um celular com três telas: a lista "Esta semana", o detalhe da Sexta Sem Pressa (começa, enche, acaba e a média "informada pela produtora") e o convite no grupo, com as respostas chegando e "3 de 4 dentro".
+4. **Como funciona** (p. 3): a foto do muro com os lambes do finde, legenda "Lambes do finde. Montagem para a campanha de lançamento.", o título "Do sofá à pista" e os três pilares do protótipo (Horário primeiro, Convite para o grupo, Com a sua cara).
+5. **Manifesto e Instagram** (p. 4), em bordô: "still going out. just differently.", "Sair continua no plano. Virar a noite, nem tanto.", e o bloco Instagram: "Nos siga e fique ligado nos próximos passos", @heyfinde, "Lançamento, primeiras festas e os bastidores do app." e o botão "Seguir @heyfinde ››".
+6. **Rodapé** em bordô: wordmark, as seções, "Abrir o app" e "Protótipo · as festas desta página são fictícias; o app já tem festas reais."
+
+O desenho tira o formulário de e-mail (o Instagram ocupa o lugar dele) e não traz depoimentos. Os botões são retângulos com canto de 2 px e texto em 17 px, sem caixa alta; o cartão do herói e o celular da demo têm sombra difusa, e o menu tem vidro fosco.
+
+### O que o protótipo faz diferente
+
+| No desenho | No protótipo | Por quê |
+|---|---|---|
+| Botões em 17 px, sem caixa alta, canto de 2 px | O D: caixa alta em 12 px, espaçamento de .16em, sem raio; o "››" fica. Sobre bordô, o D do modo noite. O link do herói é o C, com a seta | Decisões de 10/11 e 16/11/2026 |
+| "Achar a minha festa" desce até a demo | Abre o app na primeira pergunta | Decisão de 17/11/2026: é a porta do protótipo. A demo tem o link do menu e o "Tô dentro" do cartão |
+| Texto do herói: "começa, enche e acaba, e a idade média" | "começa e, quando a produtora divulga, a que horas enche e acaba e a idade média" | Com as festas reais, nem toda produtora divulga (decisões de 19/11/2026) |
+| Sombra difusa no cartão do herói e no celular da demo; vidro fosco no menu; cantos de 2 a 8 px no cartão, nas linhas e nos botões da demo | Tudo chapado: cartão com fio rosé, menu em nude cheio, cantos retos. Só o celular desenhado mantém o canto do aparelho | Decisão de 10/11/2026 |
+| "92% / 84% / 78% A SUA CARA" na tela do app da foto | A tela da foto mostra a média com a origem no lugar da porcentagem | "% a sua cara" só no app, diante de um pedido (16/11/2026) |
+| A média de idade sem a origem no cartão do herói e nas linhas da demo | "Média de 32 anos, informada pela produtora" no cartão; "pela produtora" ou "42 avaliações" em cada linha da demo e da foto | Média de idade sempre com a origem |
+| Datas fixas (SEX 20, QUI 19) e festas inventadas para a demo (Quinta Dourada, Sábado ao Sol) | O cartão e a demo saem da base fictícia: data da próxima sexta, e Roda de Sexta, Sexta Sem Pressa, Vinil e Vinho e Domingo no Terraço. Sem quinta. O cartão diz "Exemplo · festa fictícia" | O cartão, a demo e o app saem da mesma base, e a fictícia vai marcada (19/11/2026) |
+| A foto dos lambes mostra oito cartazes, dois com "a pista abre antes." | Recorte da fileira de cima, com três cartazes: "a vontade de sair à noite", "Bora na sexta? 18h00" e a assinatura | A linha não foi aprovada (10/11 e 16/11/2026) |
+| Fim da demo: "Abrir o convite no app", para um convite antigo | "Abrir o app", na primeira pergunta | O convite do desenho não existe no app novo |
+| Foto do herói montada no navegador (a tela do app em HTML sobre a foto, encaixada por script) | Uma imagem só, composta a partir das peças do desenho | A CSP só aceita 'self', sem estilo em linha, e a foto aparece igual sem JavaScript |
+| Cartão do herói sobre a foto em toda largura | Numa coluna, ele fica embaixo da foto, subindo só sobre a borda dela | Sobre a foto, ele cobria o celular |
+| Sem JavaScript, a demo não anda | Sem JavaScript, as três telas correm de lado com o dedo; o menu do celular mostra só o botão do app | A página funciona sem script |
+| Revelação das seções por opacidade e deslocamento | O movimento da landing (classe `.mov`): títulos sobem por linha, fios se desenham, fotos abrem de cima; tudo some com movimento reduzido | O movimento existente, readaptado às seções novas |
+
 ## Landing page (prancha 08)
+
+O desenho anterior da landing, que o protótipo seguiu de 16/11 a 23/11/2026. Fica aqui como registro.
 
 Página única, em modo dia, com 1200 px de largura máxima. Na ordem do desenho:
 
@@ -95,25 +131,6 @@ Página única, em modo dia, com 1200 px de largura máxima. Na ordem do desenho
 8. **Rodapé:** wordmark e SÃO PAULO.
 
 No desenho, os botões do hero, do convite e do formulário e os filtros de dia são pílulas, e o convite e o painel da lista têm canto arredondado (36 e 28 px).
-
-### O que o protótipo faz diferente
-
-A landing é a primeira tela do protótipo, em `/` (decisão de 16/11/2026). Segue a ordem e os textos do desenho, com estas diferenças:
-
-| No desenho | No protótipo | Por quê |
-|---|---|---|
-| Botões e filtros em pílula; convite e painel da lista com canto arredondado | Canto reto; botão principal D e secundário C | Decisões de 10/11 e 16/11/2026 |
-| "Ver as festas da semana" desce até a lista | O botão abre o app em `/app`, na primeira pergunta | A lista já está logo abaixo do hero; o botão leva ao pedido |
-| Convite do hero com dados fixos | Os mesmos dados, tirados do registro fictício Sexta Sem Pressa: a data é a da próxima sexta e o preço aparece como "a partir de R$ 60" | O convite e a lista saem da mesma base fictícia |
-| "92% A SUA CARA" em cada linha e o título "A lista da semana, com a sua cara" | A lista não mostra a porcentagem e o título é "A lista da semana". No fim do painel, o link "Deixar com a sua cara" (opção C) abre o app | A porcentagem é calculada pelo pedido da pessoa, e na landing ainda não há pedido. Ela aparece no resultado e no detalhe do app |
-| Filtro com quinta e cinco festas de exemplo | Filtro com Todas, Sex, Sáb e Dom. Entram festas editoriais da base fictícia com média de 28 a 35 anos que começam até as 20h: oito em Todas, divididas entre os três dias, e até oito em cada dia | A base fictícia vai de sexta a domingo. Patrocinada fica fora porque a linha não tem como marcar que é patrocinada |
-| A média de idade só com o número e MÉDIA | Embaixo de MÉDIA, a origem: "pela produtora", "edições passadas" ou o número de avaliações | Média de idade sempre com a origem |
-| Só a linha da Sexta Sem Pressa tem link | Cada linha abre o detalhe da festa em `/app?festa=<id>` | Decisão de 16/11/2026 |
-| O terceiro pilar diz que o app aprende com as festas confirmadas | "Cada festa mostra o quanto cabe no seu pedido: horário, bairro, idade, preço e som." | O protótipo não aprende com confirmações |
-| Seção de depoimentos, com espaços reservados | Seção ausente | Só entra quando houver falas reais aprovadas |
-| O formulário confirma "Seu e-mail está na lista." | Formulário só visual. Com um e-mail válido, avisa "Isto é um protótipo: seu e-mail não foi enviado nem guardado." Sem JavaScript, o botão fica desligado | O protótipo não manda e-mail nem guarda dado de ninguém |
-| Rodapé com wordmark e SÃO PAULO | Acrescenta "Protótipo · festas fictícias" | Todas as telas do protótipo dizem isso |
-| Hero com foto, na prancha 10 | Hero com o convite em bordô, da prancha 08 | A prancha 10 é teste |
 
 ## Teste de botões (prancha 09)
 

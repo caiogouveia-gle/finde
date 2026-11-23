@@ -38,6 +38,7 @@ const TIPOS_ARQUIVO = {
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.jpg': 'image/jpeg',
   '.webp': 'image/webp',
   '.woff2': 'font/woff2',
   '.txt': 'text/plain; charset=utf-8',
@@ -535,44 +536,89 @@ function rotuloDaData(f, agora) {
   return `${curto}, ${d} ${MESES[m - 1]}`;
 }
 
-// O convite do herói, montado com uma festa fictícia da base. É ilustração:
-// nada nele é link nem botão. "Tô dentro" e "Não rola" desenham o convite de
-// verdade (span com cara de botão, fora do foco), e o par tem um nome só para
-// o leitor de tela. A legenda que diz que é exemplo aparece na tela
-// (.cv-legenda, depois das anotações); a figcaption diz o mesmo ao leitor de
-// tela, que não lê a de cima duas vezes.
-function htmlDoConvite(f, agora) {
+const bairroDe = (f) => (C.BAIRROS[f.bairro] ? C.BAIRROS[f.bairro].nome : '');
+const curtaDe = (f) => f.origemIdadeCurta || '';
+
+// O cartão sobre a foto do herói: a festa do desenho (Sexta Sem Pressa), com
+// a hora primeiro, a média com a origem e a marca de exemplo. "Tô dentro"
+// desce até a demo, onde a mesma festa abre.
+function htmlDoDestaque(f, agora) {
   if (!f) return '';
+  const onde = [rotuloDaData(f, agora), bairroDe(f)].filter(Boolean).join(' · ');
+  return `<div class="destaque" role="group" aria-label="Exemplo de festa no finde, fictícia">
+        <span class="destaque-mini">${escapar(onde)}</span>
+        <span class="destaque-hora">${escapar(C.horaCheia(f.inicio))}</span>
+        <span class="destaque-nome">${escapar(f.nome)}</span>
+        <div class="destaque-pe">
+          <span class="destaque-media">Média de ${escapar(f.mediaIdade)} anos<small>${escapar(f.origemIdade)}</small></span>
+          <a class="destaque-ir" href="#demo" data-ir-passo="1">Tô dentro</a>
+        </div>
+        <span class="destaque-exemplo">Exemplo · festa fictícia</span>
+      </div>`;
+}
+
+// A demo da landing: três telas do app com festas fictícias da base. A
+// primeira é a lista da semana (a festa do destaque e mais três, de sexta a
+// domingo); a segunda, o detalhe dela; a terceira, o convite no grupo.
+const FESTAS_DA_DEMO = ['roda-de-sexta', FESTA_DO_CONVITE, 'vinil-e-vinho', 'domingo-no-terraco'];
+function htmlDaDemo(base, agora, urlApp) {
+  const f = festaDoConvite(base);
+  if (!f) return '';
+  const lista = FESTAS_DA_DEMO.map((id) => base.find((x) => x.id === id)).filter(Boolean);
+  if (!lista.includes(f)) lista.unshift(f);
+  const linha = (x) => {
+    const miolo = `<span class="t-quando"><span class="t-hora">${escapar(C.hora(x.inicio))}</span><span class="t-mini">${escapar(C.DIAS[x.dia].curto)}</span></span>
+              <span class="t-meio"><span class="t-nome">${escapar(x.nome)}</span><span class="t-info">${escapar(bairroDe(x))}</span></span>
+              <span class="t-idade"><span class="t-num">${escapar(x.mediaIdade)}</span><span class="t-mini">Média</span><span class="t-origem">${escapar(curtaDe(x))}</span></span>`;
+    return x === f
+      ? `<button type="button" class="t-linha alvo" data-passo="1">${miolo}<span class="toque" aria-hidden="true"></span></button>`
+      : `<div class="t-linha off">${miolo}</div>`;
+  };
   const dia = C.DIAS[f.dia];
-  // Quebra só antes de um "·", e a hora nunca desce sozinha na linha de baixo.
-  const onde = escapar(FT.ondeSemQuebra([f.casa, FT.precoNaLista(f), f.produtora]));
-  return `<figure class="convite" aria-labelledby="convite-legenda">
-    <figcaption id="convite-legenda" class="vh">Exemplo de convite do finde, com uma festa fictícia</figcaption>
-    <div class="cv-cartao">
-    <div class="cv cv-topo">
-      <span class="cv-marca" aria-hidden="true">finde<span class="ponto">.</span></span>
-      <span class="cv-rotulo">Convite · ${escapar(rotuloDaData(f, agora))}</span>
-      <span class="cv-titulo">Bora ${dia.id === 'sex' ? 'na' : 'no'} <i>${escapar(dia.frase)}?</i></span>
-    </div>
-    <div class="cv cv-media">
-      <span class="cv-hora-linha"><span class="cv-hora">${escapar(C.horaCheia(f.inicio))}</span><span class="cv-rotulo">Média ${escapar(f.mediaIdade)} anos</span></span>
-      <span class="cv-origem">${escapar(f.origemIdade)}</span>
-    </div>
-    <div class="cv cv-festa">
-      <span class="cv-nome">${escapar(f.nome)}</span>
-      <span class="cv-onde">${onde}</span>
-      <span class="cv-horario">${escapar(FT.horarioSemQuebra(C.fraseDoHorario(f)))}</span>
-    </div>
-    <div class="cv cv-botoes" role="img" aria-label="O grupo responde no convite: Tô dentro ou Não rola">
-      <span class="cv-botao" aria-hidden="true">Tô dentro</span>
-      <span class="cv-botao cv-botao--vazado" aria-hidden="true">Não rola</span>
-    </div>
-    </div>
-    <p class="nota nota-1"><span class="nota-fio" aria-hidden="true"></span><span>Idade média do público, ${escapar(f.origemIdade)}</span></p>
-    <p class="nota nota-2"><span class="nota-fio" aria-hidden="true"></span><span>A hora que começa, enche e acaba</span></p>
-    <p class="nota nota-3"><span class="nota-fio" aria-hidden="true"></span><span>Seu grupo responde no próprio convite</span></p>
-    <p class="cv-legenda rotulo" aria-hidden="true">Exemplo de convite · festa fictícia</p>
-  </figure>`;
+  const mini = [rotuloDaData(f, agora), bairroDe(f), FT.precoNaLista(f)].filter(Boolean).join(' · ');
+  const tempo = [['Começa', f.inicio], ['Enche', f.esquenta], ['Acaba', f.fim]]
+    .filter(([, h]) => Number.isFinite(h))
+    .map(([nome, h]) => `<div><span class="t-tempo-hora">${escapar(C.hora(h))}</span><span class="t-mini">${nome}</span></div>`).join('');
+  const voltar = (passo, rotulo) => `<button type="button" class="t-voltar" data-passo="${passo}" aria-label="${rotulo}"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><path d="M13 8H3M7 4L3 8l4 4"/></svg></button>`;
+  return `<div class="aparelho" role="group" aria-label="Demonstração do app finde, com festas fictícias">
+      <div class="aparelho-tela">
+        <div class="trilho-telas" id="telas">
+          <div class="tela-demo" aria-label="Tela 1 de 3: a lista da semana">
+            <span class="t-marca" aria-hidden="true">finde<span class="ponto">.</span></span>
+            <span class="t-titulo">Esta semana</span>
+            <div class="t-lista">
+              ${lista.map(linha).join('\n              ')}
+            </div>
+            <span class="t-dica">Toque na ${escapar(f.nome)}</span>
+          </div>
+          <div class="tela-demo" aria-label="Tela 2 de 3: a festa">
+            ${voltar(0, 'Voltar para a lista')}
+            <span class="t-mini">${escapar(mini)}</span>
+            <span class="t-titulo">${escapar(f.nome)}</span>
+            <span class="t-info">${escapar([f.casa, f.produtora].filter(Boolean).join(' · '))}</span>
+            <div class="t-tempo">${tempo}</div>
+            <div class="t-media"><span class="t-media-num">${escapar(f.mediaIdade)}</span><span><strong>anos, em média</strong><small>${escapar(f.origemIdade)}</small></span></div>
+            <span class="t-vao"></span>
+            <button type="button" class="t-botao" data-passo="2">Chamar o grupo<span class="toque" aria-hidden="true"></span></button>
+          </div>
+          <div class="tela-demo" aria-label="Tela 3 de 3: o convite no grupo">
+            ${voltar(1, 'Voltar para a festa')}
+            <span class="t-mini">Convite enviado pro grupo</span>
+            <span class="t-titulo">Bora ${dia.id === 'sex' ? 'na' : 'no'} <i>${escapar(dia.frase)}?</i></span>
+            <span class="t-info">${escapar([f.nome, C.hora(f.inicio), bairroDe(f)].filter(Boolean).join(' · '))}</span>
+            <ul class="t-respostas" id="respostas">
+              <li><span>Você</span><span class="sim">tô dentro</span></li>
+              <li><span>Ana</span><span class="sim">tô dentro</span></li>
+              <li><span>Bia</span><span class="sim">tô dentro</span></li>
+              <li><span>Carol</span><span class="nao">não rola</span></li>
+            </ul>
+            <span class="t-placar" id="placar">3 de 4 dentro</span>
+            <span class="t-vao"></span>
+            <a class="t-botao" href="${escapar(urlApp)}">Abrir o app</a>
+          </div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // A festa do convite: a do desenho (Sexta Sem Pressa) ou, se ela sair da
@@ -812,12 +858,13 @@ function montarServidor({
 
   const pagina = (req, res, nome, opcoes = {}) => enviarPagina(req, res, path.join(PUBLICO, nome), { ...opcoes, enderecos });
 
-  // A landing vem montada: o convite do herói sai daqui.
+  // A landing vem montada: o destaque do herói e as telas da demo saem daqui.
   const landing = (req, res) => pagina(req, res, 'landing.html', {
     trocas: {
-      __CONVITE__: htmlDoConvite(festaDoConvite(fonte.base()), new Date(relogio())),
-      // O convite do herói é sempre fictício; o app pode já ter festas reais.
-      __NOTA_PROTOTIPO__: reaisVigentes().length ? 'Protótipo · o convite acima é fictício; o app já tem festas reais' : 'Protótipo · festas fictícias',
+      __DESTAQUE__: htmlDoDestaque(festaDoConvite(fonte.base()), new Date(relogio())),
+      __DEMO__: htmlDaDemo(fonte.base(), new Date(relogio()), sites.urlApp),
+      // As festas da landing são sempre fictícias; o app pode já ter festas reais.
+      __NOTA_PROTOTIPO__: reaisVigentes().length ? 'Protótipo · as festas desta página são fictícias; o app já tem festas reais' : 'Protótipo · festas fictícias',
     },
     cabecalhos: REFERRER_DA_LANDING,
   });

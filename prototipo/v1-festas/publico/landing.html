@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>finde. still going out. just differently.</title>
+  <title>finde. festas no seu horário</title>
   <meta name="description" content="Festas do fim de semana em São Paulo que começam cedo, com a idade média do público e a origem desse número. Protótipo em teste.">
   <meta name="theme-color" content="#EADCD2">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="finde. still going out. just differently.">
+  <meta property="og:title" content="finde. festas no seu horário">
   <meta property="og:description" content="Festas que começam no seu horário, com gente da sua idade.">
   <meta property="og:image" content="__ORIGEM__/compartilhar.png">
   <meta property="og:image:width" content="1200">
@@ -18,75 +18,124 @@
   <link rel="preload" href="/fontes/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fontes/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fontes/fraunces-italico-300.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/uso-sofa.jpg" as="image">
   <link rel="stylesheet" href="/landing.css">
   <script src="/landing.js"></script>
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-  <header class="topo faixa">
-    <a class="marca" href="/" aria-label="finde, início">finde<span class="ponto" aria-hidden="true">.</span></a>
-    <a class="topo-app" href="__URL_APP__">Abrir o app</a>
+  <header class="menu" id="menu">
+    <div class="menu-dentro faixa">
+      <div class="menu-marca">
+        <a class="marca" href="/" aria-label="finde, início">finde<span class="ponto" aria-hidden="true">.</span></a>
+        <span class="edicao">Guia da semana · Nº 01</span>
+      </div>
+      <nav class="menu-nav" aria-label="Seções">
+        <a class="menu-item" href="#demo">Demo</a>
+        <a class="menu-item" href="#como">Como funciona</a>
+        <a class="menu-item" href="#instagram">Instagram</a>
+        <a class="botao botao--topo" href="__URL_APP__">Abrir o app <span class="avanco" aria-hidden="true">››</span></a>
+        <button class="menu-botao" id="menu-botao" type="button" aria-expanded="false" aria-controls="menu-movel" aria-label="Abrir o menu"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><path d="M3 7h16M3 15h16"/></svg></button>
+      </nav>
+    </div>
+    <nav class="menu-movel" id="menu-movel" aria-label="Seções" hidden>
+      <a href="#demo">Demo</a>
+      <a href="#como">Como funciona</a>
+      <a href="#instagram">Instagram</a>
+    </nav>
   </header>
 
   <main id="conteudo">
     <section class="hero faixa" aria-labelledby="hero-titulo">
       <div class="hero-texto">
         <p class="rotulo">App de festas em São Paulo</p>
-        <h1 id="hero-titulo">Festas que começam <span class="inteiro">no seu horário,</span> <span class="inteiro">com gente</span> da sua idade</h1>
-        <p class="hero-lead">Antes de sair de casa, você vê a que horas cada festa começa e, quando a produtora divulga, a que horas enche e acaba e a idade média de quem vai. Achou a sua, manda pro grupo.</p>
-        <div class="hero-acoes">
-          <a class="botao" href="__URL_APP__">Achar a minha festa</a>
-          <a class="link-fio" href="#lista">ou receba a lista por e-mail <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        <div class="hero-corpo">
+          <h1 id="hero-titulo">Festas que começam <span class="inteiro">no seu horário,</span> <span class="inteiro">com gente</span> da sua idade</h1>
+          <p class="hero-lead">Antes de sair de casa, você vê a que horas cada festa começa e, quando a produtora divulga, a que horas enche e acaba e a idade média de quem vai. Achou a sua, manda pro grupo.</p>
+          <div class="hero-acoes">
+            <a class="botao" href="__URL_APP__">Achar a minha festa <span class="avanco" aria-hidden="true">››</span></a>
+            <a class="link-fio" href="#instagram">ou siga @heyfinde <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+          </div>
         </div>
       </div>
-      __CONVITE__
-    </section>
-
-    <section class="pilares faixa" aria-label="Como o finde funciona">
-      <div class="pilar">
-        <h2>Horário primeiro</h2>
-        <p>Diga a que horas quer chegar e voltar, e o finde mostra as festas que cabem nesse horário.</p>
-      </div>
-      <div class="pilar">
-        <h2>Convite para o grupo</h2>
-        <p>Mande o convite e veja quem do grupo vai.</p>
-      </div>
-      <div class="pilar">
-        <h2>Com a sua cara</h2>
-        <p>Cada festa mostra o quanto cabe no seu pedido: horário, bairro, idade, preço e som.</p>
-      </div>
-      <p class="pilares-acao"><a class="link-fio" href="__URL_APP__">Achar a minha festa <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a></p>
-    </section>
-
-    <section class="manifesto" aria-label="Assinatura">
-      <div class="manifesto-dentro faixa">
-        <p class="manifesto-assinatura" lang="en">still going out.<br><span>just differently.</span></p>
-        <p class="manifesto-texto">Aos 30 a gente continua saindo, só que prefere chegar cedo e voltar numa hora boa.</p>
+      <div class="foto">
+        <div class="uso">
+          <img src="/uso-sofa.jpg" width="1440" height="1800" alt="Três amigas no sofá olhando a lista de festas do finde no celular">
+        </div>
+        __DESTAQUE__
       </div>
     </section>
 
-    <section id="lista" class="inscricao faixa" aria-labelledby="lista-titulo">
-      <h2 id="lista-titulo"><span class="inteiro">Receba a lista</span> <span class="inteiro">no seu e-mail</span></h2>
-      <p class="inscricao-texto">Toda quarta mandamos as festas do fim de semana.</p>
-      <form id="form-lista" class="form-lista" novalidate>
-        <label class="campo" for="email">
-          <span class="rotulo">Seu e-mail</span>
-          <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="voce@email.com" aria-describedby="email-nota email-erro" required>
-        </label>
-        <button class="botao" type="submit" disabled>Quero receber</button>
-      </form>
-      <p id="email-nota" class="nota-prototipo">Protótipo: este formulário não envia nem guarda nada.</p>
-      <p id="email-erro" class="erro" aria-live="polite"></p>
-      <p id="aviso-prototipo" class="aviso" role="status"></p>
+    <section class="demo faixa" id="demo" aria-labelledby="demo-titulo">
+      <div class="corrida"><span>Demo · festas fictícias</span><span>p. 2</span></div>
+      <div class="demo-texto">
+        <h2 id="demo-titulo">Experimente em três toques</h2>
+        <ol class="passos" id="passos">
+          <li><button type="button" data-passo="0"><span class="n" aria-hidden="true">1</span><span><strong>Escolha a festa</strong><small>A lista da semana já vem filtrada pelo seu horário.</small></span></button></li>
+          <li><button type="button" data-passo="1"><span class="n" aria-hidden="true">2</span><span><strong>Veja a hora e a turma</strong><small>Quando começa, enche e acaba, e a idade média de quem vai.</small></span></button></li>
+          <li><button type="button" data-passo="2"><span class="n" aria-hidden="true">3</span><span><strong>Chame o grupo</strong><small>Manda o convite e cada amiga responde se tá dentro.</small></span></button></li>
+        </ol>
+        <button type="button" class="demo-reinicia" id="demo-reinicia">Recomeçar a demo</button>
+        <p class="vh" id="demo-status" aria-live="polite"></p>
+      </div>
+      __DEMO__
+    </section>
+
+    <section class="como faixa" id="como" aria-labelledby="como-titulo">
+      <div class="corrida"><span>Como funciona</span><span>p. 3</span></div>
+      <figure class="figura">
+        <img src="/lambes.jpg" width="684" height="380" loading="lazy" alt="Três cartazes lambe-lambe do finde num muro: “a vontade de sair à noite”, “Bora na sexta? 18h00” e “still going out. just differently.”">
+        <figcaption>Lambes do finde. Montagem para a campanha de lançamento.</figcaption>
+      </figure>
+      <div class="como-texto">
+        <h2 id="como-titulo">Do sofá à pista</h2>
+        <div class="pilares">
+          <div class="pilar">
+            <h3>Horário primeiro</h3>
+            <p>Diga a que horas quer chegar e voltar, e o finde mostra as festas que cabem nesse horário.</p>
+          </div>
+          <div class="pilar">
+            <h3>Convite para o grupo</h3>
+            <p>Mande o convite e veja quem do grupo vai.</p>
+          </div>
+          <div class="pilar">
+            <h3>Com a sua cara</h3>
+            <p>Cada festa mostra o quanto cabe no seu pedido: horário, bairro, idade, preço e som.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final" id="instagram" aria-labelledby="instagram-titulo">
+      <div class="faixa final-corrida"><div class="corrida corrida--clara"><span>Manifesto · Instagram</span><span>p. 4</span></div></div>
+      <div class="faixa final-dentro">
+        <div class="manifesto">
+          <p class="manifesto-assinatura" lang="en">still going out.<br><span>just differently.</span></p>
+          <p class="manifesto-texto">Sair continua no plano. Virar a noite, nem tanto.</p>
+        </div>
+        <div class="insta">
+          <p class="rotulo">Instagram</p>
+          <h2 id="instagram-titulo">Nos siga e fique ligado nos próximos passos</h2>
+          <a class="insta-arroba" href="https://www.instagram.com/heyfinde/" target="_blank" rel="noopener">@heyfinde</a>
+          <p class="insta-texto">Lançamento, primeiras festas e os bastidores do app.</p>
+          <a class="botao botao--noite" href="https://www.instagram.com/heyfinde/" target="_blank" rel="noopener">Seguir @heyfinde <span class="avanco" aria-hidden="true">››</span></a>
+        </div>
+      </div>
     </section>
   </main>
 
-  <footer class="rodape faixa">
-    <span class="marca marca--rodape" role="img" aria-label="finde">finde<span class="ponto">.</span></span>
-    <span class="rotulo">São Paulo</span>
-    <span class="rotulo">__NOTA_PROTOTIPO__</span>
-    <a class="rodape-app" href="__URL_APP__">Abrir o app</a>
+  <footer class="rodape">
+    <div class="rodape-dentro faixa">
+      <span class="marca marca--rodape" role="img" aria-label="finde">finde<span class="ponto">.</span></span>
+      <nav class="rodape-nav" aria-label="Rodapé">
+        <a href="#demo">Demo</a>
+        <a href="#como">Como funciona</a>
+        <a href="#instagram">Instagram</a>
+        <a class="rodape-app" href="__URL_APP__">Abrir o app</a>
+      </nav>
+      <p class="rodape-nota">__NOTA_PROTOTIPO__</p>
+    </div>
   </footer>
 </body>
 </html>

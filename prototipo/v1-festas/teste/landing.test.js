@@ -1,8 +1,9 @@
 'use strict';
 // A landing (/), o app em /app e o detalhe sem pedido (/api/festa/<id>).
-// A landing é a porta: o cabeçalho, o botão do herói, o link depois dos
-// pilares e o rodapé levam ao protótipo, o convite é só ilustração e a lista
-// da semana saiu. Relógio parado numa segunda, 16/11/2026.
+// A landing do desenho de 23/11/2026: menu, herói com a foto de uso e o
+// cartão da festa, demo em três toques, como funciona, manifesto com o
+// Instagram e rodapé. O menu, o botão do herói, o fim da demo e o rodapé
+// levam ao protótipo. Relógio parado numa segunda, 16/11/2026.
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -57,29 +58,32 @@ async function api(metodo, caminho, corpo) {
   return { status: r.status, corpo: await r.json() };
 }
 
-const conviteDe = (html) => {
-  const ini = html.indexOf('<figure class="convite"');
-  return ini < 0 ? '' : html.slice(ini, html.indexOf('</figure>', ini) + '</figure>'.length);
+const trecho = (html, abre, fecha) => {
+  const ini = html.indexOf(abre);
+  return ini < 0 ? '' : html.slice(ini, html.indexOf(fecha, ini) + fecha.length);
 };
+const destaqueDe = (html) => trecho(html, '<div class="destaque"', 'Exemplo · festa fictícia</span>');
+const aparelhoDe = (html) => trecho(html, '<div class="aparelho"', '<section class="como');
 
-test('GET / serve a landing: título, herói, o botão para o protótipo e a assinatura', async () => {
+test('GET / serve a landing do desenho de 23/11: menu, herói com foto, demo, como funciona, manifesto e Instagram', async () => {
   const r = await pagina('/');
   assert.equal(r.status, 200);
   assert.match(r.tipo, /text\/html/);
-  assert.match(r.corpo, /<title>finde\. still going out\. just differently\.<\/title>/);
-  assert.match(r.corpo, /<meta property="og:title" content="finde\. still going out\. just differently\.">/);
+  assert.match(r.corpo, /<title>finde\. festas no seu horário<\/title>/);
+  assert.match(r.corpo, /<meta property="og:title" content="finde\. festas no seu horário">/);
   const h1 = r.corpo.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1];
   assert.equal(h1.replace(/<[^>]+>/g, ''), 'Festas que começam no seu horário, com gente da sua idade');
-  // O D do herói é a saída para o protótipo, com um rótulo que diz isso; sem
-  // FINDE_SITE, o app está em /app. O C desce até o formulário.
-  assert.match(r.corpo, /<a class="botao" href="\/app">Achar a minha festa<\/a>/);
-  assert.match(r.corpo, /<a class="link-fio" href="#lista">ou receba a lista por e-mail/);
-  // O link do cabeçalho também leva ao app; o e-mail fica com o C do herói.
-  assert.match(r.corpo, /<a class="topo-app" href="\/app">Abrir o app<\/a>/);
-  assert.match(r.corpo, /<section id="lista" class="inscricao/);
-  // O D vem antes do C, e os dois ficam no herói, acima do convite.
-  const hero = r.corpo.slice(r.corpo.indexOf('<section class="hero'), r.corpo.indexOf('<figure class="convite"'));
-  assert.ok(hero.indexOf('class="botao"') >= 0 && hero.indexOf('class="botao"') < hero.indexOf('class="link-fio"'));
+  // A ordem das seções do desenho.
+  const ordem = ['<header class="menu"', '<section class="hero', '<section class="demo', '<section class="como', '<section class="final', '<footer class="rodape"'];
+  const pos = ordem.map((s) => r.corpo.indexOf(s));
+  assert.ok(pos.every((p, i) => p > 0 && (i === 0 || p > pos[i - 1])), pos.join(' '));
+  // O D do herói é a saída para o protótipo (decisão de 17/11); o C leva ao Instagram.
+  assert.match(r.corpo, /<a class="botao" href="\/app">Achar a minha festa <span class="avanco" aria-hidden="true">››<\/span><\/a>/);
+  assert.match(r.corpo, /<a class="link-fio" href="#instagram">ou siga @heyfinde/);
+  const hero = trecho(r.corpo, '<section class="hero', '</section>');
+  assert.ok(hero.indexOf('class="botao"') < hero.indexOf('class="link-fio"'));
+  // A foto de uso sai de publico/, com texto alternativo.
+  assert.match(hero, /<img src="\/uso-sofa\.jpg" width="1440" height="1800" alt="[^"]+">/);
   // A assinatura em inglês leva lang="en": o leitor de tela pronuncia certo.
   assert.match(r.corpo, /<p class="manifesto-assinatura" lang="en">still going out\.<br><span>just differently\.<\/span>/);
   assert.match(r.corpo, /Protótipo · festas fictícias/);
@@ -87,236 +91,111 @@ test('GET / serve a landing: título, herói, o botão para o protótipo e a ass
   // Nada que o grupo não aprovou, nada inventado, nenhum marcador sobrando.
   assert.doesNotMatch(r.corpo, /a pista abre antes|dança cedo/i);
   assert.doesNotMatch(r.corpo, /turma diz|\[Fala|\[Primeiro nome/i);
-  assert.doesNotMatch(r.corpo, /\d+\s*%/);
+  assert.doesNotMatch(r.corpo, /\d+\s*%|a sua cara<\/span>/);
   assert.doesNotMatch(r.corpo, /__[A-Z_]+__/);
+  // Nada de estilo nem script em linha: a CSP só aceita 'self'.
+  assert.doesNotMatch(r.corpo, /\sstyle="|<style|<script>|\son[a-z]+="/);
   assert.equal((await pagina('/index.html')).corpo, r.corpo);
   assert.equal((await pagina('/landing.html')).status, 404);
 });
 
-test('a lista da semana saiu da landing, com tudo o que era dela', async () => {
-  const { corpo } = await pagina('/');
-  assert.doesNotMatch(corpo, /A lista da semana|id="festas"|href="#festas"/);
-  assert.doesNotMatch(corpo, /class="(painel|filtros?|linhas?|vazio)"|id="(linhas|vazio|contagem)"/);
-  assert.doesNotMatch(corpo, /Montar a lista|Deixar com a sua cara/);
-  // Nenhum link da landing abre uma festa: todo caminho para o app vai à
-  // primeira pergunta (cabeçalho, D do herói, C depois dos pilares, rodapé).
-  assert.doesNotMatch(corpo, /\?festa=/);
-  assert.deepEqual([...corpo.matchAll(/href="(\/app[^"]*)"/g)].map((m) => m[1]), ['/app', '/app', '/app', '/app']);
-  // O modelo, o script e o estilo não guardam sobras.
-  assert.doesNotMatch(HTML, /__LISTA__|__VAZIO__/);
-  assert.match(HTML, /__CONVITE__/);
-  assert.match(HTML, /<a class="botao" href="__URL_APP__">/);
-  assert.doesNotMatch(JS, /filtr|sessionStorage|scrollIntoView|referrer|#linhas|festas/);
-  const semComentario = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
-  assert.doesNotMatch(semComentario, /\.(painel|filtros?|linhas?|vazio|festas|sem-quebra|link-fio--noite)\b/);
-});
-
 // Os links da página, na ordem do Tab: [classe, destino, texto].
-const links = (html) => [...html.matchAll(/<a class="([^"]+)" href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)]
-  .map((m) => [m[1], m[2], m[3].replace(/<[^>]+>/g, '').trim()]);
+const links = (html) => [...html.matchAll(/<a(?: class="([^"]+)")? href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)]
+  .map((m) => [m[1] || '', m[2], m[3].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()]);
 
-test('o protótipo tem porta no cabeçalho, no herói, depois dos pilares e no rodapé', async () => {
+test('o protótipo tem porta no menu, no herói, no fim da demo e no rodapé; nenhuma abre uma festa', async () => {
   const { corpo } = await pagina('/');
-  const lista = links(corpo);
-  assert.deepEqual(lista, [
-    ['pular', '#conteudo', 'Pular para o conteúdo'],
-    ['marca', '/', 'finde.'],
-    ['topo-app', '/app', 'Abrir o app'],
-    ['botao', '/app', 'Achar a minha festa'],
-    ['link-fio', '#lista', 'ou receba a lista por e-mail'],
-    ['link-fio', '/app', 'Achar a minha festa'],
+  const doApp = links(corpo).filter((l) => l[1] === '/app');
+  assert.deepEqual(doApp, [
+    ['botao botao--topo', '/app', 'Abrir o app ››'],
+    ['botao', '/app', 'Achar a minha festa ››'],
+    ['t-botao', '/app', 'Abrir o app'],
     ['rodape-app', '/app', 'Abrir o app'],
   ]);
-  // Quem rola até o fim sai pelo rodapé, depois do formulário e da marca.
-  const rodape = corpo.slice(corpo.indexOf('<footer'), corpo.indexOf('</footer>'));
-  assert.match(rodape, /<a class="rodape-app" href="\/app">Abrir o app<\/a>/);
-  assert.ok(corpo.indexOf('</form>') < corpo.indexOf('class="rodape-app"'));
-  // No cabeçalho e no rodapé, o link tem o fio rosé embaixo das letras: no
-  // rodapé, é o que o separa dos rótulos ao lado.
-  const nav = regras('.topo-app')[0];
-  assert.ok(nav && nav === regras('.rodape-app')[0], 'os dois links têm a mesma regra');
-  assert.match(nav, /text-decoration:\s*underline/);
-  assert.match(nav, /text-decoration-color:\s*var\(--rose\)/);
-  assert.match(nav, /min-height:\s*44px/);
-  // A segunda entrada fecha a seção dos pilares, que descrevem o app, e vem
-  // antes do formulário.
-  const pilares = corpo.slice(corpo.indexOf('<section class="pilares'), corpo.indexOf('<section class="manifesto'));
-  assert.match(pilares, /<p class="pilares-acao"><a class="link-fio" href="\/app">Achar a minha festa <svg class="seta"[^>]*aria-hidden="true"/);
-  assert.ok(pilares.lastIndexOf('class="pilar"') < pilares.indexOf('pilares-acao'));
-  assert.ok(corpo.indexOf('pilares-acao') < corpo.indexOf('<form'));
-  // Ela ocupa a linha inteira da grade, embaixo dos três.
-  assert.match(regras('.pilares-acao')[0], /grid-column:\s*1 \/ -1/);
-});
-
-test('os pilares descrevem o protótipo; "lista" fica só com o e-mail', async () => {
-  const { corpo } = await pagina('/');
-  const pilares = corpo.slice(corpo.indexOf('<section class="pilares'), corpo.indexOf('<section class="manifesto'));
-  const titulos = [...pilares.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) => m[1]);
-  assert.deepEqual(titulos, ['Horário primeiro', 'Convite para o grupo', 'Com a sua cara']);
-  // O primeiro fala da pergunta de horário do app ("A que horas chegar e voltar?").
-  assert.match(pilares, /<p>Diga a que horas quer chegar e voltar, e o finde mostra as festas que cabem nesse horário\.<\/p>/);
-  assert.doesNotMatch(pilares, /lista|semana/i);
-  assert.doesNotMatch(corpo, /Lista pronta|chegam selecionadas/);
-  // No texto da página, "lista" só aparece no caminho do e-mail.
-  const texto = corpo
-    .replace(/<head>[\s\S]*?<\/head>/, '')
-    .replace(/<section id="lista"[\s\S]*?<\/section>/, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/ou receba a lista por e-mail/, '');
-  assert.doesNotMatch(texto, /\blista\b/i);
-});
-
-test('o título do herói quebra pela frase, sem "com" nem "seu" no fim da linha', async () => {
-  const { corpo } = await pagina('/');
-  // "no seu horário," e "com gente" não se separam; o resto quebra normal.
-  assert.match(corpo, /<h1 id="hero-titulo">Festas que começam <span class="inteiro">no seu horário,<\/span> <span class="inteiro">com gente<\/span> da sua idade<\/h1>/);
-  assert.match(regras('.inteiro')[0], /white-space:\s*nowrap/);
-  // Em três linhas, a mais longa é "com gente da sua idade": 7,72 vezes o
-  // corpo em Instrument Serif (medido no Chrome). Com o corpo em 12% da
-  // coluna, ela ocupa 93% e nunca quebra em "com gente da sua / idade".
-  const LINHA_MAIS_LONGA = 7.72;
-  const corpoH1 = regras('.hero h1').map((b) => b.match(/font-size:\s*clamp\((\d+)px,\s*([\d.]+)cqi,\s*(\d+)px\)/)).find(Boolean);
-  assert.ok(corpoH1, 'o título acompanha a coluna pelo cqi');
-  const [, minimo, cqi] = corpoH1.map(Number);
-  assert.ok((Number(cqi) / 100) * LINHA_MAIS_LONGA <= 0.95, `${cqi}cqi`);
-  // O mínimo só pega abaixo de 280 de tela (coluna de 248 px, com 16 de cada lado).
-  assert.ok(minimo * LINHA_MAIS_LONGA <= 248, `mínimo ${minimo}`);
-});
-
-test('o título do herói é o maior da página fora a assinatura: pilares e e-mail em até 85% dele', () => {
-  const num = (s) => Number(s);
-  const h1 = regras('.hero h1').map((b) => b.match(/clamp\((\d+)px,\s*([\d.]+)cqi,\s*(\d+)px\)/)).find(Boolean).slice(1).map(num);
-  const tamanhoH1 = (coluna) => Math.min(h1[2], Math.max(h1[0], (h1[1] / 100) * coluna));
-  // No celular (até 560), a coluna é a tela menos o recuo dos dois lados.
-  const lateral = (vw) => Math.min(48, Math.max(16, vw * 0.05));
-  const celular = CSS.match(/@media \(max-width: 560px\) \{([\s\S]*?)\n\}/)[1];
-  const m = celular.match(/\.pilar h2, \.inscricao h2 \{ font-size: min\((\d+)px, ([\d.]+)vw\); \}/);
-  assert.ok(m, 'no celular, pilares e e-mail acompanham o título');
-  for (let vw = 320; vw <= 560; vw += 10) {
-    const titulo = tamanhoH1(vw - 2 * lateral(vw));
-    const outro = Math.min(num(m[1]), (num(m[2]) / 100) * vw);
-    assert.ok(outro <= 0.85 * titulo, `${vw}: ${outro.toFixed(1)} x ${titulo.toFixed(1)}`);
+  assert.doesNotMatch(corpo, /\?festa=|\/p\//);
+  // O menu leva às três seções, e elas existem.
+  for (const id of ['demo', 'como', 'instagram']) {
+    assert.match(corpo, new RegExp(`<a class="menu-item" href="#${id}">`));
+    assert.match(corpo, new RegExp(`<section class="[^"]+" id="${id}"`));
   }
-  // No desktop, a coluna do título tem de 380 a 520 px.
-  const inscricao = regras('.inscricao h2')[0].match(/clamp\((\d+)px,\s*([\d.]+)vw,\s*(\d+)px\)/).slice(1).map(num);
-  const pilar = regras('.pilar h2')[0].match(/clamp\((\d+)px,\s*([\d.]+)vw,\s*(\d+)px\)/).slice(1).map(num);
-  assert.ok(inscricao[2] <= 0.85 * tamanhoH1(520), `e-mail ${inscricao[2]} x ${tamanhoH1(520)}`);
-  assert.ok(inscricao[2] >= pilar[2], 'o título do e-mail não fica menor que o dos pilares');
-  // Lado a lado a partir de 1000: coluna de 380 (h1 45,6) e e-mail em 3,8vw de 1000.
-  assert.ok((inscricao[1] / 100) * 1000 <= 0.85 * tamanhoH1(380));
+  // Instagram: o arroba e o D do modo noite, em aba nova.
+  const insta = links(corpo).filter((l) => /instagram\.com/.test(l[1]));
+  assert.deepEqual(insta.map((l) => l[2]), ['@heyfinde', 'Seguir @heyfinde ››']);
+  assert.ok(insta.every((l) => l[1] === 'https://www.instagram.com/heyfinde/'));
+  assert.match(corpo, /<a class="botao botao--noite" href="https:\/\/www\.instagram\.com\/heyfinde\/" target="_blank" rel="noopener">/);
 });
 
-test('landing.css: sem viúva no texto do herói nem na nota do formulário', () => {
-  // Alinhado à esquerda, "pretty" segura a última palavra; centralizado, "balance".
-  assert.match(regras('.hero-lead')[0], /text-wrap:\s*pretty/);
-  assert.match(regras('.nota-prototipo')[0], /text-wrap:\s*balance/);
-  assert.match(regras('.pilar p')[0], /text-wrap:\s*pretty/);
-});
-
-test('landing.css: a legenda do convite fica no alto das anotações e, numa coluna, depois delas', () => {
-  // Na linha do topo do cartão, ela não muda a altura do convite: a coluna de
-  // texto do herói continua com a altura do cartão.
-  assert.match(regras('.cv-legenda')[0], /grid-column:\s*2;\s*grid-row:\s*1;\s*align-self:\s*start/);
-  const umaColuna = CSS.match(/@media \(max-width: 640px\) \{([\s\S]*?)\n\}/)[1];
-  assert.match(umaColuna, /\.nota-3 \{ grid-row: 7;/);
-  assert.match(umaColuna, /\.cv-legenda \{ grid-column: 1; grid-row: 8; margin-top: \d+px; \}/);
-});
-
-test('landing.css: pilares em uma coluna ou em três, nunca dois mais um', () => {
-  const base = regras('.pilares')[0];
-  assert.match(base, /grid-template-columns:\s*minmax\(0, 1fr\)/);
-  assert.doesNotMatch(CSS, /auto-fit|auto-fill/);
-  const tres = CSS.match(/@media \(min-width: (\d+)px\) \{\s*\.pilares \{ grid-template-columns: repeat\(3, minmax\(0, 1fr\)\); \}/);
-  assert.ok(tres, 'três colunas a partir de uma largura');
-  assert.ok(Number(tres[1]) >= 900 && Number(tres[1]) <= 1000, tres[1]);
-});
-
-test('o convite do herói sai do registro de Sexta Sem Pressa', async () => {
-  const convite = conviteDe((await pagina('/')).corpo);
-  assert.match(convite, /Convite · sex, 20 nov/);
-  assert.match(convite, /Bora na <i>sexta\?<\/i>/);
-  assert.match(convite, /<span class="cv-hora">18h00<\/span><span class="cv-rotulo">Média 32 anos<\/span>/);
-  assert.match(convite, /<span class="cv-origem">informada pela produtora<\/span>/);
-  assert.match(convite, /<span class="cv-nome">Sexta Sem Pressa<\/span>/);
-  // A frase é a do registro; no desenho, a hora anda com o verbo (espaço e
-  // hífen que não quebram), e "casa · preço · produtora" só quebra antes do "·".
-  const lido = convite.replace(/ /g, ' ').replace(/‑/g, '-');
-  assert.match(lido, /Começa às 18h, a pista enche às 20h e acaba às 23h\./);
-  assert.match(convite, /e acaba às 23h\./);
-  assert.match(convite, /<span class="cv-onde">terraço em Pinheiros · a partir de R\$ 60 · Coletivo Expediente<\/span>/);
-  assert.match(convite, /Idade média do público, informada pela produtora/);
-  assert.match(convite, /A hora que começa, enche e acaba/);
-  assert.match(convite, /Seu grupo responde no próprio convite/);
-});
-
-test('o convite do herói é ilustração: nada nele se clica nem recebe foco', async () => {
-  const convite = conviteDe((await pagina('/')).corpo);
-  assert.ok(convite, 'o convite está na página');
-  assert.doesNotMatch(convite, /<(a|button|input|select|textarea|details|label)\b/i);
-  assert.doesNotMatch(convite, /\s(href|tabindex|onclick|contenteditable|role="(button|link)")[=\s>]/i);
-  // "Tô dentro" e "Não rola" têm cara de botão e não são: dois spans
-  // escondidos do leitor de tela, num conjunto que tem nome próprio.
-  const botoes = convite.match(/<div class="cv cv-botoes"([^>]*)>([\s\S]*?)<\/div>/);
-  assert.ok(botoes, 'os botões desenhados estão no convite');
-  assert.match(botoes[1], /role="img"/);
-  assert.match(botoes[1], /aria-label="[^"]*Tô dentro[^"]*Não rola[^"]*"/);
-  const spans = [...botoes[2].matchAll(/<span class="cv-botao[^"]*"([^>]*)>([^<]+)<\/span>/g)];
-  assert.deepEqual(spans.map((m) => m[2]), ['Tô dentro', 'Não rola']);
-  assert.ok(spans.every((m) => /aria-hidden="true"/.test(m[1])), 'cada um fora da árvore de acessibilidade');
-  // A figura inteira também tem nome: aponta para a legenda, que diz o que é.
-  const id = (convite.match(/^<figure class="convite" aria-labelledby="([^"]+)"/) || [])[1];
-  assert.ok(id, 'a figura do convite tem rótulo');
-  const legenda = convite.match(new RegExp(`<figcaption id="${id}"[^>]*>([^<]+)</figcaption>`));
-  assert.ok(legenda, 'a legenda existe');
-  assert.match(legenda[1], /Exemplo de convite do finde/);
-});
-
-test('o formulário de e-mail é só visual: sem action, sem nome no campo, botão desligado sem JS', async () => {
+test('o formulário de e-mail saiu com o desenho novo: nada na página coleta dado', async () => {
   const { corpo } = await pagina('/');
-  const form = corpo.match(/<form[^>]*>[\s\S]*?<\/form>/)[0];
-  assert.doesNotMatch(form, /action=|method=/);
-  assert.doesNotMatch(form, /<input[^>]*\bname=/);
-  assert.match(form, /<button class="botao" type="submit" disabled>Quero receber<\/button>/);
+  assert.doesNotMatch(corpo, /<form|<input|<textarea|e-mail/i);
   assert.doesNotMatch(JS, /fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|\.submit\(\)/);
-  assert.match(JS, /Isto é um protótipo: seu e-mail não foi enviado nem guardado\./);
-  // O aviso honesto aparece antes do gesto, fixo na página, e o campo aponta para ele.
-  assert.match(corpo, /<p id="email-nota" class="nota-prototipo">Protótipo: este formulário não envia nem guarda nada\.<\/p>/);
-  assert.match(form, /aria-describedby="email-nota email-erro"/);
-  assert.ok(corpo.indexOf('id="email-nota"') < corpo.indexOf('id="aviso-prototipo"'));
 });
 
-test('landing com a base vazia: sem convite, o resto da página no lugar', async () => {
+test('o cartão do herói sai do registro de Sexta Sem Pressa: hora primeiro, média com a origem, marcado como exemplo', async () => {
+  const d = destaqueDe((await pagina('/')).corpo);
+  assert.ok(d, 'o cartão está na página');
+  assert.match(d, /role="group" aria-label="Exemplo de festa no finde, fictícia"/);
+  assert.match(d, /<span class="destaque-mini">sex, 20 nov · Pinheiros<\/span>/);
+  assert.match(d, /<span class="destaque-hora">18h00<\/span>/);
+  assert.match(d, /<span class="destaque-nome">Sexta Sem Pressa<\/span>/);
+  assert.match(d, /Média de 32 anos<small>informada pela produtora<\/small>/);
+  assert.match(d, /<a class="destaque-ir" href="#demo" data-ir-passo="1">Tô dentro<\/a>/);
+  assert.ok(d.indexOf('destaque-hora') < d.indexOf('destaque-nome'), 'a hora vem antes do nome');
+});
+
+test('a demo: três telas com as festas da base, cada média com a origem, e a saída para o app', async () => {
+  const a = aparelhoDe((await pagina('/')).corpo);
+  assert.ok(a, 'a demo está na página');
+  assert.equal((a.match(/<div class="tela-demo"/g) || []).length, 3);
+  // A lista: quatro festas fictícias, de sexta a domingo; só a do cartão se toca.
+  const nomes = [...a.matchAll(/<span class="t-nome">([^<]+)<\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(nomes, ['Roda de Sexta', 'Sexta Sem Pressa', 'Vinil e Vinho', 'Domingo no Terraço']);
+  assert.equal((a.match(/class="t-linha alvo" data-passo="1"/g) || []).length, 1);
+  const origens = [...a.matchAll(/<span class="t-mini">Média<\/span><span class="t-origem">([^<]*)<\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(origens, ['42 avaliações', 'pela produtora', 'pela produtora', 'pela produtora']);
+  // A festa: a hora que começa, enche e acaba, e a média com a origem longa.
+  assert.match(a, /sex, 20 nov · Pinheiros · a partir de R\$ 60/);
+  assert.deepEqual([...a.matchAll(/<span class="t-tempo-hora">([^<]+)<\/span><span class="t-mini">([^<]+)<\/span>/g)].map((m) => `${m[2]} ${m[1]}`), ['Começa 18h', 'Enche 20h', 'Acaba 23h']);
+  assert.match(a, /<strong>anos, em média<\/strong><small>informada pela produtora<\/small>/);
+  // O convite no grupo e a saída.
+  assert.match(a, /Bora na <i>sexta\?<\/i>/);
+  assert.match(a, /<span class="t-placar" id="placar">3 de 4 dentro<\/span>/);
+  // Os passos à esquerda apontam para as três telas.
+  const { corpo } = await pagina('/');
+  assert.deepEqual([...corpo.matchAll(/<li><button type="button" data-passo="(\d)">/g)].map((m) => m[1]), ['0', '1', '2']);
+});
+
+test('landing com a base vazia: sem cartão nem demo, o resto da página no lugar', async () => {
   const r = await pagina('/', raizVazia);
   assert.equal(r.status, 200);
-  assert.doesNotMatch(r.corpo, /<figure class="convite"/);
+  assert.doesNotMatch(r.corpo, /class="destaque"|class="aparelho"/);
   assert.match(r.corpo, /<h1[^>]*>Festas que começam/);
-  assert.match(r.corpo, /<a class="botao" href="\/app">Achar a minha festa<\/a>/);
-  assert.match(r.corpo, /<section id="lista" class="inscricao/);
+  assert.match(r.corpo, /<a class="botao" href="\/app">Achar a minha festa/);
+  assert.match(r.corpo, /<section class="final" id="instagram"/);
   assert.doesNotMatch(r.corpo, /__[A-Z_]+__/);
 });
 
-test('no endereço só da landing, o botão leva ao endereço do app e a página carrega inteira', async () => {
+test('no endereço só da landing, as portas levam ao endereço do app e a página carrega inteira', async () => {
   const site = await subir({ dados: DADOS, site: 'landing', urlApp: 'https://finde-app.fly.dev/?de=landing&x=1' });
   const r = await pagina('/', site);
   assert.equal(r.status, 200);
-  // O endereço entra escapado para HTML, nas quatro entradas para o app.
-  assert.match(r.corpo, /<a class="botao" href="https:\/\/finde-app\.fly\.dev\/\?de=landing&amp;x=1">Achar a minha festa<\/a>/);
-  assert.deepEqual(links(r.corpo).filter((l) => /^(Achar|Abrir)/.test(l[2])).map((l) => [l[0], l[1]]), [
-    ['topo-app', 'https://finde-app.fly.dev/?de=landing&amp;x=1'],
-    ['botao', 'https://finde-app.fly.dev/?de=landing&amp;x=1'],
-    ['link-fio', 'https://finde-app.fly.dev/?de=landing&amp;x=1'],
-    ['rodape-app', 'https://finde-app.fly.dev/?de=landing&amp;x=1'],
-  ]);
+  // O endereço entra escapado para HTML, nas quatro portas, inclusive a da demo.
+  const app = 'https://finde-app.fly.dev/?de=landing&amp;x=1';
+  assert.deepEqual(links(r.corpo).filter((l) => l[1] === app).map((l) => l[0]), ['botao botao--topo', 'botao', 't-botao', 'rodape-app']);
   assert.doesNotMatch(r.corpo, /__[A-Z_]+__/);
-  assert.match(conviteDe(r.corpo), /Sexta Sem Pressa/);
-  // Tudo o que a página e o estilo pedem a este servidor sai daqui.
+  assert.match(destaqueDe(r.corpo), /Sexta Sem Pressa/);
+  // Tudo o que a página e o estilo pedem a este servidor sai daqui, fotos inclusive.
   const pedidos = new Set([
     ...[...r.corpo.matchAll(/\b(?:href|src)="(\/[^"#?]+)"/g)].map((m) => m[1]),
     ...[...CSS.matchAll(/url\(\s*['"]?(\/[^'")?#\s]+)/g)].map((m) => m[1]),
     new URL(r.corpo.match(/<meta property="og:image" content="([^"]+)"/)[1]).pathname,
   ]);
-  assert.ok(pedidos.size >= 8, [...pedidos].join(' '));
-  for (const caminho of pedidos) assert.equal((await fetch(site + caminho)).status, 200, caminho);
+  assert.ok(pedidos.has('/uso-sofa.jpg') && pedidos.has('/lambes.jpg'), [...pedidos].join(' '));
+  for (const caminho of pedidos) {
+    const resp = await fetch(site + caminho);
+    assert.equal(resp.status, 200, caminho);
+    if (caminho.endsWith('.jpg')) assert.equal(resp.headers.get('content-type'), 'image/jpeg');
+  }
 });
 
 test('GET /app e /app/ servem o app com os dados da primeira tela', async () => {
@@ -364,10 +243,13 @@ test('GET /api/festa/<id>: 404 para festa que não existe ou id torto; 405 para 
   assert.equal((await api('GET', '/api/festa/')).status, 404);
 });
 
-test('landing.css segue o manual: sem raio, sem gradiente, sem sombra', () => {
-  const raios = [...CSS.matchAll(/border-radius:\s*([^;]+);/g)].map((m) => m[1].trim());
-  assert.ok(raios.every((v) => v === '0'), `raios: ${raios.join(', ')}`);
-  assert.doesNotMatch(CSS, /gradient\(|box-shadow|text-shadow|filter:\s*drop-shadow/);
+test('landing.css segue o manual: sem raio fora do celular desenhado, sem gradiente, sem sombra, sem vidro', () => {
+  const fora = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const raios = [...fora.matchAll(/([^{}]+)\{[^}]*border-radius:\s*([^;]+);/g)].map((m) => [m[1].trim(), m[2].trim()]);
+  // Só o aparelho da demo (moldura, tela e a câmera) e o toque redondo têm canto.
+  const permitidos = /^(\.aparelho|\.aparelho-tela|\.aparelho-tela::before|\.toque)$/;
+  for (const [sel, v] of raios) if (v !== '0') assert.match(sel.split('\n').pop().trim(), permitidos, `${sel}: ${v}`);
+  assert.doesNotMatch(CSS, /gradient\(|box-shadow|text-shadow|filter:\s*drop-shadow|backdrop-filter/);
   assert.doesNotMatch(CSS, /@import|googleapis/);
 });
 
@@ -378,117 +260,49 @@ function regras(seletor) {
   return [...fora.matchAll(new RegExp(`(?:^|[}\\s,])${esc}\\s*(?:,[^{]*)?\\{([^}]*)\\}`, 'gm'))].map((m) => m[1]);
 }
 
-test('landing.css: o botão D tem 52 px e 0 32px, e só baixa a 44 no mesmo corte do app', () => {
+test('landing.css: o botão D é retângulo em caixa alta, 52 px; só o do menu e o de tela pequena têm 44', () => {
   const base = regras('.botao')[0];
   assert.match(base, /min-height:\s*52px/);
   assert.match(base, /padding:\s*0 32px/);
   assert.match(base, /font-size:\s*12px/);
-  // Nenhuma outra regra mexe na altura ou no recuo do D, fora o corte pequeno.
+  assert.match(base, /text-transform:\s*uppercase/);
+  assert.match(base, /letter-spacing:\s*\.16em/);
+  assert.match(base, /border-radius:\s*0/);
+  assert.match(regras('.botao--topo')[0], /min-height:\s*44px/);
   const pequeno = CSS.match(/@media \(max-width: 359px\), \(max-height: 640px\) \{([\s\S]*?)\n\}/);
   assert.ok(pequeno, 'falta o corte de tela pequena');
   assert.match(pequeno[1], /\.botao \{ min-height: 44px; \}/);
-  assert.doesNotMatch(pequeno[1], /cv-botao/);
-  const semCorte = CSS.replace(pequeno[0], '');
-  const alturas = [...semCorte.matchAll(/(?<![\w-])\.botao\s*\{[^}]*?min-height:\s*(\d+)px/g)].map((m) => m[1]);
-  assert.deepEqual([...new Set(alturas)], ['52']);
-  const recuos = [...semCorte.matchAll(/(?<![\w-])\.botao\s*\{[^}]*?padding:\s*([^;]+);/g)].map((m) => m[1].trim());
-  assert.deepEqual([...new Set(recuos)], ['0 32px']);
-  // "Tô dentro" e "Não rola", no convite do herói, são miniaturas: mais
-  // baixos e com corpo menor que o D, que é o único botão de tamanho cheio.
-  const cv = regras('.cv-botao')[0];
-  const num = (bloco, prop) => Number(bloco.match(new RegExp(`${prop}:\\s*(\\d+)px`))[1]);
-  assert.ok(num(cv, 'min-height') <= 42, cv);
-  assert.ok(num(cv, 'font-size') < num(base, 'font-size'), cv);
-  assert.equal(CSS.match(/(?<![\w-])\.cv-botao[^{]*\{[^}]*min-height/g).length, 1, 'nenhum corte aumenta a miniatura');
+  // O D do modo noite inverte as cores sobre bordô.
+  assert.match(regras('.botao--noite')[0], /background:\s*var\(--nude\);\s*color:\s*var\(--bordo\)/);
 });
 
-test('landing.css: lado a lado desde 1000 de tela, o texto tem a altura do cartão e o D não se alinha com "Tô dentro"', () => {
-  const lado = CSS.match(/@media \(min-width: (\d+)px\) \{([\s\S]*?)\n\}/);
-  assert.ok(lado, 'falta o corte de texto e convite lado a lado');
-  // O corte é a tela em que texto, vão e convite cabem na faixa: o mesmo
-  // ponto em que o flex deixa os dois na mesma linha. Ele pega o iPad
-  // deitado e a janela de notebook de 1024.
-  const px = (bloco, prop) => Number((bloco.match(new RegExp(`(?:^|[;\\s])${prop}:[^;]*?(\\d+)px`)) || [])[1]);
-  const lateral = Number(CSS.match(/--lateral:\s*clamp\(\d+px,\s*[\d.]+vw,\s*(\d+)px\)/)[1]);
-  const esperado = px(regras('.hero-texto')[0], 'flex') + px(regras('.hero')[0], 'column-gap') + px(regras('.convite')[0], 'flex') + 2 * lateral;
-  assert.equal(Number(lado[1]), esperado);
-  assert.ok(esperado <= 1024, `lado a lado só a partir de ${esperado}`);
-  // A coluna de texto vai do topo ao pé do cartão: o rótulo na linha de cima
-  // e o último botão do herói na de baixo. Nada a desce até a linha dos
-  // botões desenhados no convite, que ficam acima do pé do cartão.
-  assert.match(lado[2], /\.hero-texto \{[^}]*align-self: stretch;[^}]*justify-content: space-between/);
-  assert.doesNotMatch(lado[2], /cv-pe/);
-  assert.doesNotMatch(CSS.replace(/\/\*[\s\S]*?\*\//g, ''), /\.hero-texto[^{]*\{[^}]*cv-pe/);
-  assert.match(regras('.cv-botoes')[0], /padding-bottom:\s*var\(--cv-pe\)/);
-  // Empilhado (um px antes do corte), o convite ocupa a faixa toda; lado a
-  // lado, ele vai até 520.
-  assert.match(regras('.convite')[0], /max-width:\s*520px/);
-  assert.match(CSS, new RegExp(`@media \\(max-width: ${esperado - 1}px\\) \\{\\s*\\.convite \\{ max-width: none; \\}`));
-  // O título acompanha a coluna.
-  assert.ok(regras('.hero h1').some((b) => /font-size:\s*clamp\(32px,\s*12cqi,\s*80px\)/.test(b)));
+test('o título do herói quebra pela frase e acompanha a coluna', async () => {
+  const { corpo } = await pagina('/');
+  assert.match(corpo, /<h1 id="hero-titulo">Festas que começam <span class="inteiro">no seu horário,<\/span> <span class="inteiro">com gente<\/span> da sua idade<\/h1>/);
+  assert.match(regras('.inteiro')[0], /white-space:\s*nowrap/);
+  // "com gente da sua idade" mede 7,72 vezes o corpo: cabe na coluna com folga.
+  const m = regras('.hero h1').map((b) => b.match(/font-size:\s*clamp\((\d+)px,\s*([\d.]+)cqi,\s*(\d+)px\)/)).find(Boolean);
+  assert.ok(m, 'o título acompanha a coluna pelo cqi');
+  assert.ok((Number(m[2]) / 100) * 7.72 <= 0.95, `${m[2]}cqi`);
+  assert.ok(Number(m[1]) * 7.72 <= 248, `mínimo ${m[1]}`);
   assert.match(regras('.hero-texto')[0], /container-type:\s*inline-size/);
+  assert.match(regras('.hero-lead')[0], /text-wrap:\s*pretty/);
 });
 
 test('landing.css: o wordmark nunca fica abaixo de 36 px (cerca de 84 px de largura)', () => {
   const corpo = (bloco) => Number((bloco.match(/font-size:\s*(\d+)px/) || [])[1]);
   assert.ok(corpo(regras('.marca')[0]) >= 36);
-  assert.ok(corpo(regras('.cv-marca')[0]) >= 36);
-  for (const b of regras('.marca--rodape')) assert.ok(!/font-size/.test(b) || corpo(b) >= 36, b);
+  assert.doesNotMatch(CSS.replace(/\/\*[\s\S]*?\*\//g, ''), /\.marca[^{-]*\{[^}]*font-size:\s*([0-2]\d|3[0-5])px/);
 });
 
-// landing.js num DOM de mentira: só o formulário de e-mail.
-function rodarLandingJs() {
-  const elemento = (extra = {}) => {
-    const attrs = {};
-    const ouvintes = {};
-    return {
-      textContent: '', value: '', disabled: false, ...extra,
-      setAttribute(k, v) { attrs[k] = String(v); },
-      getAttribute(k) { return k in attrs ? attrs[k] : null; },
-      hasAttribute(k) { return k in attrs; },
-      removeAttribute(k) { delete attrs[k]; },
-      addEventListener(tipo, f) { ouvintes[tipo] = f; },
-      disparar(tipo, e = {}) { ouvintes[tipo](e); },
-      focus() { focado.push(this); },
-    };
-  };
-  const focado = [];
-  const botao = elemento({ disabled: true });
-  const form = elemento({ querySelector: (s) => (s === 'button[type="submit"]' ? botao : null) });
-  const porId = { 'form-lista': form, email: elemento(), 'email-erro': elemento(), 'aviso-prototipo': elemento() };
-  const document = { getElementById: (id) => porId[id] || null };
-  vm.runInNewContext(JS, { document });
-  const enviar = (valor) => {
-    let impedido = false;
-    porId.email.value = valor;
-    form.disparar('submit', { preventDefault() { impedido = true; } });
-    return impedido;
-  };
-  return { botao, campo: porId.email, erro: porId['email-erro'], aviso: porId['aviso-prototipo'], enviar, focado };
-}
-
-test('landing.js: o formulário confere o e-mail, avisa que é protótipo e não manda nada', () => {
-  const f = rodarLandingJs();
-  assert.equal(f.botao.disabled, false, 'com JavaScript, o botão liga');
-  assert.equal(f.enviar(''), true, 'o envio nunca sai da página');
-  assert.equal(f.erro.textContent, 'Escreva o seu e-mail.');
-  assert.equal(f.campo.getAttribute('aria-invalid'), 'true');
-  assert.equal(f.focado.length, 1);
-  assert.equal(f.enviar('voce@email'), true);
-  assert.equal(f.erro.textContent, 'Esse e-mail parece incompleto.');
-  assert.equal(f.aviso.textContent, '');
-  // Digitar de novo limpa o erro.
-  f.campo.disparar('input');
-  assert.equal(f.campo.hasAttribute('aria-invalid'), false);
-  assert.equal(f.erro.textContent, '');
-  assert.equal(f.enviar('  voce@email.com '), true);
-  assert.equal(f.erro.textContent, '');
-  assert.equal(f.campo.value, '', 'o campo esvazia');
-  assert.equal(f.aviso.textContent, 'Isto é um protótipo: seu e-mail não foi enviado nem guardado.');
+test('landing.css: numa coluna, o cartão sai de cima do celular da foto', () => {
+  const coluna = CSS.match(/@media \(max-width: 860px\) \{([\s\S]*?)\n\}/)[1];
+  assert.match(coluna, /\.destaque \{ position: relative;/);
+  assert.match(coluna, /\.uso \{ height: auto; aspect-ratio: 4 \/ 5; \}/);
 });
 
-test('landing.js sem o formulário na página não quebra', () => {
-  assert.doesNotThrow(() => vm.runInNewContext(JS, { document: { getElementById: () => null } }));
+test('landing.js: sem a demo e sem o menu na página, nada quebra', () => {
+  assert.doesNotThrow(() => vm.runInNewContext(JS, { document: { getElementById: () => null, readyState: 'complete', documentElement: null } }));
 });
 
 // ------------------------------------------------------------ movimento
@@ -527,11 +341,11 @@ test('landing.css: o vocabulário de movimento é o comum (--mov-*)', () => {
 
 test('landing.css: sem JavaScript tudo aparece; só .mov esconde, e só com movimento liberado', () => {
   const fora = CSS.replace(/\/\*[\s\S]*?\*\//g, '');
-  const livre = [blocoMedia('(prefers-reduced-motion: no-preference)'), blocoMedia('(prefers-reduced-motion: no-preference) and (max-width: 640px)')].join('\n');
+  const livre = blocoMedia('(prefers-reduced-motion: no-preference)');
   assert.ok(livre.trim(), 'falta o bloco de movimento liberado');
   // Fora dos blocos de movimento, nada nasce invisível nem fechado.
   let resto = fora;
-  for (const ab of ['(prefers-reduced-motion: no-preference)', '(prefers-reduced-motion: no-preference) and (max-width: 640px)', '(prefers-reduced-motion: reduce)']) {
+  for (const ab of ['(prefers-reduced-motion: no-preference)', '(prefers-reduced-motion: reduce)']) {
     for (const b of blocosMedia(ab)) resto = resto.replace(b, '');
   }
   resto = resto.replace(/@keyframes[^{]*\{(?:[^{}]*\{[^}]*\})*[^}]*\}/g, '');
@@ -541,8 +355,7 @@ test('landing.css: sem JavaScript tudo aparece; só .mov esconde, e só com movi
   // Dentro, toda regra que esconde depende de .mov (posta pelo script).
   const movidos = [...livre.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     .filter((m) => /opacity:\s*0[;\s]|scaleX\(0\)/.test(m[2]))
-    // O fio do foco do campo nasce fechado: é estado de foco, não conteúdo.
-    .filter((m) => m[1].trim() !== '.campo::after');
+    ;
   assert.ok(movidos.length > 5);
   for (const m of movidos) {
     for (const sel of m[1].split(/,(?![^(]*\))/)) assert.match(sel.trim(), /^\.mov\b/, sel.trim());
@@ -569,12 +382,9 @@ test('landing.css: com movimento reduzido nada se desloca', () => {
   const reduzido = blocoMedia('(prefers-reduced-motion: reduce)');
   assert.ok(reduzido, 'falta o bloco de movimento reduzido');
   assert.match(reduzido, /\*, \*::before, \*::after \{ animation: none !important;/);
-  // O que sobra é uma troca de opacidade de 160 ms, no aviso do formulário.
-  const sobra = [...reduzido.matchAll(/animation:\s*([\w-]+)\s+([^;]+);/g)].filter((m) => m[1] !== 'none');
-  for (const [, nome, resto] of sobra) {
-    assert.equal(nome, 'mov-surge');
-    assert.match(resto, /var\(--mov-toque\)/);
-  }
+  // Nada sobra: nem o toque que pulsa na demo.
+  const sobra = [...reduzido.matchAll(/animation:\s*([\w-]+)/g)].filter((m) => m[1] !== 'none');
+  assert.deepEqual(sobra, []);
   assert.match(CSS, /@keyframes mov-surge \{ from \{ opacity: 0; \} \}/);
   // O rolar suave do âncora também só com movimento liberado.
   assert.match(blocoMedia('(prefers-reduced-motion: no-preference)') || '', /scroll-behavior:\s*smooth/);
@@ -638,8 +448,10 @@ test('landing.js: um foco num bloco que ainda entra o põe pronto na hora', () =
 
 test('landing.css: só títulos e fios se deslocam; o texto de apoio entra por opacidade', () => {
   const livre = blocoMedia('(prefers-reduced-motion: no-preference)');
-  const sobe = [...livre.matchAll(/([^{}]+)\{[^{}]*animation:\s*mov-sobe\b[^{}]*\}/g)].map((m) => m[1].trim());
-  assert.deepEqual(sobe, ['.erro:not(:empty), .aviso:not(:empty)'], 'mov-sobe só na resposta ao envio');
+  assert.doesNotMatch(livre, /animation:\s*mov-sobe\b/);
+  // O que se desloca: linhas de título, fios, fotos que abrem e o toque da demo.
+  const animados = [...livre.matchAll(/animation:\s*(mov-[\w-]+)/g)].map((m) => m[1]);
+  assert.deepEqual([...new Set(animados)].sort(), ['mov-abre', 'mov-fio', 'mov-linha', 'mov-surge', 'mov-toque']);
   assert.doesNotMatch(CSS, /mov-desliza/);
   // O botão do app acende junto da segunda linha do título, antes de 400 ms.
   const acoes = livre.match(/\.hero-acoes > \* \{ animation: mov-surge var\(--mov-estado\) var\(--mov-saida\) (\d+)ms both; \}/);
