@@ -603,7 +603,8 @@
       return m ? `média de ${m[1]} anos` : null;
     },
     bairro: (v) => (/^a \d/.test(v) ? `fica ${v} do bairro pedido` : `fica ${emBairro(v)}`),
-    preco: (v) => `sai por ${v}, dentro do teto`,
+    // "Começa às 21h e é de graça." / "Começa às 23h e custa R$ 70." (24/11/2026)
+    preco: (v) => (/^gr[aá]tis$/i.test(String(v).trim()) ? 'é de graça' : `custa ${v}`),
     som: (v) => `toca ${minuscula(v)}`,
   };
   const FALTA_NOME = { horario: 'o horário', idade: 'a média de idade', bairro: 'o bairro', preco: 'o preço', som: 'o som' };
@@ -890,7 +891,8 @@
     const itens = [
       typeof f.inicio !== 'number' || f.horarioIncerto === true ? 'horário' : null,
       typeof f.fim !== 'number' ? 'fim' : null,
-      !Number.isInteger(f.mediaIdade) && !f.avaliacaoIdade ? 'média de idade' : null,
+      // A média de idade saiu daqui (24/11/2026): nenhuma fonte informa, e a
+      // lista já diz isso uma vez, no topo.
       !f.endereco || typeof f.endereco.texto !== 'string' || !f.endereco.texto.trim() ? 'endereço' : null,
       p.tipo === 'sem-preco' ? 'preço' : null,
       !(Array.isArray(f.estilos) && f.estilos.length) ? 'som' : null,

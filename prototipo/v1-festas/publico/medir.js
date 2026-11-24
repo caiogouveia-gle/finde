@@ -61,4 +61,14 @@
 
   window.FindeMedir = { contar, aparelho };
   if (pagina) contar(`abriu-${pagina}`);
+  // O QR Code de divulgação aponta para ?de=qr: conta a chegada e tira a
+  // marca do endereço, para ela não seguir num link copiado.
+  try {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('de') === 'qr') {
+      contar('chegou-qr');
+      u.searchParams.delete('de');
+      history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+    }
+  } catch { /* tudo bem */ }
 })();

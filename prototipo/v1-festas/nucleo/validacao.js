@@ -26,8 +26,8 @@ const EVENTOS = new Set([
   'abriu-landing', 'abriu-app', 'abriu-convite', 'abriu-opiniao',
   // o caminho no app
   'lista', 'detalhe', 'ingresso', 'link-fora', 'mandar', 'convite', 'whatsapp', 'convite-resposta',
-  // da landing para o app
-  'landing-app',
+  // da landing para o app; quem chegou pelo QR Code de divulgação
+  'landing-app', 'chegou-qr',
 ]);
 const DE_ONDE = new Set(['landing', 'app', 'opiniao', 'convite']);
 const APARELHO = /^[A-Za-z0-9_-]{8,64}$/;

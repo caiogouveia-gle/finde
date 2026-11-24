@@ -601,8 +601,8 @@ test('porquê do cartão: até duas partes que cabem e uma linha honesta do que 
   assert.equal(T.partesDoPorque(tres, { semMedia: true }).falta, 'Não diz o bairro nem o som.');
   // Mais de duas que cabem: ficam as duas primeiras; preço sem quebra.
   const muitas = { porque: { cabe: [{ criterio: 'preco', valor: 'R$ 40' }, { criterio: 'horario', valor: '0h' }, { criterio: 'som', valor: 'House e disco' }], falta: [] } };
-  assert.deepEqual(T.partesDoPorque(muitas).cabe, ['sai por R$ 40, dentro do teto', 'começa à meia-noite']);
-  assert.equal(T.porqueDoCartao(muitas).cabe, 'Sai por R$ 40, dentro do teto; começa à meia-noite.');
+  assert.deepEqual(T.partesDoPorque(muitas).cabe, ['custa R$ 40', 'começa à meia-noite']);
+  assert.equal(T.porqueDoCartao(muitas).cabe, 'Custa R$ 40 e começa à meia-noite.');
   // A preposição de cada bairro é a do catálogo.
   for (const b of Object.values(C.TODOS_OS_BAIRROS)) assert.equal(`${T.EM_BAIRRO[b.nome]} ${b.nome}`, b.em, b.nome);
 });
@@ -724,7 +724,7 @@ test('vazios numa linha só no pé; o fim não se repete em outra frase do horá
     estilos: [], lineup: [], produtora: null, regras: {}, idadeMinima: null,
   };
   const v = T.vaziosDaFesta(xamego);
-  assert.equal(v, 'Não divulgado: fim, média de idade, endereço, preço, som, lineup, produtora, regras da porta.');
+  assert.equal(v, 'Não divulgado: fim, endereço, preço, som, lineup, produtora, regras da porta.');
   assert.equal((v.match(/fim/g) || []).length, 1);
   assert.equal(T.vaziosDaFesta({ ...xamego, real: undefined }), '');
   assert.equal(T.vaziosDaFesta(CONVERTIDA), 'Não divulgado: regras da porta.');

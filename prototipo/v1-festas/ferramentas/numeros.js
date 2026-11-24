@@ -34,6 +34,7 @@ async function pegar(url, { token = true, texto = false } = {}) {
 }
 
 const NOMES = {
+  'chegou-qr': 'chegaram pelo QR Code',
   'abriu-landing': 'abriram a landing',
   'landing-app': 'foram da landing para o app',
   'abriu-app': 'abriram o app',

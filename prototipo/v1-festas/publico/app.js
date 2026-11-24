@@ -490,7 +490,7 @@
     cancelarEspera();
     Object.assign(estado, {
       respostas: { dia: null, semana: 'esta', janela: null, bairros: [], idade: null, teto: null, estilos: [] },
-      editando: null, criterios: null, resultado: null, fala: null, novas: [], mandar: null, festa: null, rolagemLista: 0, todasAbertas: false,
+      editando: null, criterios: null, resultado: null, fala: null, novas: [], mandar: null, festa: null, rolagemLista: 0, todasAbertas: false, pedidoNeutro: false,
       tela: 'pergunta', passo: 0,
     });
     const n = nivel();
@@ -557,7 +557,37 @@
       pela = (veioDaLanding || ehConvite(document.referrer)) && history.length > k;
     }
     if (pela) history.go(-k);
+    // O detalhe aberto por link (QR, post, festa mandada no WhatsApp) volta
+    // para a lista do dia dela, não para fora do app (24/11/2026).
+    else if (typeof estado !== 'undefined' && estado.tela === 'festa' && estado.avulsa && estado.festa && abrirListaNeutra(estado.festa.festa)) return;
     else window.location.assign(LANDING);
+  }
+
+  // A lista de um dia sem as perguntas (24/11/2026): para quem chega por um
+  // convite, um link direto ou um QR Code. Pedido neutro (São Paulo inteira,
+  // sem teto, qualquer som, começo da noite); a frase do pedido continua
+  // editável e as perguntas ficam a um toque. ref: { dia, data } da festa, ou
+  // nada (o primeiro dia da semana com festa). Devolve false sem dia possível.
+  function diaParaLista(ref = {}) {
+    const s = (estado.form && estado.form.semanas) || {};
+    const esta = Array.isArray(s.esta) ? s.esta : [];
+    const proxima = Array.isArray(s.proxima) ? s.proxima : [];
+    const porData = ref.data && ([...esta.map((d) => ['esta', d]), ...proxima.map((d) => ['proxima', d])].find(([, d]) => d.data === ref.data));
+    if (porData) return { semana: porData[0], dia: porData[1].id };
+    const doDia = ref.dia && esta.find((d) => d.id === ref.dia);
+    if (doDia) return { semana: 'esta', dia: doDia.id };
+    const comFesta = esta.find((d) => d.reais > 0) || proxima.find((d) => d.reais > 0);
+    if (comFesta) return { semana: esta.includes(comFesta) ? 'esta' : 'proxima', dia: comFesta.id };
+    return null;
+  }
+  function abrirListaNeutra(ref) {
+    const alvo = diaParaLista(ref || {});
+    if (!alvo) return false;
+    estado.respostas = { dia: alvo.dia, semana: alvo.semana, janela: 'comeco-da-noite', bairros: [], idade: null, teto: 'sem-limite', estilos: [] };
+    Object.assign(estado, { avulsa: false, festa: null, mandar: null, editando: null, tela: 'pergunta', passo: 0, pedidoNeutro: true });
+    history.replaceState({ tela: 'pergunta', passo: 0, n: 0 }, '', window.location.pathname);
+    buscarFestas(criteriosDoFormulario(), { substituir: true });
+    return true;
   }
 
   function botaoVoltar() {
@@ -614,7 +644,10 @@
       return;
     }
     if (estado.passo < PERGUNTAS.length - 1) ir('pergunta', { passo: estado.passo + 1 });
-    else buscarFestas(criteriosDoFormulario(), { botao });
+    else {
+      estado.pedidoNeutro = false;
+      buscarFestas(criteriosDoFormulario(), { botao });
+    }
   }
 
   // "Sair quando?" (R24): os dias da semana escolhida, cada um com a data e
@@ -623,7 +656,12 @@
   function diasDaPergunta() {
     const porSemana = diasDoForm();
     const semana = estado.respostas.semana === 'proxima' && porSemana.proxima.length ? 'proxima' : 'esta';
-    return porSemana[semana].length ? porSemana[semana] : estado.form.dias || [];
+    const dias = porSemana[semana].length ? porSemana[semana] : estado.form.dias || [];
+    // Sem a contagem (24/11/2026), o dia sem festa sai da pergunta: escolher
+    // um dia vazio levava a mais cinco perguntas até a lista vazia. Só quando
+    // algum dia tem festa (senão a pergunta ficaria sem opção).
+    const comFesta = dias.filter((d) => !Number.isInteger(d.reais) || d.reais > 0);
+    return comFesta.length ? comFesta : dias;
   }
 
   function telaPergunta() {
@@ -691,12 +729,12 @@
         const nome = (o.id === 'hoje' || /^hoje$/i.test(primeiro)) && resto.length
           ? el('span', { class: 'opcao-nome' }, `${primeiro} `, el('em', { texto: resto.join(', ') }))
           : el('span', { class: 'opcao-nome', texto: String(o.rotulo || DIA[o.id].longo) });
-        const n = Number.isInteger(o.reais) ? o.reais : null;
-        return el('label', { class: `opcao opcao--um${n === 0 ? ' opcao--vazia' : ''}` },
+        // Sem a contagem de festas do dia (24/11/2026): o dia e a data bastam.
+        return el('label', { class: 'opcao opcao--um' },
           input,
           el('span', { class: 'marcador', 'aria-hidden': 'true' }),
           nome,
-          n !== null ? el('span', { class: 'opcao-conta' }, el('span', { class: 'vh', texto: ', ' }), el('b', { texto: String(n) }), el('span', { texto: n === 1 ? 'festa' : 'festas' })) : el('span'));
+          el('span'));
       }
       const [principal, detalhe] = String(o.rotulo).split(' · ');
       return el('label', { class: `opcao opcao--${p.tipo}` },
@@ -770,7 +808,7 @@
   function baseVivaDoForm() {
     const b = FT.baseViva(estado.form && estado.form.base);
     if (!b) return null;
-    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }), b.conta ? el('span', { texto: b.conta }) : null);
+    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }));
   }
 
   // A faixa que vale: a respondida, ou o padrão do formulário (28 a 35).
@@ -976,6 +1014,7 @@
   // Um trecho do pedido reabre só aquela pergunta.
   function abrirParaEditar(chave) {
     const c = estado.criterios;
+    estado.pedidoNeutro = false;
     estado.respostas = {
       dia: c.dia, semana: c.semana === 'proxima' ? 'proxima' : 'esta', janela: c.janela, teto: c.teto, estilos: [...(c.estilos || [])],
       bairros: [...(c.bairros || [])], idade: c.idade ? { ...c.idade } : null,
@@ -1071,7 +1110,11 @@
     const todas = unicas([...reais, ...(r && Array.isArray(r.maisDoDia) ? r.maisDoDia.filter((o) => o && o.festa && ehReal(o)) : [])]);
     const fict = r && Array.isArray(r.exemplos) && r.exemplos.length ? r.exemplos : doMotor.filter((o) => !ehReal(o));
     // Fictícia só quando o dia não tem real (D11).
-    return { opcoes: reais.slice(0, 3), todas, exemplos: todas.length ? [] : fict.map((o) => ({ ...o, exemplo: true })) };
+    // As três de cima na ordem da "% a sua cara": a capa é a de maior %
+    // (sort estável: empate fica na ordem do motor).
+    const pct = (o) => (o && o.cara && Number.isInteger(o.cara.pct) ? o.cara.pct : -1);
+    const tres = reais.slice(0, 3).sort((a, b) => pct(b) - pct(a));
+    return { opcoes: tres, todas, exemplos: todas.length ? [] : fict.map((o) => ({ ...o, exemplo: true })) };
   }
 
   const dataDe = (o) => (o && (o.data || (o.festa && (o.festa.dataDaNoite || o.festa.data)))) || null;
@@ -1147,10 +1190,11 @@
         const d = DIA[x.id];
         const n = x.reais;
         const nome = x.hoje && x.id !== 'hoje' ? `Hoje, ${d.nome}` : d.longo;
+        // A aba diz só o dia; a contagem de festas saiu em 24/11/2026.
         const b = el('button', {
           type: 'button', class: n === 0 ? 'aba aba--vazia' : 'aba', 'data-dia': x.id, 'aria-pressed': String(x.id === selecionada),
-          'aria-label': `${nome}${Number.isInteger(n) ? `, ${n} ${n === 1 ? 'festa' : 'festas'}` : ''}`,
-        }, el('span', { class: 'aba-nome', texto: x.hoje ? 'Hoje' : d.aba }), Number.isInteger(n) && n > 0 ? el('sup', { 'aria-hidden': 'true', texto: String(n) }) : null);
+          'aria-label': nome,
+        }, el('span', { class: 'aba-nome', texto: x.hoje ? 'Hoje' : d.aba }));
         b.addEventListener('click', () => trocarDia(x.id, b));
         return b;
       }),
@@ -1214,7 +1258,7 @@
   function baseViva(base) {
     const b = FT.baseViva(base);
     if (!b) return null;
-    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }), b.conta ? el('span', { texto: b.conta }) : null);
+    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }));
   }
 
   function tituloResultado() {
@@ -1294,6 +1338,9 @@
   // "% a sua cara" (contrato da frente CARA): opcao.cara = { pct, partes }.
   // Sem cara (detalhe aberto por link, exemplo, API antiga), não aparece nada.
   function caraDe(o) {
+    // A lista aberta sem perguntas (link, convite, QR) não tem pedido de
+    // verdade: "100% a sua cara" só porque o horário cabe enganaria.
+    if (estado.pedidoNeutro) return null;
     const c = o && o.exemplo !== true && o.cara;
     return c && Number.isInteger(c.pct) && c.pct >= 0 && c.pct <= 100 ? c : null;
   }
@@ -1301,9 +1348,11 @@
   // O porquê do cartão: o que cabe na tinta, o que falta na cor do rótulo.
   function porqueDe(o) {
     if (o.exemplo === true) return null;
-    const { cabe, falta } = FT.porqueDoCartao(o, { semMedia: Boolean(estado.resultado && estado.resultado.semMedia) });
-    if (!cabe && !falta) return null;
-    return el('p', { class: 'porque' }, cabe ? el('b', { texto: cabe }) : null, cabe && falta ? ' ' : null, falta || null);
+    // Só o que cabe (24/11/2026): o que a fonte não diz fica no detalhe, não
+    // em cada cartão da lista.
+    const { cabe } = FT.porqueDoCartao(o, { semMedia: Boolean(estado.resultado && estado.resultado.semMedia) });
+    if (!cabe) return null;
+    return el('p', { class: 'porque' }, el('b', { texto: cabe }));
   }
 
   // Casa · bairro · preço, com o preço inteiro (nunca quebra no "R$").
@@ -1470,7 +1519,7 @@
         return b;
       }), z.sem ? el('span', { class: 'sem-dado', texto: z.sem }) : null)))) : null;
     const bloco2 = el('div', { hidden: !incertas.length }, el('p', { class: 'bloco-guia' }, el('span', { class: 'rotulo', texto: 'Local a confirmar' })), lista2);
-    return el('section', { class: 'todas', id: 'todas', hidden: !estado.todasAbertas, 'aria-label': `Todas as festas reais ${d.no ? `${d.no} ${d.nome}` : d.nome}` },
+    return el('section', { class: 'todas', id: 'todas', hidden: !estado.todasAbertas, 'aria-label': `Todas as festas ${d.no ? `${d.no} ${d.nome}` : d.nome}` },
       el('div', { class: 'todas-cabeca' }, el('p', { class: 'rotulo', texto: `Todas as ${todas.length} de ${d.nome}` })),
       filtros, lista1, bloco2);
   }
@@ -1601,7 +1650,7 @@
     }).filter(Boolean);
     M2.montarLista(lugar, todas, {
       bairros,
-      rotulo: `Mapa das festas reais ${d.no ? `${d.no} ${d.nome}` : 'de hoje'}`,
+      rotulo: `Mapa das festas ${d.no ? `${d.no} ${d.nome}` : 'de hoje'}`,
       aoMarcar: ({ festas }) => {
         let primeira = null;
         for (const x of document.querySelectorAll('#todas .linha')) {
@@ -1952,10 +2001,12 @@
     }
     Object.assign(estado, { criterios: r.dados.criterios, resultado: r.dados, fala: { voce: null, finde: r.dados.resposta }, novas: [], todasAbertas: false });
     trocarResultado({ dia: true, dir });
-    anunciar(`${(DIA[estado.criterios.dia] || d).longo}: ${partesDoResultado(estado.resultado).todas.length} festas reais.`);
+    anunciar(`${(DIA[estado.criterios.dia] || d).longo}: ${partesDoResultado(estado.resultado).todas.length} festas.`);
   }
 
   async function ajustar(texto, { exibido, origem, digitado = false } = {}) {
+    // Quem ajusta a frase passou a ter pedido: a % volta.
+    estado.pedidoNeutro = false;
     if (estado.ocupado) return;
     estado.ocupado = true;
     diasGuardados.clear();
@@ -1980,7 +2031,8 @@
     if ($local) $local.textContent = '';
     mostrarErro('');
     const { opcoes, todas, exemplos } = partesDoResultado(estado.resultado);
-    const atuais = [...opcoes, ...todas, ...exemplos].map((o) => o.festa.id).filter((id, i, xs) => xs.indexOf(id) === i);
+    // As três de cima são as "na tela" da conversa (o servidor lê até três).
+    const atuais = [...opcoes, ...todas, ...exemplos].map((o) => o.festa.id).filter((id, i, xs) => xs.indexOf(id) === i).slice(0, 3);
     const minha = geracao;
     let r;
     try {
@@ -2578,7 +2630,7 @@
 
   // O rodapé diz a verdade sobre as festas: com festa real no servidor, as
   // fictícias são exemplos marcados.
-  const notaDoForm = (form) => definirNota(form && form.misto ? 'misto' : 'ficticias');
+  const notaDoForm = (form) => definirNota(form && form.exemplos === false ? 'reais' : form && form.misto ? 'misto' : 'ficticias');
 
   async function iniciar() {
     estado.form = lerDadosIniciais();
@@ -2597,7 +2649,16 @@
     if (estado.avulsa) Object.assign(estado, { avulsa: false, tela: 'pergunta', passo: 0, festa: null, mandar: null, editando: null });
     // Por link, só a lista volta, e só quando o link pede (/app?ver=lista,
     // o "ver outras festas" do convite); as respostas de antes ficam marcadas.
-    const verLista = new URLSearchParams(window.location.search).get('ver') === 'lista';
+    const busca = new URLSearchParams(window.location.search);
+    const verLista = busca.get('ver') === 'lista';
+    // Quem chega pela lista sem nada respondido nesta aba (o amigo do
+    // convite, o QR Code) vê a lista do dia, sem as perguntas.
+    if (verLista && chegouPorLink() && !(estado.resultado && estado.criterios)) {
+      if (abrirListaNeutra({ dia: busca.get('dia'), data: busca.get('data') })) {
+        if (!estado.form) buscarFormulario();
+        return;
+      }
+    }
     if (chegouPorLink()) {
       const lista = verLista && estado.resultado && estado.criterios;
       Object.assign(estado, { tela: lista ? 'resultado' : 'pergunta', passo: 0, editando: null, festa: null, mandar: null, rolagemLista: 0 });

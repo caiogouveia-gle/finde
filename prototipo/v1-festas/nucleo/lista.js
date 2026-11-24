@@ -155,10 +155,10 @@ function notaDaMistura({ reais, cabem = reais, exemplos, dia, data, distante, se
   const no = C.noDia(dia);
   const partes = [];
   if (reais && distante && data) {
-    partes.push(`${nesse} ainda não tenho festa real; ${reais === 1 ? 'a de cima é' : 'as de cima são'} de ${dataCurta(data)}.`);
+    partes.push(`${nesse} ainda não tenho festa; ${reais === 1 ? 'a de cima é' : 'as de cima são'} de ${dataCurta(data)}.`);
   }
   const completei = exemplos === 1 ? 'um exemplo' : 'exemplos';
-  if (reais && !cabem) partes.push(reais === 1 ? 'A real não cabe inteira: ela diz o que falta.' : 'Nenhuma real cabe inteira: cada uma diz o que falta.');
+  if (reais && !cabem) partes.push(reais === 1 ? 'A festa não cabe inteira: ela diz o que falta.' : 'Nenhuma cabe inteira: cada uma diz o que falta.');
   if (reais && cabem === reais && exemplos) {
     partes.push(`${cabem === 1 ? 'Uma festa real cabe' : `${cabem === 2 ? 'Duas' : 'Três'} festas reais cabem`} nesse pedido; completei com ${completei}.`);
   } else if (!reais && exemplos) {
@@ -305,7 +305,7 @@ function notaDoResultado({ reais, cabem, exemplos, dia }) {
     return titulo;
   }
   const no = C.noDia(dia);
-  return exemplos ? `Ainda não tenho festa real ${no}. Seguem exemplos, festas fictícias.` : `Ainda não tenho festa real ${no}.`;
+  return exemplos ? `Ainda não tenho festa real ${no}. Seguem exemplos, festas fictícias.` : `Ainda não tenho festa ${no}.`;
 }
 
 // montarResultado({ real, ficticio, maisDoDia, outrosDias, criterios, data, base })
@@ -340,8 +340,8 @@ function montarResultado({ real = null, ficticio = null, maisDoDia = [], outrosD
   // ofereceria outro dia sem dizer que elas estão logo abaixo.
   if (!semReal && !opcoes.length) {
     aviso = mais.length === 1
-      ? `Nada cabe nesse pedido. Segue a festa real ${C.noDia(criterios.dia)}, com o que falta.`
-      : `Nada cabe nesse pedido. Seguem as ${mais.length} reais ${C.noDia(criterios.dia)}, cada uma com o que falta.`;
+      ? `Nada cabe nesse pedido. Segue a festa ${C.noDia(criterios.dia)}, com o que falta.`
+      : `Nada cabe nesse pedido. Seguem as ${mais.length} festas ${C.noDia(criterios.dia)}, cada uma com o que falta.`;
   }
   const cabem = opcoes.filter((o) => o.atende).length;
   return {

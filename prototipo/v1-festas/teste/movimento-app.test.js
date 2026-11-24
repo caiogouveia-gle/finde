@@ -124,7 +124,9 @@ test('abas: um fio só que desliza por transform; o dia que sai some em 140 ms e
   assert.match(troca, /const saida = \[\.\.\.M\.sair\(folhas, dir \? \{ x: -dir \* 16, y: 0 \} : \{\}\), \.\.\.M\.sair\(cabeca \? \[\.\.\.cabeca\.children\] : \[\], \{ y: 0 \}\)\];/);
   assert.match(troca, /setTimeout\(\(\) => \{[\s\S]*?class: 'carregando'[\s\S]*?\}, 140\);/);
   // Nome acessível inteiro em cada aba ("Sexta, 8 festas").
-  assert.match(APP, /'aria-label': `\$\{nome\}\$\{Number\.isInteger\(n\) \? `, \$\{n\} \$\{n === 1 \? 'festa' : 'festas'\}` : ''\}`/);
+  // A aba diz só o dia: a contagem de festas saiu em 24/11/2026.
+  assert.match(APP, /'aria-label': nome,/);
+  assert.doesNotMatch(APP, /el\('sup'/);
 });
 
 test('mapa: anima o .pino-in (nunca o ícone do Leaflet) e chama invalidateSize no fim da cortina', { skip: !/L\.map\(/.test(MAPA) && 'mapa.js ainda sem o Leaflet' }, () => {

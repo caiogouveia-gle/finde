@@ -139,7 +139,10 @@ function idade(f, c) {
       texto: `${de} acharam o público da idade`,
     };
   }
-  if (!num(f.mediaIdade)) return { cabe: null, texto: 'média de idade não informada' };
+  // Sem média nem avaliação, a idade sai da conta (24/11/2026): nenhuma fonte
+  // informa a idade do público, então o meio ponto baixava todas as festas
+  // igual e não ordenava nada. A ausência é dita uma vez, no topo da lista.
+  if (!num(f.mediaIdade)) return null;
   if (f.mediaIdade >= fx.min && f.mediaIdade <= fx.max) return { cabe: true, texto: 'média dentro da sua faixa' };
   const abaixo = f.mediaIdade < fx.min;
   const d = abaixo ? fx.min - f.mediaIdade : f.mediaIdade - fx.max;

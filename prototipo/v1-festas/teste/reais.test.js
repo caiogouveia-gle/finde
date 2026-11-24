@@ -211,7 +211,7 @@ test('mistura: sem real no dia, só exemplos, e a nota diz isso', () => {
   assert.ok(m.opcoes.length > 0 && m.opcoes.every((o) => o.exemplo === true));
   assert.equal(m.nota, 'Ainda não tenho festa real no domingo. Seguem exemplos, festas fictícias.');
   const longe = R.notaDaMistura({ reais: 2, cabem: 0, exemplos: 1, dia: 'sab', data: '2026-11-28', distante: true });
-  assert.equal(longe, 'Neste sábado ainda não tenho festa real; as de cima são de 28 nov. Nenhuma real cabe inteira: cada uma diz o que falta. Completei com um exemplo.');
+  assert.equal(longe, 'Neste sábado ainda não tenho festa; as de cima são de 28 nov. Nenhuma cabe inteira: cada uma diz o que falta. Completei com um exemplo.');
 });
 
 test('motor com festa real sem dados: nada do que falta conta contra nem a favor', () => {
@@ -241,17 +241,19 @@ test('% a sua cara: critério sem dado conta pela metade e aparece como "não se
   const f = R.converterRegistro(r14({ precoAPartirDe: null, lotes: null })).festa;
   const c = completo({ ...PEDIDO, bairros: ['pinheiros'], estilos: ['funk'], teto: 80 });
   const k = cara(f, c);
-  // Só o horário tem dado: ele cabe (30), e os outros quatro (70) contam
-  // pela metade. Festa com dado faltando nunca chega a 100%.
-  assert.equal(k.pct, 65);
-  assert.deepEqual(k.semDado, ['idade', 'bairro', 'preco', 'som']);
+  // Só o horário tem dado: ele cabe (30), e bairro, preço e som (45) contam
+  // pela metade. A idade sem média sai da conta (24/11/2026): 52,5 de 75.
+  // Festa com dado faltando nunca chega a 100%.
+  assert.equal(k.pct, 70);
+  assert.deepEqual(k.semDado, ['bairro', 'preco', 'som']);
   assert.deepEqual(k.partes.filter((x) => x.cabe === null).map((x) => x.texto),
-    ['média de idade não informada', 'bairro não informado', 'preço não informado', 'som não informado']);
-  assert.equal(T.semDadoDaCara(k), 'Sem dado, conta pela metade: a idade, o bairro, o preço e o som.');
+    ['bairro não informado', 'preço não informado', 'som não informado']);
+  assert.ok(!k.partes.some((x) => x.criterio === 'idade'));
+  assert.equal(T.semDadoDaCara(k), 'Sem dado, conta pela metade: o bairro, o preço e o som.');
   assert.equal(T.pesoDaCara(k), '');
-  // Com o preço acima do teto: horário 30 + preço 15 × 0 + o resto (55) pela metade.
+  // Com o preço acima do teto: horário 30 + preço 15 × 0 + bairro e som (30) pela metade, sobre 75.
   const cara2 = cara(R.converterRegistro(r14({ lotes: [{ nome: 'x', preco: 130, disponivel: true }] })).festa, c);
-  assert.equal(cara2.pct, Math.round(30 + 55 / 2));
+  assert.equal(cara2.pct, Math.round(((30 + 30 / 2) / 75) * 100));
   // Festa fictícia continua sem semDado.
   assert.equal(cara(BASE[0], c).semDado, undefined);
 });
@@ -547,4 +549,18 @@ test('ferramentas/reais.js: aceita /2 e /3, recusa /1, grava só as aceitas e co
   assert.equal(JSON.parse(fs.readFileSync(destino, 'utf8')).contrato, 'finde-r14/2');
   const um = exportar('um.json', { contrato: 'finde-r14/1', festas: [r14()] });
   assert.equal(principal([um, destino, '--imagens', imgMotor], { log, varDir }), 1);
+});
+
+test('nome para mostrar: sem data, hora, venda, casa nem caixa alta; o título da fonte fica em nomeOriginal', () => {
+  const N = R.nomeExibido;
+  assert.equal(N('Classics |28 de Novembro | A Última Classics do ANO!| Cortina', { casa: 'Cineclube Cortina' }), 'Classics');
+  assert.equal(N('28-11 Sabado The Bets Of Leticia Drag'), 'The Bets Of Leticia Drag');
+  assert.equal(N('Back To 2000s *ESPECIAL ANOS 2000s*'), 'Back To 2000s');
+  assert.equal(N('Gigolo Sexta | 27.11 | 23H - Bar do Netão', { casa: 'Bar do Netão' }), 'Gigolo Sexta');
+  assert.equal(N('Heavy Love 11 anos · Louie Vega'), 'Heavy Love 11 anos · Louie Vega');
+  assert.equal(N('I Love Hip Hop - Entrada Gratuita'), 'I Love Hip Hop');
+  assert.equal(N('Noite de MPB com DJ Fulano'), 'Noite de MPB com DJ Fulano');
+  const { festa } = R.converterRegistro(r14({ nome: 'Bapho 10 ANOS - Open Bar 28/11 - VIP Station' }));
+  assert.equal(festa.nome, 'Bapho 10 Anos · VIP Station');
+  assert.equal(festa.nomeOriginal, 'Bapho 10 ANOS - Open Bar 28/11 - VIP Station');
 });

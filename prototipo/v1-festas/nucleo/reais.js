@@ -59,6 +59,39 @@ function nomeCurto(v) {
   const espaco = corte.lastIndexOf(' ');
   return `${(espaco >= 40 ? corte.slice(0, espaco) : corte).replace(/[\s,;:.\-–—·|]+$/, '')}…`;
 }
+// O nome para mostrar (24/11/2026): título de bilheteria vem com data, hora,
+// casa, chamada de venda e caixa alta ("Classics |28 de Novembro | A Última
+// Classics do ANO!| Cortina"). Fica o primeiro trecho que é nome de festa, e a
+// palavra toda em caixa alta (de 4 letras ou mais) vira inicial maiúscula,
+// menos as siglas conhecidas. O título da fonte segue em `nomeOriginal`.
+const SIGLAS = new Set(['MPB', 'VIP', 'LGBT', 'LGBTQIA', 'B2B', 'DJ', 'DJS', 'SP', 'USA', 'NYC', 'EDM', 'RNB']);
+const MESES = 'janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro';
+const DIAS_SEMANA = 'segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo|seg|ter|qua|qui|sex|sáb|sab|dom';
+const RUIDO = [
+  new RegExp(`^\\(?(${DIAS_SEMANA})(-feira)?\\)?$`, 'i'),
+  /^\d{1,2}[./-]\d{1,2}([./-]\d{2,4})?(\s.*)?$/,
+  new RegExp(`^\\d{1,2}\\s+de\\s+(${MESES})`, 'i'),
+  new RegExp(`^(${MESES})(\\s+\\d{4})?$`, 'i'),
+  /^(às\s*)?\d{1,2}\s*h(\d{2})?$/i,
+  /^(garanta( seu| o seu)? ingresso|ingressos?( à venda)?|entrada gratuita|open bar.*|são paulo|sp)$/i,
+];
+const semAcentoMin = (t) => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+function nomeExibido(bruto, { casa = null, bairro = null } = {}) {
+  if (typeof bruto !== 'string') return null;
+  let n = bruto.replace(/\s+/g, ' ').trim();
+  // Data na frente: "28-11 Sabado The Bets", "04/12 (SEX) - Vandals Gang".
+  n = n.replace(new RegExp(`^\\d{1,2}[./-]\\d{1,2}([./-]\\d{2,4})?\\s*(\\(?(${DIAS_SEMANA})\\)?)?\\s*[-–—|:]?\\s*`, 'i'), '');
+  const trechos = n.split(/\s+[|–—·@-]\s+|\s+\|\s*|\s*\|\s+|\s*\*+\s*/).map((t) => t.trim().replace(/^[\s,;:.\-–—·|]+|[\s,;:\-–—·|]+$/g, '')).filter(Boolean);
+  const daCasa = (t) => [casa, bairro].some((c) => c && semAcentoMin(t).length >= 4 && (semAcentoMin(c) === semAcentoMin(t) || semAcentoMin(c).includes(semAcentoMin(t))));
+  // Sem o ruído (data, hora, venda, casa), o título curto fica inteiro
+  // ("Heavy Love 11 anos · Louie Vega"); o comprido fica no primeiro trecho.
+  const bons = trechos.filter((t) => t.length >= 2 && !RUIDO.some((re) => re.test(t)) && !daCasa(t));
+  const junto = bons.join(' · ');
+  const nome = (bons.length && junto.length <= 32 ? junto : bons[0]) || trechos[0] || n;
+  const caixa = nome.replace(/[A-Za-zÀ-ÿ]{4,}/g, (w) => (w === w.toUpperCase() && w !== w.toLowerCase() && !SIGLAS.has(w)
+    ? w.charAt(0) + w.slice(1).toLowerCase() : w));
+  return caixa.replace(/\s+/g, ' ').trim() || null;
+}
 const https = (v) => {
   if (typeof v !== 'string' || v.length > 600) return null;
   try {
@@ -385,8 +418,10 @@ function converterRegistro(r, contexto = {}) {
   const fontes = fontesDe(r.fontes);
   const campos = camposDe(r.campos);
 
+  const nomeLimpo = nomeCurto(nomeExibido(r.nome, { casa, bairro: bairroNome })) || nome;
   const festa = {
-    id, nome,
+    id, nome: nomeLimpo,
+    ...(nomeLimpo !== r.nome.trim() ? { nomeOriginal: texto(r.nome, 300) || nome } : {}),
     produtora,
     casa,
     bairro, bairroNome, regiao,
@@ -498,6 +533,7 @@ function converterExport(bruto) {
 }
 
 module.exports = {
+  nomeExibido,
   CONTRATO, CONTRATOS, converterRegistro, converterExport, resumoDoExport, horasDoApp, hojeEmSaoPaulo, vigentes, passou, datasDoDia, reaisDoDia,
   quandoDaReal, misturar, notaDaMistura, dataCurta, somarDias, diaDaSemana,
 };

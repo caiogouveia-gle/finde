@@ -235,7 +235,8 @@
         el('div', { class: 'quem-bloco' }, dom.rotuloFora, dom.nomesFora)),
       detalhes(o, Boolean(plano.passou)),
       acoesDoConvite(o, Boolean(plano.passou)),
-      acaoC('a', { href: APP, class: 'convite-mais' }, 'Ver outras festas do fim de semana'),
+      // A lista do dia da festa, sem as perguntas (24/11/2026).
+      acaoC('a', { href: `${APP}&dia=${encodeURIComponent(plano.festa.festa.dia || '')}${plano.data ? `&data=${encodeURIComponent(plano.data)}` : ''}`, class: 'convite-mais' }, 'Ver outras festas do fim de semana'),
       rodape());
     $tela.replaceChildren(dom.tela);
     dom.montado = true;

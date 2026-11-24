@@ -502,10 +502,12 @@ function exigirCriterios(bruto) {
 
 function idsNaTela(bruto) {
   if (bruto === undefined) return [];
-  if (!Array.isArray(bruto) || bruto.length > 3 || !bruto.every((x) => typeof x === 'string' && FORMATO_ID_FESTA.test(x))) {
-    throw new ErroPlano(400, 'A lista de festas na tela veio estranha.');
+  // As três de cima contam como "na tela"; um app que manda a lista do dia
+  // inteira (até 100) não leva erro por isso.
+  if (!Array.isArray(bruto) || bruto.length > 100 || !bruto.every((x) => typeof x === 'string' && FORMATO_ID_FESTA.test(x))) {
+    throw new ErroPlano(400, 'Não consegui ler a lista da tela. Recarregue a página e tente de novo.');
   }
-  return bruto;
+  return bruto.slice(0, 3);
 }
 
 // A data da festa: o próximo dia da semana dela que ainda não acabou. A
@@ -730,6 +732,9 @@ function montarServidor({
   // que o app usa para mandar as avaliações ao motor.
   adminToken = process.env.FINDE_ADMIN_TOKEN,
   appToken = process.env.FINDE_APP_TOKEN,
+  // As festas fictícias de exemplo (24/11/2026: o app não mostra mais). Só
+  // voltam com FINDE_EXEMPLOS=1, ou nos testes que passam outra base.
+  exemplos = outraBase || process.env.FINDE_EXEMPLOS === '1',
 } = {}) {
   const sites = configurarSites({ site, urlSite, urlApp });
   const temLanding = sites.modo !== 'app';
@@ -805,7 +810,7 @@ function montarServidor({
     const ids = reais.length ? A.DIAS_DO_PEDIDO : ['sex', 'sab', 'dom'];
     const semanas = A.diasDoFormulario({ reais, agoraMs, ids });
     const zonas = A.bairrosDoFormulario({ reais: R.vigentes(reais, agoraMs), datas: semanas.esta.map((d) => d.data) });
-    return formulario(fonte.base(), reaisVigentes().length, { semanas, zonas, base: infoDaBase() });
+    return { ...formulario(fonte.base(), reaisVigentes().length, { semanas, zonas, base: infoDaBase() }), ...(exemplos ? {} : { ficticia: false, misto: false, exemplos: false }) };
   }
 
   // Cada opção leva a data da festa: o detalhe abre com ela (R4). Fica aqui
@@ -831,6 +836,7 @@ function montarServidor({
     const ficticiasDoPedido = criterios.dia === 'hoje' ? base.filter((f) => f.dia === L.idDoDia(L.noiteEmSaoPaulo(agoraMs))) : base;
     if (!vigentes.length) {
       const vazio = { maisDoDia: [], outrosDias: [], exemplos: [], nota: null, base: null, semMedia: false };
+      if (!exemplos) return { opcoes: [], afrouxou: [], ...vazio, aviso: 'Ainda não tenho festa para mostrar agora. A lista se atualiza durante o dia.' };
       if (!base.length) return { opcoes: [], afrouxou: [], ...vazio, aviso: 'A lista de festas está vazia agora. Volte daqui a pouco.' };
       const r = motor.escolher(criterios, ficticiasDoPedido);
       return { ...vazio, ...r, opcoes: r.opcoes.map(comData) };
@@ -849,7 +855,7 @@ function montarServidor({
     // ("Seguem…" ou a oferta de outro dia) continua valendo.
     const naoEsgotadas = daData.filter((f) => f.esgotado !== true);
     const real = naoEsgotadas.length ? motor.escolher(cReal, naoEsgotadas) : null;
-    const ficticio = ficticiasDoPedido.length && !daData.length ? motor.escolher(criterios, ficticiasDoPedido) : null;
+    const ficticio = exemplos && ficticiasDoPedido.length && !daData.length ? motor.escolher(criterios, ficticiasDoPedido) : null;
     const opcaoDe = (f) => ({ ...motor.opcao(f, pedidoReal), cara: caraDe(f, pedidoReal) });
     const m = L.montarResultado({
       real,
@@ -879,8 +885,8 @@ function montarServidor({
     // real, foi o pedido que as tirou; se outro dia da semana tem, a nota e
     // os outros dias já apontam para lá; só sem nada na semana a frase diz isso.
     if (!r.opcoes.length && !r.exemplos.length && !r.maisDoDia.length && !r.aviso) {
-      if (daData.length) r.aviso = 'As festas reais desse dia são as que você tirou do pedido.';
-      else if (!r.outrosDias.some((d) => d.reais > 0)) r.aviso = 'Não achei festa real nesta semana ainda. A lista se atualiza durante o dia.';
+      if (daData.length) r.aviso = 'As festas desse dia são as que você tirou do pedido.';
+      else if (!r.outrosDias.some((d) => d.reais > 0)) r.aviso = 'Ainda não achei festa nesta semana. A lista se atualiza durante o dia.';
     }
     return r;
   }

@@ -107,6 +107,12 @@ Em `/app` (no ar, na raiz de finde-app.fly.dev). A boas-vindas saiu: quem chega 
 
 **Por que confirmação e não votação.** No v0 o grupo votava entre três opções. No v1 a comparação já acontece no app, com o filtro e a conversa; o que o grupo faz no vídeo é topar ou não ("Achei essa, bora?", "Tô dentro."). Por isso o convite leva uma festa só e pede confirmação. Quem manda pode deixar o nome e já entra como "tô dentro".
 
+## Sem festa fictícia
+
+Desde 24/11/2026 o app não mostra a base fictícia (`dados/festas.json`): dia sem festa responde vazio, com um aviso, e o formulário traz `exemplos: false`. `FINDE_EXEMPLOS=1` devolve os exemplos; os testes que passam `dados` continuam com eles. A landing ainda usa a fictícia no cartão do herói e na demo.
+
+`/app?ver=lista&dia=<id>&data=<AAAA-MM-DD>` abre a lista do dia sem as perguntas, com pedido neutro e sem a "% a sua cara" (é o "Ver outras festas" do convite e o "Voltar" de um link direto). O QR Code de divulgação aponta para `/?de=qr`; `medir.js` conta `chegou-qr` e tira a marca do endereço.
+
 ## Os números da validação
 
 Cada site (a landing e o app) guarda os seus no próprio volume: `validacao-uso.jsonl`, `validacao-opinioes.json`, `validacao-lista.json` e o sal, todos 0600. O painel junta os dois e o motor:

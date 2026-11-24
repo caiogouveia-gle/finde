@@ -175,6 +175,7 @@
     ficticias: 'Protótipo · festas fictícias',
     misto: 'Protótipo · festas reais; as marcadas como exemplo são fictícias',
     real: 'Protótipo · festa real',
+    reais: 'Versão beta',
   };
   let nota = NOTAS.ficticias;
   function definirNota(qual) {

@@ -89,7 +89,7 @@ test('"hoje" numa segunda pega as festas da segunda, e só elas', () => {
   // Sem real hoje (segunda), nenhuma fictícia de sexta a domingo entra no lugar.
   const vazio = L.resultadoDoPedido({ reais: [], ficticias: FICTICIAS, criterios: pedido({ dia: 'hoje' }), agoraMs: SEGUNDA });
   assert.deepEqual(vazio.exemplos, []);
-  assert.equal(vazio.nota, 'Ainda não tenho festa real hoje.');
+  assert.equal(vazio.nota, 'Ainda não tenho festa hoje.');
 });
 
 test('festa três semanas à frente não aparece em "esta" nem em "proxima"', () => {
@@ -205,9 +205,9 @@ test('nada cabe, mas o dia tem real: a lista diz que elas estão logo abaixo, e 
   assert.deepEqual(r.opcoes, []);
   assert.equal(r.maisDoDia.length, 2);
   assert.deepEqual(r.exemplos, []);
-  assert.equal(r.aviso, 'Nada cabe nesse pedido. Seguem as 2 reais no sábado, cada uma com o que falta.');
+  assert.equal(r.aviso, 'Nada cabe nesse pedido. Seguem as 2 festas no sábado, cada uma com o que falta.');
   const uma = L.resultadoDoPedido({ reais: festas.slice(0, 1), ficticias: FICTICIAS, criterios: pedido({ dia: 'sab', firmes: ['horario'] }), agoraMs: TERCA });
-  assert.equal(uma.aviso, 'Nada cabe nesse pedido. Segue a festa real no sábado, com o que falta.');
+  assert.equal(uma.aviso, 'Nada cabe nesse pedido. Segue a festa no sábado, com o que falta.');
 });
 
 test('semMedia: nenhuma real da resposta com média; com avaliação de quem foi, já tem', () => {

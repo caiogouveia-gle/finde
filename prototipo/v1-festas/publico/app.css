@@ -930,7 +930,7 @@ h2.secao-rotulo { margin: 0; }
 /* A miniatura do cartaz (só em "ver todas"): retrato preenche; paisagem
    cabe inteira sobre o fio apagado. */
 .mini { display: block; width: 40px; height: 50px; object-fit: cover; background: var(--fio-off); }
-.mini--paisagem { object-fit: contain; }
+.mini--paisagem { object-fit: cover; }
 .bloco-guia { display: flex; justify-content: space-between; align-items: baseline; padding: var(--e6) 0 var(--e2); }
 .exemplo { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta); }
 .exemplo::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border: 1px solid var(--tinta); vertical-align: 1px; }
@@ -956,7 +956,7 @@ h2.secao-rotulo { margin: 0; }
 .cartaz-botao { display: block; width: 96px; height: 120px; padding: 0; border: 0; background: var(--fio-off); cursor: zoom-in; }
 .cartaz-botao:focus-visible { outline: 1.5px solid var(--capa-tinta); outline-offset: 3px; }
 .cartaz-botao .cartaz { width: 96px; height: 120px; }
-.cartaz--paisagem { object-fit: contain; }
+.cartaz--paisagem { object-fit: cover; }
 .ficha-nome { width: fit-content; max-width: 100%; font: 400 40px/1 var(--serifa); letter-spacing: -.005em; color: var(--capa-tinta); text-wrap: balance; overflow-wrap: anywhere; }
 .ficha-casa { margin-top: var(--e2); font-size: 14px; line-height: 1.4; color: var(--capa-corrido); }
 .ficha-credito { margin-top: var(--e3); font-size: 11px; line-height: 1.4; color: var(--capa-corrido); }
