@@ -912,6 +912,9 @@ h2.secao-rotulo { margin: 0; }
 .filtros .zona .rotulo { font-size: 12px; padding-top: 12px; }
 .filtros .chips { column-gap: 18px; row-gap: 0; }
 .filtros .chip { font-size: 15px; }
+/* Quantas festas ficam com o chip: some o que zeraria a lista (facetas). */
+.filtros .chip-n { margin-left: 6px; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--rotulo); text-decoration: none; display: inline-block; }
+.filtros .chip[hidden], .filtros .zona[hidden] { display: none; }
 .filtros .sem-dado { flex-basis: 100%; font-size: 13px; line-height: 1.4; color: var(--rotulo); padding-bottom: var(--e1); }
 .linhas { border-top: .5px solid var(--tinta); }
 .linhas:empty { display: none; }
