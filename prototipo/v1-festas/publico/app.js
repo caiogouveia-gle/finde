@@ -1490,34 +1490,79 @@
     const lista1 = el('ol', { class: 'linhas' }, certas.map(linha));
     const lista2 = el('ol', { class: 'linhas' }, incertas.map(linha));
     const porId = new Map(todas.map((o) => [o.festa.id, o]));
+    // Os chips em facetas: a cada clique, cada um mostra quantas festas
+    // ficariam com ele, e o que zeraria a lista some (FT.facetas).
+    const chipsEl = new Map();
+    const zonasEl = new Map();
+    const atualizarChips = (anima = true) => {
+      const f = FT.facetas(zonas, todas, marcados);
+      const botoes = [...chipsEl.values()];
+      const antes = new Set(botoes.filter((b) => !b.hidden));
+      for (const z of f) {
+        for (const c of z.chips) {
+          const b = chipsEl.get(c.id);
+          if (!b) continue;
+          b.hidden = !c.visivel;
+          const n = b.querySelector('.chip-n');
+          if (n) n.textContent = String(c.n);
+          b.setAttribute('aria-label', `${b.dataset.rotulo}, ${c.n} ${c.n === 1 ? 'festa' : 'festas'}`);
+        }
+        const zEl = zonasEl.get(z.nome);
+        if (zEl) zEl.hidden = !z.visivel;
+      }
+      // Os chips quebram em linha: deslizar só no y chamaria mais atenção que
+      // o sumiço. Só o que volta sobe.
+      if (anima) M.subir(botoes.filter((b) => !b.hidden && !antes.has(b)), { y: 6 });
+    };
     const aplicar = () => {
       const li = [...lista1.children, ...lista2.children];
       const antes = new Map(li.filter((x) => !x.hidden).map((x) => [x, x.getBoundingClientRect().top]));
-      for (const x of li) {
-        const o = porId.get(x.dataset.festa);
-        x.hidden = !zonas.every((z) => {
-          const sel = z.chips.filter((c) => marcados.has(c.id));
-          return !sel.length || sel.some((c) => c.cabe(o));
-        });
-      }
+      for (const x of li) x.hidden = !FT.passaNosFiltros(zonas, marcados, porId.get(x.dataset.festa));
+      bloco2.hidden = !lista2.querySelector('li:not([hidden])');
+      // Os chips mudam antes de medir: os filtros ficam acima da lista.
+      atualizarChips();
       const ficaram = li.filter((x) => !x.hidden && antes.has(x));
       const entraram = li.filter((x) => !x.hidden && !antes.has(x));
       M.flip(ficaram, antes);
       M.subir(entraram, { y: 12 });
-      bloco2.hidden = !lista2.querySelector('li:not([hidden])');
+      return li.filter((x) => !x.hidden).length;
     };
-    const filtros = zonas.length ? el('div', { class: 'filtros', 'data-so': 'lista' }, zonas.map((z) => el('div', { class: 'zona', role: 'group', 'aria-label': z.nome },
-      el('p', { class: 'rotulo', 'aria-hidden': 'true', texto: z.nome }),
-      el('div', { class: 'chips' }, z.chips.map((c) => {
-        const b = el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', texto: c.rotulo });
-        b.addEventListener('click', () => {
-          if (marcados.has(c.id)) marcados.delete(c.id);
-          else marcados.add(c.id);
-          b.setAttribute('aria-pressed', String(marcados.has(c.id)));
-          aplicar();
-        });
-        return b;
-      }), z.sem ? el('span', { class: 'sem-dado', texto: z.sem }) : null)))) : null;
+    const filtros = zonas.length ? el('div', { class: 'filtros', 'data-so': 'lista' }, zonas.map((z) => {
+      const zEl = el('div', { class: 'zona', role: 'group', 'aria-label': z.nome },
+        el('p', { class: 'rotulo', 'aria-hidden': 'true', texto: z.nome }),
+        el('div', { class: 'chips' }, z.chips.map((c) => {
+          const b = el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', 'data-rotulo': c.rotulo },
+            el('span', { texto: c.rotulo }), el('span', { class: 'chip-n', 'aria-hidden': 'true' }));
+          b.addEventListener('click', () => {
+            if (marcados.has(c.id)) marcados.delete(c.id);
+            else marcados.add(c.id);
+            b.setAttribute('aria-pressed', String(marcados.has(c.id)));
+            // Se a lista zeraria, sai o filtro marcado que ficou sem festa
+            // (FT.podarFiltros), e o anúncio diz qual.
+            const sairam = FT.podarFiltros(zonas, todas, marcados, z.nome);
+            for (const id of sairam) {
+              const outro = chipsEl.get(id);
+              if (outro) outro.setAttribute('aria-pressed', 'false');
+            }
+            const ficam = aplicar();
+            const rotulos = sairam.map((id) => chipsEl.get(id)).filter(Boolean).map((x) => x.dataset.rotulo);
+            anunciar(`${ficam} ${ficam === 1 ? 'festa' : 'festas'}${rotulos.length === 1 ? `. Saiu o filtro ${rotulos[0]}` : rotulos.length ? `. Saíram os filtros ${rotulos.join(', ')}` : ''}.`);
+            // O chip clicado pode sumir (desmarcado, sem festa): o foco vai
+            // para o próximo chip à vista, para o teclado não voltar ao topo.
+            if (b.hidden) {
+              const todosChips = [...chipsEl.values()];
+              const depois = todosChips.slice(todosChips.indexOf(b) + 1).concat(todosChips.slice(0, todosChips.indexOf(b)));
+              const alvo = depois.find((x) => !x.hidden);
+              if (alvo) alvo.focus();
+            }
+          });
+          chipsEl.set(c.id, b);
+          return b;
+        }), z.sem ? el('span', { class: 'sem-dado', texto: z.sem }) : null));
+      zonasEl.set(z.nome, zEl);
+      return zEl;
+    })) : null;
+    if (filtros) atualizarChips(false);
     const bloco2 = el('div', { hidden: !incertas.length }, el('p', { class: 'bloco-guia' }, el('span', { class: 'rotulo', texto: 'Local a confirmar' })), lista2);
     return el('section', { class: 'todas', id: 'todas', hidden: !estado.todasAbertas, 'aria-label': `Todas as festas ${d.no ? `${d.no} ${d.nome}` : d.nome}` },
       el('div', { class: 'todas-cabeca' }, el('p', { class: 'rotulo', texto: `Todas as ${todas.length} de ${d.nome}` })),

@@ -933,6 +933,46 @@
   const creditoDaPeca = (c) => (c && c.divulgacao ? `${c.papel} · divulgação ${c.divulgacao}` : c ? c.papel : '');
   const altDaPeca = (c, nome) => (c ? `${c.papel} de ${nome}${c.divulgacao ? `, divulgação de ${c.divulgacao}` : ''}` : '');
 
+  // Filtros em facetas (o "ver todas"): dentro da zona vale qualquer chip
+  // marcado, entre zonas valem todos. Cada chip diz quantas festas ficariam
+  // com ele, contando as outras zonas como estão; o que daria zero some, para
+  // nenhum clique deixar a lista vazia (como os filtros do Splice). Marcado
+  // nunca some, nem com 0: é por ele que a pessoa volta atrás.
+  function passaNosFiltros(zonas, marcados, o, exceto = null) {
+    return zonas.every((z) => {
+      if (z === exceto) return true;
+      const sel = z.chips.filter((c) => marcados.has(c.id));
+      return !sel.length || sel.some((c) => c.cabe(o));
+    });
+  }
+  function facetas(zonas, itens, marcados) {
+    return zonas.map((z) => {
+      const chips = z.chips.map((c) => {
+        const n = itens.filter((o) => passaNosFiltros(zonas, marcados, o, z) && c.cabe(o)).length;
+        return { id: c.id, n, marcado: marcados.has(c.id), visivel: marcados.has(c.id) || n > 0 };
+      });
+      return { nome: z.nome, chips, visivel: chips.some((c) => c.visivel) };
+    });
+  }
+  // Desmarcar um chip numa zona de "qualquer um" estreita a lista, e ela pode
+  // zerar: funk ou eletrônica + Pinheiros, e a de Pinheiros era a de funk.
+  // Só então sai um filtro marcado sem festa, um por vez, primeiro das outras
+  // zonas (`tocada` é a zona do clique), até a lista voltar a ter festa.
+  // Com festa na lista nada sai: o marcado sem festa fica à vista, com 0.
+  // Devolve os ids que saíram de `marcados`.
+  function podarFiltros(zonas, itens, marcados, tocada = null) {
+    const sairam = [];
+    while (!itens.some((o) => passaNosFiltros(zonas, marcados, o))) {
+      const f = facetas(zonas, itens, marcados);
+      const zerados = (fora) => f.filter((z) => (z.nome === tocada) !== fora).flatMap((z) => z.chips).filter((c) => c.marcado && c.n === 0);
+      const c = zerados(true)[0] || zerados(false)[0] || f.flatMap((z) => z.chips).find((x) => x.marcado);
+      if (!c) return sairam;
+      marcados.delete(c.id);
+      sairam.push(c.id);
+    }
+    return sairam;
+  }
+
   // A mensagem "como foi?" do convite de festa que passou (R34).
   function mensagemComoFoi({ festa: f, link }) {
     return [`Como foi a ${f && f.nome ? f.nome : 'festa'}? Responde em 10 segundos: o público era da nossa idade?`, link];
@@ -943,6 +983,6 @@
     fraseDaAvaliacao, deOndeVem, vaziosDaFesta, cartazDe, creditoDaPeca, altDaPeca, mensagemComoFoi, EM_BAIRRO, semQuebraNoPreco,
     preco, precoNaLista, centavos, condicoesDoLote, CONDICOES, DE_PESSOA, ha, media, som, regras, regrasFrase, fontes, paginas, origemDoPreco, servico, usuario, destino, links, mapa, ESTILOS,
     idDeFesta, casaComBairro, mensagem, CARA_ORDEM, ordemDaCara, pesoDaCara, semDadoDaCara, dataDoCartao, pctNosCartoes, mediaFalada, linhaSemMedia, cartaoFalado,
-    horarioSemQuebra, ondeSemQuebra, semViuva, horaCurta,
+    horarioSemQuebra, ondeSemQuebra, semViuva, horaCurta, passaNosFiltros, facetas, podarFiltros,
   };
 });
