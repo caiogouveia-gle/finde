@@ -94,6 +94,33 @@ CREATE TABLE IF NOT EXISTS uso_api (
 );
 CREATE INDEX IF NOT EXISTS uso_api_quando ON uso_api(quando);
 
+-- A última rodada boa de cada fonte, para a fonte com intervalo (uma vez por
+-- dia) não rodar de novo nas outras execuções do dia.
+CREATE TABLE IF NOT EXISTS fontes_rodadas (
+  fonte TEXT PRIMARY KEY,
+  ultima_ok TEXT NOT NULL
+);
+
+-- Links de ingresso achados na bio e no Linktree dos perfis do Instagram. O
+-- perfil vai ao Apify uma vez por semana; estes links voltam à fila todo dia.
+CREATE TABLE IF NOT EXISTS links_bio (
+  perfil TEXT NOT NULL,
+  url TEXT NOT NULL,
+  visto_em TEXT NOT NULL,
+  PRIMARY KEY (perfil, url)
+);
+
+-- Rodadas dos coletores do Apify (prova de conceito): itens e custo estimado.
+CREATE TABLE IF NOT EXISTS uso_apify (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  execucao_id INTEGER,
+  quando TEXT NOT NULL,
+  ator TEXT NOT NULL,
+  itens INTEGER NOT NULL,
+  custo_usd REAL NOT NULL,
+  resultado TEXT NOT NULL        -- ok | erro
+);
+
 -- Produtoras que mandam festas pelo endpoint. Guarda só o hash do token.
 CREATE TABLE IF NOT EXISTS produtoras (
   id TEXT PRIMARY KEY,

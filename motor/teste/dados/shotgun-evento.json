@@ -1,0 +1,55 @@
+{
+ "url": "https://shotgun.live/pt-br/events/inky",
+ "final": "https://shotgun.live/pt-br/events/inky",
+ "status": 200,
+ "titulo": "Inky",
+ "texto": "Inky na Porta",
+ "jsonld": [
+  {
+   "@context": "https://schema.org",
+   "@type": "MusicEvent",
+   "name": "Inky",
+   "url": "https://shotgun.live/pt-br/events/inky",
+   "image": "https://assets.example/x.jpg",
+   "startDate": "2026-11-14T21:30:00.000Z",
+   "doorTime": "2026-11-14T21:30:00.000Z",
+   "endDate": "2026-11-15T04:00:00.000Z",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+   "location": {
+    "@type": "Place",
+    "name": "PORTA",
+    "address": {
+     "@type": "PostalAddress",
+     "streetAddress": "Rua Horácio Lane, 95 - Pinheiros, São Paulo - SP, 05432-000, Brasil",
+     "addressLocality": "Pinheiros",
+     "postalCode": "05432-000",
+     "addressCountry": "BR"
+    },
+    "geo": {
+     "@type": "GeoCoordinates",
+     "latitude": -23.5596346,
+     "longitude": -46.6867118
+    }
+   },
+   "description": "INKY na Porta.",
+   "organizer": {
+    "@type": "LocalBusiness",
+    "name": "P O R T A",
+    "url": "https://shotgun.live/pt-br/venues/p-o-r-t-a"
+   },
+   "performer": [],
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "name": "INKY",
+     "price": 40,
+     "priceCurrency": "BRL",
+     "validFrom": "2026-11-01T12:00:00.000Z",
+     "url": "https://shotgun.live/pt-br/events/inky"
+    }
+   ]
+  }
+ ]
+}

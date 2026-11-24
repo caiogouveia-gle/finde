@@ -1,6 +1,9 @@
 node_modules
 var
-entrada/*.json
+# Dado real (envios, indicações, contatos) não entra na imagem.
+entrada/*
+!entrada/LEIA-ME.md
+coletores/paginas/.venv
 teste
 *.log
 .DS_Store

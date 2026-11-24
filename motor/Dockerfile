@@ -21,6 +21,18 @@ fs.writeFileSync('/tmp/litestream.tar.gz',b)})()" \
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 
+# Leitor de páginas (prova acadêmica, KTD15): Python 3.12 pelo uv, o Scrapling e
+# o Chromium do patchright, que é o que o Scrapling 0.5.1 usa. Versões fixas pelo
+# uv.lock; o navegador e as bibliotecas do sistema vêm do próprio patchright.
+COPY --from=ghcr.io/astral-sh/uv:0.12.5 /uv /usr/local/bin/uv
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python \
+    UV_PROJECT_ENVIRONMENT=/opt/finde-paginas \
+    PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+COPY coletores/paginas/pyproject.toml coletores/paginas/uv.lock ./coletores/paginas/
+RUN cd coletores/paginas && uv sync --frozen --python 3.12 --no-dev \
+    && uv run --python 3.12 python -m patchright install --with-deps chromium \
+    && rm -rf /root/.cache/uv
+
 COPY . .
 
 ENV FINDE_DADOS=/data \

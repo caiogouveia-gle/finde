@@ -47,7 +47,7 @@ Use apenas o que o texto diz. Quando algo não estiver no texto, devolva null ou
 - estilos: até dois, só desta lista: house-disco (house, disco, nu-disco), pop-2000 (pop, hits, flashback dos anos 2000), mpb-samba (MPB, samba, pagode, choro), funk (funk carioca, baile funk), indie-rock (indie, rock, alternativo, punk), eletronica (techno, trance, minimal, eletrônica em geral). Só quando o Texto descreve o som. O nome do evento e os nomes do lineup não bastam: "Deu Samba" sem texto sobre o som dá lista vazia, e não vale o que você sabe de um artista. Lista vazia se o som não estiver claro.
 - idadeMinima: a idade mínima de entrada, só se o texto disser (ex.: "proibida a entrada de menores de 18" vale 18). "Livre" vale null.
 - lineup: nomes de DJs, bandas e artistas que o texto anuncia. Lista vazia se não houver.
-- documento, vestimenta, lista: a regra de entrada em uma frase curta, só se o texto disser.
+- documento, vestimenta, lista: a regra de entrada em uma frase curta, só se o texto disser, sem nomes de pessoas, @, telefones, e-mails nem links ("nome na lista até 23h", nunca "lista com @fulano").
 - pistaCheia: hora em que a pista enche, no formato HH:MM, só se o texto disser.
 - confianca: alta, media ou baixa, sobre a classificação como um todo.
 Nunca estime a idade do público.`;
@@ -124,6 +124,11 @@ function porRegras(entrada) {
 
 // ---------------------------------------------------------------- validação
 
+// Regra de entrada sem contato de ninguém (revisão de 24/11): a legenda traz
+// "lista com @fulano", telefone e e-mail de promoter, que não vão ao público.
+const { temContato } = require('./normalizar');
+// Na lista, nome de pessoa também conta ("lista com Fulana").
+const semContato = (v) => (temContato(v) || (typeof v === 'string' && /\b(com|da|do|pela|pelo)\s+[A-ZÀ-Ý][a-zà-ÿ]+/.test(v)) ? null : v);
 const strOuNull = (v, max) => (v === null ? null : typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : undefined);
 
 // Confere a resposta do modelo campo a campo; undefined quando não serve.
@@ -143,7 +148,7 @@ function validarResposta(r) {
   for (const k of ['documento', 'vestimenta', 'lista']) {
     const v = strOuNull(r[k], 160);
     if (v === undefined) return undefined;
-    saida[k] = v;
+    saida[k] = semContato(v);
   }
   const pc = strOuNull(r.pistaCheia, 5);
   saida.pistaCheia = pc && /^\d{1,2}:\d{2}$/.test(pc) ? pc : null;
@@ -274,8 +279,35 @@ function criarClassificador({
     return { resultado, por: 'claude', modelo };
   }
 
+  // O mesmo teto vale para a leitura de flyers e páginas (extrair.js): quem
+  // chama pergunta antes e soma depois.
+  function podeGastar(estimado) {
+    if (!claude) return 'sem ANTHROPIC_API_KEY';
+    if (parado) return parado;
+    if (gastoExecucao + estimado > tetoExecucao) {
+      parado = `teto da execução (US$ ${tetoExecucao.toFixed(2)})`;
+      return parado;
+    }
+    if (qDia.get(inicioDoDiaSP(agora())).total + estimado > tetoDia) {
+      parado = `teto do dia (US$ ${tetoDia.toFixed(2)})`;
+      return parado;
+    }
+    return null;
+  }
+  function somarGasto(custo) {
+    gastoExecucao += custo;
+  }
+  function parar(motivo) {
+    parado = parado || motivo;
+  }
+
   return {
     classificar,
+    podeGastar,
+    somarGasto,
+    parar,
+    claude,
+    modelo,
     resumo: () => ({ modelo: claude ? modelo : null, gastoUsd: Math.round(gastoExecucao * 1e6) / 1e6, parado, ...contagem }),
   };
 }

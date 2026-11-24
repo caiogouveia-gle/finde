@@ -37,5 +37,91 @@
     "motivo": "Liga quando uma produtora informar o endereço .ics da própria agenda.",
     "dias": 30,
     "feeds": []
+  },
+  "sympla-apify": {
+    "ligada": false,
+    "pocAcademica": true,
+    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla, Shotgun e RA passam pelo leitor de páginas (Scrapling). Liga só por --fonte sympla-apify --poc.",
+    "ator": "hypebridge~sympla-events-scraper",
+    "maxItens": 100,
+    "tetoUsd": 1,
+    "precoPorMil": 3,
+    "dias": 21,
+    "reserva": true
+  },
+  "shotgun-apify": {
+    "ligada": false,
+    "pocAcademica": true,
+    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla, Shotgun e RA passam pelo leitor de páginas (Scrapling). Liga só por --fonte shotgun-apify --poc.",
+    "ator": "crawloop~shotgun-scraper",
+    "maxItens": 100,
+    "tetoUsd": 1,
+    "precoPorMil": 3,
+    "dias": 21,
+    "reserva": true
+  },
+  "ra-apify": {
+    "ligada": false,
+    "pocAcademica": true,
+    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla, Shotgun e RA passam pelo leitor de páginas (Scrapling). Liga só por --fonte ra-apify --poc.",
+    "ator": "parsebird~resident-advisor-scraper",
+    "maxItens": 100,
+    "tetoUsd": 1,
+    "precoPorMil": 2.5,
+    "dias": 21,
+    "reserva": true
+  },
+  "instagram": {
+    "ligada": false,
+    "pocAcademica": true,
+    "motivo": "Prova de conceito acadêmica sem fins lucrativos, decisão do Caio em 24/11/2026 com aval da instituição: posts públicos sem login pelo Apify e flyer lido pelo Claude Haiku. Sem comentários, seguidores ou fotos de pessoas; a imagem não é guardada. Único uso do Apify (decisão de 24/11): posts uma vez por dia, perfis uma vez por semana, no plano grátis. Não vai para o produto comercial.",
+    "atorPosts": "apify~instagram-scraper",
+    "atorPerfis": "apify~instagram-profile-scraper",
+    "perfis": [],
+    "postsPorPerfil": 4,
+    "dias": 2,
+    "maxItens": 120,
+    "tetoUsd": 0.1,
+    "precoPorMil": 2.7,
+    "precoPorMilPerfis": 2.6,
+    "seguirBio": true,
+    "perfisArquivo": "entrada/grupo/contatos.json",
+    "intervaloHoras": 20,
+    "diasEntrePerfis": 7
+  },
+  "paginas": {
+    "ligada": false,
+    "pocAcademica": true,
+    "motivo": "Prova de conceito acadêmica, decisão do Caio em 24/11/2026: o Scrapling lê as listagens de Sympla, Shotgun e Resident Advisor em São Paulo (próximos 14 dias), as páginas da Ingresse que chegam pela fila e as agendas das casas, uma vez por dia e com pausa entre pedidos. Schema.org e dados da própria página primeiro, Claude Haiku depois. O RA bloqueia acesso automatizado e só roda com FINDE_PROXY_URL.",
+    "modo": "dinamico",
+    "timeoutMs": 30000,
+    "hosts": [
+      "ingresse.com"
+    ],
+    "agendas": [],
+    "intervaloHoras": 20,
+    "pausaMs": 2000,
+    "dias": 14,
+    "listagens": [
+      {
+        "id": "shotgun",
+        "url": "https://shotgun.live/pt-br/cities/sao-paulo",
+        "modo": "simples",
+        "maxEventos": 40
+      },
+      {
+        "id": "sympla",
+        "url": "https://www.sympla.com.br/eventos/sao-paulo-sp",
+        "modo": "simples",
+        "maxEventos": 40
+      },
+      {
+        "id": "ra",
+        "url": "https://ra.co/events/br/saopaulo",
+        "modo": "dinamico",
+        "maxEventos": 40,
+        "proxy": true
+      }
+    ]
   }
 }

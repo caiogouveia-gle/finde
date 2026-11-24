@@ -112,7 +112,14 @@ function condicoesDoLote(nome, declaradas) {
 
 // O código de quem indicou (passkey, cod, cupom) sai do link que vai ao
 // público: é de uma pessoa, e o repositório e o app são públicos.
-const PARAMETROS_DE_CODIGO = /^(passkey|cod|codigo|code|coupon|cupom|utm_.*)$/i;
+// Vale para todo link, de toda fonte (revisão de 24/11): os nomes que as
+// plataformas e as curadoras usam para indicação e rastreio.
+// Contato de pessoa (revisão de 24/11): @, e-mail, telefone com ou sem DDD,
+// WhatsApp, link. Texto que casa com isso não vai ao público.
+const CONTATO = /@[\w.]{2,}|[\w.+-]+@[\w-]+\.[\w.]+|https?:\/\/|www\.|wa\.me|\b(whats(app)?|zap|direct|dm|inbox)\b|\(?\d{2}\)?\s*9?\d{4}[-\s.]?\d{4}|\b9?\d{4}[-\s.]\d{4}\b/i;
+const temContato = (v) => typeof v === 'string' && CONTATO.test(v);
+
+const PARAMETROS_DE_CODIGO = /^(passkey|cod|codigo|code|coupon|cupom|d|ref|refcode|referral|aff|afiliado|affiliate|promoter|promo|vendedor|mp_rloc|mp_rtil|utm_.*|fbclid|gclid|igshid)$/i;
 function semCodigo(v) {
   const u = url(v);
   if (!u) return null;
@@ -128,7 +135,7 @@ function ateDoNome(nome) {
   return m ? `${m[1].padStart(2, '0')}:${m[2] || m[3] || '00'}` : null;
 }
 
-function lotes(lista, avisos) {
+function lotes(lista, avisos, fonte = null) {
   if (!Array.isArray(lista)) return null;
   const saida = [];
   for (const l of lista.slice(0, 12)) {
@@ -137,8 +144,11 @@ function lotes(lista, avisos) {
       avisos.push('lote sem preço válido ignorado');
       continue;
     }
+    // Nome de lote com contato ("lista com @fulana") vira um nome neutro, fora do envio.
+    const nomeLido = texto(l.nome, 80);
+    const nomeLote = nomeLido && fonte !== 'envio' && temContato(nomeLido) ? (/lista/i.test(nomeLido) ? 'Lista' : 'Entrada') : nomeLido;
     const lote = {
-      nome: texto(l.nome, 80) || `${saida.length + 1}º lote`,
+      nome: nomeLote || `${saida.length + 1}º lote`,
       preco: p,
       disponivel: typeof l.disponivel === 'boolean' ? l.disponivel : null,
     };
@@ -317,7 +327,7 @@ function normalizarItem(b, fonte) {
     }
   }
 
-  const ls = lotes(b.lotes, avisos);
+  const ls = lotes(b.lotes, avisos, fonte);
   if (ls) por('lotes', ls);
   else if (b.preco !== undefined && preco(b.preco) !== null) por('lotes', [{ nome: 'Entrada', preco: preco(b.preco), disponivel: null }]);
   if (b.naPorta !== undefined && b.naPorta !== null) {
@@ -325,13 +335,16 @@ function normalizarItem(b, fonte) {
     if (p !== null) por('entradaNaPorta', { preco: p });
   }
 
-  // Na indicação, o link sai sem o código de quem indicou (semCodigo).
-  const limpa = fonte === 'indicacao' ? semCodigo : url;
+  // O link sai sem o código de quem indicou ou rastreia (semCodigo), venha de
+  // onde vier; só o link que a própria produtora mandou fica como veio.
+  const limpa = fonte === 'envio' ? url : semCodigo;
   por('linkCompra', limpa(b.linkCompra));
   por('linkEvento', limpa(b.linkEvento));
   por('paginas', paginas(b.paginas, avisos));
   por('instagram', instagram(b.instagram));
-  por('cartaz', url(b.cartaz));
+  // Cartaz só do que a produtora mandou ou alguém escolheu à mão: a imagem
+  // coletada das plataformas e do Instagram não é guardada nem republicada.
+  if (fonte === 'envio' || fonte === 'indicacao') por('cartaz', url(b.cartaz));
   if (Array.isArray(b.lineup)) {
     const nomes = b.lineup.map((n) => texto(n, 80)).filter(Boolean).slice(0, 30);
     if (nomes.length) por('lineup', nomes);
@@ -367,6 +380,6 @@ function novoId(nome, data, semente) {
 }
 
 module.exports = {
-  normalizarItem, novoId, slug, preco, instagram, url, horario, idadeMinima, texto, cidade, condicoesDoLote, ateDoNome, semCodigo, paginas,
+  normalizarItem, novoId, slug, temContato, CONTATO, preco, instagram, url, horario, idadeMinima, texto, cidade, condicoesDoLote, ateDoNome, semCodigo, paginas,
   CONDICOES, CONDICOES_DE_PESSOA, TIPOS_PAGINA,
 };

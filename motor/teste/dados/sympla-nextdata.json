@@ -1,0 +1,46 @@
+{
+ "props": {
+  "pageProps": {
+   "hydrationData": {
+    "eventHydration": {
+     "event": {
+      "eventsAddress": {
+       "id": 425174,
+       "name": "Fundação Maria Luisa e Oscar Americano",
+       "address": "Avenida Morumbi",
+       "addressNum": "4077",
+       "addressAlt": "",
+       "neighborhood": "Morumbi",
+       "city": "São Paulo",
+       "state": "SP",
+       "zipCode": "05650-000",
+       "country": "BRASIL"
+      },
+      "id": 3400001,
+      "name": "Baile do Mirante",
+      "startDate": "2026-11-13 22:00:00",
+      "endDate": "2026-11-14 04:00:00",
+      "strippedDetail": "Festa de lançamento com DJs convidados. Entrada pelo portão 2.",
+      "published": true,
+      "cancelled": false,
+      "privateEvent": false,
+      "onlineInfo": null,
+      "newUrl": "https://www.sympla.com.br/evento/baile-do-mirante/3400001",
+      "slug": "baile-do-mirante",
+      "eventsHost": {
+       "name": "Fundação Maria Luisa e Oscar Americano"
+      },
+      "startDateMultiFormat": {
+       "default": "2026-11-13 22:00:00",
+       "ISO8601": "2026-11-13T22:00:00-03:00"
+      },
+      "endDateMultiFormat": {
+       "default": "2026-11-14 04:00:00",
+       "ISO8601": "2026-11-14T04:00:00-03:00"
+      }
+     }
+    }
+   }
+  }
+ }
+}

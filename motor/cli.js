@@ -15,7 +15,9 @@ const { indicar } = require('./nucleo/indicar');
 
 const AJUDA = `Uso: node cli.js <comando>
 
-  coletar [--fonte <id>] [--com-exemplos]   roda uma coleta agora
+  coletar [--fonte <id>] [--com-exemplos] [--poc] [--forcar]
+                                            roda uma coleta agora; --poc liga os conectores da prova acadêmica (Apify, Instagram, páginas);
+                                            --forcar ignora o intervalo de cada fonte (uma vez por dia)
   exportar [arquivo] [--todas] [--sem-exemplos]
                                             grava os registros R14 em JSON (padrão: var/festas-r14.json)
   produtora criar "<nome>"                  cadastra uma produtora e mostra o token UMA vez
@@ -58,19 +60,26 @@ async function main(args) {
   const { amb, db, config, claude } = preparar();
 
   if (cmd === 'coletar') {
-    const { fontes, config: cfg } = fontesLigadas(config, { so: valor('--fonte'), exemplos: flag('--com-exemplos') || amb.comExemplos });
+    const { fontes, config: cfg } = fontesLigadas(config, { so: valor('--fonte'), exemplos: flag('--com-exemplos') || amb.comExemplos, poc: flag('--poc') });
+    if (!fontes.length && valor('--fonte')) {
+      console.error(`a fonte ${valor('--fonte')} está desligada; se for da prova acadêmica, rode com --poc`);
+      return 1;
+    }
     if (!fontes.length) {
       console.error('nenhuma fonte ligada para rodar');
       return 1;
     }
-    console.info(`[motor] coleta: ${fontes.map((f) => f.id).join(', ')} · classificação ${claude ? `pelo Claude (${modeloAtual()})` : 'por regras (sem ANTHROPIC_API_KEY)'}`);
-    const r = await executar({ db, fontes, claude, config: cfg, gatilho: 'comando' });
+    console.info(`[motor] coleta: ${fontes.map((f) => f.id).join(', ')} · classificação ${claude ? `pelo Claude (${modeloAtual()})` : 'por regras (sem ANTHROPIC_API_KEY)'} · Apify ${process.env.APIFY_TOKEN ? 'com token' : 'sem APIFY_TOKEN'}`);
+    const r = await executar({ db, fontes, claude, config: cfg, gatilho: 'comando', forcar: flag('--forcar') });
     if (r.recusada) return 2;
     for (const [id, f] of Object.entries(r.fontes)) {
       console.info(`  ${id}: ${f.itens} itens, ${f.gravados} gravados, ${f.novas} festas novas, ${f.descartados} descartados${f.erro ? `, erro: ${f.erro}` : ''}`);
     }
     const c = r.classificacao;
     console.info(`  classificação: ${c.claude} pelo Claude, ${c.cache} do cache, ${c.regras} por regras, ${c.invalidas} respostas inválidas, ${c.erros} erros · US$ ${c.gastoUsd}${c.parado ? ` · modelo parado: ${c.parado}` : ''}`);
+    if (r.leitura) console.info(`  leitura de flyer e página: ${r.leitura.lidos} pelo Claude, ${r.leitura.cache} do cache, ${r.leitura.semModelo} sem leitura, ${r.leitura.invalidos} inválidas, ${r.leitura.erros} erros`);
+    if (r.apifyUsd !== undefined) console.info(`  Apify: ≈ US$ ${r.apifyUsd}`);
+    if (r.fila) console.info(`  links de ingresso achados: ${r.fila.length}`);
     if (r.avisos.length) {
       console.info(`  avisos (${r.avisos.length}):`);
       for (const a of r.avisos.slice(0, 30)) console.info(`   - ${a}`);

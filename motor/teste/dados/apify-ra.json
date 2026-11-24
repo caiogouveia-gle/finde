@@ -1,0 +1,53 @@
+[
+  {
+    "eventId": "1900001",
+    "title": "Subsolo Exemplo",
+    "eventUrl": "https://ra.co/events/1900001",
+    "date": "2026-11-20",
+    "startTime": "23:00",
+    "endTime": "06:00",
+    "venue": "Clube Exemplo",
+    "city": "São Paulo",
+    "allArtists": [
+      "Artista A",
+      {
+        "name": "Artista B"
+      }
+    ],
+    "lineupText": "Artista A, Artista B",
+    "genres": [
+      "techno",
+      "electro"
+    ],
+    "promoters": [
+      {
+        "name": "Selo Exemplo"
+      }
+    ],
+    "isTicketed": true,
+    "ticketUrl": "https://ra.co/events/1900001/tickets",
+    "cost": "R$ 70"
+  },
+  {
+    "eventId": "1900002",
+    "title": "Open Air Exemplo",
+    "eventUrl": "https://ra.co/events/1900002",
+    "date": "2026-11-22",
+    "startTime": "14:00",
+    "venue": "Parque Exemplo",
+    "city": "São Paulo",
+    "allArtists": [],
+    "genres": [],
+    "promoters": [],
+    "isTicketed": false,
+    "cost": "Grátis"
+  },
+  {
+    "eventId": "1900003",
+    "title": "Noite em Curitiba",
+    "eventUrl": "https://ra.co/events/1900003",
+    "date": "2026-11-20",
+    "venue": "Casa Exemplo",
+    "city": "Curitiba"
+  }
+]

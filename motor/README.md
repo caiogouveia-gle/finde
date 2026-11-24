@@ -57,6 +57,11 @@ Abre em `http://localhost:8764`. `curl localhost:8764/api/festas` devolve as fes
 | `FINDE_CORS` | (nenhuma) | Origens que podem ler a API pelo navegador, ex.: `http://localhost:8763` |
 | `FINDE_COM_EXEMPLOS` | | `1` soma os exemplos também nas coletas agendadas |
 | `FINDE_FONTES` | `config/fontes.json` | Qual configuração de fontes usar |
+| `APIFY_TOKEN` | (nenhum) | Liga o Apify da prova acadêmica, só para o Instagram. Vai no cabeçalho, nunca na URL |
+| `FINDE_TETO_APIFY_EXECUCAO_USD`, `FINDE_TETO_APIFY_DIA_USD` | `0.25` cada | Teto de gasto no Apify por execução e por dia, somado em `uso_apify` |
+| `FINDE_PROXY_URL` | (nenhum) | Proxy para as listagens marcadas `proxy: true` (hoje só o RA). Nunca vai para log ou aviso |
+| `FINDE_INSTAGRAM_PERFIS` | `entrada/grupo/contatos.json` | Arquivo privado com os perfis do Instagram a acompanhar (no Fly, no volume) |
+| `UV` | `uv` | Onde está o `uv` que roda o leitor de páginas (`coletores/paginas/`) |
 
 ## Agendar
 
@@ -118,6 +123,8 @@ Campo que nenhuma fonte trouxe sai `null` ou lista vazia, nunca inventado. Os in
 | Mapas Culturais: SP Cultura e Mapa da Cultura | Ligada | APIs abertas, sem chave. Em 10/11/2026 o SP Cultura não respondia e o Mapa da Cultura não tinha nenhum evento na cidade nos 30 dias seguintes. O conector fica pronto para quando houver |
 | Agenda iCal da produtora | Desligada | Liga quando uma produtora informar o endereço `.ics` em `config/fontes.json` |
 | Instagram, Resident Advisor, Eventbrite, Sympla, Shotgun, DICE, Fever, Google Places, Sesc SP, Guia da Parik | Sem conector | Os termos proíbem coleta, não há API pública de listagem, ou o site bloqueia acesso automatizado. O motivo de cada uma está em `fontes/index.js` |
+| Visite São Paulo | Candidata, sem conector | Termos e robots.txt permitem; tem API com tipo, data, casa e link de compra, mas poucas festas (7 em 4 semanas, em 23/11/2026). Ver `docs/pesquisa/2026-11-23-fontes-abertas-e-termos.md` |
+| Ingresse, MATO, Guia da Semana, Catraca Livre | Sem conector | Avaliadas em 23/11/2026; o motivo de cada uma está em `fontes/index.js` e na nota de pesquisa |
 
 Quando duas fontes falam do mesmo campo, vale a de maior prioridade: envio 100, iCal 80, indicação 70, Mapas Culturais 60, Claude 40, regras 20.
 
@@ -171,6 +178,33 @@ O preenchimento é manual de propósito: os termos do Instagram, do RA e das pla
 
 Os perfis de produtoras e casas ficam numa lista privada de quem contatar, `entrada/grupo/contatos.json`, para o convite ao envio direto. Agendas e agregadores esperam em `entrada/grupo/a-avaliar.json` até alguém ler os termos de uso; só então entram em `config/fontes.json`, ligados ou desligados com o motivo, como as outras fontes.
 
+## Prova de conceito acadêmica: arquitetura híbrida
+
+Decisão do Caio em 23 e 24/11/2026, com aval da instituição, para um trabalho acadêmico sem fins lucrativos. O porquê e o que fica de fora estão em `docs/pesquisa/2026-11-24-arquitetura-hibrida.md`; as contas e chaves, em `docs/operacao/2026-11-24-contas-e-chaves.md`.
+
+```bash
+node cli.js coletar --poc          # liga os conectores marcados pocAcademica nesta rodada
+node cli.js coletar --fonte instagram
+```
+
+| Conector | Como | Prioridade |
+|---|---|---|
+| `instagram` | Único uso do Apify, no plano grátis. Posts recentes dos perfis do arquivo privado, uma vez por dia; perfis (link da bio, Linktree) uma vez por semana. O Claude Haiku lê o flyer e a legenda; os links de compra vão para a fila | 50 |
+| `paginas` | Scrapling, uma vez por dia, com pausa de 2 s entre pedidos. Lê as listagens de São Paulo do Shotgun e da Sympla (próximos 14 dias), as páginas da Ingresse que chegam pela fila e as agendas das casas. Usa o schema.org e os dados da própria página; sem eles, o Claude. O RA devolve 403 até com navegador e só roda com `FINDE_PROXY_URL` | 72 |
+| `sympla-apify`, `shotgun-apify`, `ra-apify` | Reserva desligada (Apify), fora do `--poc`; liga só por `--fonte <id> --poc` | 65–75 |
+
+Decisão do Caio em 24/11/2026 (KTD17): o Apify fica só com o Instagram, e o motor inteiro custa perto de US$ 4 a 8 por mês. Cada fonte tem `intervaloHoras` no config: a agenda de 4 rodadas por dia não repete a coleta paga; `--forcar` passa por cima. Cada chamada ao Apify leva teto de itens e de gasto, lê só os campos usados, apaga o dataset na conta e grava o custo real em `uso_apify`. A leitura de flyer e página usa o mesmo teto do Claude que a classificação, e o que já foi lido pelo Claude não paga a classificação de novo. Nada de comentários, seguidores, contatos ou fotos de pessoas é guardado; a imagem do flyer é lida e descartada; o cartaz só vem do envio e da indicação; os links saem sem código de indicação; a média de idade continua só declarada.
+
+Prova de 24/11/2026, sem chave do Claude: as listagens do Shotgun e da Sympla deram 29 eventos de São Paulo em 31 páginas; 15 saíram como festa.
+
+O leitor de páginas roda em Python 3.12 com `uv`. Uma vez por máquina:
+
+```bash
+cd coletores/paginas && uv sync --python 3.12 && uv run python -m patchright install chromium   # o Chromium do patchright, não o do Playwright
+```
+
+Ocupa perto de 900 MB (ambiente e Chromium). O `Dockerfile` já faz esse passo, e o `fly.toml` sobe a máquina para 1 GB.
+
 ## A classificação pelo Claude
 
 Para cada festa que chegou com texto e sem tudo estruturado, o motor pede ao Claude: se é festa, até dois estilos do catálogo, idade mínima, lineup, regras de entrada e a hora em que a pista enche, só o que o texto diz. O estilo sai só do que o texto diz do som: o nome do evento e os nomes do lineup não bastam ("Deu Samba" sem descrição do som fica sem estilo). As regras de palavras, sem a chave, seguem a mesma lei: o nome sai do texto antes da busca. O registro diz quem decidiu (`classificacao.por` e `campos.estilos.fonte`), e o app mostra o estilo das regras ou do Claude como inferência ("Parece ..., pela descrição da página"). A resposta vem em saída estruturada (`output_config.format`, esquema JSON) e é conferida campo a campo; fora do esquema, cai para regras. O texto da fonte vai entre marcas `<evento>` com a instrução de tratá-lo como dado.
@@ -207,7 +241,7 @@ O `Dockerfile` instala o Litestream com versão e sha256 fixos, e `deploy/inicio
 node --test teste/
 ```
 
-77 testes, nenhum toca a rede nem a API paga: normalização (horário que cruza a meia-noite, preço em texto, Instagram, URLs, média de idade só com origem), o registro (prioridade entre fontes, campo ausente, menor lote disponível), a classificação com um cliente falso (saída estruturada, cache, resposta inválida, erro, teto da execução e do dia, sem chave), os conectores com respostas gravadas (Mapas Culturais, iCal, exemplos de envio e de indicação, com `conferidoEm` por leitura e taxa e hora-limite de lote), o comando `indicar`, a execução de ponta a ponta (AE1 a AE5 do plano, reexecução, trava) e a API num servidor em porta efêmera (token da produtora, corpo grande, CORS, uso sem IP). `teste/ligacao.test.js` cobre as correções de 19/11, com dado inventado: cidade da fonte ou vazia (bairro com UF, CEP da capital, "SP" no campo), condição do lote e o "a partir de" sem ela (gêneros juntos, negação, código), a hora do nome do lote com ou sem minutos, o código fora do link, estilo que não sai do nome (com sufixo, separador sem espaço e nome da casa), o nome público da fonte e as `paginas`.
+131 testes, nenhum toca a rede nem a API paga: normalização (horário que cruza a meia-noite, preço em texto, Instagram, URLs, média de idade só com origem), o registro (prioridade entre fontes, campo ausente, menor lote disponível), a classificação com um cliente falso (saída estruturada, cache, resposta inválida, erro, teto da execução e do dia, sem chave), os conectores com respostas gravadas (Mapas Culturais, iCal, exemplos de envio e de indicação, com `conferidoEm` por leitura e taxa e hora-limite de lote), o comando `indicar`, a execução de ponta a ponta (AE1 a AE5 do plano, reexecução, trava) e a API num servidor em porta efêmera (token da produtora, corpo grande, CORS, uso sem IP). A prova acadêmica tem `teste/instagram.test.js` (Apify assíncrono, teto, dataset apagado, flyer pelo Claude, fila, perfis por semana), `teste/paginas.test.js` (listagens, cidade e janela, proxy, tempo-limite que mata o navegador), `teste/plataformas.test.js` (reserva) e `teste/revisao.test.js` (as correções das duas revisões adversariais de 24/11). `teste/ligacao.test.js` cobre as correções de 19/11, com dado inventado: cidade da fonte ou vazia (bairro com UF, CEP da capital, "SP" no campo), condição do lote e o "a partir de" sem ela (gêneros juntos, negação, código), a hora do nome do lote com ou sem minutos, o código fora do link, estilo que não sai do nome (com sufixo, separador sem espaço e nome da casa), o nome público da fonte e as `paginas`.
 
 ## Onde está cada coisa
 

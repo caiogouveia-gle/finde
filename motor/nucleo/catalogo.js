@@ -13,9 +13,14 @@ const ORIGENS_IDADE = ['produtora', 'edicoes', 'avaliacoes'];
 const PRIORIDADE = {
   envio: 100,
   ical: 80,
+  'sympla-apify': 75,
+  'shotgun-apify': 75,
+  paginas: 72,
   indicacao: 70,
+  'ra-apify': 65,
   'mapas-culturais': 60,
   claude: 40,
+  instagram: 50,
   regras: 20,
 };
 
@@ -26,6 +31,12 @@ const NOME_FONTE = {
   // Um link lido à mão na página pública do ingresso (fontes/indicacao.js).
   indicacao: 'Lido na página do ingresso',
   'mapas-culturais': 'Mapa da Cultura',
+  // Prova de conceito acadêmica (docs/pesquisa/2026-11-24-arquitetura-hibrida.md).
+  'sympla-apify': 'Página da Sympla',
+  'shotgun-apify': 'Página do Shotgun',
+  'ra-apify': 'Resident Advisor',
+  paginas: 'Página lida no navegador',
+  instagram: 'Post no Instagram',
   claude: 'Classificação automática (Claude)',
   regras: 'Classificação por regras',
 };

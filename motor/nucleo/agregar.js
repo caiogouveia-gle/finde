@@ -5,6 +5,21 @@
 const { novoId, slug } = require('./normalizar');
 const { semAcento } = require('./bairros');
 
+const { PRIORIDADE } = require('./catalogo');
+
+// Link de evento normalizado para comparar: sem www, sem query nem fragmento,
+// sem barra final e sem o prefixo de idioma do Shotgun (/pt-br/).
+function linkComparavel(u) {
+  try {
+    const p = new URL(u);
+    const host = p.hostname.replace(/^www\./, '');
+    const caminho = p.pathname.replace(/^\/[a-z]{2}(-[a-z]{2})?(?=\/events\/)/i, '').replace(/\/+$/, '');
+    return `${host}${caminho}`.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
 const palavras = (t) => new Set(slug(t).split('-').filter((p) => p.length > 1));
 function jaccard(a, b) {
   const A = palavras(a);
@@ -26,7 +41,26 @@ function vincular(db, { fonte, idExterno, url, campos, agora }) {
   }
 
   let festaId = null;
-  if (campos.data && campos.nome) {
+  // O mesmo link de compra ou de evento no mesmo dia é a mesma festa, mesmo com
+  // nome e casa escritos de outro jeito (o flyer e a página do ingresso).
+  // Só link de um evento (não a página da agenda: ver paginas.js) e só se a
+  // festa achada não tiver outro item desta mesma fonte (duas festas da mesma
+  // agenda não viram uma), e se o nome não for de outra festa.
+  const links = [campos.linkCompra, campos.linkEvento].filter(Boolean).map(linkComparavel).filter(Boolean);
+  if (campos.data && links.length) {
+    const comLink = db.prepare(`SELECT DISTINCT v.festa_id AS id, v.valor FROM valores v JOIN festas f ON f.id = v.festa_id
+      WHERE f.data = ? AND v.campo IN ('linkCompra', 'linkEvento')`).all(campos.data);
+    const qOutro = db.prepare('SELECT 1 FROM vinculos WHERE festa_id = ? AND fonte = ? AND id_externo <> ? LIMIT 1');
+    const qNome = db.prepare("SELECT valor FROM valores WHERE festa_id = ? AND campo = 'nome' LIMIT 1");
+    const achada = comLink.find((r) => {
+      if (!links.includes(linkComparavel(String(JSON.parse(r.valor))))) return false;
+      if (qOutro.get(r.id, fonte, idExterno)) return false;
+      const nome = qNome.get(r.id);
+      return !nome || !campos.nome || jaccard(JSON.parse(nome.valor), campos.nome) > 0;
+    });
+    if (achada) festaId = achada.id;
+  }
+  if (!festaId && campos.data && campos.nome) {
     const candidatas = db.prepare('SELECT id FROM festas WHERE data = ?').all(campos.data);
     const qCampo = db.prepare('SELECT valor FROM valores WHERE festa_id = ? AND campo = ? LIMIT 1');
     for (const c of candidatas) {
@@ -72,7 +106,13 @@ function gravarValores(db, festaId, fonte, campos, conferidoEm) {
   }
   const del = db.prepare('DELETE FROM valores WHERE festa_id = ? AND campo = ? AND fonte = ?');
   for (const campo of atuais.keys()) del.run(festaId, campo, fonte);
-  if (campos.data) db.prepare('UPDATE festas SET data = ? WHERE id = ? AND (data IS NULL OR ? = ?)').run(campos.data, festaId, fonte, 'envio');
+  // A data da festa é a da fonte que vale (prioridade, depois a mais recente):
+  // festa que mudou de data na página do ingresso muda aqui também.
+  const datas = db.prepare("SELECT fonte, valor, conferido_em FROM valores WHERE festa_id = ? AND campo = 'data'").all(festaId);
+  if (datas.length) {
+    datas.sort((a, b) => (PRIORIDADE[b.fonte] || 0) - (PRIORIDADE[a.fonte] || 0) || b.conferido_em.localeCompare(a.conferido_em));
+    db.prepare('UPDATE festas SET data = ? WHERE id = ?').run(JSON.parse(datas[0].valor), festaId);
+  }
 }
 
-module.exports = { vincular, gravarValores, jaccard };
+module.exports = { vincular, gravarValores, jaccard, linkComparavel };

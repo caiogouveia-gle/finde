@@ -8,23 +8,38 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const plataformas = require('./plataformas');
+
 const CONECTORES = {
   envio: require('./envio'),
   'mapas-culturais': require('./mapas-culturais'),
   ical: require('./ical'),
   indicacao: require('./indicacao'),
+  // O Instagram roda antes das plataformas: a fila de links que ele acha chega
+  // à Sympla, ao Shotgun e ao leitor de páginas na mesma execução (KTD14).
+  instagram: require('./instagram'),
+  'sympla-apify': plataformas.sympla,
+  'shotgun-apify': plataformas.shotgun,
+  'ra-apify': plataformas.ra,
+  // Por último: lê as páginas da Ingresse que as outras fontes puseram na fila.
+  paginas: require('./paginas'),
 };
 
 const DESLIGADAS = [
   { id: 'instagram', nome: 'Instagram', motivo: 'Os termos da Meta só permitem coleta programática pelas APIs da plataforma, e a Graph API só lê contas que autorizam o app. Raspagem é violação. Caminho: a produtora conecta a própria conta, ou manda pelo envio.' },
-  { id: 'resident-advisor', nome: 'Resident Advisor', motivo: 'Termos de uso (4.4) proíbem software automatizado para extrair conteúdo para fins comerciais e acesso por bots não aprovados por escrito.' },
+  { id: 'resident-advisor', nome: 'Resident Advisor', motivo: 'Termos de uso (4.4) proíbem software automatizado para fins comerciais. Na prova acadêmica (24/11/2026) a listagem de São Paulo entra pelo leitor de páginas, mas o site devolve 403 até com navegador; só roda com FINDE_PROXY_URL.' },
   { id: 'eventbrite', nome: 'Eventbrite', motivo: 'A busca pública da API foi desligada em 12/12/2019; a API só lê eventos da própria organização, e os termos proíbem raspagem. Caminho: a produtora conecta a conta dela.' },
-  { id: 'sympla', nome: 'Sympla', motivo: 'Não há API pública de listagem; a API oficial lê só os eventos de quem tem o token. Termos não puderam ser lidos (403). Caminho: a produtora informa o token dela, conector a construir.' },
-  { id: 'shotgun', nome: 'Shotgun', motivo: 'Sem API pública de listagem encontrada; páginas devolveram 429 ao acesso automatizado. Termos não verificados.' },
+  { id: 'sympla', nome: 'Sympla', motivo: 'Sem API pública de listagem; a API oficial lê só os eventos de quem tem o token. Na prova acadêmica (24/11/2026), a listagem de São Paulo é lida pelo leitor de páginas (conector paginas). Caminhos para o produto: Programa de Afiliados e token da produtora.' },
+  { id: 'shotgun', nome: 'Shotgun', motivo: 'Sem API pública de listagem. Na prova acadêmica (24/11/2026), a listagem de São Paulo é lida pelo leitor de páginas (conector paginas); sem navegador, a página de evento traz schema.org.' },
   { id: 'dice', nome: 'DICE', motivo: 'Sem API pública de listagem encontrada; páginas devolveram 403 ao acesso automatizado. Termos não verificados.' },
   { id: 'fever', nome: 'Fever', motivo: 'Sem API pública de listagem encontrada; termos não puderam ser lidos.' },
   { id: 'google-places', nome: 'Google Maps (Places)', motivo: 'Os termos proíbem guardar nome, endereço e avaliações fora do serviço; só o place ID pode ser guardado. Serve, no máximo, para o link "abrir no mapa".' },
   { id: 'guia-da-parik', nome: 'Guia da Parik (curadoria de eventos em SP)', motivo: 'Indicada pelo grupo em 16/11/2026. A curadoria vive no Instagram, no TikTok e num Linktree; os termos da Meta proíbem coleta fora das APIs e não há agenda aberta. Caminho: parceria, com a curadora mandando as festas pelo envio ou pela indicação. Ver docs/pesquisa/2026-11-16-referencias-de-recomendacao.md.' },
+  { id: 'ingresse', nome: 'Ingresse', motivo: 'Termos de Serviço (24/01/2024, lidos em 23/11/2026) não tratam de coleta automatizada e dizem que os dados do evento vêm do organizador; não há API pública nem programa de afiliados nos termos. A página de evento só se monta com JavaScript. Fica na leitura manual de cada link indicado. Ver docs/pesquisa/2026-11-23-fontes-abertas-e-termos.md.' },
+  { id: 'visite-sao-paulo', nome: 'Visite São Paulo (Fundação 25 de Janeiro)', motivo: 'Candidata, conector a construir. Termos (19/03/2021) não proíbem coleta; robots.txt libera as páginas de evento e a API /wp-json/wp/v2/evento traz tipo, data, casa, endereço e link de compra. Em 23/11/2026 tinha 7 festas nas 4 semanas seguintes, com a última importação em 06/11. Ver docs/pesquisa/2026-11-23-fontes-abertas-e-termos.md.' },
+  { id: 'ma-to', nome: 'MATO (ma.to)', motivo: 'O robots.txt marca o conteúdo como ai-input=no para agentes não listados, e o Finde classifica com o Claude; os termos reservam o conteúdo original ao MATO. Caminho: parceria (eles têm o programa de envio de eventos). Ver docs/pesquisa/2026-11-23-fontes-abertas-e-termos.md.' },
+  { id: 'guia-da-semana', nome: 'Guia da Semana', motivo: 'Devolve 403 a cliente automatizado em todas as páginas, termos inclusive. Bloqueio é recusa: não contornamos.' },
+  { id: 'catraca-livre', nome: 'Catraca Livre', motivo: 'Sem termos de uso publicados (404); o robots.txt fecha /wp-json/. A agenda é texto editorial, sem dados estruturados de festa. Baixo rendimento para o trabalho; fica de fora. Ver docs/pesquisa/2026-11-23-fontes-abertas-e-termos.md.' },
   { id: 'sesc-sp', nome: 'Sesc SP', motivo: 'A API do site (/wp-json/wp/v1/atividades) devolve 403 do CloudFront para cliente automatizado e não há termo de uso publicado. Bloqueio é recusa: não contornamos.' },
 ];
 
@@ -43,8 +58,9 @@ function lerConfig(arquivo = process.env.FINDE_FONTES || path.join(RAIZ, 'config
 
 // As fontes que a execução vai rodar e a configuração dela (uma cópia: a
 // original não muda). `so` restringe a uma fonte; `exemplos` soma a pasta de
-// envios fictícios, só para demonstração.
-function fontesLigadas(config, { so = null, exemplos = false } = {}) {
+// envios fictícios, só para demonstração. `poc` liga as entradas marcadas
+// `pocAcademica` (plataformas pelo Apify; KTD11).
+function fontesLigadas(config, { so = null, exemplos = false, poc = false } = {}) {
   const c = JSON.parse(JSON.stringify(config));
   if (exemplos) {
     c.envio = c.envio || { ligada: true, pastas: [] };
@@ -54,8 +70,12 @@ function fontesLigadas(config, { so = null, exemplos = false } = {}) {
     c.indicacao.ligada = true;
     c.indicacao.pastas = [...(c.indicacao.pastas || []), path.join(RAIZ, 'exemplos', 'indicacoes')];
   }
+  // A reserva (Apify para Sympla, Shotgun e RA) não liga com `poc`: só se
+  // escolhida por `so`, com `poc` (KTD17).
+  if (poc) for (const [id, e] of Object.entries(c)) if (e && e.pocAcademica && (!e.reserva || id === so)) e.ligada = true;
   const fontes = Object.entries(CONECTORES)
-    .filter(([id]) => (so ? id === so : c[id] && c[id].ligada))
+    // `so` escolhe uma fonte, mas não liga a da prova acadêmica sem `poc`.
+    .filter(([id]) => (so ? id === so && (!c[id] || !c[id].pocAcademica || c[id].ligada) : c[id] && c[id].ligada))
     .map(([, conector]) => conector);
   return { fontes, config: c };
 }
@@ -67,7 +87,8 @@ function descreverFontes(config) {
     ligada: Boolean(config[id] && config[id].ligada),
     motivo: config[id] && config[id].motivo ? config[id].motivo : null,
   }));
-  return [...comConector, ...DESLIGADAS.map((d) => ({ ...d, ligada: false, semConector: true }))];
+  // A entrada "sem conector" some quando a fonte ganhou conector (Instagram na prova).
+  return [...comConector, ...DESLIGADAS.filter((d) => !CONECTORES[d.id]).map((d) => ({ ...d, ligada: false, semConector: true }))];
 }
 
 module.exports = { CONECTORES, DESLIGADAS, lerConfig, fontesLigadas, descreverFontes, RAIZ };

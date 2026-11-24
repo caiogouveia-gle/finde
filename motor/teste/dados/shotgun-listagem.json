@@ -1,0 +1,16 @@
+{
+ "url": "https://shotgun.live/pt-br/cities/sao-paulo",
+ "final": "https://shotgun.live/pt-br/cities/sao-paulo",
+ "status": 200,
+ "titulo": "São Paulo",
+ "texto": "",
+ "jsonld": [],
+ "links": [
+  "https://shotgun.live/pt-br/events/inky",
+  "https://shotgun.live/pt-br/events/club-harpya-vogue-night-25-11",
+  "https://shotgun.live/pt-br/events/raven-vinyl-club-5",
+  "https://shotgun.live/pt-br/events/yallah-moga-begins-cortina-bar-sp",
+  "https://shotgun.live/pt-br/venues/p-o-r-t-a",
+  "https://shotgun.live/pt-br/cities/rio-de-janeiro"
+ ]
+}

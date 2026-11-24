@@ -27,7 +27,8 @@ primary_region = "gru"
 
 [[vm]]
   size = "shared-cpu-1x"
-  memory = "256mb"
+  # 1 GB: o leitor de páginas abre um Chromium (prova acadêmica, KTD15).
+  memory = "1gb"
 
 # O banco mora no volume; o Litestream copia para o bucket.
 # Criar uma vez: fly volumes create finde_dados --region gru --size 1
