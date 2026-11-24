@@ -33,12 +33,9 @@ test('privacidade: código de indicação e rastreio sai do link de toda fonte, 
   assert.equal(envio.linkCompra, 'https://www.ingresse.com/x/?promoter=CASA');
 });
 
-test('privacidade: cartaz coletado das plataformas e do Instagram não é guardado', () => {
-  for (const fonte of ['instagram', 'paginas', 'sympla-apify', 'ra-apify']) {
-    assert.equal(normalizarItem({ nome: 'X', data: '2026-11-28', cartaz: 'https://cdn.example/a.jpg' }, fonte).campos.cartaz, undefined, fonte);
-  }
-  assert.equal(normalizarItem({ nome: 'X', data: '2026-11-28', cartaz: 'https://cdn.example/a.jpg' }, 'envio').campos.cartaz, 'https://cdn.example/a.jpg');
-});
+// O teste "cartaz coletado não é guardado" saiu (U5 do plano de 24/11/2026): a
+// imagem agora vai por item.imagens, e a regra nova é testada em
+// normalizar.test.js (U9) e indicacao.test.js (U14).
 
 test('registro: --fonte não liga conector da prova sem --poc; o Instagram não aparece duas vezes', () => {
   const config = lerConfig();

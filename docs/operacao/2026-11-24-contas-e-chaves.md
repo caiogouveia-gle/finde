@@ -2,6 +2,8 @@
 
 O que o Caio cria e configura para o motor do Finde (`motor/`) coletar, classificar e servir em produção, dentro da arquitetura híbrida decidida em 24/11/2026 e ajustada no mesmo dia para gastar menos: o Apify só para o Instagram; Scrapling, rodando no próprio motor, para Sympla, Shotgun, Resident Advisor, Ingresse e sites de casas; e Claude Haiku para ler flyers e páginas. Prova de conceito acadêmica, sem fins lucrativos.
 
+**Atualização de 24/11/2026 (plano da prova de conceito completa, D13 e D14).** O proxy (seção 3) saiu: bloqueio é recusa, e o Resident Advisor ficou de fora; `FINDE_PROXY_URL` não existe mais. Entrou o `FINDE_APP_TOKEN` (seção 7), que o app manda ao motor nas avaliações pós-festa. O `fly.toml` do motor traz `FINDE_POC=1` até 07/12/2026 e depois ele sai. Onde a doc diz `segredos.env`, é o cofre; o plano chama o mesmo arquivo de `motor.env`, e o plano B do Mac aceita qualquer um dos dois por `FINDE_COFRE`.
+
 Este documento não cria nada. Nenhuma conta foi aberta, nenhuma chave existe ainda e nada foi feito no Fly. Os preços foram conferidos nas páginas oficiais em 24/11/2026; a fonte de cada um está no fim.
 
 Duas regras valem para tudo abaixo:
@@ -120,7 +122,9 @@ printf 'APIFY_TOKEN=%s\n' "$(pbpaste)" >> ~/.config/finde/segredos.env
 
 **Termos.** Os termos do Instagram, do RA e das plataformas de ingresso proíbem coleta automatizada, pelo Apify ou pelo Scrapling, e o README do motor registrava isso como motivo para não ter conector (R15). A decisão de 24/11/2026 de coletar como prova de conceito acadêmica, sem fins lucrativos e com aval da instituição, é do Caio e do grupo. Vale guardar o aval por escrito e atualizar a tabela de fontes do README e `fontes/index.js` quando o código ligar essas fontes, para o repositório não dizer duas coisas.
 
-## 3. Proxy residencial de reserva (FloppyData), opcional
+## 3. Proxy residencial de reserva (FloppyData): REMOVIDO
+
+> **Não abrir conta.** O D14 do plano de 24/11/2026 tirou o caminho por proxy: bloqueio (403, 429, 503) é recusa, e a leitura daquela página termina sem trocar de modo nem repetir. Esta seção fica só como registro do que foi cogitado.
 
 **Para que serve.** Só entra se alguma fonte do Scrapling (Shotgun, RA, Sympla, Ingresse) começar a bloquear o IP do Fly. Com quatro plataformas no Scrapling em vez de uma, a chance de precisar dele subiu: datacenter costuma ser o primeiro IP bloqueado. Mesmo assim, **não abrir conta antes de haver um bloqueio de verdade**; o motor mostra o bloqueio como erro na execução da fonte.
 
@@ -153,7 +157,7 @@ printf 'FINDE_PROXY_URL=%s\n' "$(pbpaste)" >> ~/.config/finde/segredos.env
 - A imagem do Fly passa a precisar de Python. Se alguma fonte exigir navegador, também de um Chromium, e a máquina sobe de 256 MB para 512 MB ou 1 GB (seção 5).
 - Onde a página traz os eventos em JSON (a API que o próprio site usa no Shotgun e no RA), buscar o JSON sem navegador: mais leve, mais estável e sem proxy na maior parte do tempo.
 - Uma rodada por dia por plataforma, só eventos de São Paulo nos próximos 14 dias, com pausa entre pedidos. Volume baixo é o que evita bloqueio.
-- O proxy da seção 3 entra pela variável `FINDE_PROXY_URL`, só nas fontes que bloquearem.
+- ~~O proxy da seção 3 entra pela variável `FINDE_PROXY_URL`.~~ Saiu com o D14: bloqueio é recusa.
 - Os coletores do Apify dessas fontes ficam de reserva (seção 2), para cobrir uma quebra que demore.
 
 ## 5. Fly.io
@@ -167,7 +171,7 @@ printf 'FINDE_PROXY_URL=%s\n' "$(pbpaste)" >> ~/.config/finde/segredos.env
 | Item | Preço | No motor |
 |---|---|---|
 | Máquina `shared-cpu-1x` 256 MB | US$ 2,19 por mês (preço de `iad`/`ewr`; `gru` pode custar um pouco mais, a página não diz quanto) | 1 máquina, sempre ligada |
-| Volume | US$ 0,15 por GB por mês | 1 GB, US$ 0,15 |
+| Volume | US$ 0,15 por GB por mês | 2 GB (o banco, as imagens de divulgação até 300 MB e a folga), US$ 0,30 |
 | Tigris (bucket) | US$ 0,02 por GB por mês; os primeiros 5 GB, grátis; sem custo de saída | o banco tem poucos MB: US$ 0 |
 
 **Custo mensal estimado: US$ 2,50 a 3.** Se o Scrapling com navegador rodar dentro da mesma máquina, ela precisa subir para 512 MB ou 1 GB, e o custo vai para US$ 4 a 6.
@@ -183,7 +187,7 @@ fly apps create finde-motor
 ```
 
 ```bash
-fly volumes create finde_dados --app finde-motor --region gru --size 1
+fly volumes create finde_dados --app finde-motor --region gru --size 2
 ```
 
 O `fly storage create` cria o bucket Tigris e define sozinho, como segredos do app, `BUCKET_NAME`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_ENDPOINT_URL_S3` e `AWS_REGION`, exatamente os nomes que `deploy/inicio.sh` e `deploy/litestream.yml` leem:
@@ -195,7 +199,7 @@ fly storage create --app finde-motor --name finde-motor-dados
 Os segredos do motor vão do cofre direto para o Fly, sem aparecer na tela. O `fly secrets import` lê linhas `NOME=valor` da entrada padrão; o `grep` escolhe só o que o Fly deve ter, e a chave do Mac fica de fora:
 
 ```bash
-grep -E '^(APIFY_TOKEN|FINDE_ADMIN_TOKEN|FINDE_PROXY_URL)=' ~/.config/finde/segredos.env | fly secrets import --app finde-motor --stage
+grep -E '^(APIFY_TOKEN|FINDE_ADMIN_TOKEN|FINDE_APP_TOKEN)=' ~/.config/finde/segredos.env | fly secrets import --app finde-motor --stage
 ```
 
 ```bash
@@ -210,10 +214,38 @@ Conferir que os nomes estão lá (o Fly mostra só os nomes e um resumo, nunca o
 fly secrets list --app finde-motor
 ```
 
-Subir:
+Subir, **uma máquina só** (o banco é SQLite num volume e a agenda coleta dentro do servidor; duas máquinas coletariam e gastariam em dobro):
 
 ```bash
-fly deploy --app finde-motor
+fly deploy --app finde-motor --ha=false
+```
+
+Conferir que ficou uma máquina (uma linha só na lista):
+
+```bash
+fly machine list --app finde-motor
+```
+
+Antes do primeiro deploy de verdade, o build sozinho, sem subir nada:
+
+```bash
+fly deploy --app finde-motor --build-only
+```
+
+Depois do deploy, a lista de perfis do Instagram sobe para o volume e a máquina reinicia para ler (o `fly.toml` aponta `FINDE_INSTAGRAM_PERFIS` para `/data/entrada/contatos.json`):
+
+```bash
+fly ssh console --app finde-motor -C "mkdir -p /data/entrada /data/imagens"
+```
+
+```bash
+fly ssh sftp shell --app finde-motor
+```
+
+Dentro do `sftp`: `put <caminho no Mac>/contatos.json /data/entrada/contatos.json` (e, se for usar uma semente de banco, `put <...>/semente.sqlite3 /data/semente.sqlite3`; ver o README do motor, "No Fly"). Depois:
+
+```bash
+fly machine restart --app finde-motor
 ```
 
 Conferir de fora, pelo endereço público:
@@ -229,7 +261,8 @@ curl -s https://finde-motor.fly.dev/api/festas | head -c 400
 Pontos em aberto do Fly, para saber antes do primeiro deploy:
 
 - O build da imagem nunca foi testado (o README diz isso). O primeiro `fly deploy` pode falhar por motivo de código, e não de conta.
-- O `fly.toml` já traz `FINDE_HORARIOS=padrao` (quatro coletas por dia). Ver a nota de custo do Apify na seção 2.
+- O `fly.toml` já traz `FINDE_HORARIOS=padrao` (quatro coletas por dia) e `FINDE_POC=1` (liga o Instagram e as páginas até 07/12/2026; depois sai, D13). Ver a nota de custo do Apify na seção 2.
+- O expurgo (D15, 31/12/2026) pede **remover a réplica do bucket**, que guarda o banco de antes do expurgo: `fly storage destroy` do bucket do motor, ou apagar o prefixo `finde/` no console do Tigris. O README do motor tem o passo a passo.
 - O Tigris guarda os dados fora do Brasil por padrão. É a mesma pergunta de LGPD que está aberta para o Phoenix; aqui o banco só tem festas públicas e produtoras cadastradas, sem dado pessoal de usuário, mas vale decidir junto.
 
 ## 6. `FINDE_ADMIN_TOKEN`
@@ -248,6 +281,34 @@ Vai para o Fly junto com os outros pelo `fly secrets import` da seção 5. Para 
 set -a; . ~/.config/finde/segredos.env; set +a; curl -s -H "Authorization: Bearer $FINDE_ADMIN_TOKEN" https://finde-motor.fly.dev/api/uso
 ```
 
+## 7. `FINDE_APP_TOKEN` (avaliações pós-festa)
+
+**Para que serve.** É a senha que o app (`finde-app`) manda ao motor em `POST /api/avaliacoes`, com a resposta de quem foi à festa ("o público tinha a sua idade?"), sem nome. Sem ele, a rota do motor fica fechada (401) e a média de idade por avaliação não chega. O motor compara o token em tempo constante.
+
+**Sem conta, sem custo.** Um valor só, o mesmo nos dois apps. Gera-se no Mac, direto para o cofre, sem passar pela tela:
+
+```bash
+printf 'FINDE_APP_TOKEN=%s\n' "$(openssl rand -hex 32)" >> ~/.config/finde/segredos.env
+```
+
+Vai para os **dois** apps pelo `fly secrets import`, sem mostrar o valor (o primeiro já está no comando da seção 5):
+
+```bash
+grep -E '^FINDE_APP_TOKEN=' ~/.config/finde/segredos.env | fly secrets import --app finde-app --stage
+```
+
+Conferir que o nome está nos dois (o Fly mostra só nomes):
+
+```bash
+fly secrets list --app finde-motor | grep FINDE_APP_TOKEN
+```
+
+```bash
+fly secrets list --app finde-app | grep FINDE_APP_TOKEN
+```
+
+O token do app e o `FINDE_ADMIN_TOKEN` são valores diferentes, e um não vale no lugar do outro: o do app só envia avaliação; o de admin lê o uso e dispara coleta (`POST /api/coletar`).
+
 ## Custo total estimado por mês
 
 Em dólar, sem IOF nem a taxa de câmbio do cartão. Já com a decisão de 24/11/2026 (Apify só no Instagram).
@@ -257,7 +318,7 @@ Em dólar, sem IOF nem a taxa de câmbio do cartão. Já com a decisão de 24/11
 | Anthropic (Haiku 5.5) | US$ 1 a 5 | US$ 10 (limite do workspace) |
 | Apify (só Instagram) | US$ 0 no plano grátis | ≈ US$ 16 no Starter com desconto acadêmico de 50% e limite de US$ 25 |
 | Scrapling (Sympla, Shotgun, RA, Ingresse, casas) | US$ 0 | US$ 0 (o custo é manutenção) |
-| FloppyData | US$ 0 (só se houver bloqueio) | US$ 3 a 9 se for ligado |
+| FloppyData | removido (D14) | removido (D14) |
 | Fly.io (máquina, volume, Tigris) | US$ 2,50 a 3 | US$ 6 com máquina maior para o Scrapling com navegador |
 | `FINDE_ADMIN_TOKEN` | US$ 0 | US$ 0 |
 | **Total** | **≈ US$ 4 a 8** | **≈ US$ 44** |
@@ -287,7 +348,11 @@ Marcados com **[Caio]** os passos que só ele faz (conta, cartão, termos, colar
 17. [ ] Fly: importar os segredos do cofre com `fly secrets import --stage` e conferir com `fly secrets list`.
 18. [ ] Fly: `fly deploy` e conferir `/saude` e `/api/festas` pelo endereço público.
 19. [ ] Uma semana depois, comparar o gasto real dos três painéis (Console da Anthropic, Apify, Fly) com a tabela acima e ajustar os limites.
-20. [ ] Só se alguma fonte do Scrapling bloquear: **[Caio]** criar a conta no FloppyData, comprar o menor pacote e colar a URL do proxy no cofre; importar no Fly.
+20. ~~Proxy no FloppyData~~ Saiu (D14): bloqueio é recusa, sem proxy.
+21. [ ] Gerar o `FINDE_APP_TOKEN` no cofre e importá-lo nos dois apps. (seção 7)
+22. [ ] Depois do deploy: `fly machine list` com uma máquina só; `contatos.json` por `fly ssh sftp`; `fly machine restart`. (seção 5)
+23. [ ] Depois de 07/12/2026: tirar `FINDE_POC` do `fly.toml` do motor e fazer o deploy (D13).
+24. [ ] Em 31/12/2026, ou na data que o Caio fixar: expurgo nos dois lados e remoção da réplica do bucket (D15).
 
 ## Fontes (consultadas em 24/11/2026)
 

@@ -61,6 +61,17 @@ function principal(paginas, origem) {
   return doPreco ? doPreco.url : semCodigo(origem);
 }
 
+// O cartaz que a leitura achou vira `item.imagens` (papel `cartaz-indicado`):
+// o tempo 2 (nucleo/imagens.js) baixa, confere o endereço e recodifica; host
+// fora da lista só vale para este papel. Só https. O crédito é o de quem divulga
+// (a produtora, senão o serviço da página); a origem, a página lida.
+function imagensDoCartaz(cartaz, { paginas, campos, link }) {
+  if (typeof cartaz !== 'string' || !/^https:\/\//i.test(cartaz.trim())) return [];
+  const prod = campos.produtora && typeof campos.produtora === 'object' ? campos.produtora.nome : campos.produtora;
+  const quem = (typeof prod === 'string' && prod.trim()) || (paginas[0] && paginas[0].nome) || new URL(link).hostname.replace(/^www\./, '');
+  return [{ url: cartaz.trim().slice(0, 500), papel: 'cartaz-indicado', origem: principal(paginas, link), credito: `Divulgação · ${quem}`, leitura: null }];
+}
+
 function itensDaIndicacao(corpo, { origem, mtime, agora = new Date() }) {
   const itens = [];
   const avisos = [];
@@ -87,13 +98,15 @@ function itensDaIndicacao(corpo, { origem, mtime, agora = new Date() }) {
       if (p) paginas.push(p);
     }
     if (paginas.length) porCampo.paginas = ultima;
-    const { origem: _o, leitura: _l, descricao, ...campos } = f;
+    const { origem: _o, leitura: _l, descricao, cartaz, ...campos } = f;
+    const imagens = imagensDoCartaz(cartaz, { paginas, campos, link });
     const chave = typeof f.id === 'string' && f.id.trim() ? slug(f.id) : slug(`${f.nome || ''}-${f.data || ''}`);
     itens.push({
       idExterno: `grupo:${chave}`.slice(0, 160),
       url: principal(paginas, link),
       conferidoEm: ultima || recebida || mtime,
       conferidoPorCampo: porCampo,
+      ...(imagens.length ? { imagens } : {}),
       texto: typeof descricao === 'string' ? descricao.slice(0, 6000) : '',
       bruto: {
         ...campos,

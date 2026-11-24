@@ -1,5 +1,7 @@
 # Litestream: o banco do motor copiado para o bucket a cada segundo, para uma
-# máquina ou volume perdido custar segundos e não o dia. Os valores vêm do
+# máquina ou volume perdido custar segundos e não o dia. Só o BANCO é replicado:
+# as imagens de divulgação (FINDE_IMAGENS) ficam no volume e a perda delas com
+# ele está aceita; o expurgo (D15) manda remover também esta réplica. Os valores vêm do
 # ambiente (o Litestream expande ${VAR}); são os nomes que `fly storage create`
 # define como segredos para um bucket Tigris.
 dbs:

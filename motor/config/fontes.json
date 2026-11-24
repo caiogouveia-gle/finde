@@ -30,7 +30,8 @@
         "base": "https://mapa.cultura.gov.br",
         "ligada": true
       }
-    ]
+    ],
+    "intervaloHoras": 20
   },
   "ical": {
     "ligada": false,
@@ -41,7 +42,7 @@
   "sympla-apify": {
     "ligada": false,
     "pocAcademica": true,
-    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla, Shotgun e RA passam pelo leitor de páginas (Scrapling). Liga só por --fonte sympla-apify --poc.",
+    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla e Shotgun passam pelo leitor de páginas (Scrapling); o Resident Advisor fica fora (bloqueio é recusa, D14). Liga só por --fonte sympla-apify --poc.",
     "ator": "hypebridge~sympla-events-scraper",
     "maxItens": 100,
     "tetoUsd": 1,
@@ -52,7 +53,7 @@
   "shotgun-apify": {
     "ligada": false,
     "pocAcademica": true,
-    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla, Shotgun e RA passam pelo leitor de páginas (Scrapling). Liga só por --fonte shotgun-apify --poc.",
+    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla e Shotgun passam pelo leitor de páginas (Scrapling); o Resident Advisor fica fora (bloqueio é recusa, D14). Liga só por --fonte shotgun-apify --poc.",
     "ator": "crawloop~shotgun-scraper",
     "maxItens": 100,
     "tetoUsd": 1,
@@ -63,7 +64,7 @@
   "ra-apify": {
     "ligada": false,
     "pocAcademica": true,
-    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). Sympla, Shotgun e RA passam pelo leitor de páginas (Scrapling). Liga só por --fonte ra-apify --poc.",
+    "motivo": "Reserva desligada (decisão do Caio, 24/11/2026: o Apify fica só com o Instagram, pelo custo). O Resident Advisor bloqueia acesso automatizado, e bloqueio é recusa (D14 do plano de 24/11): sem listagem pelo leitor de páginas nem proxy. Liga só por --fonte ra-apify --poc.",
     "ator": "parsebird~resident-advisor-scraper",
     "maxItens": 100,
     "tetoUsd": 1,
@@ -74,29 +75,34 @@
   "instagram": {
     "ligada": false,
     "pocAcademica": true,
-    "motivo": "Prova de conceito acadêmica sem fins lucrativos, decisão do Caio em 24/11/2026 com aval da instituição: posts públicos sem login pelo Apify e flyer lido pelo Claude Haiku. Sem comentários, seguidores ou fotos de pessoas; a imagem não é guardada. Único uso do Apify (decisão de 24/11): posts uma vez por dia, perfis uma vez por semana, no plano grátis. Não vai para o produto comercial.",
+    "motivo": "Prova de conceito acadêmica sem fins lucrativos, decisão do Caio em 24/11/2026 com aval da instituição: posts públicos sem login pelo Apify e flyer lido pelo Claude Haiku. Sem comentários, seguidores ou fotos de pessoas. Guarda só a peça de divulgação, recodificada e sem EXIF, com crédito e link; foto de público não é guardada. Único uso do Apify (decisão de 24/11): posts uma vez por dia, perfis uma vez por semana. Cada dia lê uma fatia dos perfis (perfisPorRodada, 18 de 2 posts) para a rodada caber no teto de US$ 0,10 da chamada: a conta está em custoEsperado (fontes/instagram.js). Liga no Fly até 07/12/2026 (FINDE_POC); não vai para o produto comercial.",
     "atorPosts": "apify~instagram-scraper",
     "atorPerfis": "apify~instagram-profile-scraper",
     "perfis": [],
-    "postsPorPerfil": 4,
-    "dias": 2,
-    "maxItens": 120,
+    "postsPorPerfil": 2,
+    "dias": 3,
+    "maxItens": 36,
     "tetoUsd": 0.1,
     "precoPorMil": 2.7,
     "precoPorMilPerfis": 2.6,
     "seguirBio": true,
     "perfisArquivo": "entrada/grupo/contatos.json",
     "intervaloHoras": 20,
-    "diasEntrePerfis": 7
+    "diasEntrePerfis": 7,
+    "perfisPorRodada": 18
   },
   "paginas": {
     "ligada": false,
     "pocAcademica": true,
-    "motivo": "Prova de conceito acadêmica, decisão do Caio em 24/11/2026: o Scrapling lê as listagens de Sympla, Shotgun e Resident Advisor em São Paulo (próximos 14 dias), as páginas da Ingresse que chegam pela fila e as agendas das casas, uma vez por dia e com pausa entre pedidos. Schema.org e dados da própria página primeiro, Claude Haiku depois. O RA bloqueia acesso automatizado e só roda com FINDE_PROXY_URL.",
+    "motivo": "Prova de conceito acadêmica, decisão do Caio em 24/11/2026: o Scrapling lê as listagens de Sympla e Shotgun em São Paulo (só as semanas de 03–06/12 e 10–13/12, em `janelas`), as páginas de ingresso que chegam pela fila (Ingresse, Sympla, Bileto, Guichê, Shotgun) e as agendas das casas, uma vez por dia e com pausa entre pedidos. Schema.org e dados da própria página primeiro, Claude Haiku depois. Bloqueio é recusa: 403, 429 e 503 encerram a leitura da página, sem proxy nem outro modo. Liga no Fly até 07/12/2026 (FINDE_POC).",
     "modo": "dinamico",
     "timeoutMs": 30000,
     "hosts": [
-      "ingresse.com"
+      "ingresse.com",
+      "sympla.com.br",
+      "bileto.sympla.com.br",
+      "shotgun.live",
+      "guicheweb.com.br"
     ],
     "agendas": [],
     "intervaloHoras": 20,
@@ -107,21 +113,66 @@
         "id": "shotgun",
         "url": "https://shotgun.live/pt-br/cities/sao-paulo",
         "modo": "simples",
-        "maxEventos": 40
+        "maxEventos": 120,
+        "paginas": 6
       },
       {
         "id": "sympla",
         "url": "https://www.sympla.com.br/eventos/sao-paulo-sp",
         "modo": "simples",
-        "maxEventos": 40
-      },
-      {
-        "id": "ra",
-        "url": "https://ra.co/events/br/saopaulo",
-        "modo": "dinamico",
-        "maxEventos": 40,
-        "proxy": true
+        "maxEventos": 120,
+        "paginas": 8
       }
+    ],
+    "janelas": [
+      [
+        "2026-12-03",
+        "2026-12-06"
+      ],
+      [
+        "2026-12-10",
+        "2026-12-13"
+      ]
+    ],
+    "precoSympla": true,
+    "maxPrecosSympla": 40
+  },
+  "imagens": {
+    "ligada": true,
+    "motivo": "Peça de divulgação das festas (D4 do plano de 24/11): recodificada em WebP 1080 e 480 sem EXIF, com crédito e link da origem; nada de rosto, idade ou descrição de pessoa. Liga no Fly com a coleta da prova.",
+    "maxMb": 300,
+    "folgaDias": 7,
+    "hosts": [
+      "images.sympla.com.br",
+      "kraken.ingresse.com",
+      "ticket-backend-prod.imgix.net",
+      "assets.shotgun.live",
+      "s3.guicheweb.com.br",
+      "*.cdninstagram.com",
+      "*.fbcdn.net"
     ]
+  },
+  "geocodificacao": {
+    "ligada": true,
+    "motivo": "Reserva para festa sem coordenada da casa curada nem da página (D9): Nominatim com cache permanente, 1 pedido a cada 15 s e no máximo 20 por rodada.",
+    "provedor": "nominatim",
+    "maxPorRodada": 20,
+    "intervaloMs": 15000,
+    "userAgent": "FindeMotor/0.3 (prova academica; +https://finde-app.fly.dev)"
+  },
+  "correlacao": {
+    "une": 5,
+    "talvez": 3
+  },
+  "curadoria": {
+    "ligada": true,
+    "motivo": "Correção humana (D7): prioridade acima de todas as fontes; comandos corrigir e ocultar, e correções em lote em entrada/curadoria.json.",
+    "arquivo": "entrada/curadoria.json"
+  },
+  "avaliacoes": {
+    "ligada": true,
+    "motivo": "Avaliação pós-festa de quem foi pelo convite (D3): grava a média só com pelo menos 5 respostas com idade, de pelo menos 2 convites.",
+    "minimo": 5,
+    "minimoConvites": 2
   }
 }

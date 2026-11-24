@@ -8,8 +8,9 @@
 // em ISO com -03:00 (KTD7). Fim ou pista cheia antes do início é no dia seguinte.
 
 const crypto = require('node:crypto');
-const { ESTILOS, ORIGENS_IDADE } = require('./catalogo');
-const { acharBairro, semAcento } = require('./bairros');
+const { ESTILOS, ORIGENS_IDADE, TIPOS_EVENTO } = require('./catalogo');
+const { acharBairro, acharBairroPorCep, extrairCep, semAcento } = require('./bairros');
+const { acharLugar, ruaENumero } = require('./lugares');
 
 const FUSO = '-03:00';
 
@@ -224,40 +225,173 @@ function mediaIdade(v, fonte, avisos) {
 
 // A cidade, só do que a fonte diz: o campo `cidade`, o CEP da capital (01000
 // a 05999 e 08000 a 08499), a cidade com a UF no endereço ("Cotia/SP",
-// "Olinda - PE"), ou um trecho "São Paulo" no endereço. Bairro de São Paulo
-// seguido de SP ("Pinheiros - SP") é São Paulo; bairro sem UF não diz a
-// cidade. Sem nada disso, null: o app não põe na lista de São Paulo o que
-// não sabe se é de São Paulo.
+// "Olinda - PE", "Pacaembu, São Paulo — SP"), ou um trecho "São Paulo" no
+// endereço. Bairro de São Paulo seguido de SP ("Pinheiros - SP") é São Paulo;
+// bairro sem UF não diz a cidade. Sem nada disso, null: o app não põe na lista
+// de São Paulo o que não sabe se é de São Paulo. Os separadores são vírgula,
+// hífen, travessão (– e —), barra e `|`.
 const UFS = 'AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO';
 const SAO_PAULO = 'São Paulo';
 const ehSaoPaulo = (t) => /^(?:sao paulo|sampa|sp)$/.test(semAcento(t).replace(/[\s.]+/g, ' ').trim());
-function cidade(b) {
+// Cidades que aparecem como "casa" ou como o endereço inteiro (sem acento).
+const CIDADES = {
+  'sao paulo': SAO_PAULO, 'rio de janeiro': 'Rio de Janeiro', 'belo horizonte': 'Belo Horizonte', curitiba: 'Curitiba',
+  'porto alegre': 'Porto Alegre', salvador: 'Salvador', recife: 'Recife', fortaleza: 'Fortaleza', brasilia: 'Brasília',
+  campinas: 'Campinas', santos: 'Santos', guarulhos: 'Guarulhos', osasco: 'Osasco', cotia: 'Cotia', 'sao bernardo do campo': 'São Bernardo do Campo',
+  'santo andre': 'Santo André', 'sao caetano do sul': 'São Caetano do Sul', barueri: 'Barueri', olinda: 'Olinda', niteroi: 'Niterói',
+  florianopolis: 'Florianópolis', goiania: 'Goiânia', manaus: 'Manaus', belem: 'Belém', vitoria: 'Vitória', jundiai: 'Jundiaí',
+  sorocaba: 'Sorocaba', 'ribeirao preto': 'Ribeirão Preto', 'sao jose dos campos': 'São José dos Campos',
+};
+const chaveDeTexto = (t) => semAcento(t).replace(/[^a-z0-9]+/g, ' ').trim();
+// "São Paulo - SP", "Rio de Janeiro/RJ" -> a cidade; qualquer outro texto, null.
+function nomeDeCidade(t) {
+  const sem = String(t || '').replace(new RegExp(`\\s*[,/|–—-]\\s*(?:${UFS})\\s*$`), '');
+  return CIDADES[chaveDeTexto(sem)] || null;
+}
+
+// { cidade, origem } com a origem 'fonte' (campo, UF no texto, trecho) ou 'cep'; ou null.
+function cidadeComOrigem(b) {
   const declarada = texto(b.cidade, 80);
   if (declarada) {
-    const semUf = declarada.replace(new RegExp(`\\s*[,/–-]?\\s*\\b(?:${UFS})$`), '').trim();
-    if (ehSaoPaulo(declarada) || ehSaoPaulo(semUf)) return SAO_PAULO;
-    return semUf || declarada;
+    const semUf = declarada.replace(new RegExp(`\\s*[,/|–—-]?\\s*\\b(?:${UFS})$`), '').trim();
+    if (ehSaoPaulo(declarada) || ehSaoPaulo(semUf)) return { cidade: SAO_PAULO, origem: 'fonte' };
+    return { cidade: semUf || declarada, origem: 'fonte' };
   }
   const t = texto(b.endereco, 200);
   if (!t) return null;
   const cep = t.match(/\b(\d{5})-?\d{3}\b/);
   if (cep) {
     const n = Number(cep[1]);
-    if ((n >= 1000 && n <= 5999) || (n >= 8000 && n <= 8499)) return SAO_PAULO;
+    if ((n >= 1000 && n <= 5999) || (n >= 8000 && n <= 8499)) return { cidade: SAO_PAULO, origem: 'cep' };
   }
-  const comUf = [...t.matchAll(new RegExp(`([A-Za-zÀ-ÿ'. ]{2,40}?)\\s*[/,–-]\\s*(${UFS})\\b(?![A-Za-zÀ-ÿ])`, 'g'))]
+  const comUf = [...t.matchAll(new RegExp(`([A-Za-zÀ-ÿ'. ]{2,40}?)\\s*[/,|–—-]\\s*(${UFS})\\b(?![A-Za-zÀ-ÿ])`, 'g'))]
     .map((m) => ({ nome: m[1].trim(), uf: m[2] })).filter((c) => c.nome && !/\d/.test(c.nome)).pop();
   if (comUf) {
-    if (ehSaoPaulo(comUf.nome)) return SAO_PAULO;
+    if (ehSaoPaulo(comUf.nome)) return { cidade: SAO_PAULO, origem: 'fonte' };
     // "Consolação - SP": o bairro não é a cidade.
-    if (acharBairro(comUf.nome)) return comUf.uf === 'SP' ? SAO_PAULO : null;
-    return comUf.nome;
+    if (acharBairro(comUf.nome)) return comUf.uf === 'SP' ? { cidade: SAO_PAULO, origem: 'fonte' } : null;
+    return { cidade: comUf.nome, origem: 'fonte' };
   }
   // "Complexo Canindé, São Paulo", "Rua X, 10 São Paulo SP".
-  const trechos = t.split(/\s*(?:[,|;()]|\s[-–]\s)\s*/);
-  if (trechos.some((x) => /^(?:\d[\d.]*\s+)?sao paulo(?:\s*[/-]?\s*sp)?$/.test(semAcento(x).trim()))) return SAO_PAULO;
-  return null;
+  const trechos = t.split(/\s*(?:[,|;()—]|\s[-–]\s)\s*/);
+  if (trechos.some((x) => /^(?:\d[\d.]*\s+)?sao paulo(?:\s*[/-]?\s*sp)?$/.test(semAcento(x).trim()))) return { cidade: SAO_PAULO, origem: 'fonte' };
+  // O endereço inteiro é o nome de uma cidade ("Rio de Janeiro").
+  const inteira = nomeDeCidade(t);
+  return inteira ? { cidade: inteira, origem: 'fonte' } : null;
 }
+const cidade = (b) => {
+  const c = cidadeComOrigem(b);
+  return c ? c.cidade : null;
+};
+
+// A casa como a fonte escreveu -> { casa, endereco }. Sai o `// handle`;
+// cidade, UF, "online" e "a definir" não são casa; casa que começa por
+// logradouro ("Alameda Barros, 376") é endereço, e "Nome, Rua X 12" separa o
+// nome do endereço.
+const LOGRADOURO = /^(?:r|rua|av|avenida|al|alameda|tv|travessa|pca|praca|lgo|largo|est|estrada|rod|rodovia|viela|pas|passagem)\b\.?(?:\s|$)/;
+const SEM_LOCAL = /^(?:online|on line|a definir|a confirmar|local a definir|local a confirmar|em breve|tbd|n a|sem local)$/;
+function limparCasa(v, cidadeDeclarada = null) {
+  const t = texto(typeof v === 'string' ? v.replace(/\s*\/\/.*$/, '') : v, 120);
+  if (!t) return { casa: null, endereco: null };
+  const chave = chaveDeTexto(t);
+  const semUf = t.replace(new RegExp(`\\s*[,/|–—-]\\s*(?:${UFS})\\s*$`), '');
+  if (SEM_LOCAL.test(chave) || new RegExp(`^(?:${UFS})$`).test(t) || CIDADES[chaveDeTexto(semUf)]
+    || (cidadeDeclarada && chaveDeTexto(cidadeDeclarada) === chave)) return { casa: null, endereco: null };
+  if (LOGRADOURO.test(chave)) return { casa: null, endereco: t };
+  const virgula = t.indexOf(',');
+  if (virgula > 0) {
+    const resto = t.slice(virgula + 1).trim();
+    if (/\d/.test(resto)) return { casa: texto(t.slice(0, virgula), 120), endereco: texto(resto, 200) };
+  }
+  return { casa: t, endereco: null };
+}
+
+// "28.11", "29/11", "28/11/26": a data que a fonte põe no título da festa.
+const DATA_NO_NOME = '(?:0?[1-9]|[12]\\d|3[01])[./](?:0?[1-9]|1[0-2])(?:[./](?:\\d{4}|\\d{2}))?';
+const SIGLAS = new Set(['DJ', 'MC', 'VIP', 'USP', 'FAAP', 'PUC', 'SP', 'RJ', 'BH', 'UK', 'EUA', 'LGBT', 'LGBTQ', 'LGBTQIA', 'TBT', 'TV', 'NY', 'EDM', 'MPB', 'BR', 'DJS', 'IBT']);
+const LIGACOES_DO_NOME = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'no', 'na', 'nos', 'nas', 'a', 'o', 'com']);
+const TODA_EM_CAIXA_ALTA = /^[A-ZÀ-Ý0-9'’&.+-]*[A-ZÀ-Ý][A-ZÀ-Ý0-9'’&.+-]*$/;
+const letras = (w) => (w.match(/[A-Za-zÀ-ÿ]/g) || []).length;
+const ehSigla = (w) => SIGLAS.has(w.replace(/[^A-ZÀ-Ý]/g, '')) || (letras(w) <= 5 && !/[AEIOUÀ-Ý]/.test(w.replace(/[^A-ZÀ-Ý]/g, '')));
+function capitalizar(w) {
+  const m = w.toLowerCase();
+  return m.replace(/(^|[-.+&])([a-zà-ÿ])/g, (_, a, c) => a + c.toUpperCase());
+}
+// Título em caixa alta vira caixa de título; siglas (DJ, USP) ficam, e uma
+// palavra sozinha de até 4 letras também.
+function caixaDeTitulo(nome) {
+  const palavras = nome.split(' ');
+  const saida = [...palavras];
+  let i = 0;
+  while (i < palavras.length) {
+    if (!(TODA_EM_CAIXA_ALTA.test(palavras[i]) && letras(palavras[i]) >= 2)) {
+      i += 1;
+      continue;
+    }
+    let j = i;
+    while (j < palavras.length && TODA_EM_CAIXA_ALTA.test(palavras[j]) && letras(palavras[j]) >= 2) j += 1;
+    const corrida = j - i;
+    if (corrida >= 2 || letras(palavras[i]) > 4) {
+      for (let k = i; k < j; k += 1) {
+        if (ehSigla(palavras[k])) continue;
+        const baixa = palavras[k].toLowerCase();
+        saida[k] = k > 0 && LIGACOES_DO_NOME.has(baixa) ? baixa : capitalizar(palavras[k]);
+      }
+    }
+    i = j;
+  }
+  return saida.join(' ');
+}
+function limparNome(v) {
+  const original = texto(v, 120);
+  if (!original) return null;
+  let t = original.replace(/\s*\/\/.*$/, '');
+  t = t.replace(new RegExp(`^${DATA_NO_NOME}\\s*[-–—:|·•]\\s*`), '');
+  t = t.replace(new RegExp(`\\s*[-–—|·•(]\\s*${DATA_NO_NOME}\\s*\\)?\\s*$`), '');
+  t = t.replace(/\s+(?:0[1-9]|[12]\d|3[01])[./](?:0[1-9]|1[0-2])(?:[./]\d{2,4})?$/, '');
+  t = t.replace(/\s*[-–—|·•:]\s*$/, '').trim();
+  return t ? caixaDeTitulo(t) : original;
+}
+
+// Uma ponta do endereço que a fonte escreveu: só é endereço o que tem
+// logradouro ou número ("Alameda Barros, 376", "Praça X, s/n"); "Interlagos",
+// "República" e "São Paulo" são nomes de lugar, não endereço.
+function ehEnderecoDeVerdade(t) {
+  if (typeof t !== 'string') return false;
+  if (ruaENumero(t)) return true;
+  const c = chaveDeTexto(t);
+  return /\b(?:rua|r|avenida|av|alameda|al|travessa|tv|praca|pca|largo|lgo|estrada|est|rodovia|rod|viela|passagem)\b/.test(c)
+    || /(?:^|\s)\d{1,5}(?:\s|$)/.test(c.replace(/\b\d{5}\s?\d{3}\b/g, ''));
+}
+
+// geo do bruto -> { lat, lng, precisao, origemGeo }, só dentro da caixa de São
+// Paulo (lat −24,1 a −23,3; lng −47,0 a −46,3); fora dela, null.
+const PRECISOES = ['casa', 'rua', 'bairro'];
+function geo(g) {
+  if (!g || typeof g !== 'object') return null;
+  const lat = Number(g.lat !== undefined ? g.lat : g.latitude);
+  const lng = Number(g.lng !== undefined ? g.lng : (g.lon !== undefined ? g.lon : g.longitude));
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -24.1 || lat > -23.3 || lng < -47.0 || lng > -46.3) return null;
+  return {
+    lat: Math.round(lat * 1e5) / 1e5,
+    lng: Math.round(lng * 1e5) / 1e5,
+    precisao: PRECISOES.includes(g.precisao) ? g.precisao : 'casa',
+    origemGeo: 'pagina',
+  };
+}
+
+// "Sessão de escuta" -> 'sessao-de-escuta'; fora de TIPOS_EVENTO, null.
+function tipoDoEvento(v) {
+  if (typeof v !== 'string') return null;
+  const t = semAcento(v).replace(/[\s_]+/g, '-').replace(/[^a-z-]/g, '');
+  return TIPOS_EVENTO.includes(t) ? t : null;
+}
+
+const idDaPlataforma = (v) => {
+  const t = typeof v === 'number' && Number.isFinite(v) ? String(v) : (typeof v === 'string' ? v.trim() : '');
+  return t && t.length <= 80 && /^[\w.:/-]+$/.test(t) ? t : null;
+};
 
 // As páginas que a leitura manual abriu, cada uma com o que é (página do
 // ingresso, revenda, matéria, site oficial, Instagram) e o que se leu nela.
@@ -290,31 +424,65 @@ function paginas(lista, avisos) {
 }
 
 // O bruto de qualquer fonte -> { campos, avisos }. Campo ausente não entra.
-function normalizarItem(b, fonte) {
+// `opcoes.lugares` injeta a lista de casas curadas (os testes); sem ela, vale
+// config/lugares.json.
+function normalizarItem(b, fonte, opcoes = {}) {
   const avisos = [];
   const c = {};
   const por = (k, v) => {
     if (v !== null && v !== undefined) c[k] = v;
   };
+  const lugares = opcoes && Array.isArray(opcoes.lugares) ? opcoes.lugares : undefined;
 
-  por('nome', texto(b.nome, 120));
+  por('nome', limparNome(b.nome));
   if (b.produtora) {
     const p = typeof b.produtora === 'string' ? { nome: b.produtora } : b.produtora;
     const nome = texto(p.nome, 120);
     if (nome) por('produtora', { nome, instagram: instagram(p.instagram) });
   }
-  por('casa', texto(b.casa, 120));
-  const endTexto = texto(b.endereco, 200);
-  const achado = acharBairro(b.bairro, b.endereco, b.casa);
-  const daCidade = cidade(b);
-  if (endTexto || achado || daCidade) {
+
+  // Casa, endereço, cidade e bairro. A casa que é cidade, UF ou endereço sai
+  // do campo `casa`; o endereço só vale com logradouro ou número; o bairro tirado
+  // do nome da casa ou de um nome de lugar sem endereço fica à parte
+  // (`bairroDaCasa`) e só serve quando nenhuma fonte deu bairro (KTD3).
+  const casa = limparCasa(b.casa, texto(b.cidade, 80));
+  por('casa', casa.casa);
+  const textoBruto = texto(b.endereco, 200) || texto(casa.endereco, 200);
+  const cep = extrairCep(b.cep) || extrairCep(textoBruto);
+  // O CEP do campo `cep` também diz a cidade (capital) como se estivesse no texto.
+  const daCidade = cidadeComOrigem({ ...b, endereco: textoBruto && cep && !textoBruto.includes(cep) ? `${textoBruto} ${cep}` : (textoBruto || cep) });
+  const endTexto = ehEnderecoDeVerdade(textoBruto) ? textoBruto : null;
+  const perfil = typeof b.instagram === 'string' ? b.instagram
+    : (b.produtora && typeof b.produtora === 'object' && typeof b.produtora.instagram === 'string' ? b.produtora.instagram : null);
+  const lugar = acharLugar({ casa: casa.casa, endereco: textoBruto, instagram: perfil }, lugares);
+
+  let cidadeFinal = daCidade;
+  if (!cidadeFinal && casa.casa === null && typeof b.casa === 'string') {
+    // "casa" que é nome de cidade serve de evidência da cidade.
+    const nomeDaCasa = nomeDeCidade(b.casa.replace(/\s*\/\/.*$/, ''));
+    if (nomeDaCasa) cidadeFinal = { cidade: nomeDaCasa, origem: 'fonte' };
+  }
+  if (!cidadeFinal && lugar && lugar.cidade) cidadeFinal = { cidade: lugar.cidade, origem: 'casa' };
+
+  const forte = acharBairro(b.bairro, endTexto) || acharBairroPorCep(cep);
+  const fraco = forte ? null : ((lugar && lugar.bairro ? { bairro: lugar.bairro, regiao: lugar.regiao || null, nome: lugar.bairroNome || null } : null)
+    || acharBairro(textoBruto, casa.casa, b.casa));
+  if (endTexto || cep || cidadeFinal || lugar) {
     por('endereco', {
       texto: endTexto,
-      bairro: achado ? achado.bairro : null,
-      regiao: achado ? achado.regiao : null,
-      cidade: daCidade,
+      bairro: forte ? forte.bairro : null,
+      bairroNome: forte ? forte.nome : null,
+      regiao: forte ? forte.regiao : null,
+      cidade: cidadeFinal ? cidadeFinal.cidade : null,
+      cidadeOrigem: cidadeFinal ? cidadeFinal.origem : null,
+      cep,
+      lugar: lugar ? lugar.id : null,
     });
   }
+  if (fraco) por('bairroDaCasa', { bairro: fraco.bairro, bairroNome: fraco.nome || null, regiao: fraco.regiao });
+  por('geo', geo(b.geo));
+  por('idPlataforma', idDaPlataforma(b.idPlataforma));
+  por('tipo', tipoDoEvento(b.tipo));
 
   if (b.data !== undefined && b.data !== null && !dataValida(b.data)) avisos.push('data inválida');
   if (dataValida(b.data)) {
@@ -342,9 +510,8 @@ function normalizarItem(b, fonte) {
   por('linkEvento', limpa(b.linkEvento));
   por('paginas', paginas(b.paginas, avisos));
   por('instagram', instagram(b.instagram));
-  // Cartaz só do que a produtora mandou ou alguém escolheu à mão: a imagem
-  // coletada das plataformas e do Instagram não é guardada nem republicada.
-  if (fonte === 'envio' || fonte === 'indicacao') por('cartaz', url(b.cartaz));
+  // O cartaz não passa por aqui: a peça de divulgação vai por `item.imagens`
+  // (imagens.js), com crédito e link da origem (M33, KTD6).
   if (Array.isArray(b.lineup)) {
     const nomes = b.lineup.map((n) => texto(n, 80)).filter(Boolean).slice(0, 30);
     if (nomes.length) por('lineup', nomes);
@@ -380,6 +547,7 @@ function novoId(nome, data, semente) {
 }
 
 module.exports = {
-  normalizarItem, novoId, slug, temContato, CONTATO, preco, instagram, url, horario, idadeMinima, texto, cidade, condicoesDoLote, ateDoNome, semCodigo, paginas,
+  normalizarItem, novoId, slug, temContato, CONTATO, preco, instagram, url, horario, idadeMinima, texto, cidade, cidadeComOrigem, limparNome, limparCasa,
+  condicoesDoLote, ateDoNome, semCodigo, paginas,
   CONDICOES, CONDICOES_DE_PESSOA, TIPOS_PAGINA,
 };

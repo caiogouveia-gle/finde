@@ -80,10 +80,12 @@ Os IDs levam M (motor) para não colidir com R1 a R22 do plano do detalhe.
 
 - M17. Coletores prontos do Apify trazem festas da Sympla, do Shotgun e do RA em São Paulo, uma vez por dia, com teto de itens e de gasto por rodada e o uso registrado.
 - M18. Posts recentes de uma lista de perfis do Instagram entram pelo Apify sem login; o Claude Haiku lê flyer e legenda e devolve as festas anunciadas com data. Nada de comentários, seguidores ou fotos de pessoas é guardado, e a imagem não é republicada.
+  - *Nota de 24/11/2026 (plano `plans/2026-11-24-0115-feat-prova-de-conceito-completa-plan.md`, D4):* a peça de divulgação (flyer, banner, cartaz) passa a ser guardada, recodificada em WebP sem EXIF, com crédito e link da origem; foto de público, capa de vídeo e slide sem leitura própria continuam fora (M33).
 - M19. O link da bio e o Linktree dos perfis, e os links de compra achados nos posts, viram uma fila de páginas de ingresso que os conectores leem na mesma execução.
 - M20. Um leitor de páginas com navegador (Scrapling) lê as páginas que só aparecem com JavaScript (Ingresse) e as agendas dos sites das casas; usa o schema.org da página quando houver e o Haiku quando não.
 - M21. O flyer e a página dividem o teto de gasto do classificador; acima dele, ficam sem leitura e a execução registra.
 - M22. Todos esses conectores vêm desligados, marcados como prova acadêmica no registro de fontes, e ligam por `--poc` ou pela configuração.
+  - *Nota de 24/11/2026 (plano `plans/2026-11-24-0115-feat-prova-de-conceito-completa-plan.md`, D1, D13):* Instagram e páginas ligam no motor do Fly com `FINDE_POC=1` até 07/12/2026; depois voltam a desligados. A CLI local continua exigindo `--poc`.
 - M23. A média de idade continua só declarada (R16); nada estima idade a partir de imagem.
 
 ### Acceptance Examples
@@ -131,6 +133,7 @@ Os IDs levam M (motor) para não colidir com R1 a R22 do plano do detalhe.
 - **KTD16. Prioridades.** `sympla-apify` e `shotgun-apify` 75, `paginas` 72, `ra-apify` 65, `instagram` 50: a página do ingresso vale mais que o flyer; o envio da produtora continua acima de tudo.
 - **KTD17. Apify só para o Instagram; plataformas pelo Scrapling (24/11/2026).** (session-settled: user-directed — Caio, 24/11/2026, pelo custo: o motor inteiro cai de US$ 23–41 para US$ 4–8 por mês; ver `docs/operacao/2026-11-24-contas-e-chaves.md`.) O Apify roda no plano grátis só com `apify~instagram-scraper` (uma vez por dia, `intervaloHoras` 20) e `apify~instagram-profile-scraper` (uma vez por semana). Sympla, Shotgun e RA viram listagens do leitor de páginas (`config.paginas.listagens`), uma vez por dia, São Paulo, próximos 14 dias, com pausa entre pedidos; os atores do Apify para elas ficam como reserva desligada. Proxy só por fonte que bloquear, pela variável `FINDE_PROXY_URL`.
 - **KTD18. Correções da revisão adversarial (24/11/2026).** Vínculo do Instagram e das páginas pela própria festa (hash de nome e data, URL ou `@id`), nunca pela posição; o mesmo link de compra no mesmo dia junta festas de fontes diferentes; itens da mesma fonte para a mesma festa se somam na execução; o Apify roda pela rota assíncrona, lê só os campos usados, apaga o dataset e conta o custo real, com teto por execução e por dia (`FINDE_TETO_APIFY_EXECUCAO_USD`, `FINDE_TETO_APIFY_DIA_USD`); o tempo-limite do leitor mata o grupo de processos; regra de entrada sem contato de pessoa; código de indicação fora de todo link, menos o do envio; cartaz só do envio e da indicação; o que o Claude já leu não paga a classificação de novo; `--fonte` não liga conector da prova sem `--poc`.
+  - *Nota de 24/11/2026 (plano `plans/2026-11-24-0115-feat-prova-de-conceito-completa-plan.md`):* "cartaz só do envio e da indicação" passa a "imagem guardada só da peça de divulgação" (KTD6 a KTD9 de lá), e os conectores da prova ligam no Fly até 07/12 (KTD18 de lá).
 - **KTD9. Fly igual ao Phoenix.** `Dockerfile` com Litestream fixado por versão e sha256, `inicio.sh` que restaura do bucket quando o volume está vazio e supervisiona o Node, `litestream.yml` lendo as variáveis que `fly storage create` define. Nada é criado na conta.
 
 ### Sources

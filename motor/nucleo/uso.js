@@ -16,4 +16,11 @@ function resumoDeUso(db, agora = new Date()) {
   return { geradoEm: agora.toISOString(), modelo: { ultimas24h: llm(dia), ultimos30dias: llm(mes) }, api24h: api, ultimaExecucao: ultima, festasNoBanco: festas };
 }
 
-module.exports = { resumoDeUso };
+// Poda os acessos à API com mais de `dias` (padrão 30): o rastreio de uso (M13)
+// só olha as últimas 24 horas, e a tabela não cresce para sempre (M37).
+function podarUso(db, { agora = new Date(), dias = 30 } = {}) {
+  const limite = new Date(agora.getTime() - dias * 86400e3).toISOString();
+  return Number(db.prepare('DELETE FROM uso_api WHERE quando < ?').run(limite).changes);
+}
+
+module.exports = { resumoDeUso, podarUso };

@@ -5,13 +5,20 @@
 // o que a lista mostra, a fala não repete.
 
 const C = require('./catalogo');
+// A idade de cada festa diante do pedido (dentro, fora, sem dado) e a
+// avaliação de quem foi: a mesma régua da lista.
+const M = require('./motor');
 
 const PERTO_MIN = 10;
+const PERTO_KM = 3;
 const POSICAO = ['A primeira', 'A segunda', 'A terceira'];
+const NUMERAL = ['Nenhuma', 'Uma', 'Duas', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete', 'Oito', 'Nove', 'Dez'];
+const numeral = (n) => NUMERAL[n] || String(n);
 const janela = (id) => C.JANELAS.find((j) => j.id === id);
 const maiuscula = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
-const noDia = (d) => `${d === 'sex' ? 'na' : 'no'} ${C.DIAS[d].frase}`;
-const proDia = (d) => `${d === 'sex' ? 'pra' : 'pro'} ${C.DIAS[d].frase}`;
+// Pelo artigo de cada dia (catalogo.js): "na quinta", "no sábado", "hoje".
+const noDia = (d) => C.noDia(d);
+const proDia = (d) => C.proDia(d);
 
 function juntar(nomes, conjuncao = 'e') {
   if (nomes.length <= 1) return nomes.join('');
@@ -40,16 +47,24 @@ function abertura(resultado) {
   return f.join(' ');
 }
 
+// Quantas ficam perto, sem supor três festas na tela: em minutos (as
+// fictícias) ou em km em linha reta (as reais com coordenada).
 function sobrePerto(ref, todas) {
-  // Festa sem bairro não tem distância: fica fora da conta.
-  const opcoes = todas.filter((o) => typeof o.distancia === 'number');
-  if (!opcoes.length) return todas.length ? `Não sei o bairro ${todas.length === 1 ? 'dela' : 'delas'}.` : '';
-  const perto = opcoes.filter((o) => o.distancia <= PERTO_MIN);
-  if (!perto.length) return `A mais perto fica a ${Math.min(...opcoes.map((o) => o.distancia))} min ${ref.de}.`;
-  const max = Math.max(...perto.map((o) => o.distancia));
-  if (perto.length === 1) return `Uma fica a ${max} min ${ref.de}.`;
-  if (perto.length === opcoes.length) return `Todas ficam a até ${max} min ${ref.de}.`;
-  return `Duas ficam a até ${max} min ${ref.de}.`;
+  const emMin = todas.filter((o) => typeof o.distancia === 'number');
+  const emKm = todas.filter((o) => typeof o.distancia !== 'number' && typeof o.distanciaKm === 'number');
+  const medidas = [...emMin.map((o) => ({ v: o.distancia, km: false })), ...emKm.map((o) => ({ v: o.distanciaKm, km: true }))];
+  // Festa sem bairro nem coordenada não tem distância: fica fora da conta.
+  if (!medidas.length) return todas.length ? `Não sei a distância ${todas.length === 1 ? 'dela' : 'delas'}.` : '';
+  const texto = (m) => (m.km ? `${String(m.v).replace('.', ',')} km` : `${m.v} min`);
+  const perto = medidas.filter((m) => m.v <= (m.km ? PERTO_KM : PERTO_MIN));
+  if (!perto.length) {
+    const menor = medidas.reduce((a, m) => (m.v < a.v ? m : a));
+    return `A mais perto fica a ${texto(menor)} ${ref.de}.`;
+  }
+  const maior = perto.reduce((a, m) => (m.v > a.v ? m : a));
+  if (perto.length === 1) return `${medidas.length === 1 ? 'Ela' : 'Uma'} fica a ${texto(maior)} ${ref.de}.`;
+  if (perto.length === medidas.length) return `${perto.length === 2 ? 'As duas' : 'Todas'} ficam a até ${texto(maior)} ${ref.de}.`;
+  return `${numeral(perto.length)} ficam a até ${texto(maior)} ${ref.de}.`;
 }
 
 function sobreTeto(teto, antes) {
@@ -66,14 +81,68 @@ const dormeBem = (opcoes) => opcoes.length > 0 && opcoes.every((o) => typeof o.f
 const nomeDaFaixa = (c) => (c.idade ? `${c.idade.min} a ${c.idade.max}${c.idade.max >= 50 ? ' ou mais' : ''}` : C.nomeFaixa(c.faixa));
 const mesmaFaixa = (a, b) => (a.idade && b.idade ? a.idade.min === b.idade.min && a.idade.max === b.idade.max : a.faixa === b.faixa);
 
+// A idade em três grupos (R27): dentro, fora e sem dado. Sem dado não é "não":
+// a festa que não divulgou a média nunca é dada como da sua idade nem como
+// fora dela. A avaliação de quem foi diz o que mede ("4 de 5 que foram...").
 function sobreIdade(c, opcoes) {
   if (!opcoes.length) return '';
-  const fora = opcoes.filter((o) => o.fora.some((m) => /^média/.test(m))).length;
   const nome = nomeDaFaixa(c);
-  if (!fora) return `Sim: todas com média de ${nome}.`;
-  const dentro = opcoes.length - fora;
-  if (!dentro) return `Nenhuma com média de ${nome} nesse pedido.`;
-  return `${dentro === 1 ? 'Uma' : 'Duas'} com média de ${nome}; ${fora === 1 ? 'a outra' : 'as outras'}, não.`;
+  const grupo = (o) => M.idadeNoPedido(o.festa, c);
+  const dentro = opcoes.filter((o) => grupo(o) === 'dentro').length;
+  const fora = opcoes.filter((o) => grupo(o) === 'fora').length;
+  const sem = opcoes.length - dentro - fora;
+  const todas = opcoes.length === 1 ? 'ela' : opcoes.length === 2 ? 'as duas' : 'todas';
+  let frase;
+  if (sem === opcoes.length) {
+    frase = opcoes.length === 1 ? 'Ela não divulgou a média de idade ainda.' : 'Nenhuma delas divulgou a média de idade ainda.';
+  } else if (!sem && !fora) frase = `Sim: ${todas} com média de ${nome}.`;
+  else if (!sem && !dentro) frase = `Nenhuma com média de ${nome} nesse pedido.`;
+  else if (!sem) frase = `${numeral(dentro)} com média de ${nome}; ${fora === 1 ? 'a outra' : 'as outras'}, não.`;
+  else {
+    const partes = [];
+    if (dentro) partes.push(`${numeral(dentro).toLowerCase()} com média de ${nome}`);
+    if (fora) partes.push(`${numeral(fora).toLowerCase()} fora da sua faixa`);
+    const naoDisse = sem === 1 ? 'a outra não divulgou a média' : `as outras ${numeral(sem).toLowerCase()} não divulgaram a média`;
+    frase = `${maiuscula(partes.join(', '))}; ${naoDisse}.`;
+  }
+  // A avaliação de quem foi, quando houver na tela: o que a pergunta mede.
+  const avaliada = opcoes.find((o) => M.avaliacao(o.festa) && M.avaliacaoCruza(o.festa, c));
+  if (avaliada) {
+    const a = M.avaliacao(avaliada.festa);
+    const faixa = [Math.min(...a.faixa), Math.max(...a.faixa)];
+    frase += ` Na ${avaliada.festa.nome}, ${Math.round(a.naMedida * a.avaliacoes)} de ${a.avaliacoes} que foram, de ${faixa[0]} a ${faixa[1]} anos, acharam o público da idade deles.`;
+  }
+  return frase;
+}
+
+// "limite de idade": a idade mínima que cada festa diz, sem supor nada.
+function sobreLimite(opcoes) {
+  if (!opcoes.length) return '';
+  const com = opcoes.filter((o) => Number.isInteger(o.festa.idadeMinima));
+  if (!com.length) return opcoes.length === 1 ? 'Ela não divulgou limite de idade.' : 'Nenhuma delas divulgou limite de idade.';
+  const ditas = com.map((o) => `${o.festa.nome}, só a partir de ${o.festa.idadeMinima}`);
+  const resto = opcoes.length - com.length;
+  const naoDiz = resto ? `; ${resto === 1 ? 'a outra não diz' : 'as outras não dizem'}` : '';
+  return `${maiuscula(juntar(ditas))}${naoDiz}.`;
+}
+
+// "quanto custa?": o preço de cada uma, na ordem da tela, e quem não divulgou.
+function sobrePreco(opcoes) {
+  if (!opcoes.length) return '';
+  const num = (x) => typeof x === 'number' && Number.isFinite(x);
+  if (opcoes.length === 1) {
+    const f = opcoes[0].festa;
+    return num(f.preco) ? `${f.preco === 0 ? 'É de graça' : `A partir de ${C.reais(f.preco)}`}.` : 'Ela não divulgou o preço.';
+  }
+  // "A primeira custa R$ 40; a segunda, R$ 60; a terceira não divulgou o preço."
+  const partes = opcoes.slice(0, 3).map((o, i) => {
+    const f = o.festa;
+    const quem = POSICAO[i].toLowerCase();
+    if (!num(f.preco)) return `${quem} não divulgou o preço`;
+    if (f.preco === 0) return `${quem} é de graça`;
+    return i === 0 ? `${quem} custa ${C.reais(f.preco)}` : `${quem}, ${C.reais(f.preco)}`;
+  });
+  return `${maiuscula(partes.join('; '))}.`;
 }
 
 function reagir(pedidos, antes, depois, resultado, extra) {
@@ -88,9 +157,9 @@ function reagir(pedidos, antes, depois, resultado, extra) {
   for (const p of pedidos) {
     switch (p) {
       case 'dia':
-        if (depois.dia === antes.dia) f.push(`Já estamos ${noDia(depois.dia)}.`);
+        if (depois.dia === antes.dia && (depois.semana || 'esta') === (antes.semana || 'esta')) f.push(`Já estamos ${noDia(depois.dia)}.`);
         else if (depois.dia === 'dom') f.push('Domingo, então. A segunda agradece.');
-        else f.push(`${C.DIAS[depois.dia].nome}, então.`);
+        else f.push(`${C.DIAS[depois.dia].nome}${pedidos.includes('semana') && depois.semana === 'proxima' ? ' da semana que vem' : ''}, então.`);
         break;
       case 'sem-dia':
         if (depois.dia !== antes.dia) f.push(`Sem ${C.DIAS[antes.dia].frase}, então. Fui ${proDia(depois.dia)}.`);
@@ -129,6 +198,28 @@ function reagir(pedidos, antes, depois, resultado, extra) {
       case 'minha-idade':
         f.push(sobreIdade(depois, resultado.opcoes));
         break;
+      case 'limite-idade':
+        f.push(sobreLimite(resultado.opcoes));
+        break;
+      case 'quanto-custa':
+        f.push(sobrePreco(resultado.opcoes));
+        break;
+      case 'semana':
+        if (!pedidos.includes('dia') && !pedidos.includes('data')) {
+          f.push(depois.semana === 'proxima' ? `${maiuscula(noDia(depois.dia))} da semana que vem, então.` : `${maiuscula(noDia(depois.dia))} desta semana, então.`);
+        }
+        break;
+      case 'data':
+        f.push(`${C.DIAS[depois.dia].nome}${depois.semana === 'proxima' ? ' da semana que vem' : ''}, então.`);
+        break;
+      case 'bairro':
+        f.push(`${maiuscula(juntar(depois.bairros.map((b) => C.BAIRROS[b].em)))}, então.`);
+        break;
+      case 'mais': {
+        const n = (resultado.maisDoDia || []).length;
+        f.push(n ? `Mais ${numeral(n).toLowerCase()} ${noDia(depois.dia)}, logo abaixo.` : `Já mostrei todas que tenho ${noDia(depois.dia)}.`);
+        break;
+      }
       case 'sem-estilo': {
         const novos = depois.evitarEstilos.filter((e) => !antes.evitarEstilos.includes(e));
         f.push(`Sem ${C.listaDeEstilos(novos.length ? novos : depois.evitarEstilos, 'nem')}.`);
@@ -196,6 +287,7 @@ const AINDA_NAO = {
   'fora-transporte': 'Metrô e estacionamento eu ainda não sei.',
   'fora-seguranca': 'Segurança eu ainda não sei dizer.',
   'casa-positiva': 'Tipo de casa eu só sei tirar, tipo “nada de rooftop”.',
+  'data-fora': 'Eu só olho hoje e de quinta a domingo, desta semana e da próxima.',
 };
 const SO_PERGUNTA = ['perto-sem-lugar', 'aceitar', 'contradicao-volta', 'contradicao-hora', ...Object.keys(AINDA_NAO)];
 

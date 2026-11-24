@@ -10,7 +10,7 @@
 (() => {
   const {
     el, titulo, chamar, site, marca, rodape, definirNota, marcaExemplo, reduzir, hora, anunciar, manterVisivel,
-    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite, mov: M,
+    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, avanco, acaoC, painelConvite, mov: M,
   } = window.Finde;
   const FT = window.FindeTexto;
   const $tela = document.getElementById('tela');
@@ -23,16 +23,21 @@
     { chave: 'teto', tipo: 'um', titulo: ['Até quanto você quer ', 'gastar?'], lista: 'tetos' },
     { chave: 'estilos', tipo: 'varios', titulo: ['E o ', 'som?'], lista: 'estilos', dica: 'Pode marcar mais de um. Ou nenhum.' },
   ];
+  // Os dias do pedido (D2: quinta a domingo, mais "hoje") e os da semana
+  // inteira, para a festa de "hoje" numa segunda. aba: o rótulo da aba;
+  // longo: o nome inteiro; no: o artigo ("na quinta", "no sábado").
   const DIA = {
-    sex: { nome: 'sexta', seu: 'pra sua ', no: 'na', curto: 'sex' },
-    sab: { nome: 'sábado', seu: 'pro seu ', no: 'no', curto: 'sáb' },
-    dom: { nome: 'domingo', seu: 'pro seu ', no: 'no', curto: 'dom' },
+    hoje: { nome: 'hoje', seu: 'pra ', no: '', curto: 'hoje', aba: 'Hoje', longo: 'Hoje' },
+    seg: { nome: 'segunda', seu: 'pra sua ', no: 'na', curto: 'seg', aba: 'Seg', longo: 'Segunda' },
+    ter: { nome: 'terça', seu: 'pra sua ', no: 'na', curto: 'ter', aba: 'Ter', longo: 'Terça' },
+    qua: { nome: 'quarta', seu: 'pra sua ', no: 'na', curto: 'qua', aba: 'Qua', longo: 'Quarta' },
+    qui: { nome: 'quinta', seu: 'pra sua ', no: 'na', curto: 'qui', aba: 'Qui', longo: 'Quinta' },
+    sex: { nome: 'sexta', seu: 'pra sua ', no: 'na', curto: 'sex', aba: 'Sex', longo: 'Sexta' },
+    sab: { nome: 'sábado', seu: 'pro seu ', no: 'no', curto: 'sáb', aba: 'Sáb', longo: 'Sábado' },
+    dom: { nome: 'domingo', seu: 'pro seu ', no: 'no', curto: 'dom', aba: 'Dom', longo: 'Domingo' },
   };
-  const JANELA = { 'fim-de-tarde': [17, 23], 'comeco-da-noite': [19, 25], noite: [22, 27] };
-  // A régua do detalhe: das 15h às 3h. Seis festas começam às 15h ou 16h.
-  const EIXO = { de: 15, ate: 27 };
   const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-  const NUMERAL = ['Nada', 'Uma', 'Duas', 'Três'];
+  const NUMERAL = ['Nada', 'Uma', 'Duas', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete', 'Oito', 'Nove', 'Dez', 'Onze', 'Doze'];
   // A escolha aparece em 160 ms (o marcador e o fio); o resto da pausa é
   // para a pessoa ver o que escolheu antes de a pergunta sair.
   const AVANCO_MS = 200;
@@ -48,7 +53,7 @@
 
   const estado = {
     form: null,
-    respostas: { dia: null, janela: null, bairros: [], idade: null, teto: null, estilos: [] },
+    respostas: { dia: null, semana: 'esta', janela: null, bairros: [], idade: null, teto: null, estilos: [] },
     tela: 'pergunta',
     passo: 0,
     // Aberto por /app?festa=<id>: o detalhe sem pedido, sem "sua janela".
@@ -61,7 +66,13 @@
     mandar: null,
     // O detalhe aberto e a rolagem da lista ao sair dela (voltar devolve ali).
     festa: null,
+    // De onde o detalhe foi aberto (capa, chamada ou linha): na volta, é ali
+    // que a hora e o nome pousam.
+    abertaDe: null,
     rolagemLista: 0,
+    // "Ver todas" aberta e o mapa da lista (o mapa não sobrevive a recarregar).
+    todasAbertas: false,
+    mapaAberto: false,
     convites: {},
     ocupado: false,
     avancoPendente: null,
@@ -72,7 +83,7 @@
   // Recarregar a página não perde o pedido nem a conversa.
   function salvar() {
     try {
-      const { form, ocupado, avancoPendente, ...resto } = estado;
+      const { form, ocupado, avancoPendente, mapaAberto, ...resto } = estado;
       sessionStorage.setItem(SESSAO, JSON.stringify(resto));
     } catch { /* sem armazenamento: só não sobrevive ao recarregar */ }
   }
@@ -80,7 +91,7 @@
   function restaurar() {
     try {
       const salvo = JSON.parse(sessionStorage.getItem(SESSAO) || 'null');
-      if (salvo && typeof salvo === 'object') Object.assign(estado, salvo, { ocupado: false, avancoPendente: null });
+      if (salvo && typeof salvo === 'object') Object.assign(estado, salvo, { ocupado: false, avancoPendente: null, mapaAberto: false });
     } catch { /* começa do zero */ }
   }
 
@@ -128,6 +139,12 @@
   }
 
   window.addEventListener('popstate', (e) => {
+    // A peça inteira aberta: o voltar do navegador só a fecha.
+    if (pecaAberta) {
+      pecaAberta = false;
+      trocarPeca(false);
+      return;
+    }
     // "Voltar" logo depois de um toque não é desfeito pelo avanço agendado, e
     // a resposta que ainda estava a caminho não vale mais.
     clearTimeout(estado.avancoPendente);
@@ -156,7 +173,7 @@
       desenhar({
         focar: false, rolagem: estado.rolagemLista, volta: true,
         depois: () => {
-          const b = $tela.querySelector(`[data-festa="${CSS.escape(id)}"] .festa-abrir`);
+          const b = $tela.querySelector(`a[data-festa="${CSS.escape(id)}"][data-de="${estado.abertaDe || 'linha'}"]`) || $tela.querySelector(`a[data-festa="${CSS.escape(id)}"]`);
           if (b) b.focus({ preventScroll: true });
         },
       });
@@ -191,9 +208,13 @@
     const telas = { pergunta: telaPergunta, resultado: telaResultado, festa: telaFesta, mandar: telaMandar };
     // Sem o formulário ainda (página salva, rede lenta), a pergunta espera.
     const tela = estado.tela === 'pergunta' && !estado.form ? telaCarregando : telas[estado.tela] || telaPergunta;
+    fecharMapa({ redesenho: true });
+    pecaAberta = false;
+    document.documentElement.classList.remove('com-peca');
     const conteudo = tela();
     if (entrar) conteudo.classList.add('entra');
     $tela.replaceChildren(conteudo);
+    ladoComCartaz(estado.tela === 'festa' && estado.festa ? estado.festa.festa : null);
     document.body.dataset.tela = estado.tela;
     if (entrar) window.scrollTo(0, rolagem);
     if (focar) {
@@ -201,6 +222,7 @@
       if (alvo) alvo.focus({ preventScroll: true });
     }
     posicionar($tela);
+    posicionarAbas($tela);
     medirBarra();
     // A trava conta a partir do quadro pintado: com CPU lenta, o desenho leva
     // tempo, e o segundo toque de um toque duplo ainda cai na tela nova.
@@ -249,8 +271,10 @@
     }
   }
 
-  // Do cartão ao detalhe e de volta: a hora e o nome da festa aberta viajam
-  // entre as duas posições. Devolve false quando não há transição a fazer
+  // Do cartão ao detalhe e de volta (movimento.md, 5): a capa (o recorte
+  // .capa-foto com a foto e o véu, nunca o <img>), a hora, o nome e o cartaz
+  // da festa aberta viajam entre as duas posições. Os nomes vão só nos
+  // elementos da festa tocada. Devolve false quando não há transição a fazer
   // (o desenho segue direto).
   function comVista(de, fazer) {
     if (typeof document.startViewTransition !== 'function') return false;
@@ -260,16 +284,37 @@
     if ((!ida && !volta) || !id || estado.avulsa) return false;
     const nomes = [];
     const nomear = (naLista) => {
-      const raiz = naLista ? $tela.querySelector(`[data-festa="${CSS.escape(id)}"]`) : $tela.querySelector('.tela-festa');
+      const raiz = naLista
+        ? $tela.querySelector(`a[data-festa="${CSS.escape(id)}"][data-de="${estado.abertaDe || 'linha'}"]`) || $tela.querySelector(`a[data-festa="${CSS.escape(id)}"]`)
+        : $tela.querySelector('.tela-festa');
       if (!raiz) return;
-      const hora1 = raiz.querySelector(naLista ? '.festa-quando .hora' : '.detalhe-hora .hora');
-      const nome1 = raiz.querySelector(naLista ? '.nome' : '#festa-nome');
-      for (const [x, n] of [[hora1, 'festa-hora'], [nome1, 'festa-nome']]) {
-        if (!x) continue;
+      const pares = naLista
+        ? [['.capa-foto', 'festa-capa'], ['.hora, .hora-incerta', 'festa-hora'], ['.capa-nome, .chamada-nome, .linha-nome', 'festa-nome'], ['.mini', 'festa-cartaz']]
+        : [['.capa--detalhe .capa-foto', 'festa-capa'], ['.capa-quando .hora, .capa-quando .hora-incerta', 'festa-hora'], ['#festa-nome', 'festa-nome'], ['.cartaz-botao .cartaz', 'festa-cartaz']];
+      for (const [sel, n] of pares) {
+        const x = raiz.querySelector(sel);
+        // Fora da tela (a linha escondida pelo filtro), nada viaja.
+        if (!x || !x.getClientRects().length) continue;
         x.style.viewTransitionName = n;
         nomes.push(x);
       }
+      // Sem foto (a chamada, a linha, a capa chapada), viaja a placa do
+      // cartão: um retângulo sem texto (transparente na lista, bordô no
+      // detalhe) que cresce até a capa e, na volta, encolhe até ele. O texto
+      // do cartão fica com a página, nunca esticado dentro da placa; a hora
+      // e o nome, com nome próprio, viajam por cima.
+      if (!nomes.some((x) => x.style.viewTransitionName === 'festa-capa')) {
+        const placa = naLista ? raiz.querySelector(':scope > .capa-placa') : raiz.querySelector('.capa--detalhe > .capa-placa');
+        if (placa && placa.getClientRects().length) {
+          placa.style.viewTransitionName = 'festa-capa';
+          nomes.push(placa);
+          document.documentElement.classList.add('vt-cartao');
+          if (volta) document.documentElement.classList.add('vt-volta');
+        }
+      }
+      if (naLista) origem = raiz;
     };
+    let origem = null;
     // Antes da troca a página ainda é a de origem (na ida, a lista); dentro
     // dela, já é a de destino (na volta, a lista de novo).
     nomear(ida);
@@ -282,13 +327,21 @@
       });
     } catch {
       for (const x of nomes.splice(0)) x.style.viewTransitionName = '';
+      document.documentElement.classList.remove('vt-cartao', 'vt-volta');
       return false;
     }
     // O detalhe sabe que a hora e o nome chegaram pela transição.
     vistaEmCurso = true;
     const limpar = () => {
       vistaEmCurso = false;
+      document.documentElement.classList.remove('vt-cartao', 'vt-volta');
       for (const x of nomes.splice(0)) x.style.viewTransitionName = '';
+      // Na volta, o cartão de onde a festa saiu acende e apaga (só opacidade),
+      // para o olho achar o lugar na lista.
+      if (volta && origem && document.contains(origem) && M.pode()) {
+        origem.classList.add('cartao--voltou');
+        setTimeout(() => origem.classList.remove('cartao--voltou'), 1000);
+      }
     };
     t.finished.then(limpar, limpar);
     return true;
@@ -332,109 +385,57 @@
     M.subir(raiz.querySelector('.cabeca-pergunta > .rotulo'), { y: 6, duracao: v.estado });
     M.titulo(raiz.querySelector('.cabeca-pergunta h1'), troca ? { duracao: v.bloco, em: 2 * v.escala } : { atraso: 40 });
     M.subir(raiz.querySelector('.dica'), { atraso: troca ? 60 : 320, y: 6, duracao: troca ? v.estado : v.bloco });
+    // A base viva e "Esta semana / A próxima" (só na primeira pergunta).
+    M.subir(raiz.querySelectorAll('.cabeca-pergunta .base-viva, .semanas'), { atraso: troca ? 40 : 180, y: 12, duracao: troca ? v.estado : v.bloco });
     M.subir(raiz.querySelectorAll('.opcoes > .opcao, .onde-chips > *, .faixa > *'), troca ? { atraso: 40, y: 10, duracao: v.estado } : { atraso: 260, y: 14 });
     M.subir(raiz.querySelector('.pe'), { atraso: troca ? 120 : 520, y: 0, duracao: v.estado });
   }
 
+  // O guia abre (movimento.md, 2): os fios da edição se desenham, o título
+  // sobe por linha, o pedido e as abas em escada, a capa assenta (bloco por
+  // opacidade e a foto por escala), a régua se desenha, as chamadas e os
+  // links chegam por último. Nada passa de 1,4 s do toque ao último quadro.
   function entraResultado(raiz) {
     const v = M.v();
-    M.subir(raiz.querySelector('.pedido'), { y: 6, duracao: v.estado });
-    M.titulo(raiz.querySelector('#cabeca-resultado h1'), { atraso: 60 });
-    M.subir(raiz.querySelector('#conversa'), { atraso: 380, y: 8 });
-    // A programação: os fios ficam, e cada festa chega na sua linha, em
-    // escada; a "% a sua cara" se desenha depois. As de baixo, quando a
-    // rolagem chega perto delas.
-    M.aoVer(raiz.querySelectorAll('.festa'), (li) => [
-      M.subir([...li.children], { y: 12, escada: false }),
-      M.revelar(li.querySelector('.cara-pct'), { atraso: 280, duracao: v.bloco }),
-    ], { atraso: 420 });
-    // O ajuste fecha a tela: entra depois das festas que estão à vista.
-    M.aoVer(raiz.querySelectorAll('.bloco-rotulo, .ajuste > *'), (x) => M.subir(x, { y: 10 }), { atraso: 760 });
-  }
-
-  // A régua do horário se desenha do começo ao fim da festa, no ritmo do
-  // relógio (linear); o ponto de "enche" chega quando o traço passa por ele,
-  // e cada rótulo aparece quando o traço o alcança. A janela pedida (o
-  // colchete rosé) se abre por baixo, um pouco antes.
-  function animarRegua(rg, atraso, dur) {
-    if (!rg) return [];
-    const v = M.v();
-    const d = dur || v.titulo;
-    const festa = rg.querySelector('.rg-festa');
-    const janela = rg.querySelector('.rg-janela');
-    const pos = (x) => parseFloat(x && x.dataset.l) || 0;
-    const ini = pos(festa);
-    const larg = parseFloat(festa && festa.dataset.w) || 0;
-    const quando = (x) => (larg ? Math.max(0, Math.min(1, (x - ini) / larg)) : 1);
-    const traco = atraso + 120;
-    const anims = [
-      M.revelar(janela, { atraso, duracao: v.bloco }),
-      M.fio(festa, { atraso: traco, duracao: d, curva: 'linear' }),
-    ];
-    const pico = rg.querySelector('.rg-pico, .rg-media');
-    if (pico && pico.classList.contains('rg-pico')) {
-      anims.push(M.subir(pico, { atraso: traco + d * quando(pos(pico)) + 40, y: -6, duracao: v.estado }));
-    }
-    for (const r of rg.querySelectorAll('.rg-cima .rg-rotulo')) {
-      // O rótulo do fim está preso à direita do ponto: ele chega com o fim.
-      anims.push(M.subir(r, { atraso: traco + d * quando(pos(r)) - 60, y: 4, duracao: v.estado }));
-    }
-    anims.push(M.subir(rg.querySelectorAll('.rg-baixo .rg-rotulo'), { atraso: atraso + 200, y: 0, duracao: v.estado, escada: false }));
-    return anims.flat();
-  }
-
-  // A régua da idade: a faixa pedida se abre e a média chega nela.
-  function animarReguaIdade(rg) {
-    const v = M.v();
-    return [
-      M.revelar(rg.querySelector('.rg-janela'), { duracao: v.bloco }),
-      M.subir(rg.querySelector('.rg-media'), { atraso: 360, y: -6, duracao: v.estado }),
-      M.subir(rg.querySelectorAll('.rg-baixo .rg-rotulo'), { atraso: 120, y: 0, duracao: v.estado, escada: false }),
-    ].flat();
+    M.edicao(raiz.querySelector('.edicao'));
+    M.subir(raiz.querySelectorAll('.guia-cabeca .base-viva'), { atraso: 160, y: 6, duracao: v.estado });
+    M.titulo(raiz.querySelector('#cabeca-resultado h1'), { atraso: 120 });
+    M.subir(raiz.querySelectorAll('#cabeca-resultado > :not(h1), .abas-linha'), { atraso: 260 });
+    const lista = raiz.querySelector('#lista-festas');
+    if (!lista) return;
+    M.capa(lista.querySelector('.capa'), { atraso: 320 });
+    M.subir(lista.querySelectorAll('.chamada'), { atraso: 560 });
+    M.subir(lista.querySelectorAll(':scope > .mais, :scope > .bloco-guia'), { atraso: 700 });
+    M.subir(lista.querySelectorAll(':scope > .linhas > li'), { atraso: 640, y: 12 });
+    // O ajuste fecha a tela: entra quando a rolagem chega nele.
+    M.aoVer(raiz.querySelectorAll('.ajuste > *'), (x) => M.subir(x, { y: 10 }), { atraso: 760 });
   }
 
   function entraFesta(raiz, { volta, vista }) {
     const v = M.v();
     const barra = raiz.querySelector('.barra');
-    const corpo = [...raiz.children].filter((x) => !x.matches('.topo, .barra'));
+    const corpo = [...raiz.children].filter((x) => !x.matches('.topo, .barra, .peca'));
     if (volta) {
       // Voltando do envio: o detalhe só reaparece.
       M.subir(corpo, { y: 0, duracao: v.estado, escada: false });
       return;
     }
-    // A ficha não espera a régua: os blocos de texto entram em escada logo
-    // depois da hora (até uns 400 ms), e a régua se desenha por cima deles,
-    // no ritmo do relógio.
-    const q = raiz.querySelector('.detalhe-quando');
-    if (q) {
-      M.subir(q.querySelector(':scope > .rotulo'), { y: 6, duracao: v.estado });
-      // Sem a viagem do cartão, a hora sobe de dentro da sua linha.
-      if (!vista) M.mascara(q.querySelector('.detalhe-hora .hora'), { atraso: 40 });
-      M.subir(q.querySelector('.detalhe-media-curta'), { atraso: 120, y: 6, duracao: v.estado });
-      animarRegua(q.querySelector('.regua:not(.regua-idade)'), 80, v.bloco + 2 * v.escala);
-      M.subir(q.querySelector('.detalhe-encaixe'), { atraso: 200, y: 8 });
-      // A idade logo depois do horário, de cima para baixo.
-      const ri = q.querySelector('.regua-idade');
-      if (ri) M.aoVer(ri, animarReguaIdade, { atraso: 180 });
-      M.aoVer(q.querySelectorAll('.media-origem, .idade-encaixe'), (x) => M.subir(x, { y: 8 }), { atraso: 240 });
-      const cara = q.querySelector('.cara');
-      if (cara) {
-        M.aoVer(cara, (c) => [
-          M.subir(c.querySelector('.cara-pct'), { y: 10 }),
-          M.subir(c.querySelector('.cara-peso'), { atraso: 60, y: 8 }),
-          M.subir(c.querySelectorAll('.cara-linha'), { atraso: 120, y: 8 }),
-        ].flat(), { atraso: 300 });
-      }
+    const capa = raiz.querySelector('.capa--detalhe');
+    const secoes = [...raiz.querySelectorAll(':scope > .secao, :scope > .vazios')];
+    if (vista) {
+      // A capa, a hora, o nome e o cartaz chegaram pela transição: o resto do
+      // detalhe entra em blocos assim que a troca começa a pintar.
+      M.subir(capa ? capa.querySelectorAll('.capa-dia, .ficha-casa, .ficha-credito') : [], { atraso: 160, y: 8, duracao: v.estado });
+      M.reguaDaNoite(capa && capa.querySelector('.regua'), { atraso: 200 });
+      M.subir(secoes.slice(0, 3), { atraso: 240 });
+    } else {
+      M.capa(capa, { atraso: 0 });
+      M.subir(secoes.slice(0, 3), { atraso: 360 });
     }
-    // O resto da ficha, por ordem, quando chega perto da tela.
-    const quem = raiz.querySelector('.detalhe-quem');
-    if (quem && vista) {
-      // O nome chegou viajando: o resto do bloco dele chega junto.
-      M.subir([...quem.querySelectorAll('.cartaz, .ficha-produtora, .ficha-casa, .ficha-frase, .bloco-onde')], { atraso: 220, y: 10 });
-    }
-    M.aoVer(corpo.filter((x) => x !== q && !(vista && x === quem)), (x) => M.subir(x, { y: 14 }), { atraso: 300 });
+    // As de baixo, quando a rolagem chega nelas.
+    M.aoVer(secoes.slice(3), (x) => M.subir(x, { y: 12 }), { atraso: vista ? 300 : 420 });
     // A barra sobe por baixo.
-    if (barra) M.animar(barra, [{ translate: '0 100%' }], { duration: v.bloco, easing: v.saida, delay: 240 });
+    if (barra) M.animar(barra, [{ translate: '0 100%' }], { duration: v.bloco, easing: v.saida, delay: 300 });
   }
 
   function entraMandar(raiz, volta) {
@@ -487,8 +488,8 @@
     clearTimeout(estado.avancoPendente);
     cancelarEspera();
     Object.assign(estado, {
-      respostas: { dia: null, janela: null, bairros: [], idade: null, teto: null, estilos: [] },
-      editando: null, criterios: null, resultado: null, fala: null, novas: [], mandar: null, festa: null, rolagemLista: 0,
+      respostas: { dia: null, semana: 'esta', janela: null, bairros: [], idade: null, teto: null, estilos: [] },
+      editando: null, criterios: null, resultado: null, fala: null, novas: [], mandar: null, festa: null, rolagemLista: 0, todasAbertas: false,
       tela: 'pergunta', passo: 0,
     });
     const n = nivel();
@@ -615,10 +616,20 @@
     else buscarFestas(criteriosDoFormulario(), { botao });
   }
 
+  // "Sair quando?" (R24): os dias da semana escolhida, cada um com a data e
+  // o número de festas reais ("Quinta, 26 nov · 8"); "Hoje" com 0 vai para
+  // o fim. Sem os dias novos no formulário, os de antes.
+  function diasDaPergunta() {
+    const porSemana = diasDoForm();
+    const semana = estado.respostas.semana === 'proxima' && porSemana.proxima.length ? 'proxima' : 'esta';
+    return porSemana[semana].length ? porSemana[semana] : estado.form.dias || [];
+  }
+
   function telaPergunta() {
     const i = estado.passo;
     const p = PERGUNTAS[i];
-    const opcoes = estado.form[p.lista];
+    const ehDia = p.chave === 'dia';
+    const opcoes = ehDia ? diasDaPergunta() : estado.form[p.lista];
     const idTitulo = `pergunta-${p.chave}`;
     const editando = estado.editando === p.chave;
 
@@ -632,17 +643,15 @@
 
     function atualizarBotao() {
       if (p.tipo === 'varios') {
-        continuar.textContent = valorDe('estilos').length ? 'Ver festas' : 'Ver festas de qualquer som';
+        continuar.replaceChildren(valorDe('estilos').length ? 'Ver festas' : 'Ver festas de qualquer som', avanco());
       } else {
-        continuar.textContent = editando ? 'Ver festas' : 'Continuar';
+        continuar.replaceChildren(editando ? 'Ver festas' : 'Continuar', avanco());
         continuar.disabled = !respondida(p);
       }
     }
 
     let porToque = false;
-    const lista = p.tipo === 'bairros' ? perguntaBairros(idTitulo, p)
-      : p.tipo === 'idade' ? perguntaIdade(idTitulo, p)
-        : el('div', {
+    const criarOpcoes = (opcoes) => el('div', {
       class: 'opcoes',
       role: p.tipo === 'um' ? 'radiogroup' : 'group',
       'aria-labelledby': idTitulo,
@@ -663,6 +672,7 @@
       input.addEventListener('change', () => {
         if (p.tipo === 'um') {
           estado.respostas[p.chave] = o.id;
+          if (ehDia) estado.respostas.semana = o.id === 'hoje' ? 'esta' : o.semana === 'proxima' ? 'proxima' : estado.respostas.semana || 'esta';
           if (!porToque) continuar.removeAttribute('data-oculto');
         } else {
           const atual = new Set(valorDe('estilos'));
@@ -674,6 +684,19 @@
         atualizarBotao();
         salvar();
       });
+      if (ehDia) {
+        // "Hoje terça" (o dia em tom de rótulo) e a contagem real em serifa.
+        const [primeiro, ...resto] = String(o.rotulo || DIA[o.id].longo).split(/,\s*/);
+        const nome = (o.id === 'hoje' || /^hoje$/i.test(primeiro)) && resto.length
+          ? el('span', { class: 'opcao-nome' }, `${primeiro} `, el('em', { texto: resto.join(', ') }))
+          : el('span', { class: 'opcao-nome', texto: String(o.rotulo || DIA[o.id].longo) });
+        const n = Number.isInteger(o.reais) ? o.reais : null;
+        return el('label', { class: `opcao opcao--um${n === 0 ? ' opcao--vazia' : ''}` },
+          input,
+          el('span', { class: 'marcador', 'aria-hidden': 'true' }),
+          nome,
+          n !== null ? el('span', { class: 'opcao-conta' }, el('span', { class: 'vh', texto: ', ' }), el('b', { texto: String(n) }), el('span', { texto: n === 1 ? 'festa' : 'festas' })) : el('span'));
+      }
       const [principal, detalhe] = String(o.rotulo).split(' · ');
       return el('label', { class: `opcao opcao--${p.tipo}` },
         input,
@@ -681,6 +704,38 @@
         el('span', { class: 'opcao-nome', texto: principal }),
         detalhe ? el('span', { class: 'opcao-detalhe' }, el('span', { class: 'vh', texto: ', ' }), detalhe) : el('span'));
     }));
+    const lista = p.tipo === 'bairros' ? perguntaBairros(idTitulo, p)
+      : p.tipo === 'idade' ? perguntaIdade(idTitulo, p)
+        : criarOpcoes(opcoes);
+
+    // Esta semana / a próxima, acima das opções: as opções saem em 140 ms e
+    // as da outra semana sobem como na entrada. São dois botões, não abas.
+    const porSemana = ehDia ? diasDoForm() : null;
+    const semanas = ehDia && porSemana.proxima.length && porSemana.esta.length ? el('div', { class: 'semanas', role: 'group', 'aria-label': 'Semana' },
+      [['esta', 'Esta semana'], ['proxima', 'A próxima']].map(([id, texto]) => {
+        const b = el('button', { type: 'button', class: 'semana', 'aria-pressed': String((estado.respostas.semana || 'esta') === id), texto });
+        b.addEventListener('click', () => {
+          if ((estado.respostas.semana || 'esta') === id) return;
+          estado.respostas.semana = id;
+          // "Hoje" não existe na próxima: a escolha cai.
+          if (estado.respostas.dia === 'hoje' && id === 'proxima') estado.respostas.dia = null;
+          for (const x of b.parentElement.children) x.setAttribute('aria-pressed', String(x === b));
+          const velha = form.querySelector('.opcoes');
+          const nova = criarOpcoes(diasDaPergunta());
+          const trocar = () => {
+            if (!velha.isConnected) return;
+            velha.replaceWith(nova);
+            M.subir(nova.querySelectorAll('.opcao'), { y: 10, duracao: M.v().estado });
+            atualizarBotao();
+          };
+          const saida = M.pode() ? M.animar(velha, [{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: M.v().troca, fill: 'forwards' }) : null;
+          if (saida) saida.finished.then(trocar, trocar);
+          else trocar();
+          salvar();
+        });
+        return b;
+      })) : null;
+    const base = ehDia && i === 0 ? baseVivaDoForm() : null;
 
     // O rodapé de todas as telas (a nota do protótipo e o tema) logo abaixo
     // do botão: a pergunta 1 é a primeira tela de quem abre o app direto.
@@ -695,7 +750,9 @@
       el('div', { class: 'cabeca-pergunta' },
         el('p', { class: 'rotulo', texto: editando ? 'Ajustar o pedido' : `${i + 1} de ${PERGUNTAS.length}` }),
         h1,
-        p.dica ? el('p', { class: 'dica', id: `${idTitulo}-dica`, texto: p.dica }) : null),
+        p.dica ? el('p', { class: 'dica', id: `${idTitulo}-dica`, texto: p.dica }) : null,
+        base),
+      semanas,
       lista,
       el('div', { class: 'pe' }, continuar, el('p', { class: 'aviso-erro', id: 'erro', role: 'alert' })),
       fim);
@@ -706,6 +763,13 @@
     });
     atualizarBotao();
     return form;
+  }
+
+  // A base viva na primeira pergunta: "Atualizado há 3h" e o que foi lido.
+  function baseVivaDoForm() {
+    const b = FT.baseViva(estado.form && estado.form.base);
+    if (!b) return null;
+    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }), b.conta ? el('span', { texto: b.conta }) : null);
   }
 
   // A faixa que vale: a respondida, ou o padrão do formulário (28 a 35).
@@ -903,14 +967,16 @@
 
   function criteriosDoFormulario() {
     const r = estado.respostas;
-    return { dia: r.dia, janela: r.janela, idade: { ...idadeDe(r) }, bairros: [...(r.bairros || [])], teto: r.teto, estilos: r.estilos };
+    // "Hoje" é sempre desta semana; os outros dias, da semana escolhida.
+    const semana = r.dia === 'hoje' ? 'esta' : r.semana === 'proxima' ? 'proxima' : 'esta';
+    return { dia: r.dia, semana, janela: r.janela, idade: { ...idadeDe(r) }, bairros: [...(r.bairros || [])], teto: r.teto, estilos: r.estilos };
   }
 
   // Um trecho do pedido reabre só aquela pergunta.
   function abrirParaEditar(chave) {
     const c = estado.criterios;
     estado.respostas = {
-      dia: c.dia, janela: c.janela, teto: c.teto, estilos: [...c.estilos],
+      dia: c.dia, semana: c.semana === 'proxima' ? 'proxima' : 'esta', janela: c.janela, teto: c.teto, estilos: [...(c.estilos || [])],
       bairros: [...(c.bairros || [])], idade: c.idade ? { ...c.idade } : null,
     };
     // Convite e sessões antigos falam em "faixa": reabre a pergunta da idade.
@@ -984,20 +1050,181 @@
     ir('resultado', { substituir });
   }
 
+  // ------------------------------------------------------------ o guia da semana (Direção E)
+
+  // O resultado (U29, desenho da U39): o cabeçalho de revista com a edição e
+  // a base viva, o título e o pedido, as abas dos dias, a capa (a festa de
+  // maior "% a sua cara"), as chamadas 2 e 3, "Ver todas as N" e "Ver no
+  // mapa"; sem real no dia, os exemplos abaixo, marcados, sem % (D11).
+
+  // Festa real: o /3 marca exemplo: false; a base fictícia não marca.
+  const ehReal = (o) => Boolean(o) && (o.exemplo === false || Boolean(o.festa && o.festa.exemplo === false));
+  const unicas = (os) => os.filter((o, i) => os.findIndex((x) => x.festa.id === o.festa.id) === i);
+
+  // As três recomendadas, todas as reais do dia e os exemplos. Entende a
+  // resposta nova (opcoes, maisDoDia, exemplos) e a de antes (a mistura).
+  function partesDoResultado(r) {
+    const doMotor = r && Array.isArray(r.opcoes) ? r.opcoes.filter((o) => o && o.festa) : [];
+    const reais = doMotor.filter(ehReal);
+    const todas = unicas([...reais, ...(r && Array.isArray(r.maisDoDia) ? r.maisDoDia.filter((o) => o && o.festa && ehReal(o)) : [])]);
+    const fict = r && Array.isArray(r.exemplos) && r.exemplos.length ? r.exemplos : doMotor.filter((o) => !ehReal(o));
+    // Fictícia só quando o dia não tem real (D11).
+    return { opcoes: reais.slice(0, 3), todas, exemplos: todas.length ? [] : fict.map((o) => ({ ...o, exemplo: true })) };
+  }
+
+  const dataDe = (o) => (o && (o.data || (o.festa && (o.festa.dataDaNoite || o.festa.data)))) || null;
+  // "27 nov"
+  const diaDoMes = (iso) => {
+    const m = typeof iso === 'string' && iso.match(/^\d{4}-(\d{2})-(\d{2})/);
+    return m ? `${Number(m[2])} ${MESES[Number(m[1]) - 1]}` : '';
+  };
+  // "Sex · 27 nov"
+  function diaComData(o) {
+    const d = DIA[o.festa.dia];
+    const data = diaDoMes(dataDe(o));
+    return [d ? d.aba : '', data].filter(Boolean).join(' · ');
+  }
+
+  // Os dias do formulário (U24): [{ id, semana, data, rotulo, reais }]. A
+  // resposta de antes só traz { id, rotulo }: os dois servem.
+  function diasDoForm() {
+    const f = estado.form || {};
+    const dias = Array.isArray(f.dias) ? f.dias.filter((d) => d && typeof d.id === 'string' && DIA[d.id]) : [];
+    const porSemana = { esta: [], proxima: [] };
+    if (f.semanas && typeof f.semanas === 'object') {
+      for (const s of ['esta', 'proxima']) porSemana[s] = (Array.isArray(f.semanas[s]) ? f.semanas[s] : []).filter((d) => d && DIA[d.id]).map((d) => ({ ...d, semana: s }));
+    } else {
+      for (const d of dias) porSemana[d.semana === 'proxima' ? 'proxima' : 'esta'].push(d);
+    }
+    // "Hoje" com 0 reais vai para o fim (R24).
+    for (const s of ['esta', 'proxima']) {
+      const i = porSemana[s].findIndex((d) => d.id === 'hoje' && d.reais === 0);
+      if (i >= 0) porSemana[s].push(...porSemana[s].splice(i, 1));
+    }
+    return porSemana;
+  }
+
+  // As abas do resultado: hoje (quando não é de quinta a domingo; num desses
+  // dias a aba do dia vira "Hoje"), quinta, sexta, sábado e domingo, com a
+  // contagem real de cada um, quando se sabe.
+  const ABA_ORDEM = ['hoje', 'qui', 'sex', 'sab', 'dom'];
+  function abasDoResultado() {
+    const c = estado.criterios;
+    const r = estado.resultado;
+    const semana = c.semana === 'proxima' ? 'proxima' : 'esta';
+    const dias = new Map();
+    const juntar1 = (id, x) => dias.set(id, { ...(dias.get(id) || { id, data: null, reais: null }), ...x });
+    for (const d of diasDoForm()[semana]) juntar1(d.id, { data: d.data || null, reais: Number.isInteger(d.reais) ? d.reais : null, hoje: d.hoje === true && d.id !== 'hoje' });
+    for (const d of Array.isArray(r.outrosDias) ? r.outrosDias : []) {
+      if (d && DIA[d.dia]) juntar1(d.dia, { data: d.data || (dias.get(d.dia) || {}).data || null, reais: Number.isInteger(d.reais) ? d.reais : null });
+    }
+    const { todas } = partesDoResultado(r);
+    juntar1(c.dia, { data: r.dataReal || dataDe(todas[0]) || (dias.get(c.dia) || {}).data || null, reais: todas.length });
+    const hoje = dias.get('hoje');
+    let hojeEm = null;
+    if (hoje && hoje.data) hojeEm = ['qui', 'sex', 'sab', 'dom'].find((id) => dias.has(id) && dias.get(id).data === hoje.data) || null;
+    if (hojeEm) {
+      const x = dias.get(hojeEm);
+      juntar1(hojeEm, { hoje: true, reais: c.dia === 'hoje' ? hoje.reais : x.reais === null ? hoje.reais : x.reais });
+      dias.delete('hoje');
+    }
+    // Na linha das abas, a ordem é a do tempo: "Hoje" vem primeiro. Vazio
+    // (0 reais) e fora do pedido, ele sai: depois de domingo confundia, e o
+    // dia segue na primeira pergunta. A regra "Hoje com 0 vai para o fim" é
+    // só da primeira pergunta.
+    const lista = ABA_ORDEM.filter((id) => dias.has(id)).map((id) => dias.get(id))
+      .filter((x) => !(x.id === 'hoje' && x.reais === 0 && c.dia !== 'hoje'));
+    return { lista, selecionada: c.dia === 'hoje' && hojeEm ? hojeEm : c.dia };
+  }
+
+  function abas() {
+    const { lista, selecionada } = abasDoResultado();
+    if (lista.length < 2) return null;
+    const grupo = el('div', { class: 'abas', role: 'group', 'aria-label': 'Dia' },
+      lista.map((x) => {
+        const d = DIA[x.id];
+        const n = x.reais;
+        const nome = x.hoje && x.id !== 'hoje' ? `Hoje, ${d.nome}` : d.longo;
+        const b = el('button', {
+          type: 'button', class: n === 0 ? 'aba aba--vazia' : 'aba', 'data-dia': x.id, 'aria-pressed': String(x.id === selecionada),
+          'aria-label': `${nome}${Number.isInteger(n) ? `, ${n} ${n === 1 ? 'festa' : 'festas'}` : ''}`,
+        }, el('span', { class: 'aba-nome', texto: x.hoje ? 'Hoje' : d.aba }), Number.isInteger(n) && n > 0 ? el('sup', { 'aria-hidden': 'true', texto: String(n) }) : null);
+        b.addEventListener('click', () => trocarDia(x.id, b));
+        return b;
+      }),
+      el('span', { class: 'aba-fio', 'aria-hidden': 'true' }));
+    return el('div', { class: 'abas-linha', id: 'abas' }, grupo);
+  }
+
+  // A troca de dia atualiza a linha das abas no próprio nó (aria-pressed, a
+  // contagem, a aba vazia), para o fio não ser trocado no meio do percurso.
+  // Devolve false quando as abas mudaram de conjunto: aí a linha é refeita.
+  function atualizarAbas(velho, novo) {
+    if (!velho || !novo || velho.hidden || novo.hidden) return false;
+    const vs = [...velho.querySelectorAll('.aba')];
+    const ns = [...novo.querySelectorAll('.aba')];
+    if (!vs.length || vs.length !== ns.length || vs.some((b, i) => b.dataset.dia !== ns[i].dataset.dia)) return false;
+    vs.forEach((b, i) => {
+      const n = ns[i];
+      for (const at of ['class', 'aria-pressed', 'aria-label']) b.setAttribute(at, n.getAttribute(at));
+      b.replaceChildren(...n.childNodes);
+    });
+    return true;
+  }
+
+  // O fio da aba escolhida: um elemento só, movido por translateX e scaleX
+  // (cobre a palavra, não a contagem).
+  function posicionarAbas(raiz, anima = false) {
+    const grupo = raiz && raiz.querySelector('.abas');
+    if (!grupo) return;
+    const sel = grupo.querySelector('.aba[aria-pressed="true"]');
+    const fio = grupo.querySelector('.aba-fio');
+    if (!sel || !fio) return;
+    const nome = sel.querySelector('.aba-nome');
+    const largura = nome ? nome.getBoundingClientRect().width : sel.offsetWidth;
+    if (!anima || !M.pode()) fio.style.transition = 'none';
+    fio.style.transform = `translateX(${sel.offsetLeft}px) scaleX(${Math.max(1, Math.round(largura))})`;
+    if (!anima || !M.pode()) {
+      fio.getBoundingClientRect();
+      fio.style.transition = '';
+    }
+  }
+  window.addEventListener('resize', () => posicionarAbas($tela));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => posicionarAbas($tela));
+
+  // "Guia da semana · 26 a 29 nov · São Paulo": as datas de quinta a domingo
+  // da semana pedida, quando se sabe.
+  function edicaoDaSemana() {
+    const datas = abasDoResultado().lista.filter((x) => x.id !== 'hoje' && x.data).map((x) => x.data).sort();
+    let quando = '';
+    if (datas.length) {
+      const [a, b] = [datas[0], datas[datas.length - 1]];
+      const [da, db] = [diaDoMes(a), diaDoMes(b)];
+      quando = a === b ? da : a.slice(5, 7) === b.slice(5, 7) ? `${Number(a.slice(8, 10))} a ${db}` : `${da} a ${db}`;
+    }
+    return el('p', { class: 'edicao' },
+      el('span', { texto: estado.criterios.semana === 'proxima' ? 'Guia da próxima semana' : 'Guia da semana' }),
+      quando ? el('span', { texto: quando }) : null,
+      el('span', { texto: 'São Paulo' }));
+  }
+
+  // "Atualizado há 3h" / "41 festas lidas de 50 perfis e 3 sites de ingresso".
+  function baseViva(base) {
+    const b = FT.baseViva(base);
+    if (!b) return null;
+    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }), b.conta ? el('span', { texto: b.conta }) : null);
+  }
+
   function tituloResultado() {
     const r = estado.resultado;
-    const d = DIA[estado.criterios.dia];
-    if (!r.opcoes.length) return titulo('h1', 'titulo titulo--resultado', `Nada ${d.seu}`, `${d.nome}`, ', ainda.');
-    // Com a mistura, o título conta só as reais: exemplo não é festa do seu
-    // dia. Sem nenhuma real na lista, ele diz que são exemplos.
-    const temReal = r.opcoes.some((o) => o.exemplo === false);
-    if (r.misto && !temReal) return titulo('h1', 'titulo titulo--resultado', `Exemplos ${d.seu}`, `${d.nome}.`);
-    const cabe = (o) => o.atende && o.bloco === 'pedido';
-    // Conta só as que cabem no pedido: vizinhas e fora da faixa vêm rotuladas.
-    const n = r.misto ? r.opcoes.filter((o) => o.exemplo === false && cabe(o)).length
-      : typeof r.noPedido === 'number' ? r.noPedido : typeof r.atendem === 'number' ? r.atendem : r.opcoes.length;
-    if (!n) return titulo('h1', 'titulo titulo--resultado', `${r.misto ? 'Nenhuma real' : 'Nada'} do jeito que você `, 'pediu.');
-    return titulo('h1', 'titulo titulo--resultado', `${NUMERAL[n]} ${d.seu}`, `${d.nome}.`);
+    const d = DIA[estado.criterios.dia] || DIA.sex;
+    const { opcoes, todas } = partesDoResultado(r);
+    if (!todas.length) return titulo('h1', 'titulo titulo--resultado', `Nada ${d.seu}`, d.nome, ', ainda.');
+    if (!opcoes.length) return titulo('h1', 'titulo titulo--resultado', `Nada cabe inteiro ${d.seu}`, `${d.nome}.`);
+    // O título conta todas as reais do dia, como a aba e o "Ver todas as N"
+    // (e a nota do servidor): as três de cima são a recomendação, não o total.
+    const n = todas.filter((o) => !o.exemplo).length || opcoes.length;
+    return titulo('h1', 'titulo titulo--resultado', `${NUMERAL[n] || n} ${n === 1 ? 'festa' : 'festas'} ${d.seu}`, `${d.nome}.`);
   }
 
   function frasePedido(partes) {
@@ -1018,68 +1245,23 @@
     return p;
   }
 
-  // Posição no eixo comum das 17h às 3h (17 a 27), em porcentagem.
+  // Posição pelo CSSOM (a CSP não deixa atributo style).
   const num = (x) => typeof x === 'number' && Number.isFinite(x);
-  const noEixo = (h) => ((Math.max(EIXO.de, Math.min(EIXO.ate, h)) - EIXO.de) / (EIXO.ate - EIXO.de)) * 100;
   const pct = (x) => `${Math.round(x * 100) / 100}%`;
   const rotuloHora = (h) => {
     const total = Math.round(h * 60) % (24 * 60);
     const m = total % 60;
     return `${Math.floor(total / 60)}h${m ? String(m).padStart(2, '0') : ''}`;
   };
+  // "às 19h", "à 1h", "à meia-noite".
+  const asHoras = (h) => {
+    const t = Math.round(h * 60) % (24 * 60);
+    if (t === 0) return 'à meia-noite';
+    return `${t < 120 ? 'à' : 'às'} ${rotuloHora(h)}`;
+  };
+  // "R$ 150" nunca quebra entre o símbolo e o número.
+  const semQuebraNoPreco = (t) => String(t).replace(/R\$ (?=\d)/g, 'R$ ');
 
-  // A janela pedida: da API (inicioMin, fimMax); sem ela, da tabela das janelas.
-  function janelaPedida() {
-    if (estado.avulsa) return null;
-    const c = estado.criterios || {};
-    if (num(c.inicioMin) && num(c.fimMax)) return [c.inicioMin, c.fimMax];
-    return JANELA[c.janela] || null;
-  }
-
-  // A régua do detalhe (R4): o eixo das 15h às 3h, a festa num traço firme,
-  // a pista cheia num quadrado e a janela pedida num colchete rosé por baixo.
-  // Os rótulos ficam presos ao que marcam: o começo e o fim em cima, a pista
-  // cheia embaixo. Festa que passa das 3h vai até a borda e diz a hora real.
-  // É desenho: a frase do horário vai junto para o leitor de tela.
-  function regua(f) {
-    if (!num(f.inicio) || !num(f.fim)) return null;
-    const faixa = (classe, de, ate) => el('span', { class: classe, 'data-l': pct(noEixo(de)), 'data-w': pct(Math.max(0, noEixo(ate) - noEixo(de))) });
-    const rotulo = (classe, h, texto, lado) => el('span', { class: `${classe} rg-${lado}`, 'data-l': pct(noEixo(h)), texto });
-    const j = janelaPedida();
-    const xFim = noEixo(Math.min(f.fim, EIXO.ate));
-    const xPico = num(f.esquenta) ? noEixo(f.esquenta) : null;
-    // Em cima, a festa: quando enche e até quando vai. Perto demais um do
-    // outro (menos de uns 56 px), viram um rótulo só, no fim.
-    const juntos = xPico === null || xFim - xPico < 32;
-    const cima = juntos
-      ? [rotulo('rg-rotulo', Math.min(f.fim, EIXO.ate), `${xPico === null ? '' : `enche ${rotuloHora(f.esquenta)} · `}até ${rotuloHora(f.fim)}`, 'dir')]
-      : [rotulo('rg-rotulo', f.esquenta, `enche ${rotuloHora(f.esquenta)}`, xPico < 12 ? 'esq' : 'meio'),
-        rotulo('rg-rotulo', Math.min(f.fim, EIXO.ate), `até ${rotuloHora(f.fim)}`, 'dir')];
-    // Embaixo, você: a janela pedida, com as pontas.
-    const baixo = j ? [rotulo('rg-rotulo rg-rotulo--voce', j[0], rotuloHora(j[0]), noEixo(j[0]) > 90 ? 'dir' : 'esq'),
-      rotulo('rg-rotulo rg-rotulo--voce', Math.min(j[1], EIXO.ate), rotuloHora(j[1]), 'dir')] : [];
-    return el('figure', { class: 'regua', 'aria-hidden': 'true' },
-      el('div', { class: 'rg-cima' }, cima),
-      el('div', { class: 'rg-trilho' },
-        j ? faixa('rg-janela', j[0], j[1]) : null,
-        faixa('rg-festa', f.inicio, Math.min(f.fim, EIXO.ate)),
-        num(f.esquenta) ? el('span', { class: 'rg-pico', 'data-l': pct(noEixo(f.esquenta)) }) : null),
-      j ? el('div', { class: 'rg-baixo' }, baixo) : null);
-  }
-
-  // O que a régua não diz: o fim e a pista cheia que a fonte não divulgou.
-  function vazioDoHorario(f) {
-    const semFim = !num(f.fim);
-    const semPico = !num(f.esquenta);
-    if (!semFim && !semPico) return null;
-    const texto = [semPico ? 'Pista cheia não informada.' : null, semFim ? 'A hora de acabar não foi divulgada.' : null].filter(Boolean).join(' ');
-    const p = ausente(texto);
-    p.setAttribute('aria-hidden', 'true');
-    p.classList.add('detalhe-vazio');
-    return p;
-  }
-
-  // Posição pelo CSSOM (a CSP não deixa atributo style).
   function posicionar(raiz) {
     for (const s of raiz.querySelectorAll('[data-l]')) {
       s.style.left = s.dataset.l;
@@ -1087,159 +1269,392 @@
     }
   }
 
+  // A régua da noite (R4, R28): o traço do começo ao fim real da festa, a
+  // pista cheia num quadrado no ponto dela, os rótulos presos ao que marcam.
+  // Sem o início ou sem o fim, não há régua: o vazio fica no pé, uma vez.
+  function reguaDaNoite(f, { longa = false } = {}) {
+    if (!num(f.inicio) || !num(f.fim) || f.fim <= f.inicio || f.horarioIncerto === true) return null;
+    const dur = f.fim - f.inicio;
+    const x = (h) => Math.max(0, Math.min(100, ((h - f.inicio) / dur) * 100));
+    const pico = num(f.esquenta) && f.esquenta > f.inicio && f.esquenta < f.fim ? x(f.esquenta) : null;
+    const frase = `Começa ${asHoras(f.inicio)}${pico !== null ? `, enche ${asHoras(f.esquenta)}` : ''} e acaba ${asHoras(f.fim)}.`;
+    const rot = (texto, classe, l) => el('span', { class: `regua-rot${classe ? ` ${classe}` : ''}`, 'data-l': l === null ? null : pct(l), texto });
+    return el('div', { class: 'regua', role: 'img', 'aria-label': frase },
+      el('span', { class: 'regua-trilho' }),
+      el('span', { class: 'regua-festa' }),
+      pico !== null ? el('span', { class: 'regua-pico', 'data-l': pct(pico) }) : null,
+      rot(`${rotuloHora(f.inicio)}${longa ? ' começa' : ''}`, '', 0),
+      // O rótulo do meio só cabe longe das pontas.
+      pico !== null && pico > 24 && pico < 68 ? rot(`${rotuloHora(f.esquenta)} enche`, 'regua-rot--meio', pico) : null,
+      rot(`${rotuloHora(f.fim)}${longa ? ' acaba' : ''}`, 'regua-rot--fim', null));
+  }
+
   // "% a sua cara" (contrato da frente CARA): opcao.cara = { pct, partes }.
-  // Sem cara (detalhe aberto por link, ou API antiga), não aparece nada.
+  // Sem cara (detalhe aberto por link, exemplo, API antiga), não aparece nada.
   function caraDe(o) {
-    const c = o && o.cara;
+    const c = o && o.exemplo !== true && o.cara;
     return c && Number.isInteger(c.pct) && c.pct >= 0 && c.pct <= 100 ? c : null;
   }
 
-  // Uma entrada da programação, como a lista da landing no celular: a hora em
-  // serifa à esquerda (e quando enche); ao lado o nome, a casa com o preço, a
-  // média com a origem na mesma linha, "% a sua cara" (quando ela varia na
-  // lista) e o aviso quando fura o pedido. A coluna do app nunca passa de
-  // 432 px de texto, e uma terceira coluna só para a média espremia o cartão.
-  // O item inteiro abre o detalhe: o nome é o botão, e a área de toque dele
-  // cobre o item. Não há envio daqui (R3).
-  function entrada(o, i, primeiroBloco, comPct) {
+  // O porquê do cartão: o que cabe na tinta, o que falta na cor do rótulo.
+  function porqueDe(o) {
+    if (o.exemplo === true) return null;
+    const { cabe, falta } = FT.porqueDoCartao(o, { semMedia: Boolean(estado.resultado && estado.resultado.semMedia) });
+    if (!cabe && !falta) return null;
+    return el('p', { class: 'porque' }, cabe ? el('b', { texto: cabe }) : null, cabe && falta ? ' ' : null, falta || null);
+  }
+
+  // Casa · bairro · preço, com o preço inteiro (nunca quebra no "R$").
+  function ondeDe(o, { comBairro = true } = {}) {
     const f = o.festa;
-    const primeiro = i === 0 && primeiroBloco;
-    const nova = estado.novas.includes(f.id);
+    const p = FT.preco(f);
+    const bairro = comBairro ? o.bairro || f.bairroNome || null : null;
+    const casa = f.casa || '';
+    // Sem casa nem bairro, o endereço da fonte (quando há) diz onde é.
+    const rua = !casa && !bairro && f.endereco && typeof f.endereco.texto === 'string' ? f.endereco.texto.trim() : '';
+    const partes = [casa ? el('b', { texto: casa }) : rua ? FT.semViuva(rua) : null, bairro && !(casa || '').includes(bairro) ? bairro : null,
+      p.tipo === 'sem-preco' ? null : el('b', { texto: semQuebraNoPreco(FT.precoNaLista(f)) })].filter(Boolean);
+    return partes.flatMap((x, i) => (i ? [' · ', x] : [x]));
+  }
+
+  // A linha "casa · bairro · preço" só existe quando tem o que dizer (sem
+  // nada, um <p> vazio deixava a margem dele na capa).
+  function ondeOuNada(classe, o) {
+    const partes = ondeDe(o);
+    return partes.length ? el('p', { class: classe }, partes) : null;
+  }
+
+  // Abre o detalhe pelo cartão tocado: o link funciona sozinho (?festa=), e
+  // o toque normal fica no app, com a transição.
+  function ligarAbrir(a, o, de) {
+    a.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button > 0) return;
+      e.preventDefault();
+      if (estado.mapaAberto && de === 'linha' && window.FindeMapa) window.FindeMapa.marcar(document.getElementById('mapa-lista'), o.festa.id);
+      abrirFesta(o, de);
+    });
+    return a;
+  }
+  const hrefDe = (o) => `?festa=${encodeURIComponent(o.festa.id)}`;
+  // "18h00" vira "18h" (a hora cheia sem os zeros, como no rascunho e no
+  // convite: a mesma função mora em festa-texto.js).
+  const horaCurta = (t) => FT.horaCurta(t);
+  // Sem hora, o span não leva a classe .hora: as regras de corpo da coluna
+  // das horas não o alcançam (revisão de desenho, P1).
+  const horaOuIncerta = (o, classe = 'hora') => (o.hora ? hora(horaCurta(o.hora), classe) : el('span', { class: 'hora-incerta', texto: 'a confirmar' }));
+
+  // A capa: a festa de maior "% a sua cara", com o cartaz (miniatura de 480)
+  // desfocado ao fundo, sob o véu; sem cartaz, bordô chapado.
+  function capaDaLista(o) {
+    const f = o.festa;
+    const c = FT.cartazDe(f);
     const cara = caraDe(o);
-    const pctVisivel = Boolean(comPct && cara);
-    const abrir = el('button', { type: 'button', class: 'festa-abrir', texto: f.nome, 'aria-describedby': `linha-${f.id}` });
-    abrir.addEventListener('click', () => abrirFesta(o));
-    const aviso = typeof o.aviso === 'string' && o.aviso.trim() ? o.aviso.trim() : '';
-    // Sem a % (API antiga), o porquê continua dizendo o que distingue a festa.
-    const dito = aviso.toLocaleLowerCase('pt-BR');
-    const motivos = cara ? [] : (o.motivos || []).filter((m) => !dito || !dito.includes(String(m).toLocaleLowerCase('pt-BR')));
-    const temMedia = Number.isInteger(f.mediaIdade);
-    const origem = f.origemIdadeCurta || (o.origem && o.origem.curta) || '';
-    // A média uma vez só, com a origem: a linha da API já trazia "média N anos".
-    const lido = FT.cartaoFalado(o, { pct: pctVisivel ? cara.pct : null, nova });
-    // Festa fictícia no meio das reais: "Exemplo", em texto, na coluna da hora.
+    const estilo = Array.isArray(f.estilos) && f.estilos.length ? FT.ESTILOS[f.estilos[0]] : null;
+    const a = el('a', { class: `capa${estado.novas.includes(f.id) ? ' nova' : ''}`, href: hrefDe(o), 'data-festa': f.id, 'data-de': 'capa' },
+      c ? el('span', { class: 'capa-foto' }, el('img', { class: 'capa-fundo', src: c.miniatura, alt: '', decoding: 'async' })) : el('span', { class: 'capa-placa', 'aria-hidden': 'true' }),
+      el('div', { class: 'capa-dentro' },
+        el('div', { class: 'etiquetas', 'aria-hidden': 'true' },
+          estilo ? el('span', { class: 'etiqueta', texto: estilo }) : null,
+          o.esgotada ? el('span', { class: 'etiqueta', texto: 'Esgotou' }) : null,
+          cara ? el('span', { class: 'etiqueta etiqueta--cara', texto: `${cara.pct}% a sua cara` }) : null),
+        el('p', { class: 'capa-quando' }, horaOuIncerta(o), el('span', { class: 'capa-dia', texto: diaComData(o) })),
+        el('p', { class: 'capa-nome', texto: FT.semViuva(f.nome) }),
+        reguaDaNoite(f),
+        ondeOuNada('capa-onde', o),
+        porqueDe(o)));
+    return ligarAbrir(a, o, 'capa');
+  }
+
+  // As chamadas 2 e 3: tipográficas, como a programação.
+  function chamada(o, comPct) {
+    const f = o.festa;
+    const cara = caraDe(o);
+    const a = el('a', { class: `chamada${estado.novas.includes(f.id) ? ' nova' : ''}`, href: hrefDe(o), 'data-festa': f.id, 'data-de': 'chamada' },
+      el('span', { class: 'capa-placa', 'aria-hidden': 'true' }),
+      el('div', {}, horaOuIncerta(o)),
+      el('div', {},
+        el('p', { class: 'chamada-nome', texto: FT.semViuva(f.nome) }),
+        ondeOuNada('chamada-onde', o),
+        porqueDe(o),
+        comPct && cara ? el('span', { class: 'pct', texto: `${cara.pct}% a sua cara` }) : null));
+    return ligarAbrir(a, o, 'chamada');
+  }
+
+  // Uma linha de "ver todas" (e dos exemplos): hora, nome, casa e preço, a
+  // miniatura à direita (retrato preenche, paisagem cabe inteira).
+  function linha(o) {
+    const f = o.festa;
     const exemplo = o.exemplo === true;
-    // Festa real de outra semana (o dia pedido ainda não tem real): a data.
-    const data = o.dataDistante ? FT.dataDoCartao(o.data, f.dia) : null;
-    // A % de uma festa real sem algum dado pedido conta o que falta pela metade.
-    const pctTexto = pctVisivel ? `${cara.pct}% a sua cara${cara.semDado && cara.semDado.length ? ', sem todos os dados' : ''}` : '';
-    return el('li', { class: `festa${nova ? ' nova' : ''}${exemplo ? ' festa--exemplo' : ''}`, 'data-festa': f.id },
-      el('div', { class: 'festa-quando', 'aria-hidden': 'true' },
-        hora(o.hora),
-        data ? el('span', { class: 'enche festa-data', texto: data }) : null,
-        num(f.esquenta) ? el('span', { class: 'enche', texto: `enche ${rotuloHora(f.esquenta)}` }) : null,
-        exemplo ? marcaExemplo('marca-lateral') : null,
-        o.patrocinada ? el('span', { class: 'marca-lateral', texto: 'Patrocinado' })
-          : nova ? el('span', { class: 'marca-lateral nova-marca', texto: 'Nova' }) : null),
-      el('div', { class: 'festa-o-que' },
-        el('p', { class: 'vh', id: `linha-${f.id}`, texto: lido }),
-        el('h2', { class: 'nome' }, abrir),
-        // Casa e preço com um "·" entre eles que some quando o preço desce de
-        // linha: nem ponto pendurado no fim, nem ponto abrindo a linha de baixo.
-        el('p', { class: 'onde', 'aria-hidden': 'true' },
-          el('span', { class: 'onde-linha' },
-            // Festa real sem casa nem bairro: diz que não se sabe onde.
-            el('span', { class: 'onde-casa', texto: FT.casaComBairro(f.casa, o.bairro) || 'local não divulgado' }),
-            el('span', { class: 'onde-preco', texto: FT.precoNaLista(f).replace(/R\$ /g, 'R$ ') }))),
-        // "31 MÉDIA pela produtora": o número nunca sem a origem.
-        el('p', { class: 'festa-media', 'aria-hidden': 'true' },
-          el('span', { class: 'media-num', texto: temMedia ? String(f.mediaIdade) : '—' }),
-          el('span', { class: 'media-rotulo', texto: temMedia ? 'média' : 'sem média' }),
-          temMedia && origem ? el('span', { class: 'idade-origem', texto: origem }) : null),
-        pctVisivel ? el('p', { class: 'cara-pct', 'aria-hidden': 'true', texto: pctTexto }) : null,
-        motivos.length ? el('p', { class: 'porque' },
-          el('span', { class: 'vh', texto: 'Por que esta: ' }),
-          // O "·" vai preso ao motivo seguinte, nunca pendurado no fim da linha.
-          motivos.flatMap((m, k) => [k ? ' ' : null, el('span', { class: 'item', texto: `${k ? '· ' : ''}${semQuebraNoPreco(m)}` })])) : null),
-      aviso ? el('p', { class: 'festa-aviso', texto: semQuebraNoPreco(aviso) }) : null,
-      // O sinal visível de que o item abre: só no primeiro da lista.
-      primeiro ? el('span', { class: 'ver', 'aria-hidden': 'true' }, el('span', { texto: 'Ver a festa' }), seta()) : null);
+    // A miniatura é só das reais; o exemplo fica tipográfico (rascunho da U39).
+    const c = exemplo ? null : FT.cartazDe(f);
+    const onde = [exemplo ? 'Exemplo' : null, f.casa || o.bairro || (exemplo ? null : 'Local a confirmar'), FT.preco(f).tipo === 'sem-preco' ? null : semQuebraNoPreco(FT.precoNaLista(f))].filter(Boolean).join(' · ');
+    const aviso = !exemplo && typeof o.aviso === 'string' && o.aviso.trim() ? o.aviso.trim() : '';
+    const a = el('a', { class: `linha${c ? '' : ' linha--sem-miniatura'}${estado.novas.includes(f.id) ? ' nova' : ''}`, href: hrefDe(o), 'data-festa': f.id, 'data-de': 'linha' },
+      el('span', { class: 'capa-placa', 'aria-hidden': 'true' }),
+      horaOuIncerta(o),
+      el('div', {},
+        el('p', { class: 'linha-nome', texto: FT.semViuva(f.nome) }),
+        el('p', { class: 'linha-onde' }, onde, o.esgotada || f.esgotado === true ? [' · ', el('span', { class: 'linha-esgotou', texto: 'esgotou' })] : null),
+        aviso ? el('p', { class: 'linha-aviso', texto: semQuebraNoPreco(aviso) }) : null),
+      c ? el('img', { class: `mini${c.paisagem ? ' mini--paisagem' : ''}`, src: c.miniatura, alt: FT.altDaPeca(c, f.nome), loading: 'lazy', decoding: 'async', width: '40', height: '50' }) : null);
+    return el('li', { 'data-festa': f.id }, ligarAbrir(a, o, 'linha'));
   }
 
-  // Os blocos da lista (R19, R21): primeiro o que cabe; depois, cada um com o
-  // seu rótulo, os bairros vizinhos e as festas com a média fora da faixa.
-  function blocosDaLista(opcoes) {
-    const NOME_BLOCO = { perto: 'Perto das suas regiões', faixa: 'Fora da sua faixa', ...((estado.resultado && estado.resultado.blocos) || {}) };
-    const grupos = [];
-    for (const o of opcoes) {
-      const b = o.bloco || 'pedido';
-      const ex = o.exemplo === true;
-      const ultimo = grupos[grupos.length - 1];
-      if (!ultimo || ultimo.bloco !== b || ultimo.exemplo !== ex) grupos.push({ bloco: b, exemplo: ex, itens: [] });
-      grupos[grupos.length - 1].itens.push(o);
+  // Ordem de "ver todas": a hora (sem início por último), esgotadas no fim.
+  const porHora = (a, b) => (a.festa.esgotado === true) - (b.festa.esgotado === true) || (num(a.festa.inicio) ? a.festa.inicio : 99) - (num(b.festa.inicio) ? b.festa.inicio : 99);
+  const localAConfirmar = (o) => o.bloco === 'local' || (!o.bairro && !o.festa.bairroNome && !(o.festa.endereco && o.festa.endereco.texto));
+
+  // Os filtros de "ver todas" (R25): por zona, com o .chip; dentro da zona
+  // vale qualquer um, entre zonas, todos. Quantas não informam cada dado.
+  function filtrosDe(todas) {
+    const zonas = [];
+    const conta = (n, sing, plur) => `${n} sem ${n === 1 ? sing : plur}`;
+    const estilos = [...new Set(todas.flatMap((o) => (Array.isArray(o.festa.estilos) ? o.festa.estilos : [])))].filter((id) => FT.ESTILOS[id]);
+    const semSom = todas.filter((o) => !(Array.isArray(o.festa.estilos) && o.festa.estilos.length)).length;
+    if (estilos.length) zonas.push({ nome: 'Som', chips: estilos.map((id) => ({ id: `som:${id}`, rotulo: FT.ESTILOS[id], cabe: (o) => (o.festa.estilos || []).includes(id) })), sem: semSom ? `${conta(semSom, 'som informado', 'som informado')}` : null });
+    const bairros = [...new Set(todas.map((o) => o.bairro || o.festa.bairroNome).filter(Boolean))];
+    const semBairro = todas.filter((o) => !(o.bairro || o.festa.bairroNome)).length;
+    if (bairros.length > 1 || (bairros.length && semBairro)) zonas.push({ nome: 'Bairro', chips: bairros.map((b) => ({ id: `bairro:${b}`, rotulo: b, cabe: (o) => (o.bairro || o.festa.bairroNome) === b })), sem: semBairro ? conta(semBairro, 'bairro', 'bairro') : null });
+    const teto = estado.criterios && typeof estado.criterios.teto === 'number' ? estado.criterios.teto : 50;
+    const precos = [];
+    if (todas.some((o) => num(FT.preco(o.festa).valor) && FT.preco(o.festa).valor <= teto)) precos.push({ id: 'preco:teto', rotulo: `Até R$ ${teto}`, cabe: (o) => num(FT.preco(o.festa).valor) && FT.preco(o.festa).valor <= teto });
+    if (todas.some((o) => FT.preco(o.festa).compra)) precos.push({ id: 'preco:online', rotulo: 'Com ingresso online', cabe: (o) => FT.preco(o.festa).compra });
+    const semPreco = todas.filter((o) => FT.preco(o.festa).tipo === 'sem-preco').length;
+    if (precos.length) zonas.push({ nome: 'Preço', chips: precos, sem: semPreco ? conta(semPreco, 'preço', 'preço') : null });
+    // "Com média informada" só quando alguma tem.
+    if (todas.some((o) => Number.isInteger(o.festa.mediaIdade) || o.festa.avaliacaoIdade)) {
+      zonas.push({ nome: 'Idade', chips: [{ id: 'idade:media', rotulo: 'Com média informada', cabe: (o) => Number.isInteger(o.festa.mediaIdade) || Boolean(o.festa.avaliacaoIdade) }], sem: null });
     }
-    // A % entra nos cartões só quando varia na lista (FT.pctNosCartoes).
-    const comPct = FT.pctNosCartoes(opcoes);
-    // Com festa real na lista, os exemplos vêm depois, num trecho rotulado.
-    const temReal = opcoes.some((o) => o.exemplo === false);
-    return grupos.map((g, gi) => {
-      const exemplos = temReal && g.exemplo;
-      const id = `bloco-${exemplos ? 'exemplo-' : ''}${g.bloco}`;
-      const nome = exemplos ? `Exemplos · ${NOME_BLOCO[g.bloco] || 'festas fictícias'}` : NOME_BLOCO[g.bloco];
-      return el('section', { class: `bloco-lista bloco-lista--${g.bloco}`, 'aria-labelledby': nome ? id : null },
-        nome ? el('h2', { class: 'rotulo bloco-rotulo', id, texto: nome }) : null,
-        el('ol', { class: 'festas', 'aria-label': nome ? null : 'Festas, em ordem de horário. Toque numa para ver o detalhe.' }, g.itens.map((o, i) => entrada(o, i, gi === 0, comPct))));
+    return zonas;
+  }
+
+  // "Ver todas as 8 de sexta", com os filtros e "Local a confirmar" num bloco depois.
+  function secaoTodas(todas) {
+    const d = DIA[estado.criterios.dia] || DIA.sex;
+    const ordem = todas.slice().sort(porHora);
+    const certas = ordem.filter((o) => !localAConfirmar(o));
+    const incertas = ordem.filter(localAConfirmar);
+    const zonas = todas.length > 2 ? filtrosDe(todas) : [];
+    const marcados = new Set();
+    const lista1 = el('ol', { class: 'linhas' }, certas.map(linha));
+    const lista2 = el('ol', { class: 'linhas' }, incertas.map(linha));
+    const porId = new Map(todas.map((o) => [o.festa.id, o]));
+    const aplicar = () => {
+      const li = [...lista1.children, ...lista2.children];
+      const antes = new Map(li.filter((x) => !x.hidden).map((x) => [x, x.getBoundingClientRect().top]));
+      for (const x of li) {
+        const o = porId.get(x.dataset.festa);
+        x.hidden = !zonas.every((z) => {
+          const sel = z.chips.filter((c) => marcados.has(c.id));
+          return !sel.length || sel.some((c) => c.cabe(o));
+        });
+      }
+      const ficaram = li.filter((x) => !x.hidden && antes.has(x));
+      const entraram = li.filter((x) => !x.hidden && !antes.has(x));
+      M.flip(ficaram, antes);
+      M.subir(entraram, { y: 12 });
+      bloco2.hidden = !lista2.querySelector('li:not([hidden])');
+    };
+    const filtros = zonas.length ? el('div', { class: 'filtros', 'data-so': 'lista' }, zonas.map((z) => el('div', { class: 'zona', role: 'group', 'aria-label': z.nome },
+      el('p', { class: 'rotulo', 'aria-hidden': 'true', texto: z.nome }),
+      el('div', { class: 'chips' }, z.chips.map((c) => {
+        const b = el('button', { type: 'button', class: 'chip', 'aria-pressed': 'false', texto: c.rotulo });
+        b.addEventListener('click', () => {
+          if (marcados.has(c.id)) marcados.delete(c.id);
+          else marcados.add(c.id);
+          b.setAttribute('aria-pressed', String(marcados.has(c.id)));
+          aplicar();
+        });
+        return b;
+      }), z.sem ? el('span', { class: 'sem-dado', texto: z.sem }) : null)))) : null;
+    const bloco2 = el('div', { hidden: !incertas.length }, el('p', { class: 'bloco-guia' }, el('span', { class: 'rotulo', texto: 'Local a confirmar' })), lista2);
+    return el('section', { class: 'todas', id: 'todas', hidden: !estado.todasAbertas, 'aria-label': `Todas as festas reais ${d.no ? `${d.no} ${d.nome}` : d.nome}` },
+      el('div', { class: 'todas-cabeca' }, el('p', { class: 'rotulo', texto: `Todas as ${todas.length} de ${d.nome}` })),
+      filtros, lista1, bloco2);
+  }
+
+  // O próximo dia com festa real: "No sábado tem mais 5" (ou "Na quinta tem 8").
+  function proximoDia(comReal) {
+    const { lista, selecionada } = abasDoResultado();
+    const i = lista.findIndex((x) => x.id === selecionada);
+    const depois = [...lista.slice(i + 1), ...lista.slice(0, Math.max(0, i))].filter((x) => x.id !== 'hoje' && x.reais > 0);
+    const x = depois[0];
+    if (!x) return null;
+    const d = DIA[x.id];
+    const b = acaoC('button', { type: 'button', class: 'link--seta' }, `${d.no === 'no' ? 'No' : 'Na'} ${d.nome} tem ${comReal ? 'mais ' : ''}${x.reais}`);
+    b.addEventListener('click', () => {
+      const aba = document.querySelector(`.aba[data-dia="${x.id}"]`);
+      if (aba) aba.click();
+      else trocarDia(x.id, null);
     });
+    return b;
   }
 
-  // "às 19h", "à 1h", "à meia-noite".
-  const asHoras = (h) => {
-    const t = Math.round(h * 60) % (24 * 60);
-    if (t === 0) return 'à meia-noite';
-    return `${t < 120 ? 'à' : 'às'} ${rotuloHora(h)}`;
-  };
-
-  // "R$ 150" nunca quebra entre o símbolo e o número.
-  const semQuebraNoPreco = (t) => String(t).replace(/R\$ (?=\d)/g, 'R$\u00a0');
-
-  function abrirFesta(o) {
-    estado.festa = o;
-    ir('festa');
-  }
-
-  function atalhos() {
-    const c = estado.criterios;
+  // A lista do dia: a capa, as chamadas, ver todas e o mapa; sem real, os exemplos.
+  function listaDoDia() {
     const r = estado.resultado;
-    const lista = [];
-    const ruim = !r.opcoes.length || r.atendem === 0;
-    const outroDia = c.dia === 'sab' ? ['domingo', 'e no domingo?'] : ['sábado', 'e no sábado?'];
-    if (ruim) {
-      lista.push(outroDia);
-      lista.push(c.janela === 'noite' ? ['mais cedo', 'mais cedo'] : ['mais tarde', 'mais tarde']);
-      if (c.teto !== 'sem-limite') lista.push(['sem teto de preço', 'sem limite']);
-      if (c.estilos.length) lista.push(['qualquer som', 'qualquer som']);
-    } else {
-      if (c.teto !== 0) lista.push(['mais barato', 'mais barato']);
-      lista.push(c.janela === 'fim-de-tarde' ? ['mais tarde', 'mais tarde'] : ['mais cedo', 'mais cedo']);
-      // "sem funk" não é oferecido a quem pediu funk.
-      if (!c.estilos.includes('funk') && !c.evitarEstilos.includes('funk')) lista.push(['sem funk', 'sem funk']);
-      lista.push(['outro estilo', 'outro estilo']);
-      lista.push(outroDia);
-      // Quem já marcou bairros não precisa do "mais perto de".
-      if (!c.bairros || !c.bairros.length) lista.push(c.perto !== 'pinheiros' ? ['mais perto de Pinheiros', 'tem alguma mais perto de Pinheiros?'] : ['mais perto do Centro', 'tem alguma mais perto do Centro?']);
+    const { opcoes, todas, exemplos } = partesDoResultado(r);
+    const d = DIA[estado.criterios.dia] || DIA.sex;
+    const raiz = el('div', { class: 'lista-guia', id: 'lista-festas' });
+    if (!todas.length) {
+      const prox = proximoDia(false);
+      // append() escreveria "null" na tela: só os nós que existem.
+      raiz.append(...[
+        prox ? el('div', { class: 'mais' }, prox) : null,
+        exemplos.length ? el('p', { class: 'bloco-guia' }, el('span', { class: 'exemplo', texto: 'Exemplos · festas fictícias' })) : null,
+        exemplos.length ? el('ol', { class: 'linhas', 'aria-label': 'Exemplos, festas fictícias' }, exemplos.map(linha)) : null,
+      ].filter(Boolean));
+      return raiz;
     }
-    // Os atalhos são respostas prontas, não ações secundárias: têm o desenho
-    // dos bairros da pergunta 3 (texto com sublinhado fino), não o C.
-    return lista.map(([rotulo, frase]) => {
-      const b = el('button', { type: 'button', class: 'atalho', texto: rotulo });
-      b.addEventListener('click', () => ajustar(frase, { exibido: rotulo, origem: b }));
-      return b;
-    });
+    const comPct = FT.pctNosCartoes(opcoes);
+    const resto = opcoes.slice(1);
+    const pinos = window.FindeMapa && typeof window.FindeMapa.pinsDe === 'function' ? window.FindeMapa.pinsDe(todas) : { pins: [], soNaLista: 0 };
+    const verTodas = todas.length > opcoes.length || todas.length > 1
+      ? acaoC('button', { type: 'button', 'aria-expanded': String(Boolean(estado.todasAbertas)), 'aria-controls': 'todas' }, `Ver todas as ${todas.length} de ${d.nome}`) : null;
+    if (verTodas) {
+      verTodas.querySelector('.seta').classList.add('seta--abre');
+      verTodas.addEventListener('click', () => abrirTodas(verTodas));
+    }
+    // "Ver no mapa" só com 2 pinos ou mais (R32).
+    const verMapa = pinos.pins.length >= 2 ? acaoC('button', { type: 'button', 'aria-expanded': 'false', 'aria-controls': 'mapa-lista', 'data-mapa': '' }, 'Ver no mapa') : null;
+    if (verMapa) verMapa.addEventListener('click', () => (estado.mapaAberto ? fecharMapa() : abrirMapa(verMapa)));
+    const prox = proximoDia(true);
+    // append() escreveria "null" na tela (dia sem o "fora do mapa" ou sem
+    // chamadas): só os nós que existem.
+    raiz.append(...[
+      el('div', { class: 'mapa-linha', 'data-so': 'mapa', hidden: true },
+        el('p', { class: 'rotulo', texto: `${pinos.pins.length ? todas.length - pinos.soNaLista : 0} de ${todas.length} com endereço` })),
+      el('section', { class: 'mapa-lugar', id: 'mapa-lista', hidden: true, 'aria-label': `Mapa das festas ${d.no ? `de ${d.nome}` : 'de hoje'}` }),
+      pinos.soNaLista ? el('p', { class: 'apoio mapa-fora', 'data-so': 'mapa', hidden: true, texto: `${pinos.soNaLista} ${pinos.soNaLista === 1 ? 'festa sem endereço divulgado fica' : 'festas sem endereço divulgado ficam'} só na lista.` }) : null,
+      capaDaLista(opcoes[0] || todas[0]),
+      resto.length ? el('div', { class: 'chamadas', 'data-so': 'lista' }, resto.map((o) => chamada(o, comPct))) : null,
+      verTodas || verMapa ? el('div', { class: 'mais mais--lista' }, verTodas, verMapa) : null,
+      secaoTodas(todas),
+      prox ? el('div', { class: 'mais mais--pe', 'data-so': 'lista' }, prox) : null,
+    ].filter(Boolean));
+    if (!opcoes.length) raiz.querySelector('.capa').remove();
+    return raiz;
   }
+
+  function abrirTodas(botao, anima = true) {
+    const todas = document.getElementById('todas');
+    if (!todas) return;
+    const abrir = todas.hidden;
+    todas.hidden = !abrir;
+    estado.todasAbertas = abrir;
+    if (botao) botao.setAttribute('aria-expanded', String(abrir));
+    salvar();
+    if (!abrir || !anima) return;
+    M.subir([todas.querySelector('.todas-cabeca'), todas.querySelector('.filtros')], { y: 12 });
+    M.subir(todas.querySelectorAll('.linhas > li'), { atraso: 120, y: 12 });
+  }
+
+  // ------------------------------------------------------------ o mapa da lista
+
+  // No celular, "Ver no mapa" troca a capa e as chamadas pelo mapa, e a
+  // lista do dia fica embaixo; no desktop, o mapa abre no lado direito da
+  // coluna e a lista fica onde está. O desenho é do mapa.js (U33).
+  const largo = () => window.matchMedia('(min-width: 1024px)').matches;
+  let ladoAntes = null;
+  function abrirMapa(botao) {
+    const M2 = window.FindeMapa;
+    const lugar = document.getElementById('mapa-lista');
+    const $t = document.getElementById('tela-resultado');
+    if (!M2 || !lugar || !$t) return;
+    const { todas } = partesDoResultado(estado.resultado);
+    estado.mapaAberto = true;
+    const lado = document.getElementById('lado-dir');
+    if (largo() && lado) {
+      ladoAntes = { hidden: lado.hidden, oculto: lado.classList.contains('oculto') };
+      lado.hidden = false;
+      lado.classList.remove('oculto');
+      lado.classList.add('com-mapa');
+      lado.removeAttribute('aria-hidden');
+      lado.append(lugar);
+      botao.replaceChildren(el('span', { texto: 'Fechar o mapa' }), seta());
+    } else {
+      for (const x of $t.querySelectorAll('[data-so="lista"], #lista-festas > .capa, #lista-festas .chamadas')) x.hidden = true;
+      if (document.getElementById('todas').hidden) abrirTodas($t.querySelector('[aria-controls="todas"]'), false);
+      for (const x of $t.querySelectorAll('[data-so="mapa"]')) x.hidden = false;
+      const linhaMapa = $t.querySelector('.mapa-linha');
+      if (linhaMapa && !linhaMapa.querySelector('.link')) {
+        const voltar = acaoC('button', { type: 'button' }, 'Ver em lista');
+        voltar.addEventListener('click', fecharMapa);
+        linhaMapa.append(voltar);
+      }
+      const abasEl = document.getElementById('abas');
+      if (abasEl) window.scrollTo({ top: Math.max(0, abasEl.getBoundingClientRect().top + window.scrollY - 8), behavior: 'auto' });
+      // "Ver em lista" mora na linha de cima do mapa; os links de baixo saem.
+      const mais = botao.closest('.mais');
+      if (mais) mais.hidden = true;
+      M.subir(document.querySelectorAll('#todas .linhas > li'), { atraso: 400, y: 12 });
+    }
+    lugar.hidden = false;
+    botao.setAttribute('aria-expanded', 'true');
+    const d = DIA[estado.criterios.dia] || DIA.sex;
+    const porId = new Map(todas.map((o) => [o.festa.id, o]));
+    const bairros = (estado.criterios.bairros || []).map((id) => {
+      const b = (estado.form && estado.form.zonas || []).flatMap((z) => z.bairros || []).find((x) => x.id === id);
+      return b && b.ponto ? { lat: b.ponto.lat, lng: b.ponto.lng, nome: b.rotulo } : null;
+    }).filter(Boolean);
+    M2.montarLista(lugar, todas, {
+      bairros,
+      rotulo: `Mapa das festas reais ${d.no ? `${d.no} ${d.nome}` : 'de hoje'}`,
+      aoMarcar: ({ festas }) => {
+        let primeira = null;
+        for (const x of document.querySelectorAll('#todas .linha')) {
+          const marcada = festas.includes(x.dataset.festa);
+          x.classList.toggle('linha--marcada', marcada);
+          if (marcada && !primeira) primeira = x;
+        }
+        if (primeira && !largo()) primeira.scrollIntoView({ block: 'nearest', behavior: reduzir.matches ? 'auto' : 'smooth' });
+      },
+      aoAbrir: (id) => { if (porId.has(id)) abrirFesta(porId.get(id), 'linha'); },
+    }).catch(() => {});
+  }
+
+  function fecharMapa({ redesenho = false } = {}) {
+    const lugar = document.getElementById('mapa-lista');
+    if (!estado.mapaAberto) return;
+    estado.mapaAberto = false;
+    if (lugar && window.FindeMapa) window.FindeMapa.desmontar(lugar);
+    const lado = document.getElementById('lado-dir');
+    if (lado && lado.classList.contains('com-mapa')) {
+      lado.classList.remove('com-mapa');
+      if (ladoAntes) {
+        lado.hidden = ladoAntes.hidden;
+        lado.classList.toggle('oculto', ladoAntes.oculto);
+      }
+      if (lugar && lado.contains(lugar)) lugar.remove();
+    }
+    if (redesenho) return;
+    const $t = document.getElementById('tela-resultado');
+    if (!$t) return;
+    // Volta a lista como estava: a capa e as chamadas voltam como na entrada.
+    trocarResultado();
+    const lista = document.getElementById('lista-festas');
+    if (lista && M.pode()) {
+      M.capa(lista.querySelector('.capa'), { regua: false });
+      M.subir(lista.querySelectorAll('.chamada, .mais'), { atraso: 120 });
+    } else if (lista) M.soOpacidade(lista);
+  }
+
+  // ------------------------------------------------------------ a tela
 
   function telaResultado() {
     const r = estado.resultado;
+    // As outras abas vêm por trás, depois que o guia assentar.
+    setTimeout(agendarPreBusca, 0);
+    const { todas } = partesDoResultado(r);
     const oferta = r.oferta ? el('button', { type: 'button', class: 'botao botao--vazado oferta', texto: r.oferta.rotulo }) : null;
     if (oferta) oferta.addEventListener('click', () => ajustar(r.oferta.frase, { exibido: r.oferta.rotulo, origem: oferta }));
 
+    // A conversa aparece depois de um ajuste; na chegada, o título e a
+    // linha sem média já dizem o que há.
     const conversa = el('div', { class: 'conversa', id: 'conversa' },
       estado.fala.voce ? el('p', { class: 'fala-voce' }, el('span', { class: 'vh', texto: 'Você: ' }), estado.fala.voce) : null,
-      estado.fala.finde ? el('p', { class: 'fala-finde' }, el('span', { class: 'vh', texto: 'Finde: ' }), semQuebraNoPreco(estado.fala.finde)) : null,
+      estado.fala.voce && estado.fala.finde ? el('p', { class: 'fala-finde' }, el('span', { class: 'vh', texto: 'Finde: ' }), semQuebraNoPreco(estado.fala.finde)) : null,
       oferta);
-
-    const lista = el('div', { class: 'lista', id: 'lista-festas' }, r.opcoes.length
-      ? blocosDaLista(r.opcoes)
-      : null);
 
     const campo = el('input', {
       id: 'campo', class: 'campo', type: 'text', name: 'texto', maxlength: '300', autocomplete: 'off',
@@ -1264,43 +1679,133 @@
     h2.id = 'ajuste-titulo';
     h2.removeAttribute('tabindex');
 
-    return el('div', { class: 'tela-resultado', id: 'tela-resultado' },
-      topo(botaoRecomecar()),
-      el('section', { class: 'cabeca', id: 'cabeca-resultado' },
-        frasePedido(r.pedidoPartes || []),
+    // "Ajustar", no topo, leva ao campo da frase.
+    const irAjuste = el('button', { type: 'button', class: 'link link--volta', texto: 'Ajustar' });
+    irAjuste.addEventListener('click', () => {
+      campo.scrollIntoView({ block: 'center', behavior: reduzir.matches ? 'auto' : 'smooth' });
+      campo.focus({ preventScroll: true });
+    });
+    const semMedia = r.semMedia === true && todas.length;
+    const avisoCru = typeof r.aviso === 'string' && r.aviso.trim() && todas.length ? r.aviso.trim() : '';
+    // O aviso do motor fala das recomendadas; com o título contando todas
+    // ("Sete festas"), ele diz que são as de cima.
+    const deCima = partesDoResultado(r).opcoes.length;
+    const aviso = avisoCru && todas.length > deCima && deCima > 1 && /^(Uma cabe|Duas cabem) no pedido;/.test(avisoCru)
+      ? `Das ${NUMERAL[deCima].toLocaleLowerCase('pt-BR')} de cima, ${avisoCru[0].toLocaleLowerCase('pt-BR')}${avisoCru.slice(1)}` : avisoCru;
+
+    return el('div', { class: 'tela-resultado tela-guia', id: 'tela-resultado' },
+      el('header', { class: 'guia-cabeca', id: 'guia-cabeca' },
+        topo(irAjuste),
+        edicaoDaSemana(),
+        baseViva(r.base || (estado.form && estado.form.base))),
+      el('section', { class: 'guia-titulo', id: 'cabeca-resultado' },
         tituloResultado(),
+        frasePedido(r.pedidoPartes || []),
+        semMedia ? el('p', { class: 'sem-media', texto: todas.length === 1 ? 'Ela não divulgou a média de idade ainda.' : `Nenhuma das ${todas.length > 3 ? todas.length : NUMERAL[todas.length].toLocaleLowerCase('pt-BR')} divulgou a média de idade ainda.` }) : null,
+        aviso ? el('p', { class: 'aviso-lista', texto: semQuebraNoPreco(aviso) }) : null,
         conversa),
-      lista,
+      abas() || el('div', { id: 'abas', hidden: true }),
+      listaDoDia(),
       el('section', { class: 'ajuste', 'aria-labelledby': 'ajuste-titulo' },
         h2,
         el('div', { class: 'atalhos', id: 'atalhos', role: 'group', 'aria-label': 'Atalhos de ajuste' }, atalhos()),
         local,
         form,
-        el('p', { class: 'aviso-erro', id: 'erro', role: 'alert' })),
+        el('p', { class: 'aviso-erro', id: 'erro', role: 'alert' }),
+        el('div', { class: 'acoes' }, botaoRecomecar())),
       rodape());
   }
 
-  // Depois de um ajuste, só muda o que mudou: o pedido, o título e a conversa,
-  // a lista e os atalhos. O campo, a resposta local e o aviso de erro (as
-  // regiões vivas) ficam os mesmos nós, e o foco não cai no body.
-  function trocarResultado() {
+  function atalhos() {
+    const c = estado.criterios;
+    const r = estado.resultado;
+    const lista = [];
+    const { todas } = partesDoResultado(r);
+    const ruim = !todas.length;
+    const outroDia = c.dia === 'sab' ? ['domingo', 'e no domingo?'] : ['sábado', 'e no sábado?'];
+    const evitarEstilos = c.evitarEstilos || [];
+    if (ruim) {
+      lista.push(outroDia);
+      lista.push(c.janela === 'noite' ? ['mais cedo', 'mais cedo'] : ['mais tarde', 'mais tarde']);
+      if (c.teto !== 'sem-limite') lista.push(['sem teto de preço', 'sem limite']);
+      if ((c.estilos || []).length) lista.push(['qualquer som', 'qualquer som']);
+    } else {
+      if (c.teto !== 0) lista.push(['mais barato', 'mais barato']);
+      lista.push(c.janela === 'fim-de-tarde' ? ['mais tarde', 'mais tarde'] : ['mais cedo', 'mais cedo']);
+      // "sem funk" não é oferecido a quem pediu funk.
+      if (!(c.estilos || []).includes('funk') && !evitarEstilos.includes('funk')) lista.push(['sem funk', 'sem funk']);
+      lista.push(['outro estilo', 'outro estilo']);
+      // Quem já marcou bairros não precisa do "mais perto de".
+      if (!c.bairros || !c.bairros.length) lista.push(c.perto !== 'pinheiros' ? ['mais perto de Pinheiros', 'tem alguma mais perto de Pinheiros?'] : ['mais perto do Centro', 'tem alguma mais perto do Centro?']);
+    }
+    // Os atalhos são respostas prontas, não ações secundárias: têm o desenho
+    // dos bairros da pergunta 3 (texto com sublinhado fino), não o C.
+    return lista.map(([rotulo, frase]) => {
+      const b = el('button', { type: 'button', class: 'atalho', texto: rotulo });
+      b.addEventListener('click', () => ajustar(frase, { exibido: rotulo, origem: b }));
+      return b;
+    });
+  }
+
+  // Depois de um ajuste ou de outra aba, só muda o que mudou: o cabeçalho,
+  // o título e a conversa, as abas, a lista e os atalhos. O campo, a
+  // resposta local e o aviso de erro (as regiões vivas) ficam os mesmos nós,
+  // e o foco não cai no body.
+  function trocarResultado({ dia = false, dir = 0 } = {}) {
     const $atual = document.getElementById('tela-resultado');
     if (!$atual) {
       desenhar({ focar: false, entrar: false });
       return;
     }
+    fecharMapa({ redesenho: true });
     // Depois de um ajuste, nada pisca: só as festas novas entram.
     $atual.classList.remove('entra');
     const ativo = document.activeElement;
     const rotuloAtivo = ativo && ativo.closest && ativo.closest('#atalhos, #conversa') ? ativo.textContent : null;
     const novo = telaResultado();
-    for (const id of ['cabeca-resultado', 'lista-festas', 'atalhos']) {
+    // Na troca de dia, a linha das abas não é refeita: o fio que marcar() já
+    // pôs a deslizar termina o percurso, e as contagens mudam no próprio nó.
+    const abasVelhas = $atual.querySelector('#abas');
+    const topoAbas = abasVelhas ? abasVelhas.getBoundingClientRect().top : null;
+    const abasNoLugar = dia && atualizarAbas(abasVelhas, novo.querySelector('#abas'));
+    for (const id of ['guia-cabeca', 'cabeca-resultado', 'abas', 'lista-festas', 'atalhos']) {
+      if (id === 'abas' && abasNoLugar) continue;
       const velho = $atual.querySelector(`#${id}`);
       const peca = novo.querySelector(`#${id}`);
       if (velho && peca) velho.replaceWith(peca);
     }
     posicionar($atual);
+    // Com o fio no lugar, ele segue para a aba nova (anima); refeito, nasce lá.
+    posicionarAbas($atual, abasNoLugar);
     salvar();
+    if (dia) {
+      const lista = document.getElementById('lista-festas');
+      const abasLinha = document.getElementById('abas');
+      if (M.pode()) {
+        const v = M.v();
+        // O título, o pedido e as notas do dia novo sobem 6 px (os velhos
+        // saíram por opacidade em trocarDia).
+        const cabeca = document.getElementById('cabeca-resultado');
+        if (cabeca) M.subir([...cabeca.children], { y: 6, duracao: v.estado });
+        // As notas mudam de altura: a linha das abas desliza do lugar velho
+        // até o novo (FLIP), em vez de pular, e a folha vem junto.
+        const dy = topoAbas !== null && abasLinha && !abasLinha.hidden ? topoAbas - abasLinha.getBoundingClientRect().top : 0;
+        if (Math.abs(dy) >= 1) M.animar(abasLinha, [{ translate: `0 ${dy}px` }, { translate: '0 0' }], { duration: v.estado, easing: v.troca });
+        // O dia novo chega do lado da aba tocada (24 px, 320 ms); a capa e o
+        // texto dela aparecem juntos (sem o bloco vazio antes) e as chamadas
+        // sobem a partir de 120 ms.
+        // O fundo da capa não sai nem entra (fica bordô de um dia ao outro):
+        // o que anda para o lado é o texto dela e o resto da folha.
+        if (lista) {
+          const dx = dir * 24;
+          const dyl = Math.abs(dy) >= 1 ? dy : 0;
+          if (dyl) M.animar(lista, [{ translate: `0 ${dyl}px` }, { translate: '0 0' }], { duration: v.estado, easing: v.troca });
+          M.capa(lista.querySelector('.capa'), { atraso: 0, conteudoJunto: true, x: dx });
+          M.subir(lista.querySelectorAll('.chamada, .mais, .bloco-guia, .linhas > li'), { atraso: 120, x: dx });
+        }
+      } else if (lista) M.soOpacidade(lista);
+      return;
+    }
     if (ativo && ativo !== document.body && document.contains(ativo)) return;
     // O botão tocado foi refeito: o foco vai para o mesmo atalho, se ele
     // continua, ou para o título do resultado.
@@ -1309,9 +1814,129 @@
     if (alvo) alvo.focus({ preventScroll: true });
   }
 
+  // As listas dos outros dias, buscadas por trás quando o guia assenta: a
+  // troca de aba para um dia já buscado folheia sem esperar a rede. A chave
+  // é o pedido sem a oferta e sem os recusados (a troca de dia manda
+  // evitar: []); vale cinco minutos, e um ajuste limpa tudo.
+  const diasGuardados = new Map();
+  const VALIDADE_DO_DIA = 5 * 60e3;
+  const chaveDoDia = (c, dia) => {
+    const { oferta, evitar, ...resto } = c || {};
+    void oferta;
+    void evitar;
+    return JSON.stringify({ ...resto, dia });
+  };
+  function guardadoDoDia(dia) {
+    const x = diasGuardados.get(chaveDoDia(estado.criterios, dia));
+    return x && Date.now() - x.em < VALIDADE_DO_DIA ? x.dados : null;
+  }
+  let preBuscando = false;
+  function agendarPreBusca() {
+    if (preBuscando || !estado.criterios || estado.tela !== 'resultado') return;
+    preBuscando = true;
+    const c = estado.criterios;
+    const ocioso = typeof window.requestIdleCallback === 'function'
+      ? (f) => window.requestIdleCallback(f, { timeout: 2500 }) : (f) => setTimeout(f, 0);
+    // Depois que a abertura do guia terminou (1,2 s), numa folga do quadro.
+    setTimeout(() => ocioso(async () => {
+      try {
+        // O dia que está na tela, só se ele ainda é o deste pedido: no meio de
+        // uma troca de aba, a aba nova já está marcada e o resultado ainda é
+        // o do dia velho; depois de Recomeçar, o pedido é outro. A chave sai
+        // do pedido ("hoje" vira a aba do dia da semana), não do DOM.
+        if (!estado.ocupado && estado.criterios === c && estado.resultado) {
+          diasGuardados.set(chaveDoDia(c, abasDoResultado().selecionada), { dados: estado.resultado, em: Date.now() });
+        }
+        const ids = [...document.querySelectorAll('#tela-resultado .aba[aria-pressed="false"]')].map((b) => b.dataset.dia);
+        for (const d of ids) {
+          if (estado.tela !== 'resultado' || estado.criterios !== c) break;
+          if (guardadoDoDia(d)) continue;
+          const { oferta, ...resto } = c;
+          void oferta;
+          let r;
+          try {
+            r = await chamar('/api/festas', { criterios: { ...resto, dia: d, evitar: [] } });
+          } catch {
+            r = null;
+          }
+          if (r && r.ok && r.dados) diasGuardados.set(chaveDoDia(c, d), { dados: r.dados, em: Date.now() });
+        }
+      } finally {
+        preBuscando = false;
+      }
+    }), 1200);
+  }
+
+  // Outra aba (dia): o fio desliza já, o dia que sai some em 140 ms para o
+  // lado de onde a aba veio, e o novo entra do outro lado (folhear). Dia já
+  // buscado entra assim que o velho sai; sem ele, quando a lista chega. Se
+  // ela demora, o lugar fica com a linha de rótulo e o fio que corre, nunca
+  // com o dia velho esmaecido.
+  async function trocarDia(id, aba) {
+    if (estado.ocupado || !estado.criterios) return;
+    if (aba && aba.getAttribute('aria-pressed') === 'true') return;
+    const $t = document.getElementById('tela-resultado');
+    if (!$t) return;
+    estado.ocupado = true;
+    const minha = geracao;
+    const todasAbas = [...$t.querySelectorAll('.aba')];
+    const antes = todasAbas.find((b) => b.getAttribute('aria-pressed') === 'true') || null;
+    // A direção da folha: a aba nova à direita da velha, o dia vem da direita.
+    const dir = antes && aba ? Math.sign(todasAbas.indexOf(aba) - todasAbas.indexOf(antes)) : 0;
+    const marcar = (alvo) => {
+      for (const b of $t.querySelectorAll('.aba')) b.setAttribute('aria-pressed', String(b === alvo));
+      posicionarAbas($t, true);
+    };
+    if (aba) marcar(aba);
+    fecharMapa({ redesenho: true });
+    const lista = document.getElementById('lista-festas');
+    const blocos = lista ? [...lista.children].filter((x) => !x.hidden) : [];
+    // Da capa sai só o de dentro: o fundo bordô fica até o dia novo chegar,
+    // sem piscar nude entre um e outro.
+    const capaVelha = blocos.find((x) => x.classList.contains('capa'));
+    const folhas = [...blocos.filter((x) => x !== capaVelha), ...(capaVelha ? capaVelha.querySelectorAll(':scope > .capa-dentro, :scope > .capa-foto') : [])];
+    // O título, o pedido e as notas do dia velho saem só por opacidade.
+    const cabeca = $t.querySelector('#cabeca-resultado');
+    const saida = [...M.sair(folhas, dir ? { x: -dir * 16, y: 0 } : {}), ...M.sair(cabeca ? [...cabeca.children] : [], { y: 0 })];
+    const d = DIA[id] || DIA.sex;
+    const guardado = guardadoDoDia(id);
+    let r;
+    if (guardado) {
+      // Já buscado: só espera o velho sair (140 ms) e folheia.
+      await Promise.race([Promise.all(saida.map((a) => a.finished)).catch(() => {}), new Promise((ok) => setTimeout(ok, 160))]);
+      r = { ok: true, dados: guardado };
+    } else {
+      const espera = setTimeout(() => {
+        if (minha === geracao && lista && document.contains(lista)) lista.replaceChildren(el('p', { class: 'carregando', role: 'status', texto: `Abrindo ${d.no ? `${d.no === 'no' ? 'o' : 'a'} ${d.nome}` : 'hoje'}…` }));
+      }, 140);
+      try {
+        const { oferta, ...resto } = estado.criterios;
+        void oferta;
+        r = await chamar('/api/festas', { criterios: { ...resto, dia: id, evitar: [] } });
+      } catch {
+        r = null;
+      }
+      clearTimeout(espera);
+      if (r && r.ok && r.dados) diasGuardados.set(chaveDoDia(estado.criterios, id), { dados: r.dados, em: Date.now() });
+    }
+    if (minha !== geracao) return;
+    estado.ocupado = false;
+    if (!r || !r.ok || !r.dados) {
+      for (const a of saida) a.cancel();
+      if (antes) marcar(antes);
+      if (lista && !lista.querySelector('.capa, .linhas, .mais')) trocarResultado();
+      mostrarErro(r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toque de novo.');
+      return;
+    }
+    Object.assign(estado, { criterios: r.dados.criterios, resultado: r.dados, fala: { voce: null, finde: r.dados.resposta }, novas: [], todasAbertas: false });
+    trocarResultado({ dia: true, dir });
+    anunciar(`${(DIA[estado.criterios.dia] || d).longo}: ${partesDoResultado(estado.resultado).todas.length} festas reais.`);
+  }
+
   async function ajustar(texto, { exibido, origem, digitado = false } = {}) {
     if (estado.ocupado) return;
     estado.ocupado = true;
+    diasGuardados.clear();
     // Retorno no mesmo quadro: o botão tocado fica .carregando, a fala da
     // pessoa aparece, a do Finde diz que está procurando, e a lista esmaece.
     const soltar = esperar(origem);
@@ -1332,7 +1957,8 @@
     }
     if ($local) $local.textContent = '';
     mostrarErro('');
-    const atuais = estado.resultado.opcoes.map((o) => o.festa.id);
+    const { opcoes, todas, exemplos } = partesDoResultado(estado.resultado);
+    const atuais = [...opcoes, ...todas, ...exemplos].map((o) => o.festa.id).filter((id, i, xs) => xs.indexOf(id) === i);
     const minha = geracao;
     let r;
     try {
@@ -1375,202 +2001,378 @@
     if (campo && digitado) campo.focus({ preventScroll: true });
   }
 
+  function abrirFesta(o, de = 'linha') {
+    estado.festa = o;
+    estado.abertaDe = de;
+    ir('festa');
+  }
+
   // ------------------------------------------------------------ detalhe da festa
 
-  // "sáb, 14 nov · Pinheiros"
+  // "Sexta, 27 nov · Pinheiros"
   function dataLonga(o) {
-    return o.bairro ? `${dataCurta(o.data, o.festa.dia)} · ${o.bairro}` : dataCurta(o.data, o.festa.dia);
+    const d = DIA[o.festa.dia];
+    const data = diaDoMes(dataDe(o));
+    const quando = [d ? d.longo : '', data].filter(Boolean).join(', ');
+    return [quando, o.bairro || o.festa.bairroNome].filter(Boolean).join(' · ');
   }
 
   function secao(classe, rotulo, ...filhos) {
-    return el('section', { class: `secao ${classe}`, 'aria-label': rotulo },
-      el('h2', { class: 'rotulo secao-rotulo', texto: rotulo }), ...filhos);
+    const corpo = filhos.flat().filter(Boolean);
+    if (!corpo.length) return null;
+    return el('section', { class: `secao ${classe}`, 'aria-label': rotulo || null },
+      rotulo ? el('h2', { class: 'rotulo secao-rotulo', texto: rotulo }) : null, ...corpo);
   }
 
-  // O detalhe, na ordem do plano: quando e régua (R4), média com origem (R5),
-  // cartaz, nome, produtora, casa, endereço e mapa (R6), ingresso (R7), links
-  // de origem (R8), regras de entrada (R10), som (R11) e fontes (R12). A barra
-  // fixa (R9) leva a compra e o envio ao grupo.
+  // Um botão C que abre e fecha um trecho (a seta gira 90°); o trecho sobe
+  // em escada quando abre.
+  function disclosure(texto, alvo, aoAbrir) {
+    const b = acaoC('button', { type: 'button', 'aria-expanded': 'false' }, texto);
+    b.querySelector('.seta').classList.add('seta--abre');
+    const id = alvo.id;
+    if (id) b.setAttribute('aria-controls', id);
+    alvo.hidden = true;
+    b.addEventListener('click', () => {
+      const abre = alvo.hidden;
+      alvo.hidden = !abre;
+      b.setAttribute('aria-expanded', String(abre));
+      if (abre) {
+        M.subir([...alvo.children], { y: 12 });
+        if (aoAbrir) aoAbrir();
+      } else M.soOpacidade(alvo);
+    });
+    return b;
+  }
+
+  // A capa do detalhe: o mesmo cartaz desfocado ao fundo; dentro, o dia, a
+  // hora grande, a régua da noite e o cartaz nítido de 96 × 120 ao lado do
+  // nome, com o crédito. Tocar no cartaz abre a peça inteira.
+  function capaDoDetalhe(o, ex) {
+    const f = o.festa;
+    const c = FT.cartazDe(f);
+    const nome = el('h1', { class: 'ficha-nome', id: 'festa-nome', tabindex: '-1', 'data-foco': '', texto: FT.semViuva(f.nome) });
+    const casa = [f.casa, f.produtora && f.produtora !== f.casa ? f.produtora : null].filter(Boolean).join(' · ');
+    let botao = null;
+    if (c) {
+      botao = el('button', { type: 'button', class: 'cartaz-botao', 'aria-label': `Ver ${c.papel.toLocaleLowerCase('pt-BR')} inteiro`, 'aria-haspopup': 'dialog' }, cartaz(f));
+      botao.addEventListener('click', () => abrirPeca());
+    }
+    return el('section', { class: 'capa capa--detalhe', 'aria-labelledby': 'festa-nome' },
+      c ? el('span', { class: 'capa-foto' }, el('img', { class: 'capa-fundo', src: c.miniatura, alt: '', decoding: 'async' })) : el('span', { class: 'capa-placa', 'aria-hidden': 'true' }),
+      el('div', { class: 'capa-dentro' },
+        // Fictícia no meio das reais: diz que é exemplo antes de tudo.
+        ex && o.exemplo === true ? el('p', { class: 'marca-exemplo-linha' }, marcaExemplo('', 'Exemplo · festa fictícia')) : null,
+        el('p', { class: 'capa-dia', texto: dataLonga(o) }),
+        el('p', { class: 'capa-quando' }, o.hora ? hora(horaCurta(o.hora)) : el('span', { class: 'hora-incerta', texto: 'Horário a confirmar' })),
+        reguaDaNoite(f, { longa: true }),
+        el('div', { class: 'ficha' }, botao, el('div', { class: 'ficha-texto' }, nome, casa ? el('p', { class: 'ficha-casa', texto: casa }) : null)),
+        c && c.divulgacao ? el('p', { class: 'ficha-credito', texto: FT.creditoDaPeca(c) }) : null));
+  }
+
+  // "% a sua cara" no detalhe: o número e, critério por critério, na ordem do
+  // peso, se cabe, quase cabe ou não cabe; o sem dado conta pela metade.
+  const CABE = { true: 'Cabe', quase: 'Quase', false: 'Não cabe', null: 'Sem dado' };
+  const ROTULO_CRITERIO = { horario: 'Horário', idade: 'Idade', bairro: 'Bairro', preco: 'Preço', som: 'Som' };
+  function blocoCara(o) {
+    const cara = estado.avulsa ? null : caraDe(o);
+    if (!cara) return null;
+    const partes = FT.ordemDaCara(cara.partes).filter((x) => String(x.cabe) in CABE);
+    const peso = FT.pesoDaCara(cara);
+    const classe = (x) => (x.cabe === true ? 'cabe' : x.cabe === false ? 'nao' : x.cabe === null ? 'sem-dado' : 'quase');
+    return [
+      el('p', { class: 'cara-pct' }, el('span', { class: 'cara-num', texto: `${cara.pct}%` }), el('span', { class: 'rotulo', texto: 'a sua cara' })),
+      peso ? el('p', { class: 'cara-peso', texto: peso }) : null,
+      partes.length ? el('ul', { class: 'cara-partes', 'aria-label': 'O que conta na porcentagem' },
+        partes.map((x) => el('li', { class: `cara-linha cara-linha--${classe(x)}` },
+          el('span', { class: 'cara-rotulo', texto: ROTULO_CRITERIO[x.criterio] || CABE[String(x.cabe)] }),
+          el('span', { class: 'cara-texto', texto: `${semQuebraNoPreco(x.texto.trim()).replace(/^./, (c) => c.toLocaleUpperCase('pt-BR'))}${x.cabe === null ? '; conta pela metade' : ''}.`.replace(/\.\.$/, '.') })))) : null,
+    ];
+  }
+
+  // A idade do público: a frase da avaliação (o que a pergunta mede), ou a
+  // média com a origem. Sem dado, a seção some (o vazio fica no pé).
+  function blocoIdade(f) {
+    const avaliacao = FT.fraseDaAvaliacao(f);
+    if (avaliacao) {
+      const m = FT.media(f);
+      return [el('p', { class: 'idade-frase', texto: avaliacao }),
+        el('p', { class: 'apoio', texto: `Pela avaliação de quem foi pelo convite do finde${m.quando ? `, ${m.quando}` : ''}.` })];
+    }
+    const m = FT.media(f);
+    if (m.ausente) return [];
+    return [el('p', { class: 'idade-frase', texto: `Média de ${m.numero} anos.` }),
+      el('p', { class: 'apoio', texto: `${m.origem ? m.origem.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')) : 'Origem não informada'}${m.quando ? `, ${m.quando}` : ''}.` })];
+  }
+
+  // Onde (R28, R29, R32): a casa, o endereço e o bairro, a distância do
+  // bairro pedido em linha reta, "Como chegar" (Google, Apple, Uber) e o
+  // mini-mapa atrás de um toque.
+  function blocoOndeDaFesta(o, ex) {
+    const f = o.festa;
+    const e = f.endereco && typeof f.endereco === 'object' ? f.endereco : {};
+    const texto = typeof e.texto === 'string' && e.texto.trim() ? e.texto.trim() : '';
+    const bairro = o.bairro || f.bairroNome || '';
+    const linha2 = [texto, bairro && !texto.includes(bairro) ? bairro : null].filter(Boolean).join(' · ');
+    const casa = f.casa && f.casa !== bairro ? f.casa : '';
+    if (!casa && !linha2) return [];
+    const L = window.FindeLocal;
+    const local = { ...(f.local || {}), texto };
+    const destinos = L ? L.comoChegar(local, f.casa) : [];
+    const lista = el('div', { class: 'destinos', id: 'destinos' }, destinos.map((x) => {
+      const href = FT.destino(x.url, x.rotulo, ex);
+      return href ? el('a', { href, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${x.rotulo}, abre fora do finde`, texto: x.rotulo }) : null;
+    }));
+    const pedidos = estado.avulsa || !estado.criterios ? [] : estado.criterios.bairros || [];
+    const nomeDoPedido = pedidos.length === 1 ? ((estado.form && estado.form.zonas || []).flatMap((z) => z.bairros || []).find((b) => b.id === pedidos[0]) || {}).rotulo : null;
+    const distancia = L && nomeDoPedido && num(o.distanciaKm) ? L.distanciaTexto(o.distanciaKm, nomeDoPedido) : '';
+    const comMapa = window.FindeMapa && window.FindeMapa.pinsDe([f]).pins.length > 0;
+    const mini = comMapa ? el('div', { class: 'mini-mapa-lugar', id: 'mini-mapa' }) : null;
+    const acoes = [
+      destinos.length ? disclosure('Como chegar', lista) : null,
+      mini ? disclosure('Mostrar mapa', mini, () => window.FindeMapa.montarDetalhe(mini, f, { rotulo: `Mapa: ${f.casa || f.nome}` }).catch(() => {})) : null,
+    ].filter(Boolean);
+    return [
+      el('p', { class: 'endereco' }, FT.semViuva(casa || linha2), casa && linha2 ? el('small', { texto: FT.semViuva(linha2) }) : null),
+      !texto && f.real ? el('p', { class: 'apoio', texto: FT.preco(f).compra ? 'Endereço não divulgado. Confira na página do ingresso.' : 'Endereço não divulgado.' }) : null,
+      distancia ? el('p', { class: 'apoio', texto: distancia }) : null,
+      acoes.length ? el('div', { class: 'acoes' }, acoes) : null,
+      destinos.length ? lista : null,
+      mini,
+    ];
+  }
+
+  // Pôr na agenda (.ics) e compartilhar (navigator.share, com WhatsApp e
+  // copiar de reserva), numa linha de links C.
+  function acoesDaFesta(o, ex) {
+    const f = o.festa;
+    const url = new URL(`/app?festa=${encodeURIComponent(f.id)}`, window.location.origin).href;
+    const agenda = acaoC('a', { href: `/api/festa/${encodeURIComponent(f.id)}/agenda.ics`, download: `${f.id}.ics` }, 'Pôr na agenda');
+    const status = el('p', { class: 'status-curto', role: 'status' });
+    const texto = `${f.nome}${o.hora ? `, ${o.hora}` : ''}${f.casa ? `, ${f.casa}` : ''}${ex ? ' (exemplo: festa fictícia do protótipo do Finde)' : ''}`;
+    const reserva = el('div', { class: 'destinos', id: 'compartilhar-reserva', hidden: true },
+      el('a', { href: `https://wa.me/?text=${encodeURIComponent(`${texto}\n${url}`)}`, target: '_blank', rel: 'noopener noreferrer', texto: 'WhatsApp' }),
+      (() => {
+        const b = el('button', { type: 'button', texto: 'Copiar o link' });
+        b.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(url);
+            status.textContent = 'Link copiado.';
+          } catch {
+            status.textContent = `Não consegui copiar daqui. O link é ${url}`;
+          }
+        });
+        return b;
+      })());
+    const compartilhar = acaoC('button', { type: 'button' }, 'Compartilhar');
+    compartilhar.addEventListener('click', async () => {
+      if (typeof navigator.share === 'function') {
+        try {
+          await navigator.share({ title: f.nome, text: texto, url });
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+        }
+      }
+      reserva.hidden = !reserva.hidden;
+      if (!reserva.hidden) M.subir([...reserva.children], { y: 8 });
+    });
+    return [el('div', { class: 'acoes' }, agenda, compartilhar), reserva, status];
+  }
+
+  // "Encontrada em 3 fontes" (R31): a lista com link, o que se leu em cada
+  // uma e quando, e a frase da junção, com as duas peças lado a lado quando
+  // a imagem pesou.
+  function blocoFontes(f) {
+    if (f.real !== true && f.exemplo !== false) return [];
+    const fontes = FT.fontesDaFesta(f);
+    if (!fontes.length) return [];
+    const juncao = fontes.length > 1 ? FT.fraseDaJuncao(f) : null;
+    const c = FT.cartazDe(f);
+    const imagens = (Array.isArray(f.imagens) ? f.imagens : []).map((x) => FT.cartazDe({ cartaz: x })).filter(Boolean);
+    const origens = c && f.cartaz && Array.isArray(f.cartaz.origens) ? f.cartaz.origens : [];
+    const pecas = imagens.length > 1 ? imagens.slice(0, 2).map((x, i) => [x, (f.imagens[i] && f.imagens[i].fonte) || '']) : c && origens.length > 1 ? origens.slice(0, 2).map((x) => [c, x.fonte]) : [];
+    const legenda = (fonte) => ({ instagram: 'post', paginas: 'página', indicacao: 'indicação', envio: 'produtora' }[fonte] || 'outra');
+    const alvo = el('div', { id: 'fontes' },
+      el('ul', { class: 'fontes-lista' }, fontes.map((x) => el('li', { class: 'fonte' },
+        el('div', {}, el('p', { class: 'fonte-nome', texto: x.nome }), x.leu ? el('p', { class: 'fonte-leu', texto: FT.semViuva(x.leu) }) : null),
+        x.url ? el('a', { href: x.url, target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${x.rotuloLink}: ${x.nome}, abre fora do finde`, texto: x.rotuloLink }) : null))),
+      juncao ? el('div', { class: 'juncao' },
+        el('p', { class: 'juncao-frase', texto: juncao.frase }),
+        juncao.imagem && pecas.length === 2 ? el('div', { class: 'par-imagens' }, pecas.map(([x, fonte]) => el('figure', {},
+          el('img', { class: `mini${x.paisagem ? ' mini--paisagem' : ''}`, src: x.miniatura, alt: `${x.papel} ${legenda(fonte) === 'post' ? 'do post' : `da ${legenda(fonte)}`}`, loading: 'lazy', decoding: 'async', width: '40', height: '50' }),
+          el('figcaption', { texto: legenda(fonte) })))) : null) : null);
+    return [disclosure(`Encontrada em ${fontes.length} ${fontes.length === 1 ? 'fonte' : 'fontes'}`, alvo), alvo];
+  }
+
+  // De onde vem (pé): uma linha por campo; a divergência numa frase.
+  function blocoDeOnde(f) {
+    const linhas = FT.deOndeVem(f);
+    const divergencias = FT.divergencias(f);
+    if (!linhas.length && !divergencias.length) return [];
+    return [
+      linhas.length === 1 && linhas[0].junto ? el('p', { class: 'de-onde-junto', texto: FT.semViuva(linhas[0].texto) })
+        : linhas.length ? el('dl', { class: 'de-onde' }, linhas.flatMap((x) => [el('dt', { texto: x.campo }), el('dd', { texto: FT.semViuva(x.texto) })])) : null,
+      ...divergencias.map((t) => el('p', { class: 'divergencia', texto: semQuebraNoPreco(t) })),
+    ];
+  }
+
+  // O som, o lineup e as regras da porta, quando há o que dizer.
+  function blocoSom(f) {
+    const s = FT.som(f);
+    const regras = FT.regrasFrase(f);
+    const temSom = Boolean(s.estilos || s.lineup);
+    return [
+      f.frase ? el('p', { class: 'secao-texto', texto: f.frase }) : null,
+      temSom ? el('p', { class: 'secao-texto', texto: f.real ? s.frase.replace(/\s*Lineup ainda não divulgado\.$/, '').replace(/^Som não informado\.\s*/, '') : s.frase }) : null,
+      regras ? el('p', { class: 'secao-texto', texto: regras }) : null,
+    ];
+  }
+
+  // O detalhe, na ordem do celular (R28 e o rascunho da U39): a capa (quando,
+  // régua, nome com o cartaz ao lado), "% a sua cara", a idade, onde e como
+  // chegar, o ingresso, o som, as fontes, de onde vem e os vazios numa linha
+  // só no pé. A barra fixa leva o preço, a compra e o envio ao grupo; a peça
+  // inteira abre por cima, num diálogo.
   function telaFesta() {
     const o = estado.festa;
     const f = o.festa;
     // Base fictícia por padrão: só sai direto quem diz que não é exemplo.
     const ex = f.exemplo !== false;
-    const m = FT.media(f);
-    const som = FT.som(f);
-    const regras = FT.regrasFrase(f);
-    const fontes = FT.fontes(f);
-    // Festa real lida à mão: cada página pelo que ela é (ingresso, matéria,
-    // revenda, Instagram), com o que se leu nela e quando.
-    const paginas = FT.paginas(f);
-    const j = janelaPedida();
-    // O encaixe no pedido, menos a idade, que tem a régua dela: o que a festa
-    // fura (horário, preço, som), ou que ela cabe na janela.
-    const furos = estado.avulsa ? [] : (o.fora || []).filter((x) => !/da sua faixa$/.test(x));
-    const aviso = furos.length ? `${furos.join('; ').replace(/^./, (x) => x.toUpperCase())}.` : '';
-    const ate = j ? (j[1] % 24 === 0 ? 'à meia-noite' : `${j[1] % 24 < 2 ? 'à' : 'às'} ${rotuloHora(j[1])}`) : '';
-    // O encaixe diz o que a régua mostra: a festa que começa antes do horário
-    // pedido (o motor aceita pela pista cheia) não "cabe", começa antes. As
-    // palavras são as da pergunta e da cara: "seu horário".
-    const seuHorario = j ? `seu horário, das ${rotuloHora(j[0])} ${ate}` : '';
-    // Com "% a sua cara", as partes dela já dizem o encaixe de cada critério
-    // (horário e idade primeiro, o que fura incluído), logo abaixo da média:
-    // as frases de encaixe saem, para nada ser dito duas vezes.
-    const comCara = Boolean(!estado.avulsa && caraDe(o));
-    let encaixe = comCara ? '' : aviso;
-    if (!encaixe && j && !comCara) {
-      if (f.inicio < j[0] && !num(f.esquenta)) encaixe = `Começa ${asHoras(f.inicio)}, perto do ${seuHorario}.`;
-      else if (f.inicio < j[0]) encaixe = `Começa ${asHoras(f.inicio)}, antes do ${seuHorario}; a pista enche ${asHoras(f.esquenta)}.`;
-      else encaixe = `Cabe no ${seuHorario}.`;
-    }
-
-    const nome = el('h1', { class: 'festa-nome', id: 'festa-nome', tabindex: '-1', 'data-foco': '', texto: f.nome });
-
-    // Horário primeiro e a média junto (regra 3 da voz), depois a régua.
-    const quando = el('section', { class: 'detalhe-quando', 'aria-label': 'Quando e para quem' },
-      // Fictícia no meio das reais: diz que é exemplo antes de tudo.
-      o.exemplo === true ? el('p', { class: 'marca-exemplo-linha' }, marcaExemplo('', 'Exemplo · festa fictícia')) : null,
-      el('p', { class: 'rotulo', texto: dataLonga(o) }),
-      el('p', { class: 'detalhe-hora', 'aria-hidden': 'true' },
-        hora(o.hora),
-        el('span', { class: 'detalhe-media-curta', texto: m.ausente ? 'média não informada' : `média ${m.numero} anos` })),
-      el('p', { class: 'vh', texto: `${o.horario} ${m.ausente ? m.frase : `Média de ${m.numero} anos.`}` }),
-      regua(f),
-      // Sem a régua (festa real sem o fim) ou sem a pista cheia, o vazio
-      // aparece à vista; o leitor de tela já ouviu a frase do horário acima.
-      vazioDoHorario(f),
-      encaixe ? el('p', { class: `detalhe-encaixe${encaixe === aviso ? ' detalhe-encaixe--fura' : ''}`, texto: encaixe }) : null,
-      // A média contra a faixa pedida, de onde ela vem e quando foi conferida (R5).
-      // A régua da média, logo abaixo de onde ela vem, e o encaixe na faixa.
-      el('div', { class: 'detalhe-media' },
-        reguaIdade(f),
-        // Sem média, o vazio já está ao lado da hora ("média não informada"):
-        // a frase não se repete aqui.
-        m.ausente ? null : el('p', { class: 'media-origem' },
-          `${m.origem ? m.origem.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')) : 'Origem não informada'}${m.quando ? `, ${m.quando}` : ''}.`),
-        m.ausente || estado.avulsa || comCara ? null : el('p', { class: 'idade-encaixe', texto: encaixeIdade(f) }),
-        blocoCara(o)));
-
-    const quem = el('section', { class: 'detalhe-quem', 'aria-labelledby': 'festa-nome' },
-      el('div', { class: 'ficha' },
-        cartaz(f),
-        el('div', { class: 'ficha-texto' },
-          nome,
-          // Festa real sem produtora ou sem casa: o vazio aparece, não some.
-          f.produtora ? el('p', { class: 'ficha-produtora', texto: f.produtora }) : ausente('Produtora não informada.'),
-          f.casa ? el('p', { class: 'ficha-casa', texto: f.casa }) : ausente('Casa não divulgada.'))),
-      f.frase ? el('p', { class: 'ficha-frase', texto: f.frase }) : null,
-      blocoOnde(f, o.bairro, ex));
-
+    const vazios = FT.vaziosDaFesta(f);
     return el('div', { class: 'tela-festa' },
-      topo(botaoVoltar()),
-      quando,
-      quem,
-      secao('detalhe-ingresso', 'Ingresso', blocoIngresso(f, ex)),
-      secao('detalhe-links', 'Da produtora', blocoLinks(f, ex)),
-      regras ? secao('detalhe-entrada', 'Para entrar', el('p', { class: 'secao-texto', texto: regras })) : null,
-      secao('detalhe-som', 'Som', el('p', { class: 'secao-texto', texto: som.frase })),
-      el('footer', { class: 'detalhe-fontes', 'aria-label': 'De onde vêm estes dados' },
-        paginas.length
-          ? el('p', { class: 'fontes' }, el('span', { class: 'rotulo', texto: 'Fontes' }), ' ',
-            paginas.map((x, i) => [i ? '; ' : '', x.nome, x.lido ? `: ${x.lido}` : '', x.quando ? `, ${x.quando}` : '']).flat(), '.')
-          : fontes.length
-            ? el('p', { class: 'fontes' }, el('span', { class: 'rotulo', texto: 'Demais dados' }), ' ',
-              fontes.map((x, i) => [i ? '; ' : '', x.nome, x.quando ? `, ${x.quando}` : '']).flat(), '.')
-            : ausente('Fonte não informada.')),
+      el('header', { class: 'topo topo--detalhe' }, botaoVoltar(), marca(LANDING)),
+      capaDoDetalhe(o, ex),
+      secao('secao--cara', '', blocoCara(o)),
+      secao('secao--idade', 'Idade do público', blocoIdade(f)),
+      secao('secao--onde', 'Onde', blocoOndeDaFesta(o, ex)),
+      secao('secao--ingresso', 'Ingresso', blocoIngresso(f, ex, { comprar: FT.precoVelho(f) }), acoesDaFesta(o, ex)),
+      secao('secao--som', 'Som', blocoSom(f)),
+      secao('secao--fontes', '', blocoFontes(f)),
+      secao('secao--de-onde', 'De onde vem', blocoDeOnde(f)),
+      vazios ? el('p', { class: 'vazios', texto: vazios }) : null,
       rodape(),
-      barraDaFesta(o, ex));
+      barraDaFesta(o, ex),
+      pecaInteira(f, ex));
   }
 
-  // A média contra a faixa pedida: o mesmo desenho da régua do horário, num
-  // eixo de 18 a 50 anos. A faixa é o colchete rosé; a média, um ponto.
-  function reguaIdade(f) {
-    const fx = !estado.avulsa && estado.criterios && estado.criterios.idade;
-    if (!fx || !Number.isInteger(f.mediaIdade)) return null;
-    const LIM = { min: 18, max: 50 };
-    const x = (n) => ((Math.max(LIM.min, Math.min(LIM.max, n)) - LIM.min) / (LIM.max - LIM.min)) * 100;
-    const lado = (v) => (v < 10 ? 'esq' : v > 90 ? 'dir' : 'meio');
-    return el('figure', { class: 'regua regua-idade', 'aria-hidden': 'true' },
-      el('div', { class: 'rg-trilho' },
-        el('span', { class: 'rg-janela', 'data-l': pct(x(fx.min)), 'data-w': pct(x(fx.max) - x(fx.min)) }),
-        el('span', { class: 'rg-media', 'data-l': pct(x(f.mediaIdade)) })),
-      // Faixa estreita (menos de uns 50 px): as duas pontas num rótulo só.
-      el('div', { class: 'rg-baixo' }, x(fx.max) - x(fx.min) < 15
-        ? el('span', { class: `rg-rotulo rg-rotulo--voce rg-${lado((x(fx.min) + x(fx.max)) / 2)}`, 'data-l': pct((x(fx.min) + x(fx.max)) / 2), texto: `${fx.min}–${fx.max >= LIM.max ? `${LIM.max}+` : fx.max}` })
-        : [el('span', { class: 'rg-rotulo rg-rotulo--voce rg-esq', 'data-l': pct(x(fx.min)), texto: String(fx.min) }),
-          el('span', { class: 'rg-rotulo rg-rotulo--voce rg-dir', 'data-l': pct(x(fx.max)), texto: fx.max >= LIM.max ? `${LIM.max}+` : String(fx.max) })]));
+  // A peça inteira (R30): fundo noite chapado, a imagem contida, o crédito e
+  // o link da origem. Abre do cartaz (o cartaz viaja até ela), fecha pelo
+  // botão, pelo Esc ou pelo voltar do navegador; o foco volta ao cartaz.
+  function pecaInteira(f, ex) {
+    const c = FT.cartazDe(f);
+    if (!c) return null;
+    const fechar = el('button', { type: 'button', class: 'peca-fechar', texto: 'Fechar' });
+    fechar.addEventListener('click', () => history.back());
+    const fora = c.origem && c.origemRotulo ? linkFora(c.origem, c.origemRotulo, null, ex, 'peca-link') : null;
+    if (fora) fora.textContent = c.origemRotulo;
+    return el('div', { class: 'peca', id: 'peca', hidden: true, role: 'dialog', 'aria-modal': 'true', 'aria-label': FT.altDaPeca(c, f.nome) },
+      el('img', { src: c.arquivo, alt: FT.altDaPeca(c, f.nome), loading: 'lazy', decoding: 'async' }),
+      el('div', { class: 'peca-pe' }, el('p', {}, FT.creditoDaPeca(c), fora ? [' · ', fora] : null), fechar));
   }
 
-  // "Dentro da sua faixa, de 28 a 35." / "2 anos acima da sua faixa, de 28 a 35."
-  function encaixeIdade(f) {
-    const fx = !estado.avulsa && estado.criterios && estado.criterios.idade;
-    if (!fx) return '';
-    // Os números da faixa ficam nas pontas do colchete, logo acima.
-    const fora = f.mediaIdade < fx.min ? fx.min - f.mediaIdade : f.mediaIdade > fx.max && fx.max < 50 ? f.mediaIdade - fx.max : 0;
-    const faixa = `de ${fx.min} a ${fx.max}${fx.max >= 50 ? ' ou mais' : ''}`;
-    if (!fora) return `Dentro da sua faixa, ${faixa}.`;
-    return `${fora} ${fora === 1 ? 'ano' : 'anos'} ${f.mediaIdade < fx.min ? 'abaixo' : 'acima'} da sua faixa, ${faixa}.`;
+  let pecaAberta = false;
+  function trocarPeca(abrir) {
+    const peca = document.getElementById('peca');
+    const mini = $tela.querySelector('.cartaz-botao .cartaz');
+    if (!peca) return;
+    const img = peca.querySelector('img');
+    const fazer = () => {
+      peca.hidden = !abrir;
+      document.documentElement.classList.toggle('com-peca', abrir);
+    };
+    if (M.pode() && typeof document.startViewTransition === 'function' && mini && img) {
+      const [de, para] = abrir ? [mini, img] : [img, mini];
+      de.style.viewTransitionName = 'festa-cartaz';
+      try {
+        const t = document.startViewTransition(() => {
+          de.style.viewTransitionName = '';
+          fazer();
+          para.style.viewTransitionName = 'festa-cartaz';
+        });
+        t.finished.finally(() => { para.style.viewTransitionName = ''; });
+      } catch {
+        de.style.viewTransitionName = '';
+        fazer();
+      }
+    } else {
+      fazer();
+      if (abrir && M.anima() && M.pode()) M.animar(peca, [{ opacity: 0, scale: '.96' }], { duration: M.v().estado, easing: M.v().saida });
+      else if (abrir) M.soOpacidade(peca);
+    }
+    if (abrir) peca.querySelector('.peca-fechar').focus({ preventScroll: true });
+    else if (mini) mini.closest('button').focus({ preventScroll: true });
+  }
+  function abrirPeca() {
+    if (pecaAberta) return;
+    pecaAberta = true;
+    history.pushState({ ...(history.state || {}), peca: true, n: nivel() + 1 }, '');
+    trocarPeca(true);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && pecaAberta) history.back();
+  });
+
+  // No desktop o lado esquerdo troca o relógio pelo flyer inteiro, nítido.
+  function ladoComCartaz(f) {
+    const lado = document.querySelector('.lado-esq');
+    if (!lado) return;
+    const velho = lado.querySelector('.lado-cartaz');
+    const c = f ? FT.cartazDe(f) : null;
+    if (!c) {
+      lado.classList.remove('com-cartaz');
+      if (velho) velho.remove();
+      return;
+    }
+    const novo = el('figure', { class: 'lado-cartaz' },
+      el('img', { src: c.arquivo, alt: '', loading: 'lazy', decoding: 'async' }),
+      c.divulgacao ? el('figcaption', { texto: FT.creditoDaPeca(c) }) : null);
+    if (velho) velho.replaceWith(novo);
+    else lado.prepend(novo);
+    lado.classList.add('com-cartaz');
   }
 
-  // "% a sua cara" no detalhe, logo abaixo da média: o número e, critério
-  // por critério, na ordem do peso (o horário primeiro), se cabe, quase cabe
-  // ou não cabe. Quando algo não cabe inteiro, uma linha diz o que pesa mais,
-  // para a conta se deixar conferir.
-  const CABE = { true: 'Cabe', quase: 'Quase', false: 'Não cabe', null: 'Sem dado' };
-  function blocoCara(o) {
-    const cara = estado.avulsa ? null : caraDe(o);
-    if (!cara) return null;
-    // O critério sem dado já está na frase de semDado ("Sem dado, conta pela
-    // metade: a idade."): a linha dele sai da lista, para não dizer duas vezes.
-    const partes = FT.ordemDaCara(cara.partes).filter((x) => String(x.cabe) in CABE && x.cabe !== null);
-    const peso = FT.pesoDaCara(cara);
-    // Festa real: o que ela não informa conta pela metade, e a frase diz.
-    const semDado = FT.semDadoDaCara(cara);
-    const classe = (x) => (x.cabe === true ? 'cabe' : x.cabe === false ? 'nao' : x.cabe === null ? 'sem-dado' : 'quase');
-    return el('div', { class: 'cara' },
-      el('p', { class: 'cara-pct cara-pct--detalhe' }, el('span', { class: 'cara-num', texto: `${cara.pct}%` }), el('span', { texto: semDado ? 'a sua cara, sem todos os dados' : 'a sua cara' })),
-      peso ? el('p', { class: 'cara-peso', texto: peso }) : null,
-      semDado ? el('p', { class: 'cara-peso', texto: semDado }) : null,
-      partes.length ? el('ul', { class: 'cara-partes', 'aria-label': 'O que conta na porcentagem' },
-        partes.map((x) => el('li', { class: `cara-linha cara-linha--${classe(x)}` },
-          el('span', { class: 'cara-rotulo', texto: CABE[String(x.cabe)] }),
-          el('span', { class: 'cara-texto', texto: semQuebraNoPreco(x.texto.trim()) })))) : null);
-  }
-
-  // A barra fixa (R9): à esquerda, a compra com o menor preço, ou o preço
-  // quando a entrada é na porta ou grátis; à direita, "Mandar pro grupo".
+  // A barra fixa (R9, R27): à esquerda o preço e, com venda online, "Comprar"
+  // (sem preço, "Ver ingressos"); preço lido sem link aparece sozinho; preço
+  // conferido há mais de 72 h sai da barra. À direita, "Mandar pro grupo".
   function barraDaFesta(o, ex) {
     const f = o.festa;
     const p = FT.preco(f);
-    const mandar = el('button', { type: 'button', class: 'botao barra-mandar', texto: 'Mandar pro grupo' });
+    const velho = FT.precoVelho(f);
+    const mandar = el('button', { type: 'button', class: 'botao barra-mandar' }, 'Mandar pro grupo', avanco());
     mandar.addEventListener('click', () => {
       estado.mandar = o;
       ir('mandar');
     });
-    // À esquerda, sempre o preço; com venda online, o rótulo embaixo dele é a
-    // compra. A única caixa da barra é "Mandar pro grupo".
-    let esquerda;
-    if (p.compra) {
+    let esquerda = null;
+    if (p.compra && !velho && p.valor !== null) {
       esquerda = linkFora(p.url, null, p.servico, ex, 'barra-preco barra-comprar');
       esquerda.replaceChildren(
         el('span', { class: 'barra-preco-valor', texto: p.curto || p.texto }),
         el('span', { class: 'barra-comprar-rotulo' }, el('span', { texto: 'Comprar' }), seta()));
       esquerda.setAttribute('aria-label', `Comprar ingresso no ${p.servico}, ${p.texto}, abre fora do finde`);
-    } else {
-      const curto = { porta: ['na porta', p.curto], gratis: ['entrada', 'Grátis'], esgotado: ['ingresso', 'Esgotado'] }[p.tipo] || ['ingresso', 'A confirmar'];
+    } else if (p.compra && velho) {
+      // Preço velho fora da barra: a compra continua no bloco do ingresso.
+      esquerda = null;
+    } else if (p.compra) {
+      esquerda = linkFora(p.url, null, p.servico, ex, 'barra-preco barra-comprar');
+      esquerda.replaceChildren(el('span', { class: 'barra-comprar-rotulo barra-comprar-rotulo--so' }, el('span', { texto: 'Ver ingressos' }), seta()));
+      esquerda.setAttribute('aria-label', `Ver ingressos no ${p.servico}, abre fora do finde`);
+    } else if (!velho && p.tipo !== 'sem-preco') {
+      const curto = { porta: ['na porta', p.curto], gratis: ['entrada', 'Grátis'], esgotado: ['ingresso', 'Esgotado'], online: ['ingresso', p.curto || p.texto] }[p.tipo] || ['ingresso', p.texto];
       esquerda = el('p', { class: 'barra-preco' },
         el('span', { class: 'barra-preco-valor', texto: curto[1] }),
         el('span', { class: 'barra-preco-rotulo', texto: curto[0] }));
     }
-    return el('div', { class: 'barra', role: 'region', 'aria-label': 'Ações da festa' }, esquerda, mandar);
+    return el('div', { class: esquerda ? 'barra' : 'barra barra--so', role: 'region', 'aria-label': 'Ações da festa' }, esquerda, mandar);
   }
 
   // ------------------------------------------------------------ mandar pro grupo
 
   function dataCurta(iso, dia) {
-    if (!iso) return DIA[dia].curto;
+    const d0 = DIA[dia] || { curto: '' };
+    if (!iso) return d0.curto;
     const [, m, d] = iso.split('-').map(Number);
-    return `${DIA[dia].curto}, ${d} ${MESES[m - 1]}`;
+    return `${d0.curto ? `${d0.curto}, ` : ''}${d} ${MESES[m - 1]}`;
   }
 
   // A mensagem do grupo em texto corrido, sem caixa alta: a hora e a média

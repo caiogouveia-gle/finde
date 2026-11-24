@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="pt-BR" data-tema="dia">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, noimageindex">
+  <title>finde. Direção E · Guia (rascunho de 24/11/2026)</title>
+  <!-- O stub mudo vem antes de tudo: nenhum rascunho toca som. -->
+  <script src="mudo.js"></script>
+  <link rel="stylesheet" href="rascunhos.css">
+  <script src="guia.js" defer></script>
+</head>
+<body>
+<!-- O mapa ilustrativo: telhas desenhadas à mão para o rascunho, no lugar
+     das do provedor (o rascunho não carrega nada de fora). -->
+<svg width="0" height="0" class="vh" aria-hidden="true">
+  <symbol id="telhas" viewBox="0 0 400 520" preserveAspectRatio="xMidYMid slice">
+    <rect class="quadra" width="400" height="520"/>
+    <path class="agua" d="M0 0h26c-6 90 10 170 2 260-6 90 8 170 0 260H0z"/>
+    <path class="parque" d="M250 330l70-10 30 60-60 40-50-30z"/>
+    <path class="parque" d="M120 60l40 0 0 36-40 0z"/>
+    <path class="rua rua--grande" d="M30 470L390 120"/>
+    <path class="rua rua--grande" d="M60 30L330 520"/>
+    <path class="rua rua--media" d="M0 210h400"/>
+    <path class="rua rua--media" d="M0 360L400 300"/>
+    <path class="rua rua--media" d="M180 0L150 520"/>
+    <path class="rua rua--pequena" d="M0 110L400 70M0 160L400 140M0 270L400 250M0 420L400 390M0 480h400"/>
+    <path class="rua rua--pequena" d="M90 0L70 520M250 0L270 520M320 0L350 520M40 0L30 520"/>
+    <path class="rua rua--pequena" d="M110 300L240 120M200 420L380 230"/>
+    <text class="bairro-nome" x="64" y="250">Pinheiros</text>
+    <text class="bairro-nome" x="210" y="100">Vila Madalena</text>
+    <text class="bairro-nome" x="270" y="450">Jardins</text>
+  </symbol>
+</svg>
+
+<div class="moldura">
+  <aside class="lado lado-esq" aria-hidden="true" id="lado-esq">
+    <p class="relogio">15<span class="h">h</span>20</p>
+    <p class="rotulo">Terça, 24 nov</p>
+  </aside>
+
+  <div class="app">
+
+    <p class="folio"><span>Rascunho E</span><span id="folio-tela">Fictício</span></p>
+
+    <!-- ============================================================ 1. PRIMEIRA PERGUNTA -->
+    <main class="tela tela-pergunta" data-tela="pergunta" hidden>
+      <header class="topo"><a class="marca" href="#">finde<span class="ponto">.</span></a></header>
+      <div class="progresso" aria-hidden="true"><span class="atual"></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="cabeca-pergunta">
+        <p class="rotulo">1 de 6</p>
+        <h1 class="titulo titulo--pergunta" data-mov="titulo">Sair <em>quando?</em></h1>
+        <p class="base-viva"><span class="ponto-vivo" aria-hidden="true"></span><span>Atualizado há 3 h</span><span>41 festas lidas de 50 perfis e 3 sites de ingresso</span></p>
+      </div>
+      <div class="semanas" role="group" aria-label="Semana">
+        <button class="semana" type="button" aria-pressed="true">Esta semana</button>
+        <button class="semana" type="button" aria-pressed="false">A próxima</button>
+      </div>
+      <fieldset class="opcoes" data-mov="opcoes">
+        <legend class="vh">Sair quando?</legend>
+        <label class="opcao"><input type="radio" name="dia"><span class="marcador"></span><span class="opcao-nome">Hoje <em>terça</em></span><span class="opcao-conta"><b>2</b><span>festas</span></span></label>
+        <label class="opcao"><input type="radio" name="dia"><span class="marcador"></span><span class="opcao-nome">Quinta, 26 nov</span><span class="opcao-conta"><b>8</b><span>festas</span></span></label>
+        <label class="opcao"><input type="radio" name="dia" checked><span class="marcador"></span><span class="opcao-nome">Sexta, 27 nov</span><span class="opcao-conta"><b>8</b><span>festas</span></span></label>
+        <label class="opcao"><input type="radio" name="dia"><span class="marcador"></span><span class="opcao-nome">Sábado, 28 nov</span><span class="opcao-conta"><b>5</b><span>festas</span></span></label>
+        <label class="opcao"><input type="radio" name="dia"><span class="marcador"></span><span class="opcao-nome">Domingo, 29 nov</span><span class="opcao-conta"><b>3</b><span>festas</span></span></label>
+      </fieldset>
+      <div class="pe">
+        <button class="botao botao--largo" type="button" data-ir="resultado">Continuar ››</button>
+      </div>
+    </main>
+
+    <!-- ============================================================ 2. O GUIA -->
+    <main class="tela tela-guia" data-tela="resultado" hidden>
+      <header class="guia-cabeca">
+        <div class="topo"><a class="marca" href="#">finde<span class="ponto">.</span></a><a class="link link--volta" href="#" data-ir="pergunta">Ajustar</a></div>
+        <p class="edicao" data-mov="edicao"><span>Guia da semana</span><span>26 a 29 nov</span><span>São Paulo</span></p>
+        <p class="base-viva"><span class="ponto-vivo" aria-hidden="true"></span><span>Atualizado há 3 h</span><span>41 festas lidas de 50 perfis e 3 sites de ingresso</span></p>
+      </header>
+
+      <div class="guia-titulo">
+        <h1 class="titulo titulo--resultado" data-mov="titulo">Três festas pra sua <em>sexta.</em></h1>
+        <p class="pedido">das <a href="#">18h às 23h</a> · <a href="#">28 a 35 anos</a> · <a href="#">Pinheiros e Vila Madalena</a> · <a href="#">até R$&nbsp;80</a></p>
+        <p class="sem-media">Nenhuma das três divulgou a média de idade ainda.</p>
+      </div>
+
+      <div class="abas-linha">
+        <div class="abas" role="tablist" aria-label="Dia">
+          <button class="aba" role="tab" aria-selected="false" type="button">Hoje<sup>2</sup></button>
+          <button class="aba" role="tab" aria-selected="false" type="button">Qui<sup>8</sup></button>
+          <button class="aba" role="tab" aria-selected="true" type="button">Sex<sup>8</sup></button>
+          <button class="aba" role="tab" aria-selected="false" type="button">Sáb<sup>5</sup></button>
+          <button class="aba" role="tab" aria-selected="false" type="button">Dom<sup>3</sup></button>
+          <span class="aba-fio" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="lista-rotulo" data-so="mapa" hidden>
+        <p class="rotulo">6 de 8 com endereço</p>
+        <a class="link alternar" href="#" data-alternar="lista" aria-controls="mapa">Ver em lista <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+      </div>
+
+      <!-- O mapa (estado 'mapa'): substitui a capa e as chamadas; a lista do dia continua embaixo. -->
+      <section class="mapa" id="mapa" aria-label="Mapa das festas de sexta" hidden>
+        <svg class="mapa-telhas" aria-hidden="true"><use href="#telhas"/></svg>
+        <span class="mapa-bairro p-pinheiros" aria-hidden="true"></span>
+        <span class="mapa-bairro p-vila" aria-hidden="true"></span>
+        <button class="pino pino--melhor p-a" type="button" aria-pressed="true" aria-label="18h, Sexta Sem Pressa e mais 1, Casa Expediente"><span class="pino-in">18h<i>+1</i></span></button>
+        <button class="pino p-b" type="button" aria-pressed="false" aria-label="19h, Sexta Brasileira, Bar do Largo"><span class="pino-in">19h</span></button>
+        <button class="pino p-c" type="button" aria-pressed="false" aria-label="19h, Clube Varanda, Varanda Jardins"><span class="pino-in">19h</span></button>
+        <button class="pino p-d" type="button" aria-pressed="false" aria-label="17h, Disco do Poente, Laje Bela Vista"><span class="pino-in">17h</span></button>
+        <div class="mapa-pe">
+          <div class="mapa-zoom"><button type="button" aria-label="Aproximar">+</button><button type="button" aria-label="Afastar">−</button></div>
+          <p class="atribuicao">Mapa ilustrativo · no app: <a href="#">© OpenStreetMap</a> · <a href="#">© CARTO</a></p>
+        </div>
+      </section>
+      <p class="nota mapa-fora" data-so="mapa" hidden>2 festas sem endereço divulgado ficam só na lista.</p>
+
+      <!-- Estado 'lista': a capa e as duas chamadas -->
+      <div class="lista" data-so="lista">
+        <a class="capa" href="#" data-ir="detalhe" data-festa="sexta-sem-pressa">
+          <span class="capa-foto" data-vt="festa-capa"><img class="capa-fundo" src="../../../prototipo/v1-festas/publico/cartazes/sexta-sem-pressa.webp" alt=""></span>
+          <div class="capa-dentro">
+            <div class="etiquetas"><span class="etiqueta">Terraço</span><span class="etiqueta etiqueta--cara">92% a sua cara</span></div>
+            <p class="capa-quando"><span class="hora" data-vt="festa-hora">18h</span><span class="capa-dia">Sex · 27 nov</span></p>
+            <p class="capa-nome" data-vt="festa-nome">Sexta Sem Pressa</p>
+            <div class="regua" aria-label="Começa às 18h, enche às 20h, acaba às 23h">
+              <span class="regua-trilho"></span><span class="regua-festa" data-mov="regua"></span><span class="regua-pico em-40"></span>
+              <span class="regua-rot em-0">18h</span><span class="regua-rot regua-rot--meio em-40">20h enche</span><span class="regua-rot regua-rot--fim">23h</span>
+            </div>
+            <p class="capa-onde"><b>Casa Expediente</b> · terraço em Pinheiros · <b>R$&nbsp;60</b></p>
+            <p class="porque"><b>Começa às 18h e fica em Pinheiros,</b> como você pediu.</p>
+          </div>
+        </a>
+
+        <div class="chamadas">
+          <a class="chamada" href="#" data-ir="detalhe" data-festa="sexta-brasileira">
+            <div><span class="hora" data-vt="festa-hora">19h</span></div>
+            <div>
+              <p class="chamada-nome" data-vt="festa-nome">Sexta Brasileira</p>
+              <p class="chamada-onde">Bar do Largo · Vila Madalena · <b>R$&nbsp;45</b></p>
+              <p class="porque"><b>Começa às 19h, na Vila Madalena.</b> Não diz o som.</p>
+              <span class="pct">84% a sua cara</span>
+            </div>
+          </a>
+          <a class="chamada" href="#" data-ir="detalhe" data-festa="madrugada-leve">
+            <div><span class="hora" data-vt="festa-hora">22h</span></div>
+            <div>
+              <p class="chamada-nome" data-vt="festa-nome">Madrugada Leve</p>
+              <p class="chamada-onde">Casa Expediente · clube pequeno · <b>R$&nbsp;70</b></p>
+              <p class="porque"><b>Em Pinheiros, dentro do teto.</b> Começa às 22h, depois do que você pediu.</p>
+              <span class="pct">61% a sua cara</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="mais">
+          <button class="link" type="button" data-todas aria-expanded="false">Ver todas as 8 de sexta <svg class="seta seta--abre" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+          <a class="link" href="#" data-alternar="mapa" aria-controls="mapa">Ver no mapa <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        </div>
+      </div>
+
+      <!-- Ver todas: aberta por padrão no estado 'todas' e no 'mapa' -->
+      <section class="todas" id="todas" hidden>
+        <div class="todas-cabeca"><p class="rotulo">Todas as 8 de sexta</p></div>
+        <div class="filtros" data-so="lista">
+          <div class="zona"><p class="rotulo">Som</p><div class="chips"><button class="chip" type="button" aria-pressed="false">House e disco</button><button class="chip" type="button" aria-pressed="false">MPB e samba</button><button class="chip" type="button" aria-pressed="false">Pop</button><span class="sem-dado">3 sem som informado</span></div></div>
+          <div class="zona"><p class="rotulo">Bairro</p><div class="chips"><button class="chip" type="button" aria-pressed="true">Pinheiros</button><button class="chip" type="button" aria-pressed="false">Vila Madalena</button><button class="chip" type="button" aria-pressed="false">Jardins</button></div></div>
+          <div class="zona"><p class="rotulo">Preço</p><div class="chips"><button class="chip" type="button" aria-pressed="false">Até R$&nbsp;50</button><button class="chip" type="button" aria-pressed="false">Com ingresso online</button></div></div>
+        </div>
+        <ol class="linhas">
+          <li><a class="linha" href="#" data-ir="detalhe"><span class="hora">17h</span><div><p class="linha-nome">Disco do Poente</p><p class="linha-onde">Laje Bela Vista · R$&nbsp;50</p></div><img class="mini" src="../../../prototipo/v1-festas/publico/cartazes/disco-do-poente.webp" alt="Flyer de Disco do Poente, divulgação de @lajebelavista"></a></li>
+          <li><a class="linha linha--marcada" href="#" data-ir="detalhe"><span class="hora" data-vt="festa-hora">18h</span><div><p class="linha-nome" data-vt="festa-nome">Sexta Sem Pressa</p><p class="linha-onde">Casa Expediente · R$&nbsp;60</p></div><img class="mini" data-vt="festa-cartaz" src="../../../prototipo/v1-festas/publico/cartazes/sexta-sem-pressa.webp" alt="Flyer de Sexta Sem Pressa, divulgação de @coletivoexpediente"></a></li>
+          <li><a class="linha" href="#" data-ir="detalhe"><span class="hora">18h</span><div><p class="linha-nome">Roda de Sexta</p><p class="linha-onde">Vila Mariana · R$&nbsp;30 · sem endereço</p></div><img class="mini" src="../../../prototipo/v1-festas/publico/cartazes/roda-de-sexta.webp" alt="Flyer de Roda de Sexta, divulgação de @rodadesexta"></a></li>
+          <li><a class="linha" href="#" data-ir="detalhe"><span class="hora">19h</span><div><p class="linha-nome">Sexta Brasileira</p><p class="linha-onde">Bar do Largo · R$&nbsp;45</p></div><img class="mini" src="../../../prototipo/v1-festas/publico/cartazes/sexta-brasileira.webp" alt="Flyer de Sexta Brasileira, divulgação de @bardolargo"></a></li>
+          <li><a class="linha" href="#" data-ir="detalhe"><span class="hora">19h</span><div><p class="linha-nome">Clube Varanda</p><p class="linha-onde">Varanda Jardins · R$&nbsp;80</p></div><img class="mini" src="../../../prototipo/v1-festas/publico/cartazes/clube-varanda.webp" alt="Flyer de Clube Varanda, divulgação de @clubevaranda"></a></li>
+          <li><a class="linha linha--sem-miniatura" href="#" data-ir="detalhe"><span class="hora">20h</span><div><p class="linha-nome">Jantar Dançante</p><p class="linha-onde">Jardins · R$&nbsp;120 · sem endereço</p></div></a></li>
+          <li><a class="linha" href="#" data-ir="detalhe"><span class="hora">22h</span><div><p class="linha-nome">Madrugada Leve</p><p class="linha-onde">Casa Expediente · R$&nbsp;70</p></div><img class="mini" src="../../../prototipo/v1-festas/publico/cartazes/madrugada-leve.webp" alt="Flyer de Madrugada Leve, divulgação de @selomormaco"></a></li>
+          <li><a class="linha" href="#" data-ir="detalhe"><span class="hora">22h</span><div><p class="linha-nome">Pop Arquivo</p><p class="linha-onde">Galpão Barra Funda · R$&nbsp;70</p></div><img class="mini mini--paisagem" src="banner-ficticio.svg" alt="Banner de Pop Arquivo, divulgação da página do ingresso"></a></li>
+        </ol>
+        <p class="bloco-rotulo"><span class="rotulo">Local a confirmar</span></p>
+        <ol class="linhas">
+          <li><a class="linha linha--sem-miniatura" href="#" data-ir="detalhe"><span class="hora">23h</span><div><p class="linha-nome">Pulso</p><p class="linha-onde">A casa ainda não divulgou o endereço · R$&nbsp;90</p></div></a></li>
+        </ol>
+      </section>
+
+      <div class="mais" data-so="lista">
+        <a class="link" href="#">No sábado tem mais 5 <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+      </div>
+
+      <footer class="rodape"><div class="rodape-linha"><span>Festas reais lidas pelo motor do finde.</span><button class="tema-botao" type="button" data-tema-trocar>Modo noite</button></div></footer>
+    </main>
+
+    <!-- ============================================================ 2b. DIA SEM REAL (só exemplos) -->
+    <main class="tela tela-guia" data-tela="vazio" hidden>
+      <header class="guia-cabeca">
+        <div class="topo"><a class="marca" href="#">finde<span class="ponto">.</span></a><a class="link link--volta" href="#">Ajustar</a></div>
+        <p class="edicao"><span>Guia da semana</span><span>26 a 29 nov</span><span>São Paulo</span></p>
+        <p class="base-viva"><span class="ponto-vivo" aria-hidden="true"></span><span>Atualizado há 3 h</span><span>41 festas lidas de 50 perfis e 3 sites de ingresso</span></p>
+      </header>
+      <div class="guia-titulo">
+        <h1 class="titulo titulo--resultado">Nada pra sua <em>terça,</em> ainda.</h1>
+        <p class="pedido">das <a href="#">18h às 23h</a> · <a href="#">28 a 35 anos</a> · <a href="#">Pinheiros</a></p>
+      </div>
+      <div class="abas-linha">
+        <div class="abas" role="tablist" aria-label="Dia">
+          <button class="aba" role="tab" aria-selected="true" type="button">Hoje<sup>0</sup></button>
+          <button class="aba" role="tab" aria-selected="false" type="button">Qui<sup>8</sup></button>
+          <button class="aba" role="tab" aria-selected="false" type="button">Sex<sup>8</sup></button>
+          <button class="aba" role="tab" aria-selected="false" type="button">Sáb<sup>5</sup></button>
+          <button class="aba" role="tab" aria-selected="false" type="button">Dom<sup>3</sup></button>
+          <span class="aba-fio" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="mais">
+        <a class="link" href="#">Na quinta tem 8 <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+      </div>
+      <p class="bloco-rotulo"><span class="exemplo">Exemplos · festas fictícias</span></p>
+      <ol class="linhas">
+        <li><a class="linha linha--sem-miniatura" href="#"><span class="hora">18h</span><div><p class="linha-nome">Domingo no Terraço</p><p class="linha-onde">Exemplo · terraço em Pinheiros · R$&nbsp;50</p></div></a></li>
+        <li><a class="linha linha--sem-miniatura" href="#"><span class="hora">19h</span><div><p class="linha-nome">Vinil e Vinho</p><p class="linha-onde">Exemplo · Jardins · R$&nbsp;110</p></div></a></li>
+      </ol>
+      <footer class="rodape"><div class="rodape-linha"><span>As marcadas como exemplo são fictícias.</span><button class="tema-botao" type="button" data-tema-trocar>Modo noite</button></div></footer>
+    </main>
+
+    <!-- ============================================================ 3. DETALHE -->
+    <main class="tela tela-detalhe" data-tela="detalhe" hidden>
+      <div class="detalhe-topo"><a class="link link--volta" href="#" data-ir="resultado"><svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3M7 4L3 8l4 4"/></svg>Sexta</a><a class="marca" href="#">finde<span class="ponto">.</span></a></div>
+
+      <section class="capa capa--detalhe" aria-label="Quando e qual festa">
+        <span class="capa-foto" data-vt="festa-capa"><img class="capa-fundo" src="../../../prototipo/v1-festas/publico/cartazes/sexta-sem-pressa.webp" alt=""></span>
+        <div class="capa-dentro">
+          <p class="capa-dia">Sexta, 27 nov</p>
+          <p class="capa-quando"><span class="hora" data-vt="festa-hora">18h</span></p>
+          <div class="regua" aria-label="Começa às 18h, enche às 20h, acaba às 23h">
+            <span class="regua-trilho"></span><span class="regua-festa" data-mov="regua"></span><span class="regua-pico em-40"></span>
+            <span class="regua-rot em-0">18h começa</span><span class="regua-rot regua-rot--meio em-40">20h enche</span><span class="regua-rot regua-rot--fim">23h acaba</span>
+          </div>
+          <div class="ficha">
+            <button class="cartaz-botao" type="button" data-peca aria-label="Ver o flyer inteiro"><img class="cartaz" src="../../../prototipo/v1-festas/publico/cartazes/sexta-sem-pressa.webp" alt="Flyer de Sexta Sem Pressa, divulgação de @coletivoexpediente" data-vt="festa-cartaz"></button>
+            <div>
+              <h1 class="ficha-nome" data-vt="festa-nome">Sexta Sem Pressa</h1>
+              <p class="ficha-casa">Casa Expediente · terraço</p>
+            </div>
+          </div>
+          <p class="ficha-credito">Flyer · divulgação @coletivoexpediente</p>
+        </div>
+      </section>
+
+      <section class="secao">
+        <p class="cara-pct"><span class="cara-num">92%</span><span class="rotulo">a sua cara</span></p>
+        <div class="cara-linha"><span class="cara-rot">Horário</span><span class="cara-texto">Começa às 18h e acaba às 23h, dentro do que você pediu.</span></div>
+        <div class="cara-linha"><span class="cara-rot">Bairro</span><span class="cara-texto">Pinheiros, que você pediu.</span></div>
+        <div class="cara-linha"><span class="cara-rot">Preço</span><span class="cara-texto">R$&nbsp;60 no 1º lote, abaixo do seu teto.</span></div>
+        <div class="cara-linha cara-linha--meio" data-media="sem"><span class="cara-rot">Idade</span><span class="cara-texto">Não divulgada; conta pela metade.</span></div>
+        <div class="cara-linha" data-media="com" hidden><span class="cara-rot">Idade</span><span class="cara-texto">A faixa de quem foi cruza a sua.</span></div>
+      </section>
+
+      <section class="secao" data-media="com" hidden>
+        <p class="rotulo">Idade do público</p>
+        <p class="idade-frase">4 de 5 que foram, de 29 a 34 anos, acharam o público da idade deles.</p>
+        <p class="nota">Pela avaliação de quem foi pelo convite do finde.</p>
+      </section>
+
+      <section class="secao">
+        <p class="rotulo">Onde</p>
+        <p class="endereco">Casa Expediente<small>Rua Clarice Vasconcelos Prado, 1.658 · Pinheiros</small></p>
+        <p class="nota">a 0,6 km de Pinheiros, em linha reta</p>
+        <div class="acoes">
+          <button class="link" type="button" data-chegar aria-expanded="false">Como chegar <svg class="seta seta--abre" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+          <button class="link" type="button" data-mini aria-expanded="false">Mostrar mapa <svg class="seta seta--abre" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+        </div>
+        <div class="destinos" id="destinos" hidden><a href="#">Google Maps</a><a href="#">Apple Maps</a><a href="#">Uber</a></div>
+        <div class="mini-mapa" id="mini-mapa" hidden>
+          <svg class="mapa-telhas" aria-hidden="true"><use href="#telhas"/></svg>
+          <span class="pino pino--melhor"><span class="pino-in">18h</span></span>
+          <div class="mapa-pe"><span></span><p class="atribuicao">Mapa ilustrativo · no app: © OpenStreetMap · © CARTO</p></div>
+        </div>
+      </section>
+
+      <section class="secao">
+        <p class="rotulo">Ingresso</p>
+        <p class="ingresso-linha"><span class="ingresso-valor">R$&nbsp;60</span><span class="nota">1º lote · mais R$&nbsp;6 de taxa</span></p>
+        <p class="nota">Na Ingresse, conferido há 2 h.</p>
+        <div class="acoes">
+          <a class="link" href="#">Comprar na Ingresse <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+        </div>
+        <div class="acoes">
+          <a class="link" href="#">Pôr na agenda <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+          <button class="link" type="button">Compartilhar <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+        </div>
+      </section>
+
+      <section class="secao">
+        <button class="link" type="button" data-fontes aria-expanded="false">Encontrada em 3 fontes <svg class="seta seta--abre" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+        <div id="fontes" hidden>
+          <ul class="fontes-lista">
+            <li class="fonte"><div><p class="fonte-nome">Página do ingresso · Ingresse</p><p class="fonte-leu">Horário, preço e endereço · conferido há 2 h</p></div><a href="#">Abrir</a></li>
+            <li class="fonte"><div><p class="fonte-nome">Post de @coletivoexpediente · Instagram</p><p class="fonte-leu">Flyer, horário e lineup · conferido ontem</p></div><a href="#">Ver o post</a></li>
+            <li class="fonte"><div><p class="fonte-nome">Agenda da Casa Expediente</p><p class="fonte-leu">Nome e data · conferido há 3 dias</p></div><a href="#">Abrir</a></li>
+          </ul>
+          <div class="juncao">
+            <p class="juncao-frase">Juntamos pelo link de compra, pelo nome e pelo mesmo flyer.</p>
+            <div class="par-imagens">
+              <figure><img class="mini" src="../../../prototipo/v1-festas/publico/cartazes/sexta-sem-pressa.webp" alt="Flyer do post"><figcaption>post</figcaption></figure>
+              <figure><img class="mini" src="../../../prototipo/v1-festas/publico/cartazes/sexta-sem-pressa.webp" alt="Pôster da página do ingresso"><figcaption>página</figcaption></figure>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="secao">
+        <p class="rotulo">De onde vem</p>
+        <dl class="de-onde">
+          <dt>Horário</dt><dd>Página do ingresso.</dd>
+          <dt>Preço</dt><dd>Página do ingresso, há 2 h.</dd>
+          <dt>Local</dt><dd>Cadastro da casa no finde; mapa © OpenStreetMap.</dd>
+          <dt>Som</dt><dd>Parece house e disco, pela descrição da página.</dd>
+        </dl>
+        <p class="divergencia">O post diz 19h; a página do ingresso diz 18h. Mostramos a da página.</p>
+      </section>
+      <p class="vazios">Não divulgado: média de idade, lineup, regras da porta.</p>
+
+      <div class="barra">
+        <div class="barra-preco"><span class="barra-valor">R$&nbsp;60</span><span class="barra-rot">1º lote</span></div>
+        <a class="botao" href="#" data-ir="convite">Mandar pro grupo ››</a>
+      </div>
+
+      <div class="peca" id="peca" hidden role="dialog" aria-label="Flyer de Sexta Sem Pressa">
+        <img src="../../../prototipo/v1-festas/publico/cartazes/sexta-sem-pressa.webp" alt="Flyer de Sexta Sem Pressa, divulgação de @coletivoexpediente">
+        <div class="peca-pe"><p>Flyer · divulgação @coletivoexpediente · <a href="#">ver no Instagram</a></p><button class="peca-fechar" type="button" data-peca-fechar>Fechar</button></div>
+      </div>
+    </main>
+
+    <!-- ============================================================ 4. CONVITE COM AVALIAÇÃO -->
+    <main class="tela tela-convite" data-tela="convite" hidden>
+      <header class="topo"><a class="marca" href="#">finde<span class="ponto">.</span></a></header>
+      <div class="registro">
+        <p class="rotulo">Convite de Ana · sex, 20 nov · já passou</p>
+        <p class="hora">18h</p>
+        <p class="registro-nome">Sexta Sem Pressa</p>
+        <p class="registro-onde">Casa Expediente · Pinheiros · R$&nbsp;60</p>
+        <p class="nota">Você disse tô dentro, com Bia e Leo.</p>
+      </div>
+
+      <form class="avaliar" id="avaliar" data-mov="avaliar">
+        <p class="rotulo">Como foi</p>
+        <h1 class="titulo titulo--secao">O público tinha a <em>sua</em> idade?</h1>
+        <fieldset class="opcoes">
+          <legend class="vh">O público tinha a sua idade?</legend>
+          <label class="opcao"><input type="radio" name="resp"><span class="marcador"></span><span class="opcao-nome">Mais novo que eu</span></label>
+          <label class="opcao"><input type="radio" name="resp" checked><span class="marcador"></span><span class="opcao-nome">Da minha idade</span></label>
+          <label class="opcao"><input type="radio" name="resp"><span class="marcador"></span><span class="opcao-nome">Mais velho que eu</span></label>
+        </fieldset>
+        <div class="idade-campo"><label for="idade">Você tem</label><input class="campo" id="idade" inputmode="numeric" value="31" aria-describedby="idade-nota"><span class="anos">anos</span><span class="nota" id="idade-nota">Sem a idade, a resposta não conta.</span></div>
+        <p class="finalidade">Opcional. Serve pra dizer, a quem procurar esta festa, se o público é da fase dela. Guardamos sem o seu nome, até 31/12/2026.</p>
+        <button class="botao botao--largo" type="submit">Mandar resposta ››</button>
+      </form>
+
+      <div class="confirmacao" id="confirmacao" hidden>
+        <p class="titulo titulo--secao">Anotado. <em>Valeu.</em></p>
+        <p class="texto">Quando cinco pessoas responderem, a festa ganha a idade de quem foi.</p>
+      </div>
+
+      <div class="bloco">
+        <p class="rotulo">Pro grupo</p>
+        <p class="previa">Como foi a Sexta Sem Pressa? Responde em 10 segundos: o público era da nossa idade?
+finde-app.fly.dev/p/exemplo</p>
+        <a class="link" href="#">Mandar "como foi?" pro grupo <svg class="seta" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+      </div>
+      <footer class="rodape"><div class="rodape-linha"><span>Convite do finde.</span><button class="tema-botao" type="button" data-tema-trocar>Modo noite</button></div></footer>
+    </main>
+  </div>
+
+  <aside class="lado lado-dir" id="lado-dir">
+    <p class="rotulo">Abra no celular</p>
+    <p class="endereco-pagina">finde-app.fly.dev</p>
+  </aside>
+</div>
+</body>
+</html>

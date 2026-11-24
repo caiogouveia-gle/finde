@@ -25,9 +25,25 @@ const CONECTORES = {
   paginas: require('./paginas'),
 };
 
+// Fontes de festa (KTD4, tempo 4 do plano de 24/11/2026): não coletam itens;
+// gravam direto em valores pelo id da festa, depois da passada de correlação.
+// A curadoria fica ligada sempre; as avaliações, pela configuração.
+const FONTES_DE_FESTA = {
+  curadoria: require('./curadoria'),
+  avaliacoes: require('./avaliacoes'),
+};
+
+// As fontes de festa que a execução roda, na ordem (curadoria por último, para
+// valer sobre tudo): ligadas salvo `ligada: false` na configuração.
+function fontesDeFesta(config = {}) {
+  return ['avaliacoes', 'curadoria']
+    .filter((id) => !(config[id] && config[id].ligada === false))
+    .map((id) => FONTES_DE_FESTA[id]);
+}
+
 const DESLIGADAS = [
   { id: 'instagram', nome: 'Instagram', motivo: 'Os termos da Meta só permitem coleta programática pelas APIs da plataforma, e a Graph API só lê contas que autorizam o app. Raspagem é violação. Caminho: a produtora conecta a própria conta, ou manda pelo envio.' },
-  { id: 'resident-advisor', nome: 'Resident Advisor', motivo: 'Termos de uso (4.4) proíbem software automatizado para fins comerciais. Na prova acadêmica (24/11/2026) a listagem de São Paulo entra pelo leitor de páginas, mas o site devolve 403 até com navegador; só roda com FINDE_PROXY_URL.' },
+  { id: 'resident-advisor', nome: 'Resident Advisor', motivo: 'Termos de uso (4.4) proíbem software automatizado para fins comerciais. O site devolve 403 a acesso automatizado até com navegador, e bloqueio é recusa (D14 do plano de 24/11/2026): sem listagem pelo leitor de páginas, sem proxy.' },
   { id: 'eventbrite', nome: 'Eventbrite', motivo: 'A busca pública da API foi desligada em 12/12/2019; a API só lê eventos da própria organização, e os termos proíbem raspagem. Caminho: a produtora conecta a conta dela.' },
   { id: 'sympla', nome: 'Sympla', motivo: 'Sem API pública de listagem; a API oficial lê só os eventos de quem tem o token. Na prova acadêmica (24/11/2026), a listagem de São Paulo é lida pelo leitor de páginas (conector paginas). Caminhos para o produto: Programa de Afiliados e token da produtora.' },
   { id: 'shotgun', nome: 'Shotgun', motivo: 'Sem API pública de listagem. Na prova acadêmica (24/11/2026), a listagem de São Paulo é lida pelo leitor de páginas (conector paginas); sem navegador, a página de evento traz schema.org.' },
@@ -91,4 +107,4 @@ function descreverFontes(config) {
   return [...comConector, ...DESLIGADAS.filter((d) => !CONECTORES[d.id]).map((d) => ({ ...d, ligada: false, semConector: true }))];
 }
 
-module.exports = { CONECTORES, DESLIGADAS, lerConfig, fontesLigadas, descreverFontes, RAIZ };
+module.exports = { CONECTORES, FONTES_DE_FESTA, DESLIGADAS, lerConfig, fontesLigadas, fontesDeFesta, descreverFontes, RAIZ };

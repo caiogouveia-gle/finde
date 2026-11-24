@@ -58,8 +58,8 @@ test('cidade: o registro de outra cidade sai com ela; o sem endereço sai sem en
   assert.equal(doMapa.endereco.cidade, 'São Paulo');
 });
 
-test('contrato: a versão subiu quando a cidade passou a vir da fonte', () => {
-  assert.equal(VERSAO_CONTRATO, 'finde-r14/2');
+test('contrato: a versão subiu quando a cidade passou a vir da fonte (/2) e com a prova de conceito (/3)', () => {
+  assert.equal(VERSAO_CONTRATO, 'finde-r14/3');
 });
 
 // ---------------------------------------------------------------- preço

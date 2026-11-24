@@ -81,6 +81,9 @@
     return svg;
   }
 
+  // O avanço do botão D ("Mandar pro grupo ››"), o mesmo da landing.
+  const avanco = () => el('span', { class: 'avanco', 'aria-hidden': 'true', texto: '››' });
+
   // Ação secundária com fio e seta: <button> ou <a>, o texto e a seta.
   function acaoC(tag, atributos, texto, { volta = false } = {}) {
     const classe = `link link--seta${volta ? ' link--volta' : ''}${atributos.class ? ` ${atributos.class}` : ''}`;
@@ -204,8 +207,8 @@
   // origem da média junto dela.
   function quandoGrande(o) {
     return el('p', { class: 'quando-grande', 'aria-hidden': 'true' },
-      hora(o.hora),
-      el('span', { class: 'media-grande', texto: Number.isInteger(o.festa.mediaIdade) ? `média ${o.festa.mediaIdade} anos` : 'média não informada' }),
+      hora(FT().horaCurta(o.hora)),
+      Number.isInteger(o.festa.mediaIdade) ? el('span', { class: 'media-grande', texto: `média ${o.festa.mediaIdade} anos` }) : null,
       idadeOrigem(o.festa));
   }
 
@@ -213,28 +216,41 @@
   // 21 NOV", o título com um itálico, a hora grande com a média, a origem da
   // média, o nome, "casa · preço · produtora" e a frase do horário. O que vem
   // depois (as respostas, no convite) entra em `resto`. Sem canto, sem sombra.
-  const DIA_PAINEL = { sex: ['na ', 'sexta?'], sab: ['no ', 'sábado?'], dom: ['no ', 'domingo?'] };
-  function painelConvite(o, { rotulo = 'Convite', marcaHref = null, resto = [] } = {}) {
+  const DIA_PAINEL = {
+    seg: ['na ', 'segunda?'], ter: ['na ', 'terça?'], qua: ['na ', 'quarta?'], qui: ['na ', 'quinta?'],
+    sex: ['na ', 'sexta?'], sab: ['no ', 'sábado?'], dom: ['no ', 'domingo?'],
+  };
+  // passou: a festa já foi e o convite vira registro (R34, rascunho do
+  // convite): o rótulo diz "já passou", o título é o nome da festa e a
+  // pergunta-convite ("Bora na sexta?") sai.
+  function painelConvite(o, { rotulo = 'Convite', marcaHref = null, resto = [], passou = false } = {}) {
     const f = o.festa;
     const [na, dia] = DIA_PAINEL[f.dia] || ['', 'quando?'];
+    const p = FT().preco(f);
+    const lineup = Array.isArray(f.lineup) ? f.lineup.filter((x) => typeof x === 'string' && x.trim()) : [];
     const temMedia = Number.isInteger(f.mediaIdade);
     const origem = origemDaIdade(f);
-    const h1 = el('h1', { class: 'painel-titulo', tabindex: '-1', id: 'convite-titulo' }, `Bora ${na}`, el('em', { texto: dia }));
+    const h1 = passou
+      ? el('h1', { class: 'painel-nome painel-nome--registro', tabindex: '-1', id: 'convite-titulo', texto: FT().semViuva(f.nome) })
+      : el('h1', { class: 'painel-titulo', tabindex: '-1', id: 'convite-titulo' }, `Bora ${na}`, el('em', { texto: dia }));
     return el('article', { class: 'painel-convite', 'aria-labelledby': 'convite-titulo' },
       marca(marcaHref),
-      el('p', { class: 'painel-rotulo', texto: rotulo }),
+      el('p', { class: 'painel-rotulo', texto: passou ? `${rotulo} · já passou` : rotulo }),
       // Festa fictícia: o convite sai do app, e quem recebe não vê o rodapé.
       f.real !== true ? el('p', { class: 'painel-exemplo' }, marcaExemplo('', 'Exemplo · festa fictícia')) : null,
       h1,
       el('p', { class: 'vh', texto: `${linhaSemMedia(o.linha)}, ${mediaFalada(f)}.` }),
+      // Sem média, o convite não abre com "média não informada" (R35): a
+      // hora fica sozinha, e a casa, o bairro, o preço e o lineup vêm embaixo.
       el('div', { class: 'painel-quando', 'aria-hidden': 'true' },
         el('p', { class: 'painel-hora' },
-          hora(o.hora),
-          el('span', { class: 'painel-media', texto: temMedia ? `média ${f.mediaIdade} anos` : 'média não informada' })),
+          o.hora ? hora(FT().horaCurta(o.hora)) : el('span', { class: 'painel-media', texto: 'horário a confirmar' }),
+          temMedia ? el('span', { class: 'painel-media', texto: `média ${f.mediaIdade} anos` }) : null),
         temMedia && origem ? el('p', { class: 'painel-origem', texto: origem }) : null),
-      el('h2', { class: 'painel-nome', id: 'nome-festa', texto: f.nome }),
+      passou ? null : el('h2', { class: 'painel-nome', id: 'nome-festa', texto: FT().semViuva(f.nome) }),
       // Quebra só antes de um "·", e a hora nunca desce sozinha (FT).
-      el('p', { class: 'painel-onde', texto: FT().ondeSemQuebra([f.casa, FT().precoNaLista(f), f.produtora]) }),
+      el('p', { class: 'painel-onde', texto: FT().ondeSemQuebra([FT().casaComBairro(f.casa, o.bairro) || o.bairro, p.tipo === 'sem-preco' ? null : FT().precoNaLista(f), f.produtora && f.produtora !== f.casa ? f.produtora : null]) }),
+      lineup.length ? el('p', { class: 'painel-onde', texto: `com ${lineup.length > 3 ? `${lineup.slice(0, 3).join(', ')} e mais ${lineup.length - 3}` : lineup.join(' e ')}` }) : null,
       o.horario ? el('p', { class: 'painel-horario', texto: FT().horarioSemQuebra(o.horario) }) : null,
       ...resto);
   }
@@ -301,11 +317,15 @@
     return a;
   }
 
-  // O cartaz da produtora, em miniatura 4:5. Sem cartaz, nada.
-  function cartaz(f, classe = 'cartaz') {
-    if (typeof f.cartaz !== 'string' || !f.cartaz) return null;
+  // A peça de divulgação em miniatura 4:5 (o cartaz da fictícia ou o do /3,
+  // servido por /imagens/). Retrato preenche; paisagem cabe inteira. Sem
+  // cartaz, nada.
+  function cartaz(f, classe = 'cartaz', { grande = false } = {}) {
+    const c = FT().cartazDe(f);
+    if (!c) return null;
     const img = el('img', {
-      class: classe, src: f.cartaz, alt: `Cartaz de ${f.nome}`, width: '120', height: '150', loading: 'lazy', decoding: 'async',
+      class: `${classe}${c.paisagem ? ' cartaz--paisagem' : ''}`, src: grande ? c.arquivo : c.miniatura, alt: FT().altDaPeca(c, f.nome),
+      width: '120', height: '150', loading: 'lazy', decoding: 'async',
     });
     // Cartaz que não carrega: fica o fundo com o nome, nunca o ícone quebrado.
     img.addEventListener('error', () => img.replaceWith(el('span', { class: `${classe} cartaz--ausente`, role: 'img', 'aria-label': `Cartaz de ${f.nome}`, texto: f.nome })), { once: true });
@@ -339,7 +359,7 @@
     return el('div', { class: 'bloco-onde' },
       // A cidade uma vez só: quando o endereço já diz São Paulo, ela sai da
       // linha de baixo, e o bairro que o endereço já diz também.
-      el('p', { class: 'endereco' }, e.texto, linhaDoBairro(e.texto, bairro)),
+      el('p', { class: 'endereco' }, FT().semViuva(e.texto), linhaDoBairro(e.texto, bairro)),
       mapa);
   }
 
@@ -359,9 +379,12 @@
     // Festa real lida à mão: de onde veio o preço e quando ele foi conferido.
     const origem = f.real ? FT().origemDoPreco(f) : null;
     let onde = null;
+    // O /3 não diz se a venda abriu: sem preço, nada de "não abriu" (R27).
     if (p.compra) onde = `Vende no ${p.servico}.`;
     else if (p.tipo === 'esgotado') onde = 'Os lotes esgotaram.';
-    else if (p.tipo === 'sem-preco') onde = 'A venda ainda não abriu.';
+    // Conferido quando (o /3): mais de 72 h, marcado (e fora da barra).
+    const quandoPreco = !origem && p.valor !== null ? FT().ha(f.precoConferidoEm) : null;
+    const velho = FT().precoVelho(f);
     // Por gênero: os dois preços, cada um com o rótulo.
     const valor = p.genero
       ? [el('span', { class: 'ingresso-valor', texto: valorOuGratis(p.genero.feminino) }), el('span', { class: 'ingresso-genero', texto: 'fem.' }),
@@ -373,16 +396,20 @@
       linha ? el('p', { class: 'ingresso-lote', texto: linha }) : null,
       // A meia, a meia social, o comissário: cada um numa linha, com a condição.
       ...p.outros.map((o) => el('p', { class: 'ingresso-condicao', texto: o.texto })),
-      origem ? el('p', { class: `ingresso-origem${origem.conferido ? '' : ' ingresso-origem--fora'}`, texto: origem.texto }) : null,
+      origem ? el('p', { class: velho ? 'ingresso-velho' : `ingresso-origem${origem.conferido ? '' : ' ingresso-origem--fora'}`, texto: velho ? origem.texto.replace(/\.$/, '; pode ter mudado.') : origem.texto }) : null,
+      quandoPreco ? el('p', { class: velho ? 'ingresso-velho' : 'ingresso-origem', texto: `Preço conferido ${quandoPreco}${velho ? '; pode ter mudado' : ''}.` }) : null,
       // No convite, o link de compra já diz onde: a frase "Vende no X" sai.
       onde && !(comprar && p.compra) ? el('p', { class: 'ingresso-onde', texto: onde }) : null,
-      comprar && p.compra ? linkForaC(p.url, `Comprar no ${p.servico}`, p.servico, exemplo) : null);
+      comprar && p.compra ? linkForaC(p.url, `${FT().rotuloDaCompra(p) === 'Comprar' ? 'Comprar' : 'Ver ingressos'} no ${p.servico}`, p.servico, exemplo) : null);
   }
 
   // Links de origem (R8): Instagram e página do evento, cada um com o nome do
   // serviço; o que falta aparece como ausente.
-  function blocoLinks(f, exemplo) {
-    return el('ul', { class: 'links-origem' }, FT().links(f).map((l) => el('li', { class: 'origem' },
+  // soInstagram (o convite que já passou): só o perfil, quando há; sem ele, nada.
+  function blocoLinks(f, exemplo, { soInstagram = false } = {}) {
+    const links = soInstagram ? FT().links(f).filter((l) => l.papel === 'instagram' && l.url) : FT().links(f);
+    if (!links.length) return null;
+    return el('ul', { class: 'links-origem' }, links.map((l) => el('li', { class: 'origem' },
       l.url ? linkForaC(l.url, l.texto, l.servico, exemplo) : el('span', { class: 'ausente', texto: `${l.texto}.` }))));
   }
 
@@ -397,7 +424,7 @@
 
   const MOV_PADRAO = {
     saida: 'cubic-bezier(.2, .7, .2, 1)', troca: 'cubic-bezier(.6, 0, .2, 1)',
-    toque: 160, estado: 320, bloco: 560, titulo: 900, escala: 60, maximo: 6,
+    toque: 160, estado: 320, bloco: 560, capa: 640, titulo: 900, regua: 900, escala: 60, maximo: 6,
   };
   let movLido = null;
   function mv() {
@@ -407,7 +434,7 @@
       const cs = getComputedStyle(document.documentElement);
       const ler = (nome) => cs.getPropertyValue(`--mov-${nome}`).trim();
       for (const k of ['saida', 'troca']) if (ler(k)) v[k] = ler(k);
-      for (const k of ['toque', 'estado', 'bloco', 'titulo', 'escala']) {
+      for (const k of ['toque', 'estado', 'bloco', 'capa', 'titulo', 'regua', 'escala']) {
         const n = parseFloat(ler(k));
         if (Number.isFinite(n)) v[k] = n;
       }
@@ -442,10 +469,11 @@
   // Entrada de bloco: sobe de y px e aparece. Até seis em escada de 60 ms.
   // Um quadro só (o de partida): o fim é o valor que o CSS já dá, então um
   // elemento com opacidade própria (o Continuar oculto) continua como está.
-  function subir(els, { atraso = 0, y = 12, duracao, curva, escada = true } = {}) {
+  // x: a folha da troca de dia entra do lado da aba (só translate).
+  function subir(els, { atraso = 0, y = 12, x = 0, duracao, curva, escada = true } = {}) {
     const v = mv();
     if (!pode()) return reduzir.matches ? soOpacidade(els) : [];
-    return vivas(lista(els).map((e, i) => animar(e, [{ opacity: 0, translate: `0 ${y}px` }], {
+    return vivas(lista(els).map((e, i) => animar(e, [{ opacity: 0, translate: `${x ? `${x}px` : 0} ${y}px` }], {
       duration: duracao || v.bloco, easing: curva || v.saida,
       delay: atraso + (escada ? Math.min(i, v.maximo - 1) * v.escala : 0),
     })));
@@ -565,7 +593,7 @@
     const faixas = [[], [], [], []];
     for (const filho of p.children) {
       if (filho.classList.contains('vh')) continue;
-      if (filho.matches('.marca, .painel-rotulo, .painel-titulo')) faixas[0].push(filho);
+      if (filho.matches('.marca, .painel-rotulo, .painel-titulo, .painel-nome--registro')) faixas[0].push(filho);
       else if (filho.matches('.painel-quando')) faixas[1].push(filho);
       else if (filho.matches('.painel-nome, .painel-onde, .painel-horario')) faixas[2].push(filho);
       else faixas[3].push(filho);
@@ -631,10 +659,100 @@
     return mascara(e, { duracao: mv().estado, de: '70%', recorte: 'inset(0 -.2em)' });
   }
 
-  const mov = { v: mv, pode, anima, animar, subir, fio, revelar, mascara, titulo: tituloPorLinha, painel, aoVer, soOpacidade, trocaNumero };
+  // ------------------------------------------------------------ Direção E (movimento.md da U39)
+  // Só transform e opacity; o desfoque da capa nunca anima (a escala vai no
+  // recorte, que leva a camada já desfocada inteira).
+
+  // A régua da noite se desenha: o traço da festa corre linear (é tempo), cada
+  // rótulo aparece quando o traço passa por ele, o pico quando o traço chega.
+  function reguaDaNoite(r, { atraso = 0 } = {}) {
+    if (!r || !anima()) return [];
+    if (!pode()) return soOpacidade(r);
+    const v = mv();
+    const pos = (x) => {
+      if (!x) return 0;
+      if (x.classList.contains('regua-rot--fim')) return 1;
+      const p = parseFloat(x.dataset.l);
+      return Number.isFinite(p) ? p / 100 : 0;
+    };
+    const festa = r.querySelector('.regua-festa');
+    const pico = r.querySelector('.regua-pico');
+    return vivas([
+      animar(festa, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: v.regua, easing: 'linear', delay: atraso }),
+      ...[...r.querySelectorAll('.regua-rot')].map((x) => animar(x, [{ opacity: 0, translate: '0 4px' }], {
+        duration: v.estado, easing: v.saida, delay: atraso + pos(x) * v.regua,
+      })),
+      pico ? animar(pico, [{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: v.toque, easing: v.saida, delay: atraso + pos(pico) * v.regua }) : null,
+    ]);
+  }
+
+  // A capa assenta: o bloco inteiro aparece por opacidade (nunca um retângulo
+  // escuro vazio antes da foto) e a foto (o recorte) vem de 1,08 a 1; o que
+  // está dentro sobe em escada e a régua se desenha.
+  // conteudoJunto (a troca de dia): o fundo da capa fica opaco desde o
+  // primeiro quadro e só o que está dentro aparece, todo junto, em 240 ms e
+  // sem degrau, subindo 6 px. O bloco a meia opacidade sobre o nude virava
+  // um retângulo malva (movimento.md, 2).
+  function capa(c, { atraso = 0, regua = true, conteudoJunto = false, x = 0 } = {}) {
+    if (!c || !anima()) return [];
+    if (!pode()) return soOpacidade(c);
+    const v = mv();
+    if (conteudoJunto) {
+      return vivas([
+        animar(c.querySelector('.capa-foto'), [{ transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: v.capa, easing: v.saida, delay: atraso }),
+        animar(c.querySelector('.capa-dentro'), [{ opacity: 0, translate: `${x}px 6px` }, { opacity: 1, translate: '0 0' }], { duration: 240, easing: v.saida, delay: atraso }),
+        regua ? reguaDaNoite(c.querySelector('.regua'), { atraso: atraso + 120 }) : null,
+      ]);
+    }
+    return vivas([
+      animar(c, [{ opacity: 0 }], { duration: v.estado, easing: 'linear', delay: atraso }),
+      animar(c.querySelector('.capa-foto'), [{ transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: v.capa, easing: v.saida, delay: atraso }),
+      subir(c.querySelectorAll('.capa-dentro > :not(.regua)'), { atraso: atraso + 120 }),
+      regua ? reguaDaNoite(c.querySelector('.regua'), { atraso: atraso + 240 }) : null,
+    ]);
+  }
+
+  // Os dois fios da edição se desenham da esquerda (scaleX nos
+  // pseudo-elementos); o texto sobe logo atrás deles.
+  const pseudo = typeof KeyframeEffect === 'function' && 'pseudoElement' in KeyframeEffect.prototype;
+  function edicao(e, { atraso = 0 } = {}) {
+    if (!e || !pode()) return [];
+    const v = mv();
+    const fios = pseudo ? [['::before', 0], ['::after', 80]].map(([pe, at]) => animar(e, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], {
+      pseudoElement: pe, duration: v.bloco, easing: v.saida, delay: atraso + at,
+    })) : [];
+    return vivas([...fios, subir(e.querySelectorAll('span'), { atraso: atraso + 160, y: 6, duracao: v.estado })]);
+  }
+
+  // Sai rápido (140 ms, troca) e fica apagado até quem chamou soltar: a troca
+  // de aba cancela no instante em que o novo entra (sem quadro do velho de volta).
+  // x: a folha da troca de dia sai para o lado (só translate e opacidade).
+  function sair(els, { y = -6, x = 0 } = {}) {
+    if (!pode()) return [];
+    return vivas(lista(els).map((e) => animar(e, [{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: `${x}px ${y}px` }], {
+      duration: 140, easing: mv().troca, fill: 'forwards',
+    })));
+  }
+
+  // FLIP: quem ficou desliza do lugar velho até o novo (só translate).
+  function flip(els, antes) {
+    if (!pode()) return [];
+    const v = mv();
+    return vivas(lista(els).map((e) => {
+      const a = antes.get(e);
+      if (a === undefined) return null;
+      const dy = a - e.getBoundingClientRect().top;
+      return Math.abs(dy) < 1 ? null : animar(e, [{ translate: `0 ${dy}px` }, { translate: '0 0' }], { duration: v.estado, easing: v.troca });
+    }));
+  }
+
+  const mov = {
+    v: mv, pode, anima, animar, subir, fio, revelar, mascara, titulo: tituloPorLinha, painel, aoVer, soOpacidade, trocaNumero,
+    reguaDaNoite, capa, edicao, sair, flip,
+  };
 
   window.Finde = {
     el, titulo, chamar, site, marca, lockup, rodape, definirNota, marcaExemplo, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
-    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, acaoC, painelConvite, mov,
+    linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, avanco, acaoC, painelConvite, mov,
   };
 })();

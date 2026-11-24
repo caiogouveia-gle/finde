@@ -1,32 +1,40 @@
 'use strict';
-// As festas reais: o registro finde-r14/2 do motor (motor/README.md, "O que o
-// motor entrega") no formato da base do app, e a mistura com a base fictícia.
+// As festas reais: o registro finde-r14/2 ou /3 do motor (motor/README.md, "O
+// que o motor entrega") no formato da base do app, e a mistura com a base
+// fictícia.
 // Puro: não lê arquivo; o relógio entra como argumento.
 //
 // O que o motor não trouxe fica null ou lista vazia, nunca um padrão
 // fictício: sem casa, sem bairro, sem média, o app mostra o vazio. Fica fora
-// a festa que a fonte disse que não é festa, a de exemplo do motor, a sem data
-// ou sem início, a de fora da cidade de São Paulo ou de cidade que a fonte
-// não diz, a esgotada, a de um dia que o app não pergunta (de segunda a
-// quinta) e a que já acabou (o fim, ou as 6h do dia seguinte, no momento do
-// pedido; ver passou).
+// a festa que a fonte disse que não é festa, a de exemplo do motor, a sem
+// data, a de fora da cidade de São Paulo ou de cidade que a fonte não diz e a
+// que já acabou (o fim, ou as 6h do dia seguinte, no momento do pedido; ver
+// passou). Desde a U23 (24/11/2026) entram, marcadas, a festa sem início
+// (`horarioIncerto`) e a esgotada (`esgotado`), e qualquer dia da semana: o
+// dia é o da noite (`dataDaNoite`), e o "hoje" do pedido pega até a festa de
+// segunda; quem escolhe o que mostrar é a lista (nucleo/lista.js).
 
 const C = require('./catalogo');
 // As frases e a conta do preço moram no mesmo arquivo do navegador.
 const FT = require('../publico/festa-texto');
+// O recorte (vigentes, dias, mistura) mora em lista.js; reais.js reexporta
+// para o servidor seguir igual (U4 do plano de 24/11/2026).
+const L = require('./lista');
+const { hojeEmSaoPaulo, diaDaSemana, somarDias, dataCurta, vigentes, passou, datasDoDia, reaisDoDia, quandoDaReal, misturar, notaDaMistura } = L;
 
-const CONTRATO = 'finde-r14/2';
+// O /3 (24/11/2026) traz a noite da festa, o endereço com coordenada, as
+// imagens, o vínculo de cada fonte, as divergências e os ids antigos. Na
+// transição o app aceita os dois; o /2 entra sem coordenada nem imagem.
+const CONTRATO = 'finde-r14/3';
+const CONTRATOS = ['finde-r14/2', 'finde-r14/3'];
 // A /1 gravava "São Paulo" fixo na cidade: com ela, a festa de Cotia voltaria
 // para a lista. O export /1 não entra; é preciso exportar de novo.
 const CONTRATO_ANTIGO = 'finde-r14/1';
-const FUSO = 'America/Sao_Paulo';
 const ID = /^[a-z0-9-]{1,60}$/;
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 const ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
-// getUTCDay() de cada dia que o app pergunta.
-const DIA_DA_SEMANA = { 5: 'sex', 6: 'sab', 0: 'dom' };
-const NUMERO_DO_DIA = { sex: 5, sab: 6, dom: 0 };
-const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+// Os sete dias, pelo getUTCDay(): o `dia` e o `diaDaSemana` da festa.
+const DIA_CURTO = C.DIAS_DA_SEMANA;
 
 const objeto = (v) => Boolean(v) && typeof v === 'object' && !Array.isArray(v);
 const texto = (v, max = 200) => (typeof v === 'string' && v.trim() !== '' && v.length <= max ? v.trim() : null);
@@ -51,25 +59,8 @@ const copia = (v) => (v === undefined || v === null ? null : structuredClone(v))
 
 // ---------------------------------------------------------------- datas
 
-// "2026-11-19": a data de hoje em São Paulo, no instante dado.
-function hojeEmSaoPaulo(agoraMs) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(agoraMs));
-}
-
-// O dia da semana de uma data AAAA-MM-DD (o calendário, sem fuso).
-const diaDaSemana = (data) => new Date(`${data}T12:00:00Z`).getUTCDay();
-
-function somarDias(data, n) {
-  const d = new Date(`${data}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-}
-
-// "2026-11-28" -> "28 nov".
-function dataCurta(data) {
-  const [, m, d] = data.split('-').map(Number);
-  return `${d} ${MESES[m - 1]}`;
-}
+// As datas do calendário e o "hoje" em São Paulo moram em nucleo/lista.js (um
+// lugar só para o recorte); aqui, só a conta das horas do app.
 
 // ISO -> as horas do app: hora + 24 × dias depois da data (1h da manhã
 // seguinte = 25). O ISO traz o fuso; a conta é feita no fuso de São Paulo,
@@ -90,9 +81,20 @@ function horasDoApp(iso, data) {
 function mediaDe(m) {
   if (!objeto(m) || !numero(m.valor) || m.valor < 18 || m.valor > 60 || !C.ORIGENS.includes(m.origem)) return null;
   const tipo = { tipo: m.origem };
+  let avaliacao = null;
   if (m.origem === 'avaliacoes') {
     if (!(Number.isInteger(m.avaliacoes) && m.avaliacoes >= 5)) return null;
     tipo.avaliacoes = m.avaliacoes;
+    // O que a pergunta mede (KTD13): quantos acharam o público da idade deles,
+    // de que idades, de quantos convites. A média sozinha nunca é "do público".
+    const faixa = Array.isArray(m.faixa) && m.faixa.length === 2 && m.faixa.every((x) => Number.isInteger(x) && x >= 18 && x <= 60) && m.faixa[0] <= m.faixa[1]
+      ? [m.faixa[0], m.faixa[1]] : null;
+    avaliacao = {
+      avaliacoes: m.avaliacoes,
+      naMedida: numero(m.naMedida) && m.naMedida >= 0 && m.naMedida <= 1 ? Math.round(m.naMedida * 100) / 100 : null,
+      faixa,
+      convites: Number.isInteger(m.convites) && m.convites >= 1 ? m.convites : null,
+    };
   }
   return {
     // O app escreve a média em anos inteiros; a origem diz de onde ela vem.
@@ -100,20 +102,122 @@ function mediaDe(m) {
     origemIdade: C.origemLonga(tipo),
     origemIdadeCurta: C.origemCurta(tipo),
     origemDetalhe: texto(m.detalhe, 160),
+    avaliacaoIdade: avaliacao,
   };
 }
+
+// Os 14 bairros do motor (C.TODOS_OS_BAIRROS), com o nome que o motor leu
+// (Vila Leopoldina aponta para lapa e continua se chamando Vila Leopoldina).
+const umBairro = (id) => (typeof id === 'string' && Object.hasOwn(C.TODOS_OS_BAIRROS, id) ? id : null);
 
 // Endereço só quando diz mais que a cidade ("São Paulo" sozinho não leva a
 // lugar nenhum). Bairro e região só com os ids do catálogo do app.
 function enderecoDe(e) {
-  if (!objeto(e)) return { endereco: null, bairro: null, regiao: null };
-  const bairro = typeof e.bairro === 'string' && Object.hasOwn(C.BAIRROS, e.bairro) ? e.bairro : null;
-  const regiao = bairro ? C.BAIRROS[bairro].regiao : null;
+  if (!objeto(e)) return { endereco: null, bairro: null, regiao: null, bairroNome: null };
+  const bairro = umBairro(e.bairro);
+  const regiao = bairro ? C.TODOS_OS_BAIRROS[bairro].regiao : null;
+  const bairroNome = bairro ? texto(e.bairroNome, 60) || C.TODOS_OS_BAIRROS[bairro].nome : null;
   const t = texto(e.texto);
   // A cidade é a que o motor leu da fonte, nunca um padrão.
   const cidade = texto(e.cidade, 80);
   const soCidade = !t || (cidade !== null && semAcento(t) === semAcento(cidade));
-  return { endereco: soCidade ? null : { texto: t, bairro, regiao, cidade }, bairro, regiao };
+  if (soCidade) return { endereco: null, bairro, regiao, bairroNome };
+  const endereco = { texto: t, bairro, regiao, cidade };
+  // Do /3: de onde veio a cidade, o CEP e a casa do cadastro curado.
+  if (ORIGENS_CIDADE.includes(e.cidadeOrigem)) endereco.cidadeOrigem = e.cidadeOrigem;
+  if (typeof e.cep === 'string' && /^\d{5}-?\d{3}$/.test(e.cep)) endereco.cep = e.cep;
+  if (typeof e.lugar === 'string' && ID.test(e.lugar)) endereco.lugar = e.lugar;
+  return { endereco, bairro, regiao, bairroNome };
+}
+
+// ---------------------------------------------------------------- campos do /3
+
+const ORIGENS_CIDADE = ['fonte', 'cep', 'casa'];
+const PRECISOES = ['casa', 'rua', 'bairro'];
+const ORIGENS_GEO = ['curadoria', 'curado', 'pagina', 'nominatim'];
+
+// O ponto da festa (KTD1): só dentro da caixa de São Paulo, com 5 casas.
+// Sem coordenada, null; a precisão "bairro" passa, mas nunca vira pino (U33).
+function localDe(e) {
+  if (!objeto(e) || !numero(e.lat) || !numero(e.lng)) return null;
+  if (e.lat < -24.1 || e.lat > -23.3 || e.lng < -47.0 || e.lng > -46.3) return null;
+  return {
+    lat: Math.round(e.lat * 1e5) / 1e5,
+    lng: Math.round(e.lng * 1e5) / 1e5,
+    precisao: PRECISOES.includes(e.precisao) ? e.precisao : null,
+    origemGeo: ORIGENS_GEO.includes(e.origemGeo) ? e.origemGeo : null,
+    lugar: typeof e.lugar === 'string' && ID.test(e.lugar) ? e.lugar : null,
+    atribuicaoOsm: e.atribuicaoOsm === true,
+  };
+}
+
+// As peças de divulgação (KTD1, KTD14): só o hash de 16 e os dois tamanhos
+// que o app serve em /imagens/; crédito em texto e origem https (o post ou a
+// página, nunca o CDN). O caminho sai absoluto no app.
+const SHA = /^[a-f0-9]{16}$/;
+const PAPEIS = ['cartaz-enviado', 'cartaz-indicado', 'flyer', 'pagina-ingresso', 'post'];
+function imagemDe(x) {
+  if (!objeto(x) || typeof x.id !== 'string' || !SHA.test(x.id)) return null;
+  if (x.arquivo !== `imagens/${x.id}-1080.webp` || x.miniatura !== `imagens/${x.id}-480.webp`) return null;
+  const dim = (v) => (Number.isInteger(v) && v > 0 && v <= 4000 ? v : null);
+  const origens = Array.isArray(x.origens) ? x.origens.filter((o) => objeto(o) && texto(o.fonte, 40)).slice(0, 8)
+    .map((o) => ({ fonte: o.fonte, origem: https(o.origem), credito: texto(o.credito, 120) })) : [];
+  return {
+    id: x.id,
+    arquivo: `/imagens/${x.id}-1080.webp`,
+    miniatura: `/imagens/${x.id}-480.webp`,
+    largura: dim(x.largura),
+    altura: dim(x.altura),
+    papel: PAPEIS.includes(x.papel) ? x.papel : null,
+    fonte: texto(x.fonte, 40),
+    credito: texto(x.credito, 120),
+    origem: https(x.origem),
+    conferidoEm: carimbo(x.conferidoEm) ? x.conferidoEm : null,
+    principal: x.principal === true,
+    origens,
+  };
+}
+const imagensDe = (xs) => (Array.isArray(xs) ? xs.slice(0, 8).map(imagemDe).filter(Boolean) : []);
+
+// Onde as fontes discordam (KTD1): só os cinco campos que o motor compara.
+const CAMPOS_DIVERGENTES = ['precoAPartirDe', 'inicio', 'data', 'casa', 'linkCompra'];
+function divergenciasDe(ds) {
+  if (!Array.isArray(ds)) return [];
+  return ds.filter((d) => objeto(d) && CAMPOS_DIVERGENTES.includes(d.campo) && Array.isArray(d.valores)).slice(0, 5).map((d) => ({
+    campo: d.campo,
+    valores: d.valores.filter((v) => objeto(v) && texto(v.fonte, 40) && carimbo(v.conferidoEm)).slice(0, 8)
+      .map((v) => ({ fonte: v.fonte, valor: copia(v.valor), conferidoEm: v.conferidoEm })),
+  })).filter((d) => d.valores.length > 1);
+}
+
+// O motivo da junção de cada fonte (KTD5): regra, escore e sinais.
+const REGRAS_VINCULO = ['link', 'escore', 'manual', 'nova'];
+function vinculoDe(v) {
+  if (!objeto(v) || !REGRAS_VINCULO.includes(v.regra)) return null;
+  const sinais = Array.isArray(v.sinais) ? v.sinais.filter((x) => objeto(x) && texto(x.sinal, 40) && numero(x.peso)).slice(0, 12)
+    .map((x) => ({ sinal: x.sinal, peso: x.peso, detalhe: texto(x.detalhe, 160) })) : [];
+  return { regra: v.regra, escore: numero(v.escore) ? v.escore : null, sinais };
+}
+
+const idsAntigosDe = (xs) => (Array.isArray(xs) ? [...new Set(xs.filter((x) => typeof x === 'string' && ID.test(x)))].slice(0, 20) : []);
+
+// A noite da festa (KTD1): a `dataDaNoite` do motor vale quando é a própria
+// data ou a véspera. Sem ela (o /2, ou uma noite que não bate), a conta é a
+// mesma do motor (nucleo/contrato.js, dataDaNoite): início antes das 6h, em
+// São Paulo, conta como a noite anterior; sem início, a data.
+function noiteDe(r, data) {
+  if (typeof r.dataDaNoite === 'string' && DATA.test(r.dataDaNoite)
+    && (r.dataDaNoite === data || r.dataDaNoite === somarDias(data, -1))) return r.dataDaNoite;
+  const h = horasDoApp(r.inicio, data);
+  return h !== null && h >= 0 && h < 6 ? somarDias(data, -1) : data;
+}
+
+// "2026-11-26T12:05:00.000Z" -> "2026-11-26T09:05:00-03:00": o carimbo do
+// envelope no fuso de São Paulo (sem horário de verão desde 2019).
+function emSaoPaulo(iso) {
+  if (!carimbo(iso)) return null;
+  const d = new Date(Date.parse(iso) - 3 * 3600e3);
+  return `${d.toISOString().slice(0, 19)}-03:00`;
 }
 
 const valorDe = (v) => (numero(v) && v >= 0 && v <= 5000 ? Math.round(v * 100) / 100 : null);
@@ -149,7 +253,13 @@ const NOME_DA_FONTE = { indicacao: 'Lido na página do ingresso' };
 function fontesDe(fontes) {
   if (!Array.isArray(fontes)) return [];
   return fontes.filter((x) => objeto(x) && texto(x.id, 40) && texto(x.nome, 80) && carimbo(x.conferidoEm))
-    .map((x) => ({ id: x.id, nome: NOME_DA_FONTE[x.id] || texto(x.nome, 80), url: https(x.url), conferidoEm: x.conferidoEm }));
+    .map((x) => {
+      const fonte = { id: x.id, nome: NOME_DA_FONTE[x.id] || texto(x.nome, 80), url: https(x.url), conferidoEm: x.conferidoEm };
+      // Do /3: o motivo da junção. O /2 não traz, e a chave não aparece.
+      const vinculo = vinculoDe(x.vinculo);
+      if (vinculo) fonte.vinculo = vinculo;
+      return fonte;
+    });
 }
 
 // As páginas lidas à mão (motor/fontes/indicacao.js): o que cada uma é, o
@@ -191,29 +301,47 @@ function camposDe(campos) {
     .map(([k, x]) => [k, { fonte: x.fonte, conferidoEm: x.conferidoEm }]));
 }
 
-// converterRegistro(r14) -> { festa } | { motivo }. A festa sai congelada, no
-// formato da base do app (nucleo/base.js) mais `data` e `real: true`.
-function converterRegistro(r) {
+// As fontes que descobriram a festa (o "Encontrada em N fontes"): sem quem
+// só leu ou corrigiu o que outra trouxe.
+const SO_LEITURA = ['claude', 'regras', 'curadoria', 'avaliacoes'];
+
+// Quando o preço foi conferido: o carimbo do campo que deu o preço.
+function precoConferidoDe(campos) {
+  for (const k of ['precoAPartirDe', 'lotes', 'entradaNaPorta']) {
+    if (objeto(campos) && objeto(campos[k]) && carimbo(campos[k].conferidoEm)) return campos[k].conferidoEm;
+  }
+  return null;
+}
+
+// converterRegistro(r14, { geradoEm }) -> { festa } | { motivo }. A festa sai
+// congelada, no formato da base do app (nucleo/base.js) mais os campos do
+// registro e `real: true`, com a forma de teste/dados/festa-r14-3-convertida.json
+// (o /2 entra na mesma forma, sem ponto nem imagem). `geradoEm` é o do
+// envelope e vira o `atualizadoEm` da festa.
+function converterRegistro(r, contexto = {}) {
   if (!objeto(r)) return { motivo: 'não é um registro' };
   if (r.contrato === CONTRATO_ANTIGO) return { motivo: `export antigo (${CONTRATO_ANTIGO}): a cidade não é confiável` };
   const id = typeof r.id === 'string' && ID.test(r.id) ? r.id : null;
   if (!id) return { motivo: 'id' };
   if (r.ehFesta === false) return { motivo: 'não é festa' };
   if (r.exemplo === true) return { motivo: 'exemplo do motor' };
+  if (r.oculta === true || objeto(r.oculta)) return { motivo: 'oculta pela curadoria' };
   const nome = texto(r.nome, 80);
   if (!nome) return { motivo: 'sem nome' };
-  const data = typeof r.data === 'string' && DATA.test(r.data) && !Number.isNaN(Date.parse(`${r.data}T12:00:00Z`)) ? r.data : null;
-  if (!data) return { motivo: 'sem data' };
-  const dia = DIA_DA_SEMANA[diaDaSemana(data)];
-  if (!dia) return { motivo: 'dia fora do fim de semana' };
+  const dataDaFonte = typeof r.data === 'string' && DATA.test(r.data) && !Number.isNaN(Date.parse(`${r.data}T12:00:00Z`)) ? r.data : null;
+  if (!dataDaFonte) return { motivo: 'sem data' };
+  // O dia é o da noite: a festa de 00h30 de sábado é da sexta, às 24h30.
+  const data = noiteDe(r, dataDaFonte);
+  const dia = DIA_CURTO[diaDaSemana(data)];
   const inicio = horasDoApp(r.inicio, data);
-  if (inicio === null) return { motivo: 'sem início' };
-  if (inicio < 6 || inicio > 30) return { motivo: 'início fora do dia' };
-  const esquenta = horasDoApp(r.pistaCheia, data);
-  const fim = horasDoApp(r.fim, data);
-  if (r.esgotado === true) return { motivo: 'esgotada' };
+  if (inicio !== null && (inicio < 6 || inicio > 30)) return { motivo: 'início fora do dia' };
   const cidade = foraDaCidade(r.endereco);
   if (cidade) return { motivo: cidade };
+  // Sem início, a régua de horas fica sem âncora: o fim conta da data (até
+  // 12h do dia seguinte) e a pista cheia não entra.
+  const esquenta = inicio === null ? null : horasDoApp(r.pistaCheia, data);
+  const fim = horasDoApp(r.fim, data);
+  const fimOk = fim !== null && (inicio === null ? fim >= 12 && fim <= 36 : fim > inicio && fim <= inicio + 24);
 
   const lotes = lotesDe(r.lotes);
   const porta = objeto(r.entradaNaPorta) && valorDe(r.entradaNaPorta.preco) !== null ? { preco: valorDe(r.entradaNaPorta.preco) } : null;
@@ -223,52 +351,106 @@ function converterRegistro(r) {
   // nem porta, o do motor, se vier.
   const p = FT.preco({ lotes, entradaNaPorta: porta });
   const preco = valorDe(p.valor) !== null ? valorDe(p.valor) : !lotes && !porta && objeto(r.precoAPartirDe) ? valorDe(r.precoAPartirDe.valor) : null;
-  const { endereco, bairro, regiao } = enderecoDe(r.endereco);
+  const { endereco, bairro, regiao, bairroNome } = enderecoDe(r.endereco);
   const media = mediaDe(r.mediaIdade);
   const estilos = Array.isArray(r.estilos) ? [...new Set(r.estilos.filter((e) => C.ID_ESTILOS.includes(e)))] : [];
   const lineup = Array.isArray(r.lineup) ? r.lineup.map((n) => texto(n, 80)).filter(Boolean).slice(0, 30) : [];
+  // Casa que é só o nome da cidade não é casa; produtora igual à casa não se repete.
+  let casa = texto(r.casa, 80);
+  const cidadeDita = objeto(r.endereco) ? texto(r.endereco.cidade, 80) : null;
+  if (casa && (semAcento(casa) === 'sao paulo' || (cidadeDita && semAcento(casa) === semAcento(cidadeDita)))) casa = null;
+  let produtora = objeto(r.produtora) ? texto(r.produtora.nome, 80) : texto(r.produtora, 80);
+  if (produtora && casa && semAcento(produtora) === semAcento(casa)) produtora = null;
+  const imagens = imagensDe(r.imagens);
+  const fontes = fontesDe(r.fontes);
+  const campos = camposDe(r.campos);
 
   const festa = {
     id, nome,
-    produtora: objeto(r.produtora) ? texto(r.produtora.nome, 80) : texto(r.produtora, 80),
-    casa: texto(r.casa, 80),
-    bairro, regiao, dia, data,
+    produtora,
+    casa,
+    bairro, bairroNome, regiao,
+    dia, diaDaSemana: dia,
+    data, dataDaNoite: data,
     inicio,
+    // Sem início divulgado: a festa entra, e a tela diz que o horário é incerto.
+    horarioIncerto: inicio === null,
     // A pista cheia e o fim só quando vêm e fazem sentido; senão, null.
     esquenta: esquenta !== null && esquenta >= inicio && esquenta <= inicio + 12 ? esquenta : null,
-    fim: fim !== null && fim > inicio && fim <= inicio + 24 ? fim : null,
+    fim: fimOk ? fim : null,
     mediaIdade: media ? media.mediaIdade : null,
     origemIdade: media ? media.origemIdade : null,
     origemIdadeCurta: media ? media.origemIdadeCurta : null,
     origemDetalhe: media ? media.origemDetalhe : null,
+    avaliacaoIdade: media ? media.avaliacaoIdade : null,
     faixas: [],
     preco,
+    precoConferidoEm: precoConferidoDe(r.campos),
+    // Esgotada entra marcada; a lista a põe no fim, fora do ranking.
+    esgotado: r.esgotado === true,
     estilos,
     estilosInferidos: estilos.length > 0 && estilosInferidos(r),
     frase: null,
     selo: 'editorial',
     distanciaMin: null,
     endereco,
+    local: localDe(r.endereco),
     lotes,
     entradaNaPorta: porta,
     linkCompra: https(r.linkCompra),
     linkEvento: https(r.linkEvento),
     instagram: instagramDe(r.instagram) || (objeto(r.produtora) ? instagramDe(r.produtora.instagram) : null),
-    // O cartaz do motor é uma URL de fora, e a CSP do app só carrega imagem
-    // daqui: o detalhe fica sem cartaz, e o endereço segue guardado.
-    cartaz: null,
+    // As peças de divulgação servidas pelo app em /imagens/ (KTD14); o
+    // cartaz é a principal. O /2 trazia uma URL de fora, que a CSP não
+    // carrega: fica guardada em cartazExterno e nunca vira imagem.
+    imagens,
+    cartaz: imagens.find((i) => i.principal) || imagens[0] || null,
     cartazExterno: https(r.cartaz),
     lineup: lineup.length ? lineup : null,
     idadeMinima: Number.isInteger(r.idadeMinima) && r.idadeMinima >= 1 && r.idadeMinima <= 21 ? r.idadeMinima : null,
     regras: regrasDe(r.regras),
-    fontes: fontesDe(r.fontes),
+    fontes,
+    encontradaEm: [...new Set(fontes.map((x) => x.id).filter((x) => !SO_LEITURA.includes(x)))],
     paginas: paginasDe(r.paginas),
-    campos: camposDe(r.campos),
+    divergencias: divergenciasDe(r.divergencias),
+    idsAntigos: idsAntigosDe(r.idsAntigos).filter((x) => x !== id),
+    campos,
     coletadoEm: carimbo(r.coletadoEm) ? r.coletadoEm : null,
+    atualizadoEm: emSaoPaulo(contexto.geradoEm),
     exemplo: false,
     real: true,
   };
   return { festa: congelar(festa) };
+}
+
+// O que o export diz de si, para "Atualizado há 3 h · 41 festas lidas de 50
+// perfis e 3 sites de ingresso" (R23): o carimbo, quantas festas o motor
+// mandou e de quantos perfis do Instagram e sites de ingresso elas vieram.
+// Quando o envelope trouxer `perfis` e `sites`, valem os dele.
+function resumoDoExport(bruto) {
+  const linhas = Array.isArray(bruto) ? bruto : objeto(bruto) && Array.isArray(bruto.festas) ? bruto.festas : [];
+  const perfis = new Set();
+  const sites = new Set();
+  for (const r of linhas) {
+    if (!objeto(r)) continue;
+    const ids = Array.isArray(r.fontes) ? r.fontes.filter(objeto).map((x) => x.id) : [];
+    const perfil = instagramDe(r.instagram) || (objeto(r.produtora) ? instagramDe(r.produtora.instagram) : null);
+    if (perfil && ids.includes('instagram')) perfis.add(perfil.toLowerCase().replace(/\/$/, '').replace('://www.', '://'));
+    for (const u of [r.linkCompra, ...(Array.isArray(r.fontes) ? r.fontes.filter(objeto).filter((x) => ['paginas', 'plataformas', 'indicacao'].includes(x.id)).map((x) => x.url) : [])]) {
+      const v = https(u);
+      if (!v) continue;
+      const host = new URL(v).hostname.replace(/^www\./, '').split('.').slice(-3).join('.');
+      if (!/instagram\.com$/.test(host)) sites.add(host.replace(/^(cart|embedstore|bileto)\./, ''));
+    }
+  }
+  const inteiro = (v) => (Number.isInteger(v) && v >= 0 ? v : null);
+  const env = objeto(bruto) ? bruto : {};
+  return {
+    atualizadoEm: emSaoPaulo(env.geradoEm),
+    total: inteiro(env.total) !== null ? env.total : linhas.length,
+    perfis: inteiro(env.perfis) !== null ? env.perfis : perfis.size,
+    sites: inteiro(env.sites) !== null ? env.sites : sites.size,
+  };
 }
 
 // O arquivo exportado (ou a lista crua) -> { festas, fora: [{ id, motivo }], avisos }.
@@ -276,7 +458,7 @@ function converterExport(bruto) {
   const linhas = Array.isArray(bruto) ? bruto : objeto(bruto) && Array.isArray(bruto.festas) ? bruto.festas : null;
   if (!linhas) return { festas: [], fora: [], avisos: ['o arquivo não traz uma lista de festas'] };
   const avisos = [];
-  if (objeto(bruto) && bruto.contrato !== undefined && bruto.contrato !== CONTRATO) avisos.push(`contrato "${bruto.contrato}", esperava "${CONTRATO}"`);
+  if (objeto(bruto) && bruto.contrato !== undefined && !CONTRATOS.includes(bruto.contrato)) avisos.push(`contrato "${bruto.contrato}", esperava ${CONTRATOS.map((c) => `"${c}"`).join(' ou ')}`);
   if (objeto(bruto) && bruto.contrato === CONTRATO_ANTIGO) {
     avisos.push(`export ${CONTRATO_ANTIGO} recusado: ele grava "São Paulo" fixo na cidade; rode o exportar do motor de novo`);
     return { festas: [], fora: linhas.map((r, i) => ({ id: objeto(r) && typeof r.id === 'string' ? r.id.slice(0, 60) : `#${i + 1}`, motivo: 'export antigo' })), avisos };
@@ -286,7 +468,7 @@ function converterExport(bruto) {
   const vistos = new Set();
   linhas.forEach((r, i) => {
     const rotulo = objeto(r) && typeof r.id === 'string' ? r.id.slice(0, 60) : `#${i + 1}`;
-    const { festa, motivo } = converterRegistro(r);
+    const { festa, motivo } = converterRegistro(r, { geradoEm: objeto(bruto) ? bruto.geradoEm : null });
     if (!festa) return fora.push({ id: rotulo, motivo });
     if (vistos.has(festa.id)) return fora.push({ id: rotulo, motivo: 'id repetido' });
     vistos.add(festa.id);
@@ -295,119 +477,7 @@ function converterExport(bruto) {
   return { festas, fora, avisos };
 }
 
-// ---------------------------------------------------------------- o relógio
-
-// Passou quando acabou: o fim informado, ou, sem ele, as 6h do dia seguinte
-// (quandoDaReal). É a mesma régua do convite: depois da meia-noite, a festa
-// que ainda rola segue na lista, no link e no convite.
-const passou = (f, agoraMs) => agoraMs > Date.parse(quandoDaReal(f).ate);
-
-// Só o que não passou.
-function vigentes(festas, agoraMs) {
-  return festas.filter((f) => !passou(f, agoraMs));
-}
-
-// A próxima ocorrência do dia pedido (hoje conta) e a da semana seguinte.
-function datasDoDia(dia, agoraMs) {
-  const hoje = hojeEmSaoPaulo(agoraMs);
-  const alvo = NUMERO_DO_DIA[dia];
-  if (alvo === undefined) return [];
-  const faltam = (alvo - diaDaSemana(hoje) + 7) % 7;
-  const primeira = somarDias(hoje, faltam);
-  return [primeira, somarDias(primeira, 7)];
-}
-
-// As reais do dia pedido: as da próxima ocorrência dele; se ela não tem
-// nenhuma, as da seguinte, dizendo que são da outra semana (`distante`).
-function reaisDoDia(festas, dia, agoraMs) {
-  const [primeira, seguinte] = datasDoDia(dia, agoraMs);
-  const daqui = vigentes(festas, agoraMs);
-  const naPrimeira = daqui.filter((f) => f.data === primeira);
-  if (naPrimeira.length) return { festas: naPrimeira, data: primeira, distante: false, proxima: primeira };
-  const naSeguinte = daqui.filter((f) => f.data === seguinte);
-  if (naSeguinte.length) return { festas: naSeguinte, data: seguinte, distante: true, proxima: primeira };
-  return { festas: [], data: null, distante: false, proxima: primeira };
-}
-
-// O fim da festa para o convite (R13, `passou`): o fim informado, ou, sem
-// ele, as 6h do dia seguinte. Em ISO de São Paulo.
-function quandoDaReal(f) {
-  const horas = numero(f.fim) ? f.fim : 30;
-  const ate = new Date(Date.parse(`${f.data}T00:00:00-03:00`) + horas * 3600e3).toISOString();
-  return { data: f.data, ate };
-}
-
-// ---------------------------------------------------------------- a mistura
-
-// misturar({ real, ficticio, dia, data, distante }) -> o resultado da lista.
-//   real, ficticio: o que o motor devolveu para cada base (escolher()).
-// Real primeiro, na ordem do motor; a lista se completa com as fictícias até
-// três, cada uma com `exemplo: true`. O título conta o que cabe no pedido,
-// real ou exemplo (cada exemplo vem marcado). A nota diz o que é real e o que
-// é exemplo.
-function misturar({ real, ficticio, dia, data = null, distante = false, noDia = null, quantas = 3 }) {
-  const reais = (real && real.opcoes ? real.opcoes : []).slice(0, quantas)
-    .map((o) => ({ ...o, exemplo: false, dataDistante: distante }));
-  const vaga = quantas - reais.length;
-  const exemplos = (ficticio && ficticio.opcoes ? ficticio.opcoes : []).slice(0, Math.max(0, vaga))
-    .map((o) => ({ ...o, exemplo: true }));
-  // Dentro de cada parte, a ordem dos blocos do motor fica como veio.
-  const opcoes = [...reais, ...exemplos];
-  const comReal = reais.length > 0;
-  const fonte = comReal ? real : ficticio;
-  const blocos = { ...((ficticio && ficticio.blocos) || {}), ...((real && real.blocos) || {}) };
-  const atende = (o) => o.atende && o.bloco === 'pedido';
-  const resultado = {
-    opcoes,
-    atendem: opcoes.filter((o) => o.atende).length,
-    afrouxou: [...new Set([...(comReal ? real.afrouxou || [] : []), ...(exemplos.length ? ficticio.afrouxou || [] : [])])],
-    casam: opcoes.filter((o) => o.casaComEstilo).length,
-    noPedido: opcoes.filter(atende).length,
-    blocos,
-    misto: true,
-    reais: reais.length,
-    exemplos: exemplos.length,
-    dataReal: comReal ? data : null,
-  };
-  // O aviso do motor vale para a parte que manda na lista. Quando nenhuma
-  // real cabe inteira, o aviso dela ("Seguem as mais perto.") sai, e a nota
-  // diz isso com as palavras certas.
-  // Quando todas as reais cabem, o aviso delas ("Só uma cabe nesse pedido.")
-  // contaria só as reais e desmentiria os exemplos que também cabem: sai, e
-  // a nota diz quantas reais cabem.
-  const cabem = reais.filter((o) => o.atende).length;
-  const avisoDasReais = comReal && cabem > 0 && cabem < reais.length;
-  if (fonte && fonte.aviso && (!comReal || avisoDasReais || !exemplos.length)) resultado.aviso = fonte.aviso;
-  if (!opcoes.length && ficticio && ficticio.oferta) resultado.oferta = ficticio.oferta;
-  const semRealNoDia = noDia === null ? !reais.length : noDia === 0;
-  resultado.nota = notaDaMistura({ reais: reais.length, cabem, exemplos: exemplos.length, dia, data, distante, semRealNoDia });
-  return resultado;
-}
-
-// O que é real e o que é exemplo, numa frase ou duas, na voz do Finde.
-// semRealNoDia: nenhuma festa real nas duas próximas datas do dia pedido
-// (e não "nenhuma cabe").
-function notaDaMistura({ reais, cabem = reais, exemplos, dia, data, distante, semRealNoDia = !reais }) {
-  const d = C.DIAS[dia];
-  const nesse = d ? `${dia === 'sex' ? 'Nesta' : 'Neste'} ${d.frase}` : 'Nesse dia';
-  const no = d ? `${dia === 'sex' ? 'na' : 'no'} ${d.frase}` : 'nesse dia';
-  const partes = [];
-  if (reais && distante && data) {
-    partes.push(`${nesse} ainda não tenho festa real; ${reais === 1 ? 'a de cima é' : 'as de cima são'} de ${dataCurta(data)}.`);
-  }
-  const completei = exemplos === 1 ? 'um exemplo' : 'exemplos';
-  if (reais && !cabem) partes.push(reais === 1 ? 'A real não cabe inteira: ela diz o que falta.' : 'Nenhuma real cabe inteira: cada uma diz o que falta.');
-  if (reais && cabem === reais && exemplos) {
-    partes.push(`${cabem === 1 ? 'Uma festa real cabe' : `${cabem === 2 ? 'Duas' : 'Três'} festas reais cabem`} nesse pedido; completei com ${completei}.`);
-  } else if (!reais && exemplos) {
-    partes.push(semRealNoDia
-      ? `Ainda não tenho festa real ${no}. Seguem exemplos, festas fictícias.`
-      : 'Nenhuma festa real cabe nesse pedido. Seguem exemplos, festas fictícias.');
-  } else if (reais && exemplos) partes.push(`Completei com ${completei}.`);
-  return partes.length ? partes.join(' ') : null;
-}
-
 module.exports = {
-  CONTRATO, converterRegistro, converterExport, horasDoApp, hojeEmSaoPaulo, vigentes, passou, datasDoDia, reaisDoDia,
-  quandoDaReal, misturar, notaDaMistura, dataCurta,
+  CONTRATO, CONTRATOS, converterRegistro, converterExport, resumoDoExport, horasDoApp, hojeEmSaoPaulo, vigentes, passou, datasDoDia, reaisDoDia,
+  quandoDaReal, misturar, notaDaMistura, dataCurta, somarDias, diaDaSemana,
 };

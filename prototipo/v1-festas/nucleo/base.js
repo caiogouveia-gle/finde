@@ -32,6 +32,21 @@ function menorPreco(lotes, porta) {
 
 const precoValido = (v) => Number.isInteger(v) && v >= 0 && v <= 1000;
 
+// Os caminhos novos de imagem (KTD1, KTD14): só o hash de 16 nos dois
+// tamanhos que o app serve, crédito em texto e origem https.
+const SHA = /^[a-f0-9]{16}$/;
+function imagemValida(x) {
+  return objeto(x) && typeof x.id === 'string' && SHA.test(x.id)
+    && x.arquivo === `/imagens/${x.id}-1080.webp` && x.miniatura === `/imagens/${x.id}-480.webp`
+    && (!vem(x.credito) || texto(x.credito, 120)) && (!vem(x.origem) || https(x.origem));
+}
+// O ponto da festa: dentro da caixa de São Paulo, com a precisão dita.
+function localValido(l) {
+  return objeto(l) && typeof l.lat === 'number' && typeof l.lng === 'number'
+    && l.lat >= -24.1 && l.lat <= -23.3 && l.lng >= -47.0 && l.lng <= -46.3
+    && (l.precisao === null || l.precisao === undefined || ['casa', 'rua', 'bairro'].includes(l.precisao));
+}
+
 // Os campos do registro finde-r14/1 que o detalhe usa. Todos podem faltar:
 // campo ausente vale null e aparece como ausente (R12). Quando vem, vem certo.
 const vem = (v) => v !== undefined && v !== null;
@@ -52,7 +67,11 @@ function validarRegistro(f, p) {
   if (vem(f.linkCompra) && !https(f.linkCompra)) p.push('linkCompra');
   if (vem(f.linkEvento) && !https(f.linkEvento)) p.push('linkEvento');
   if (vem(f.instagram) && !instagram(f.instagram)) p.push('instagram');
-  if (vem(f.cartaz) && !(typeof f.cartaz === 'string' && /^\/cartazes\/[a-z0-9-]{1,60}\.webp$/.test(f.cartaz))) p.push('cartaz');
+  // O cartaz da fictícia é um arquivo de publico/cartazes; o da real (/3) é
+  // uma imagem servida pelo app em /imagens/ (nucleo/reais.js, KTD14).
+  if (vem(f.cartaz) && !(typeof f.cartaz === 'string' && /^\/cartazes\/[a-z0-9-]{1,60}\.webp$/.test(f.cartaz)) && !imagemValida(f.cartaz)) p.push('cartaz');
+  if (vem(f.imagens) && !(Array.isArray(f.imagens) && f.imagens.length <= 8 && f.imagens.every(imagemValida))) p.push('imagens');
+  if (vem(f.local) && !localValido(f.local)) p.push('local');
   if (vem(f.lineup) && !(Array.isArray(f.lineup) && f.lineup.length > 0 && f.lineup.length <= 30 && f.lineup.every((n) => texto(n, 80)))) p.push('lineup');
   if (vem(f.idadeMinima) && !(Number.isInteger(f.idadeMinima) && f.idadeMinima >= 1 && f.idadeMinima <= 21)) p.push('idadeMinima');
   if (vem(f.regras) && !(objeto(f.regras) && Object.entries(f.regras).every(([k, v]) => ['documento', 'vestimenta', 'lista'].includes(k) && texto(v, 160)))) p.push('regras');
@@ -136,7 +155,11 @@ function limpar(f) {
     endereco: copia(f.endereco),
     lotes: copia(f.lotes),
     entradaNaPorta: copia(f.entradaNaPorta),
-    linkCompra: f.linkCompra ?? null, linkEvento: f.linkEvento ?? null, instagram: f.instagram ?? null, cartaz: f.cartaz ?? null,
+    linkCompra: f.linkCompra ?? null, linkEvento: f.linkEvento ?? null, instagram: f.instagram ?? null,
+    cartaz: typeof f.cartaz === 'string' ? f.cartaz : copia(f.cartaz),
+    // Do /3: as peças com crédito e o ponto da festa (a fictícia não tem).
+    imagens: copia(f.imagens ?? []),
+    local: copia(f.local),
     lineup: copia(f.lineup),
     idadeMinima: f.idadeMinima ?? null,
     regras: copia(f.regras ?? {}),

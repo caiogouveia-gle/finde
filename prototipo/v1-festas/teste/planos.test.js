@@ -90,3 +90,45 @@ test('arquivo corrompido: começa vazio, com aviso, sem cair', () => {
   assert.equal(avisos.length, 1);
   assert.ok(planos.criar({ festa }).id);
 });
+
+// ---------------------------------------------------------------- avaliação (U25)
+
+test('avaliar: só quem disse "tô dentro", só depois da festa, com idade de 18 a 60', () => {
+  let agora = '2026-11-27T12:00:00.000Z';
+  const planos = criarPlanos(pasta, { log: mudo, agora: () => agora, contarAvaliacoes: () => ({ avaliacoes: 2, convites: 1 }) });
+  const real = { festa: { id: 'festa-real-1', nome: 'Real', real: true }, linha: 'Sáb · 22h00' };
+  const { id } = planos.criar({ festa: real, autor: 'Ju', quando: { data: '2026-11-28', ate: '2026-11-29T09:00:00.000Z' } });
+  planos.responder(id, 'Bia', 'fora');
+  const codigo = (f) => { try { f(); return null; } catch (e) { return e.status; } };
+  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'na-medida', 31)), 409);
+  let v = planos.ler(id);
+  assert.equal(v.podeAvaliar, false);
+  assert.deepEqual(v.avaliacoes, { total: 2, convites: 1 });
+  assert.match(v.finalidadeAvaliacao, /Opcional/);
+  agora = '2026-11-29T12:00:00.000Z';
+  v = planos.ler(id);
+  assert.equal(v.passou, true);
+  assert.equal(v.podeAvaliar, true);
+  assert.equal(codigo(() => planos.avaliar(id, 'Bia', 'aparelho-0001', 'na-medida', 31)), 403);
+  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'na-medida', null)), 400);
+  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'na-medida', 61)), 400);
+  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'talvez', 31)), 400);
+  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'x', 'na-medida', 31)), 400);
+  assert.equal(codigo(() => planos.avaliar('zzzzzzzz', 'Ju', 'aparelho-0001', 'na-medida', 31)), 404);
+  assert.deepEqual(planos.avaliar(id, 'ju', 'aparelho-0001', 'mais-novo', 31), {
+    planoId: id, festaId: 'festa-real-1', real: true, nome: 'Ju', aparelho: 'aparelho-0001', resposta: 'mais-novo', idade: 31,
+  });
+});
+
+test('imagensVigentes: os flyers citados por convite de festa que não passou', () => {
+  let agora = '2026-11-27T12:00:00.000Z';
+  const planos = criarPlanos(pasta, { log: mudo, agora: () => agora });
+  const img = (id) => ({ id, arquivo: `/imagens/${id}-1080.webp`, miniatura: `/imagens/${id}-480.webp` });
+  const comFlyer = (id, sha) => ({ festa: { id, nome: id, real: true, imagens: [img(sha)], cartaz: img(sha) }, linha: 'x' });
+  planos.criar({ festa: comFlyer('a', '0123456789abcdef'), quando: { data: '2026-11-28', ate: '2026-11-29T09:00:00.000Z' } });
+  planos.criar({ festa: comFlyer('b', 'fedcba9876543210'), quando: { data: '2026-11-21', ate: '2026-11-22T09:00:00.000Z' } });
+  planos.criar({ festa });
+  assert.deepEqual([...planos.imagensVigentes()], ['0123456789abcdef']);
+  agora = '2026-11-30T12:00:00.000Z';
+  assert.deepEqual([...planos.imagensVigentes()], []);
+});

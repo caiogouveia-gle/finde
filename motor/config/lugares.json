@@ -1,0 +1,638 @@
+{
+  "versao": 1,
+  "nota": "Cadastro curado das casas (M29, KTD10). Endereço e CEP vêm da página da casa ou do ingresso lida pelo motor; a coordenada vem de uma consulta manual ao Nominatim (OpenStreetMap, ODbL) feita em 24/11/2026 e conferida contra o endereço publicado: por isso fonteGeo é \"nominatim\" e o app deve dar a atribuição. precisao \"rua\" quando a consulta só achou a rua. Só casa pública, sem dado pessoal.",
+  "lugares": [
+    {
+      "id": "matiz",
+      "nome": "Matiz",
+      "apelidos": [
+        "Matiz Bar",
+        "Matiz Bar SP"
+      ],
+      "instagram": "matizbarsp",
+      "endereco": "Rua Martins Fontes, 91",
+      "cep": "01050-000",
+      "bairro": "centro",
+      "bairroNome": "República",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.54859,
+      "lng": -46.6434,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "casa-de-francisca",
+      "nome": "Casa de Francisca",
+      "apelidos": [
+        "Francisca",
+        "Palacete Tereza Toledo Lara"
+      ],
+      "espacos": [
+        "porao",
+        "sala-b",
+        "salao"
+      ],
+      "instagram": "casadefrancisca",
+      "endereco": "Rua Quintino Bocaiúva, 22",
+      "cep": "01004-010",
+      "bairro": "centro",
+      "bairroNome": "Sé",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.54883,
+      "lng": -46.63479,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "toca-da-capivara",
+      "nome": "Toca da Capivara",
+      "apelidos": [
+        "A Toca da Capivara"
+      ],
+      "instagram": "atocadacapivara",
+      "endereco": "Rua Major Diogo, 865",
+      "cep": "01321-010",
+      "bairro": "bela-vista",
+      "bairroNome": "Bixiga",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.55885,
+      "lng": -46.64257,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "autodromo-de-interlagos",
+      "nome": "Autódromo de Interlagos",
+      "apelidos": [
+        "Autódromo José Carlos Pace",
+        "Interlagos Autódromo"
+      ],
+      "endereco": "Avenida Senador Teotônio Vilela, 261",
+      "cep": "04801-010",
+      "bairro": "interlagos",
+      "bairroNome": "Interlagos",
+      "regiao": "sul",
+      "cidade": "São Paulo",
+      "lat": -23.70182,
+      "lng": -46.69692,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "mundo-pensante",
+      "nome": "Mundo Pensante",
+      "endereco": "Rua Treze de Maio, 830",
+      "cep": "01327-000",
+      "bairro": "bela-vista",
+      "bairroNome": "Bixiga",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.56056,
+      "lng": -46.64636,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "the-raven",
+      "nome": "The Raven Music Bar",
+      "apelidos": [
+        "The Raven",
+        "Raven Music Bar"
+      ],
+      "endereco": "Rua Wisard, 149",
+      "cep": "05434-080",
+      "bairro": "vila-madalena",
+      "bairroNome": "Vila Madalena",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.55483,
+      "lng": -46.68864,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "porta",
+      "nome": "PORTA",
+      "endereco": "Rua Horácio Lane, 95",
+      "cep": "05432-000",
+      "bairro": "vila-madalena",
+      "bairroNome": "Vila Madalena",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.55958,
+      "lng": -46.68665,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "cortina",
+      "nome": "Cortina",
+      "endereco": "Rua Araújo, 62",
+      "cep": "01220-020",
+      "bairro": "centro",
+      "bairroNome": "Vila Buarque",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.54444,
+      "lng": -46.64451,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "picles",
+      "nome": "Picles",
+      "endereco": "Rua Cardeal Arcoverde, 1838",
+      "cep": "05408-002",
+      "bairro": "pinheiros",
+      "bairroNome": "Pinheiros",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.56195,
+      "lng": -46.68901,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "polly-bar",
+      "nome": "Polly Bar",
+      "endereco": "Avenida Vieira de Carvalho, 104",
+      "cep": "01210-010",
+      "bairro": "centro",
+      "bairroNome": "Campos Elíseos",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.5418,
+      "lng": -46.6436,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "club-jerome",
+      "nome": "Club Jerome",
+      "endereco": "Rua Mato Grosso, 398",
+      "cep": "01239-040",
+      "bairro": "bela-vista",
+      "bairroNome": "Consolação",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.55053,
+      "lng": -46.65919,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "cria",
+      "nome": "Cria",
+      "apelidos": [
+        "Cria SP"
+      ],
+      "endereco": "Rua São Domingos, 251",
+      "cep": "01326-000",
+      "bairro": "bela-vista",
+      "bairroNome": "Bela Vista",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.55284,
+      "lng": -46.64491,
+      "precisao": "rua",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "barraco-sp",
+      "nome": "Barraco SP",
+      "apelidos": [
+        "Barraco"
+      ],
+      "endereco": "Rua Achilles Orlando Curtolo, 649",
+      "cep": "01144-010",
+      "bairro": "barra-funda",
+      "bairroNome": "Barra Funda",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.52385,
+      "lng": -46.67265,
+      "precisao": "rua",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "arena-show-sp",
+      "nome": "Arena Show SP",
+      "apelidos": [
+        "Arena Show"
+      ],
+      "endereco": "Avenida Nove de Julho, 1100",
+      "cep": "01312-000",
+      "bairro": "bela-vista",
+      "bairroNome": "Bixiga",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.55309,
+      "lng": -46.64805,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "unibes-cultural",
+      "nome": "Unibes Cultural",
+      "apelidos": [
+        "Unibes Centro Cultural"
+      ],
+      "endereco": "Rua Oscar Freire, 2500",
+      "cep": "05409-012",
+      "bairro": "pinheiros",
+      "bairroNome": "Pinheiros",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.55094,
+      "lng": -46.67843,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "odette-casa-de-cultura",
+      "nome": "Odette - Casa de Cultura",
+      "apelidos": [
+        "Odette Casa de Cultura",
+        "Odette"
+      ],
+      "endereco": "Rua Rui Barbosa, 663",
+      "cep": "01326-010",
+      "bairro": "bela-vista",
+      "bairroNome": "Bela Vista",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.56138,
+      "lng": -46.64505,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "casa-slamb",
+      "nome": "Casa Slamb",
+      "apelidos": [
+        "Slamb"
+      ],
+      "endereco": "Rua Mateus Grou, 106",
+      "cep": "05415-040",
+      "bairro": "pinheiros",
+      "bairroNome": "Pinheiros",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.56496,
+      "lng": -46.68377,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "edificio-martinelli",
+      "nome": "Edifício Martinelli",
+      "apelidos": [
+        "Condomínio do Edifício Martinelli",
+        "Martinelli"
+      ],
+      "endereco": "Rua São Bento, 405",
+      "cep": "01011-100",
+      "bairro": "centro",
+      "bairroNome": "Centro Histórico",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.5457,
+      "lng": -46.63495,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "tivoli-mofarrej",
+      "nome": "Tivoli Mofarrej São Paulo Hotel",
+      "apelidos": [
+        "Tivoli Mofarrej",
+        "Hotel Tivoli Mofarrej"
+      ],
+      "endereco": "Alameda Santos, 1437",
+      "cep": "01419-002",
+      "bairro": "jardins",
+      "bairroNome": "Cerqueira César",
+      "regiao": "centro-sul",
+      "cidade": "São Paulo",
+      "lat": -23.56404,
+      "lng": -46.65601,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "espaco-sonora",
+      "nome": "Espaço Sonora",
+      "apelidos": [
+        "Sonora"
+      ],
+      "endereco": "Rua Afonso Celso, 1220",
+      "cep": "04119-060",
+      "bairro": "vila-mariana",
+      "bairroNome": "Vila Mariana",
+      "regiao": "centro-sul",
+      "cidade": "São Paulo",
+      "lat": -23.60225,
+      "lng": -46.63501,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "vermogen-bar",
+      "nome": "Vermögen Bar",
+      "apelidos": [
+        "Vermogen Bar"
+      ],
+      "endereco": "Rua Doutor Aramis Ataíde, 110",
+      "cep": "04726-002",
+      "bairro": "santo-amaro",
+      "bairroNome": "Granja Julieta",
+      "regiao": "sul",
+      "cidade": "São Paulo",
+      "lat": -23.63478,
+      "lng": -46.71232,
+      "precisao": "rua",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "hotel-nikkey-palace",
+      "nome": "Hotel Nikkey Palace",
+      "apelidos": [
+        "Nikkey Palace Hotel",
+        "Nikkey Palace"
+      ],
+      "endereco": "Rua Galvão Bueno, 425",
+      "cep": "01508-000",
+      "bairro": "bela-vista",
+      "bairroNome": "Liberdade",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.55948,
+      "lng": -46.63474,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "art-clublounge",
+      "nome": "Art ClubLounge",
+      "apelidos": [
+        "Art Club Lounge"
+      ],
+      "endereco": "Rua Henrique Schaumann, 794",
+      "cep": "05413-011",
+      "bairro": "pinheiros",
+      "bairroNome": "Pinheiros",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.55814,
+      "lng": -46.68157,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "anexo-hotel-cambridge",
+      "nome": "Anexo Hotel Cambridge",
+      "apelidos": [
+        "Hotel Cambridge Anexo"
+      ],
+      "endereco": "Rua Álvaro de Carvalho, 40",
+      "cep": "01050-070",
+      "bairro": "centro",
+      "bairroNome": "Anhangabaú",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.54841,
+      "lng": -46.64063,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "espaco-faria-485",
+      "nome": "Espaço Faria 485",
+      "apelidos": [
+        "Faria 485"
+      ],
+      "endereco": "Avenida Brigadeiro Faria Lima, 485",
+      "cep": "05426-100",
+      "bairro": "pinheiros",
+      "bairroNome": "Pinheiros",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.56298,
+      "lng": -46.6942,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "groove-bar",
+      "nome": "Groove Bar",
+      "endereco": "Rua Padre Carvalho, 626",
+      "cep": "05427-020",
+      "bairro": "pinheiros",
+      "bairroNome": "Pinheiros",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.56551,
+      "lng": -46.69658,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "tarantino-cervejaria",
+      "nome": "Tarantino Cervejaria",
+      "endereco": "Rua Miguel Nelson Bechara, 316",
+      "cep": "02713-030",
+      "bairro": "santana",
+      "bairroNome": "Limão",
+      "regiao": "norte",
+      "cidade": "São Paulo",
+      "lat": -23.5084,
+      "lng": -46.68314,
+      "precisao": "rua",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "argumento",
+      "nome": "Argumento",
+      "apelidos": [
+        "Argumento Bar"
+      ],
+      "endereco": "Rua Antônio de Barros, 2074",
+      "cep": "03401-001",
+      "bairro": "mooca",
+      "bairroNome": "Carrão",
+      "regiao": "leste",
+      "cidade": "São Paulo",
+      "lat": -23.54832,
+      "lng": -46.55507,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "casa-de-cultura-do-butanta",
+      "nome": "Casa de Cultura do Butantã",
+      "apelidos": [
+        "Casa de Cultura Butantã"
+      ],
+      "endereco": "Avenida Junta Mizumoto, 13",
+      "cep": "05537-000",
+      "bairro": "butanta",
+      "bairroNome": "Jardim Peri Peri",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.5883,
+      "lng": -46.73551,
+      "precisao": "rua",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "formosa-hi-fi",
+      "nome": "Formosa Hi-Fi",
+      "apelidos": [
+        "Formosa Hifi",
+        "Formosa Hi Fi"
+      ],
+      "instagram": "formosahifi",
+      "endereco": null,
+      "cep": "01037-000",
+      "bairro": "centro",
+      "bairroNome": "República",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.54614,
+      "lng": -46.6388,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "mercado-livre-arena-pacaembu",
+      "nome": "Mercado Livre Arena Pacaembu",
+      "apelidos": [
+        "Arena Pacaembu",
+        "Estádio do Pacaembu",
+        "Estádio Paulo Machado de Carvalho"
+      ],
+      "endereco": "Praça Charles Miller, s/n",
+      "cep": null,
+      "bairro": "perdizes",
+      "bairroNome": "Pacaembu",
+      "regiao": "oeste",
+      "cidade": "São Paulo",
+      "lat": -23.54856,
+      "lng": -46.66535,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "complexo-caninde",
+      "nome": "Complexo Canindé",
+      "apelidos": [
+        "Estádio do Canindé",
+        "Estádio Canindé"
+      ],
+      "endereco": null,
+      "cep": null,
+      "bairro": "centro",
+      "bairroNome": "Canindé",
+      "regiao": "centro",
+      "cidade": "São Paulo",
+      "lat": -23.52058,
+      "lng": -46.61885,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "aerodromo-nascimento",
+      "nome": "Aeródromo Nascimento",
+      "apelidos": [
+        "Aerodromo Nascimento"
+      ],
+      "endereco": "Rua Beija-Flor, 50",
+      "cep": "06720-480",
+      "bairro": null,
+      "bairroNome": null,
+      "regiao": null,
+      "cidade": "Cotia",
+      "lat": -23.60056,
+      "lng": -46.91239,
+      "precisao": "rua",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "wtc-golden-hall",
+      "nome": "WTC Golden Hall",
+      "apelidos": [
+        "Golden Hall",
+        "WTC Events Center",
+        "World Trade Center São Paulo"
+      ],
+      "espacos": [],
+      "endereco": "Avenida das Nações Unidas, 12551",
+      "cep": "04578-903",
+      "bairro": "santo-amaro",
+      "bairroNome": "Brooklin",
+      "regiao": "sul",
+      "cidade": "São Paulo",
+      "lat": -23.60916,
+      "lng": -46.69617,
+      "precisao": "casa",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    },
+    {
+      "id": "hangar-campo-de-marte",
+      "nome": "Hangar Campo de Marte",
+      "apelidos": [
+        "Campo de Marte",
+        "Hangar do Campo de Marte"
+      ],
+      "espacos": [],
+      "endereco": "Avenida Santos Dumont, 1979",
+      "cep": "02012-010",
+      "bairro": "santana",
+      "bairroNome": "Campo de Marte",
+      "regiao": "norte",
+      "cidade": "São Paulo",
+      "lat": -23.50937,
+      "lng": -46.63934,
+      "precisao": "bairro",
+      "fonteGeo": "nominatim",
+      "conferidoEm": "2026-11-24"
+    }
+  ]
+}

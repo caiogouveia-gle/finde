@@ -17,6 +17,15 @@ function ambiente(env = process.env) {
     adminToken: env.FINDE_ADMIN_TOKEN || null,
     cors: (env.FINDE_CORS || '').split(',').map((s) => s.trim()).filter(Boolean),
     comExemplos: env.FINDE_COM_EXEMPLOS === '1',
+    // Prova acadêmica (D1, KTD18): a agenda liga Instagram e páginas com FINDE_POC=1.
+    // A CLI continua exigindo --poc.
+    poc: env.FINDE_POC === '1',
+    // Onde as imagens de divulgação moram (no Fly, o volume: /data/imagens).
+    imagens: env.FINDE_IMAGENS || path.join(RAIZ, 'var', 'imagens'),
+    // O token do app (POST /api/avaliacoes), comparado em tempo constante.
+    appToken: env.FINDE_APP_TOKEN || null,
+    // Lista privada de perfis do Instagram (quem a lê é fontes/instagram.js).
+    perfis: env.FINDE_INSTAGRAM_PERFIS || null,
   };
 }
 

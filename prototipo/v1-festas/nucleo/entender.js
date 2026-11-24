@@ -3,10 +3,12 @@
 // de linguagem. É aqui que um modelo entraria: a função recebe a frase e os
 // critérios atuais e devolve o que mudar; o resto do app não precisa saber como.
 //
-// entender(texto, atuais) -> { mudar, pedidos, duvida? }
+// entender(texto, atuais) -> { mudar, pedidos, duvida?, diaRecusado?, data? }
 //   atuais: os critérios em vigor, mais `mostradas` (ids na tela),
 //   `estilosMostrados` e `precosMostrados`, para "outras", "outro estilo" e
-//   "mais barato".
+//   "mais barato"; `agoraMs` (o relógio do servidor), para "dia 5"; e
+//   `comDistancia: false` quando a lista não sabe a distância em minutos (as
+//   reais): aí o bairro citado filtra pelo bairro em vez de ordenar por perto.
 //   pedidos: o que a frase pediu, para a resposta da conversa, mesmo quando
 //   nada muda ("mais cedo" quando já é o mais cedo possível).
 //   duvida: o que a frase citou sem deixar claro que queria mudar ("domingo
@@ -16,6 +18,8 @@
 // "sem funk", "funk não", "nada de rooftop", "Pinheiros não", "longe da Augusta".
 
 const C = require('./catalogo');
+// "dia 5" vira a data e o pedido (hoje, ou quinta a domingo desta semana ou da próxima).
+const L = require('./lista');
 
 const ACENTOS = new RegExp('[\\u0300-\\u036f]', 'g');
 
@@ -52,6 +56,11 @@ const NOMES_DE_LUGAR = {
   'bela-vista': ['bela vista'],
   jardins: ['jardins', 'jardim'],
   'vila-mariana': ['vila mariana', 'vl mariana'],
+  // Os outros sete dos 14 bairros do motor (R29).
+  santana: ['santana'],
+  mooca: ['mooca', 'moca'],
+  'santo-amaro': ['santo amaro'],
+  interlagos: ['interlagos'],
   'largo-da-batata': ['largo da batata', 'batata'],
   butanta: ['butanta'],
   'alto-de-pinheiros': ['alto de pinheiros'],
@@ -136,7 +145,11 @@ function lerCasas(t) {
 
 // ---------------------------------------------------------------- dia
 
-const DIA_RE = { sex: 'sexta|sexta feira|sextou', sab: 'sabado|sab', dom: 'domingo|domingao' };
+// A semana citada: "semana que vem", "próximo fim de semana"; "esse fim de semana".
+const PROXIMA = /\b(?:semana que vem|proxima semana|semana seguinte|(?:proximo|outro) (?:fim|final) de semana|(?:fim|final) de semana que vem)\b/;
+const ESTA = /\b(?:esse|este|nesse|neste|essa|esta|nessa|nesta) (?:fim de semana|final de semana|semana)\b/;
+
+const DIA_RE = { qui: 'quinta|quinta feira|quintou', sex: 'sexta|sexta feira|sextou', sab: 'sabado|sab', dom: 'domingo|domingao', hoje: 'hoje|hj' };
 // Intenção de mudar o dia: "e no domingo?", "pode ser domingo", "prefiro sexta".
 const INTENCAO_DIA = '(?:^|\\b)(?:e|pode ser|prefiro|muda pra|mudar pra|troca pra|trocar pra|vamos|bora|tem|tem algo|e no|e na|no|na|pro|pra|para|para o|para a|entao|que tal|melhor)\\s+(?:no |na |o |a )?';
 
@@ -146,7 +159,8 @@ function lerDia(t, pontuado) {
     const m = new RegExp(`\\b(?:${nomes})\\b`).exec(t);
     if (!m) continue;
     const neg = negado(t, m.index, m.index + m[0].length);
-    const intencao = palavras(t) <= 2 || new RegExp(`${INTENCAO_DIA}(?:${nomes})\\b`).test(t)
+    // "hoje" citado já é pedido: ninguém fala de hoje de passagem.
+    const intencao = id === 'hoje' || palavras(t) <= 2 || new RegExp(`${INTENCAO_DIA}(?:${nomes})\\b`).test(t)
       || new RegExp(`\\b(?:${nomes})\\s*[,;?!]`).test(pontuado);
     return { id, negado: neg, intencao };
   }
@@ -230,11 +244,35 @@ function entender(texto, atuais = {}) {
     }
     pedir('sem-dia');
     diaRecusado = dia.id;
-  } else if (dia && dia.intencao) {
+  } else if (dia && (dia.intencao || PROXIMA.test(t) || ESTA.test(t))) {
+    // "sábado da semana que vem": o dia com a semana é pedido, não passagem.
     mudar.dia = dia.id;
     pedir('dia');
   } else if (dia && dia.id !== a.dia) {
     duvida = { dia: dia.id };
+  }
+
+  // a semana: "semana que vem", "próximo fim de semana"; "esse fim de semana".
+  if (PROXIMA.test(t) || ESTA.test(t)) {
+    mudar.semana = PROXIMA.test(t) ? 'proxima' : 'esta';
+    // "hoje" não tem semana que vem: o dia vai pra sexta.
+    if (mudar.semana === 'proxima' && (mudar.dia || a.dia) === 'hoje') mudar.dia = 'sex';
+    if (!dia) duvida = undefined;
+    pedir('semana');
+  }
+
+  // "dia 5": a data, no vocabulário do pedido; fora do recorte, a conversa diz.
+  let data;
+  const md = t.match(/\bdia (\d{1,2})\b/);
+  if (md && typeof a.agoraMs === 'number') {
+    data = L.dataDoDiaDoMes(Number(md[1]), a.agoraMs);
+    const p = data && L.pedidoDaData(data, a.agoraMs);
+    if (p) {
+      mudar.dia = p.dia;
+      mudar.semana = p.semana;
+      duvida = undefined;
+      pedir('data');
+    } else pedir('data-fora');
   }
 
   // hora de voltar: cria um teto para o fim da festa (voltaMax)
@@ -290,28 +328,37 @@ function entender(texto, atuais = {}) {
     }
   }
 
+  // "limite de idade" fala da idade mínima da festa, não do teto: sai da frase
+  // antes do preço ("sem limite de idade" não tira o teto).
+  const LIMITE = /\b(?:sem |tem |qual |algum |com )?(?:limite de idade|idade minima|classificacao etaria|classificacao indicativa|so maior de idade|maior de idade|maiores de idade|menor de idade|menores de idade)\b/;
+  const limiteIdade = LIMITE.test(t);
+  if (limiteIdade) pedir('limite-idade');
+  const tp = limiteIdade ? t.replace(new RegExp(LIMITE.source, 'g'), ' ') : t;
+  // "quanto custa?": a lista diz os preços; nada muda.
+  if (tem(tp, /\b(quanto custa\w*|quanto e|quanto sai|quanto ta|quanto fica|qual o preco|qual e o preco|qual preco|quais os precos|precos delas|preco delas|valor do ingresso|quanto o ingresso)\b/)) pedir('quanto-custa');
+
   // preço: o número vem primeiro ("sem pagar mais de 50" é teto de R$ 50)
-  const composto = t.match(/\b(?:sem pagar|nao pagar|pagar|gastar|sem gastar|nao gastar)\s+mais\s+(?:de|que|do que)\s+(?:r\$\s+)?(\d{1,4})\b/);
+  const composto = tp.match(/\b(?:sem pagar|nao pagar|pagar|gastar|sem gastar|nao gastar)\s+mais\s+(?:de|que|do que)\s+(?:r\$\s+)?(\d{1,4})\b/);
   if (composto) {
     const v = Number(composto[1]);
     mudar.teto = v > 300 ? 'sem-limite' : v;
     pedir('teto');
-  } else if (tem(t, /\b(de graca|gratis|gratuit[oa]s?|sem pagar|free)\b/)) {
+  } else if (tem(tp, /\b(de graca|gratis|gratuit[oa]s?|sem pagar|free)\b/)) {
     mudar.teto = 0;
     pedir('gratis');
-  } else if (tem(t, /\b(mais barat[oa]s?|mais em conta|mais economic[oa]|menos car[oa]|gastar menos|baratinh[oa]|barat[oa]|economizar|to liso|to lisa|to sem grana|sem grana|mai barto)\b/)) {
+  } else if (tem(tp, /\b(mais barat[oa]s?|mais em conta|mais economic[oa]|menos car[oa]|gastar menos|baratinh[oa]|barat[oa]|economizar|to liso|to lisa|to sem grana|sem grana|mai barto)\b/)) {
     mudar.teto = degrauAbaixo(a.teto === undefined ? 'sem-limite' : a.teto, a.precosMostrados || []);
     pedir('mais-barato');
-  } else if (tem(t, /\b(sem limite|sem teto|tanto faz o preco|qualquer preco|preco nao importa|dinheiro nao e problema)\b/)) {
+  } else if (tem(tp, /\b(sem limite|sem teto|tanto faz o preco|qualquer preco|preco nao importa|dinheiro nao e problema)\b/)) {
     mudar.teto = 'sem-limite';
     pedir('sem-limite');
-  } else if (tem(t, /\b(mais car[oa]|gastar mais|pode ser car[oa]|pode gastar|mais chique)\b/)) {
+  } else if (tem(tp, /\b(mais car[oa]|gastar mais|pode ser car[oa]|pode gastar|mais chique)\b/)) {
     mudar.teto = degrauAcima(a.teto === undefined ? 80 : a.teto);
     pedir('mais-caro');
   } else {
-    let m = t.match(/(?:\bate|\bno maximo|\bmaximo|\bteto de|\bteto|\bgastar|\bpagar)\s+(?:r\$\s+)?(\d{1,4})\b(?!h)/);
-    if (!m) m = t.match(/(?:r\$\s+)(\d{1,4})\b/);
-    if (!m) m = t.match(/\b(\d{1,4})\s+(?:reais|conto|contos|pila)\b/);
+    let m = tp.match(/(?:\bate|\bno maximo|\bmaximo|\bteto de|\bteto|\bgastar|\bpagar)\s+(?:r\$\s+)?(\d{1,4})\b(?!h)/);
+    if (!m) m = tp.match(/(?:r\$\s+)(\d{1,4})\b/);
+    if (!m) m = tp.match(/\b(\d{1,4})\s+(?:reais|conto|contos|pila)\b/);
     if (m && !(fim !== undefined && Number(m[1]) === fim % 24)) {
       const v = Number(m[1]);
       mudar.teto = v > 300 ? 'sem-limite' : v;
@@ -320,7 +367,9 @@ function entender(texto, atuais = {}) {
   }
 
   // idade do público
-  if (tem(t, /\b(da minha idade|da nossa idade|minha faixa|da minha fase|gente como eu)\b/)) {
+  if (limiteIdade) {
+    // a pergunta é sobre a idade mínima: não mexe na faixa.
+  } else if (tem(t, /\b(da minha idade|da nossa idade|minha faixa|da minha fase|gente como eu)\b/)) {
     pedir('minha-idade');
   } else if (tem(t, /\b(mais velh[oa]s?|mais madur[oa]s?|mais adult[oa]s?|menos novinh[oa]s?|sem novinh[oa]s?|menos jovem|menos jovens|gente mais velha)\b/)) {
     mudar.faixa = deslocarFaixa(a.faixa, +1);
@@ -381,22 +430,29 @@ function entender(texto, atuais = {}) {
     pedir('casa-positiva');
   }
 
-  // lugar: perto, ou longe (negado)
-  const lugar = lugarCitado(t);
+  // lugar: perto, ou longe (negado). "próximo fim de semana" não é "próximo de".
+  const tl = t.replace(new RegExp(PROXIMA.source, 'g'), ' ').replace(new RegExp(ESTA.source, 'g'), ' ');
+  const lugar = lugarCitado(tl);
   if (lugar && lugar.negado) {
     const bairro = C.REFERENCIAS[lugar.id].bairro;
     mudar.evitarBairros = [...new Set([...(a.evitarBairros || []), bairro])];
     if (a.perto && C.REFERENCIAS[a.perto].bairro === bairro) mudar.perto = null;
     pedir('sem-bairro');
+  } else if (lugar && a.comDistancia === false && !tem(tl, /\b(perto|mais perto|proxim[oa])\b/)) {
+    // Sem distância conhecida (as reais), o bairro citado filtra pelo bairro (R36).
+    const bairro = Object.hasOwn(C.TODOS_OS_BAIRROS, lugar.id) ? lugar.id : C.REFERENCIAS[lugar.id].bairro;
+    mudar.bairros = [bairro];
+    if (a.perto) mudar.perto = null;
+    pedir('bairro');
   } else if (lugar) {
     mudar.perto = lugar.id;
     pedir('perto');
-  } else if (tem(t, /\b(qualquer lugar|qualquer bairro|tanto faz o lugar|tanto faz onde|tanto faz o bairro|longe tudo bem|pode ser longe)\b/)) {
+  } else if (tem(tl, /\b(qualquer lugar|qualquer bairro|tanto faz o lugar|tanto faz onde|tanto faz o bairro|longe tudo bem|pode ser longe)\b/)) {
     mudar.perto = null;
     pedir('qualquer-lugar');
-  } else if (tem(t, /\b(metro|onibus|estacionamento|estacionar|uber|taxi)\b/)) {
+  } else if (tem(tl, /\b(metro|onibus|estacionamento|estacionar|uber|taxi)\b/)) {
     pedir('fora-transporte');
-  } else if (tem(t, /\b(perto|mais perto|proxim[oa]|do lado|aqui perto|perto de casa|perto de mim|sem andar muito|menos longe)\b/)) {
+  } else if (tem(tl, /\b(perto|mais perto|proxim[oa]|do lado|aqui perto|perto de casa|perto de mim|sem andar muito|menos longe)\b/)) {
     pedir(a.perto ? 'perto' : 'perto-sem-lugar');
   }
 
@@ -416,8 +472,13 @@ function entender(texto, atuais = {}) {
     pedir('aceitar');
   }
 
-  // outras opções
-  if (!pedidos.length && !duvida && tem(t, /\b(outras|outra|mostra mais|tem mais|mais opcoes|outras opcoes|nao gostei|nenhuma|proxima|proximas)\b/)) {
+  // "tem mais?" acrescenta: a lista desce para as outras do dia, sem tirar as de cima.
+  if (!pedidos.length && !duvida && tem(t, /\b(tem mais|mostra mais|mais opcoes|ver mais|ver todas|mostra todas|todas elas|quero ver mais|so isso|so essas)\b/)) {
+    pedir('mais');
+  }
+
+  // outras opções: troca as da tela
+  if (!pedidos.length && !duvida && tem(t, /\b(outras|outra|outras opcoes|nao gostei|nenhuma|proxima|proximas)\b/)) {
     mudar.evitar = [...new Set([...(a.evitar || []), ...(a.mostradas || [])])].slice(0, 40);
     pedir('outras');
   }
@@ -425,6 +486,7 @@ function entender(texto, atuais = {}) {
   const r = { mudar, pedidos };
   if (duvida) r.duvida = duvida;
   if (diaRecusado) r.diaRecusado = diaRecusado;
+  if (data) r.data = data;
   return r;
 }
 

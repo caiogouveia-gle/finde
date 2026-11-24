@@ -1,0 +1,175 @@
+/* O mapa (R32, KTD16; desenho da U39, docs/desenho/2026-11-24-rascunhos/).
+   Carregado por publico/mapa.js só quando o mapa abre, depois do
+   leaflet.css (a ordem no <head> decide a cascata). Usa os tokens do
+   app.css (--fundo, --tinta, --rose, --mov-*); os do mapa moram aqui.
+   Nenhum controle com raio nem sombra. O que anima é .pino-in e a cortina,
+   só transform e opacity. */
+
+:root {
+  --mapa-fundo: #E9E4DF;          /* as telhas enquanto carregam */
+  --pino: var(--bordo, #4E1222);
+  --pino-tinta: #F3EBE3;          /* nude-claro */
+}
+:root[data-tema="noite"] {
+  --mapa-fundo: #1B1416;
+  /* À noite o pino passa a nude com texto bordô, como o botão D. */
+  --pino: #F3EBE3;
+  --pino-tinta: var(--bordo, #4E1222);
+}
+
+/* ------------------------------------------------------------ o painel */
+
+/* No celular, de borda a borda, 58% da altura entre 340 e 520 px. */
+.mapa.mapa-vivo {
+  flex: none;
+  position: relative;
+  isolation: isolate;
+  height: 58vh;
+  min-height: 340px;
+  max-height: 520px;
+  overflow: hidden;
+  background: var(--mapa-fundo);
+}
+@media (max-width: 1023px) {
+  .mapa.mapa-vivo:not(.mapa--lado), .mini-mapa.mapa-vivo { margin-left: calc(-1 * var(--lateral, 24px)); margin-right: calc(-1 * var(--lateral, 24px)); }
+}
+/* No desktop, ao lado da lista, a altura da janela. */
+.mapa.mapa-vivo.mapa--lado { height: calc(100dvh - 120px); max-height: none; }
+
+/* O mini-mapa do detalhe: estático, atrás de um toque. */
+.mini-mapa.mapa-vivo {
+  flex: none;
+  position: relative;
+  isolation: isolate;
+  height: 168px;
+  overflow: hidden;
+  background: var(--mapa-fundo);
+}
+
+.mapa-leaflet { position: absolute; inset: 0; }
+.mapa-leaflet.leaflet-container {
+  background: var(--mapa-fundo);
+  font: 400 12px/1.4 var(--sans, sans-serif);
+  color: var(--tinta);
+}
+.mapa-leaflet.leaflet-container:focus-visible { outline: 1.5px solid var(--foco); outline-offset: -2px; }
+
+/* A cortina na cor do fundo, acima de tudo, encolhendo de cima para baixo.
+   Fica encolhida em repouso: a página nasce pronta. */
+.mapa-cortina {
+  position: absolute;
+  z-index: 1200;
+  inset: 0;
+  background: var(--fundo);
+  transform-origin: 50% 100%;
+  transform: scaleY(0);
+  pointer-events: none;
+}
+
+/* Sem o Leaflet (falha de rede): a frase no lugar, sem painel vazio. */
+.mapa-falhou { height: auto !important; min-height: 0 !important; padding: var(--e3, 16px) 0; background: none !important; color: var(--corrido); font-size: 14px; }
+
+/* À noite, sem telhas próprias do provedor (FINDE_TILES_NOITE), o painel das
+   telhas é invertido e esfriado até perto do Dark Matter. O filtro é
+   estático: nunca anima. */
+:root[data-tema="noite"] .mapa--filtro-noite .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(.82) contrast(.88) saturate(0) sepia(.15);
+}
+/* Com filtro no painel e o mapa em posição fracionária (DPR 2), o
+   plus-lighter do Leaflet 1.9 não fecha a borda suavizada das telhas: sobra
+   um fio que atravessa o mapa (e, com telha maior, a sobreposição somada
+   vira um fio claro, escuro depois do invert). Aqui a telha é 1 px maior e
+   se mistura normal: cobre a borda da vizinha sem somar. O fundo ganha o tom
+   do chão das telhas já filtradas, para nada sobrar à vista. */
+.mapa--filtro-dia .leaflet-container img.leaflet-tile,
+.mapa--filtro-noite .leaflet-container img.leaflet-tile { mix-blend-mode: normal; width: 257px !important; height: 257px !important; }
+:root:not([data-tema="noite"]) .mapa--filtro-dia .mapa-leaflet.leaflet-container { background: #ECE6DD; }
+:root[data-tema="noite"] .mapa--filtro-noite .mapa-leaflet.leaflet-container { background: #2A2725; }
+/* De dia, com as telhas padrão do OSM (coloridas: vias rosa, parques
+   verdes), o painel vira papel: cinza quente perto do nude, e o bordô dos
+   pinos e o rosé do bairro passam a ser as únicas cores. Estático também. */
+:root:not([data-tema="noite"]) .mapa--filtro-dia .leaflet-tile-pane {
+  filter: grayscale(1) sepia(.22) contrast(.9) brightness(1.04);
+}
+
+/* ------------------------------------------------------------ o pino */
+
+/* O ícone do Leaflet (.leaflet-marker-icon.pino) é um ponto sem tamanho no
+   lugar exato; o Leaflet escreve transform nele. O de dentro sobe pela
+   propriedade translate (a ponta fica no lugar) e é o único que anima. */
+.leaflet-marker-icon.pino {
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  outline: none;
+}
+.pino-in {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 6px 3px;
+  background: var(--pino);
+  color: var(--pino-tinta);
+  font: 500 12px/1 var(--sans, sans-serif);
+  white-space: nowrap;
+  translate: -50% calc(-100% - 5px);
+  transform-origin: 50% 100%;
+  transition: scale var(--mov-toque, 160ms) var(--mov-saida, ease-out);
+}
+/* A haste até o ponto. */
+.pino-in::after { content: ''; position: absolute; left: 50%; bottom: -5px; width: 1px; height: 5px; background: var(--pino); }
+.pino-in i { font-style: normal; font-size: 11px; }
+.pino--melhor .pino-in { padding: 6px 9px 5px; font: 400 18px/1 var(--serifa, serif); }
+.pino[aria-pressed="true"] .pino-in { background: var(--pino-tinta); color: var(--pino); outline: 1px solid var(--pino); scale: 1.08; }
+.pino:focus-visible .pino-in { outline: 1.5px solid var(--foco); outline-offset: 2px; }
+.mini-mapa .leaflet-marker-icon.pino { cursor: default; }
+
+/* Bairro pedido: círculo fino rosé, sem rótulo (a telha já escreve o nome). */
+.leaflet-container path.mapa-bairro { stroke: var(--rose, #C98F8A); stroke-width: 1px; fill: none; }
+
+/* ------------------------------------------------------------ controles */
+
+/* Zoom: dois quadrados de 44 px com fio, sem raio nem sombra. */
+.mapa-leaflet .leaflet-bar,
+.leaflet-touch .mapa-leaflet .leaflet-bar { border: 0; border-radius: 0; box-shadow: none; }
+.mapa-leaflet .leaflet-bar a,
+.leaflet-touch .mapa-leaflet .leaflet-bar a {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  border: .5px solid var(--tinta);
+  border-radius: 0;
+  background: var(--fundo);
+  color: var(--tinta);
+  font: 400 18px/44px var(--sans, sans-serif);
+}
+.mapa-leaflet .leaflet-bar a + a { border-top: 0; }
+.mapa-leaflet .leaflet-bar a:hover { background: var(--fundo); color: var(--tinta); text-decoration: underline; }
+.mapa-leaflet .leaflet-bar a:focus-visible { outline: 1.5px solid var(--foco); outline-offset: 2px; }
+.mapa-leaflet .leaflet-bar a.leaflet-disabled { color: var(--fio-off); background: var(--fundo); }
+.mapa-leaflet .leaflet-bottom.leaflet-left .leaflet-control { margin: 0 0 var(--e3, 16px) var(--lateral, 24px); }
+
+/* Atribuição sempre visível, numa faixa chapada na cor do fundo. */
+.mapa-leaflet .leaflet-control-attribution,
+.mapa-leaflet .leaflet-control-attribution.leaflet-control {
+  margin: 0;
+  padding: 2px 6px;
+  background: var(--fundo);
+  color: var(--corrido);
+  font: 400 10px/1.5 var(--sans, sans-serif);
+}
+.mapa-leaflet .leaflet-control-attribution a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+/* ------------------------------------------------------------ movimento reduzido */
+
+@media (prefers-reduced-motion: reduce) {
+  .pino-in { transition: none; }
+  .pino[aria-pressed="true"] .pino-in { scale: 1; }
+}

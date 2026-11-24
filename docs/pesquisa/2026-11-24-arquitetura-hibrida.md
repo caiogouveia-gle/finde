@@ -9,7 +9,7 @@ Decisão do Caio em 23 e 24/11/2026, com aval da instituição: como prova de co
 | Coletores prontos | Apify, pela rota síncrona da API, com teto de itens e de gasto em cada chamada | Sympla, Shotgun, Resident Advisor, Instagram (posts e perfis) |
 | Leitor com navegador | Scrapling, num processo Python à parte | Ingresse (a página só aparece com JavaScript) e agendas dos sites das casas |
 | Leitura por IA | Claude Haiku 5.5 com saída estruturada | Flyer e legenda dos posts; texto das páginas sem dados estruturados |
-| Normalização | O mesmo motor de antes (contrato `finde-r14/1`) | Todas |
+| Normalização | O mesmo motor de antes (contrato `finde-r14/3` desde 24/11; era `/1`) | Todas |
 
 O Instagram é fonte de descoberta. O link da bio, o Linktree e os links de compra dos posts entram numa fila, e os conectores da Sympla, do Shotgun e da Ingresse leem essas páginas na mesma execução. A mesma festa vinda do post e da página do ingresso vira um registro só, e no conflito vale a página do ingresso: Sympla e Shotgun 75, página lida no navegador 72, RA 65, Instagram 50.
 

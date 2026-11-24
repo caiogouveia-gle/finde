@@ -110,3 +110,149 @@ test('regras: festa, estilo e idade mínima por palavras', () => {
   const expo = porRegras({ nome: 'Exposição Florescer', texto: 'Mostra de artes visuais.' });
   assert.equal(expo.ehFesta, false);
 });
+
+// ---- extrair/3: o modelo diz se é festa (M24, U12) ---------------------------
+
+const { criarExtrator, validarExtracao, SISTEMA, ESQUEMA: ESQUEMA_EXTRACAO, VERSAO: VERSAO_EXTRACAO } = require('../nucleo/extrair');
+const { executar } = require('../nucleo/coleta');
+const { listarRegistros } = require('../nucleo/contrato');
+const paginas = require('../fontes/paginas');
+const lida = (nome, data, extra = {}) => ({
+  nome, ehFesta: true, tipo: 'festa', confianca: 'alta', cidade: 'São Paulo', uf: 'SP', imagem: 'outra', data, inicio: '23:00', fim: null,
+  casa: 'Casa Exemplo', endereco: null, lotes: [], linkCompra: null, lineup: [], estilos: [], idadeMinima: null, ...extra,
+});
+
+test('extrair/3: o esquema pede ehFesta, tipo, confiança, cidade, uf e o que a imagem é; o sistema repete os critérios do classificador', () => {
+  assert.equal(VERSAO_EXTRACAO, 'extrair/3');
+  const festa = ESQUEMA_EXTRACAO.properties.festas.items;
+  for (const k of ['ehFesta', 'tipo', 'confianca', 'cidade', 'uf', 'imagem']) assert.ok(festa.required.includes(k), k);
+  assert.deepEqual(festa.properties.tipo.enum, ['festa', 'show', 'leitura', 'sessao-de-escuta', 'feira', 'outro']);
+  assert.deepEqual(festa.properties.imagem.enum, ['flyer', 'foto', 'outra']);
+  assert.match(SISTEMA, /concerto|sentado/);
+  assert.match(SISTEMA, /sessão de escuta/);
+  assert.match(SISTEMA, /uma festa por dia/);
+  assert.match(SISTEMA, /Não descreva pessoas/);
+  assert.ok(!JSON.stringify(ESQUEMA_EXTRACAO).includes('mediaIdade'));
+  // O classificador (que lê as páginas de JSON-LD) usa os mesmos critérios.
+  const { SISTEMA: SISTEMA_CLASSIFICADOR } = require('../nucleo/classificar');
+  assert.match(SISTEMA_CLASSIFICADOR, /concerto sentado, leitura .* e sessão de escuta/);
+});
+
+test('extrair/3: valida ehFesta, tipo, cidade, uf, imagem e nome de lote até 80 caracteres', () => {
+  const longo = 'L'.repeat(100);
+  const r = validarExtracao({ festas: [lida('A', '2026-11-28', { tipo: 'banana', uf: 'sp', imagem: 'quadro', lotes: [{ nome: longo, preco: 30, disponivel: null }] }), lida('B', '2026-11-28', { ehFesta: false, tipo: 'leitura' })], confianca: 'alta' });
+  assert.equal(r.festas[0].tipo, 'festa', 'tipo fora do catálogo cai em festa quando ehFesta é true');
+  assert.equal(r.festas[0].uf, 'SP');
+  assert.equal(r.festas[0].imagem, 'outra');
+  assert.equal(r.festas[0].lotes[0].nome.length, 80);
+  assert.equal(r.festas[1].ehFesta, false);
+  assert.equal(r.festas[1].tipo, 'leitura');
+  const sem = validarExtracao({ festas: [{ ...lida('C', '2026-11-28'), ehFesta: 'sim' }], confianca: 'alta' });
+  assert.equal(sem.festas.length, 0, 'sem ehFesta booleano a festa não conta como lida');
+});
+
+test('extrair/3: leitura vazia de confiança baixa não fica no cache; vazia de confiança alta fica', async () => {
+  const db = novoBanco();
+  const claude = claudeFalso([{ festas: [], confianca: 'baixa' }]);
+  const cl = criarClassificador({ db, claude, agora: relogio(), log: logMudo });
+  const ex = criarExtrator({ db, classificador: cl, agora: relogio(), log: logMudo });
+  const a = await ex.lerPagina({ url: 'https://casa.example/agenda', titulo: 'Agenda', texto: 'Agenda em branco' });
+  assert.deepEqual(a.festas, []);
+  await ex.lerPagina({ url: 'https://casa.example/agenda', titulo: 'Agenda', texto: 'Agenda em branco' });
+  assert.equal(claude.pedidos.length, 2, 'a segunda leitura volta ao modelo: nada ficou no cache');
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM classificacoes').get().n, 0);
+  assert.equal(ex.resumo().vazios, 2);
+
+  const claude2 = claudeFalso([{ festas: [], confianca: 'alta' }]);
+  const cl2 = criarClassificador({ db, claude: claude2, agora: relogio(), log: logMudo });
+  const ex2 = criarExtrator({ db, classificador: cl2, agora: relogio(), log: logMudo });
+  await ex2.lerPagina({ url: 'https://casa.example/outra', titulo: 'x', texto: 'Post de bastidor, sem data' });
+  await ex2.lerPagina({ url: 'https://casa.example/outra', titulo: 'x', texto: 'Post de bastidor, sem data' });
+  assert.equal(claude2.pedidos.length, 1, 'sem festa e com confiança alta é um "não há festa" confiável');
+});
+
+test('extrair/3: a casca da Ingresse não chama o modelo nem entra no cache', async () => {
+  const db = novoBanco();
+  const claude = claudeFalso([{ festas: [lida('X', '2026-11-28')], confianca: 'alta' }]);
+  const cl = criarClassificador({ db, claude, agora: relogio(), log: logMudo });
+  const ex = criarExtrator({ db, classificador: cl, agora: relogio(), log: logMudo });
+  assert.equal(await ex.lerPagina({ url: 'https://www.ingresse.com/algo/', titulo: 'Ingresse', texto: 'Please wait\nWhere live begins.' }), null);
+  assert.equal(await ex.lerPagina({ url: 'https://www.ingresse.com/algo/', titulo: 'Ingresse', texto: '' }), null);
+  assert.equal(claude.pedidos.length, 0);
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM classificacoes').get().n, 0);
+  assert.equal(ex.resumo().cascas, 2);
+  // O mesmo texto curto em outro site não é casca.
+  assert.ok(await ex.lerPagina({ url: 'https://casa.example/agenda', titulo: 'Agenda', texto: 'Please wait' }));
+  assert.equal(claude.pedidos.length, 1);
+});
+
+test('extrair/3: o texto da página vai ao modelo até 6.000 caracteres', async () => {
+  const db = novoBanco();
+  const claude = claudeFalso([{ festas: [], confianca: 'alta' }]);
+  const cl = criarClassificador({ db, claude, agora: relogio(), log: logMudo });
+  const ex = criarExtrator({ db, classificador: cl, agora: relogio(), log: logMudo });
+  await ex.lerPagina({ url: 'https://casa.example/longa', titulo: 'x', texto: `${'a'.repeat(5980)}FIM-VISIVEL${'b'.repeat(9000)}` });
+  const texto = claude.pedidos[0].messages[0].content[0].text;
+  assert.match(texto, /FIM-VISIVEL/);
+  assert.doesNotMatch(texto, /b{20}/, 'o que passa de 6.000 caracteres fica de fora');
+});
+
+test('extrair/3: festival de dois dias vira duas festas, cada uma com o preço do dia (Gop Tun)', async () => {
+  const dias = {
+    festas: [
+      lida('Gop Tun Festival · sábado', '2026-12-05', { lotes: [{ nome: '1º lote', preco: 180, disponivel: true }] }),
+      lida('Gop Tun Festival · domingo', '2026-12-06', { lotes: [{ nome: '1º lote', preco: 150, disponivel: true }] }),
+    ],
+    confianca: 'alta',
+  };
+  const db = novoBanco();
+  const cl = criarClassificador({ db, claude: claudeFalso([dias]), agora: relogio(), log: logMudo });
+  const extrator = criarExtrator({ db, classificador: cl, agora: relogio(), log: logMudo });
+  const url = 'https://festival.example/ingressos';
+  const r = await paginas.coletar({
+    config: { agendas: [url], janelas: null }, agora: relogio(), log: logMudo, extrator,
+    dormir: async () => {}, lerPaginas: async (us) => us.map((u) => ({ url: u, final: u, status: 200, titulo: 'Gop Tun', texto: 'Sábado 5/12 e domingo 6/12', jsonld: [] })),
+  });
+  assert.equal(r.itens.length, 2);
+  assert.notEqual(r.itens[0].idExterno, r.itens[1].idExterno);
+  assert.deepEqual(r.itens.map((i) => [i.bruto.data, i.bruto.lotes[0].preco]), [['2026-12-05', 180], ['2026-12-06', 150]]);
+});
+
+test('extrair/3: Casa de Francisca, jazz de segunda na Matiz e a escuta da Hifi, com ehFesta false, saem do export; a festa fica', async () => {
+  const db = novoBanco();
+  const lido = {
+    festas: [
+      lida('Cartas e Segredos', '2026-11-12', { ehFesta: false, tipo: 'leitura', casa: 'Casa de Francisca' }),
+      lida('Jazz de segunda', '2026-11-16', { ehFesta: false, tipo: 'show', casa: 'Matiz' }),
+      lida('Sessão de escuta', '2026-11-13', { ehFesta: false, tipo: 'sessao-de-escuta', casa: 'Hifi Community' }),
+      lida('Baile da Sexta', '2026-11-13', { casa: 'Casa Exemplo' }),
+    ],
+    confianca: 'alta',
+  };
+  const url = 'https://casa.example/agenda';
+  const fonte = {
+    ...paginas, id: 'paginas',
+    coletar: (ctx) => paginas.coletar({
+      ...ctx, config: { agendas: [url], janelas: null }, dormir: async () => {},
+      lerPaginas: async (us) => us.map((u) => ({ url: u, final: u, status: 200, titulo: 'Agenda', texto: 'agenda', jsonld: [] })),
+    }),
+  };
+  await executar({ db, fontes: [fonte], claude: claudeFalso([lido]), agora: relogio(), log: logMudo, config: {} });
+  assert.deepEqual(listarRegistros(db).map((f) => f.nome), ['Baile da Sexta']);
+  const todas = listarRegistros(db, { todas: true });
+  assert.equal(todas.length, 4);
+  const leitura = todas.find((f) => f.nome === 'Cartas e Segredos');
+  assert.equal(leitura.ehFesta, false);
+  assert.equal(leitura.campos.ehFesta.fonte, 'paginas');
+});
+
+test('extrair/3: o classificador desligado (classificar: false) não vai ao modelo nem às regras', async () => {
+  const db = novoBanco();
+  const claude = claudeFalso([BOA]);
+  const cl = criarClassificador({ db, claude, classificar: false, agora: relogio(), log: logMudo });
+  const r = await cl.classificar(entrada(1));
+  assert.equal(r.desligado, true);
+  assert.equal(r.resultado, null);
+  assert.equal(claude.pedidos.length, 0);
+  assert.equal(cl.resumo().regras, 0);
+});

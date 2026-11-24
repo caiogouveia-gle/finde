@@ -65,6 +65,40 @@ function claudeFalso(respostas, { entrada = 900, saida = 300 } = {}) {
   };
 }
 
+// Banco em memória já no esquema 3 (abrirBanco migra por padrão).
 const novoBanco = () => abrirBanco(':memory:');
 
-module.exports = { AGORA, relogio, logMudo, logQueGuarda, fetchFalso, claudeFalso, novoBanco };
+// Um fetch que nunca deveria ser chamado: o teste que passa por ele prova que
+// nada foi à rede (reprocessar, tempo 2 desligado). Guarda o que tentou.
+function fetchQueLanca() {
+  const chamadas = [];
+  const f = async (url) => {
+    chamadas.push(String(url));
+    throw new Error(`rede proibida neste teste: ${String(url).slice(0, 80)}`);
+  };
+  f.chamadas = chamadas;
+  return f;
+}
+
+// Uma fonte de mentira que devolve itens prontos (lista ou função).
+const fonteFixa = (id, itens) => ({ id, nome: id, coletar: async () => ({ itens: typeof itens === 'function' ? itens() : itens, avisos: [] }) });
+
+// Liga uma peça já preparada a um item (as tabelas da KTD6), como a lane de
+// imagens faria no tempo 2: o pHash é o que a correlação lê.
+function ligarImagem(db, { fonte, idExterno, sha, phash, papel = 'post', quando = '2026-11-24T12:00:00.000Z' }) {
+  db.prepare(`INSERT INTO imagens (sha, arquivo, miniatura, phash, criada_em) VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT (sha) DO NOTHING`).run(sha, `imagens/${sha}-1080.webp`, `imagens/${sha}-480.webp`, phash, quando);
+  db.prepare('INSERT OR IGNORE INTO imagens_item (fonte, id_externo, sha, papel, conferido_em) VALUES (?, ?, ?, ?, ?)').run(fonte, idExterno, sha, papel, quando);
+}
+
+// A partição das festas: cada festa como a lista ordenada dos seus itens.
+const particao = (db) => {
+  const grupos = new Map();
+  for (const v of db.prepare('SELECT festa_id, fonte, id_externo FROM vinculos').all()) {
+    if (!grupos.has(v.festa_id)) grupos.set(v.festa_id, []);
+    grupos.get(v.festa_id).push(`${v.fonte}:${v.id_externo}`);
+  }
+  return [...grupos.values()].map((g) => g.sort().join(' + ')).sort();
+};
+
+module.exports = { AGORA, relogio, logMudo, logQueGuarda, fetchFalso, fetchQueLanca, claudeFalso, novoBanco, fonteFixa, ligarImagem, particao };

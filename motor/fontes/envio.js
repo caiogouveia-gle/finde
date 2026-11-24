@@ -26,6 +26,17 @@ function dataDoExemplo(valor, agora) {
   return new Date(hoje.getTime() + (ateSexta + DIAS_EXEMPLO[valor]) * 86400e3).toISOString().slice(0, 10);
 }
 
+// O cartaz que a produtora mandou vira `item.imagens` (papel `cartaz-enviado`):
+// quem baixa, confere o endereço e recodifica é o tempo 2 (nucleo/imagens.js),
+// que aceita host fora da lista só para este papel. O link é o do evento; sem
+// ele, a própria URL do cartaz, que a produtora publicou. Só https.
+function imagensDoCartaz(cartaz, { f, nomeProdutora }) {
+  if (typeof cartaz !== 'string' || !/^https:\/\//i.test(cartaz.trim())) return [];
+  const url = cartaz.trim().slice(0, 500);
+  const pagina = [f.linkEvento, f.linkCompra].find((u) => typeof u === 'string' && /^https:\/\//i.test(u));
+  return [{ url, papel: 'cartaz-enviado', origem: pagina || url, credito: `Divulgação · ${nomeProdutora}`, leitura: null }];
+}
+
 function itensDoEnvio(corpo, { produtoraNome, conferidoEm, origem, agora = new Date() }) {
   const itens = [];
   const avisos = [];
@@ -39,13 +50,16 @@ function itensDoEnvio(corpo, { produtoraNome, conferidoEm, origem, agora = new D
   for (const f of corpo.festas.slice(0, MAX_FESTAS)) {
     if (!f || typeof f !== 'object') continue;
     const chave = typeof f.id === 'string' && f.id.trim() ? slug(f.id) : `${slug(f.nome || '')}-${f.data || ''}`;
+    const { cartaz, ...resto } = f;
+    const imagens = imagensDoCartaz(cartaz, { f, nomeProdutora });
     itens.push({
       idExterno: `${slug(nomeProdutora)}:${chave}`.slice(0, 160),
       url: typeof f.linkEvento === 'string' ? f.linkEvento : null,
       conferidoEm,
       texto: typeof f.descricao === 'string' ? f.descricao.slice(0, 6000) : '',
+      ...(imagens.length ? { imagens } : {}),
       bruto: {
-        ...f,
+        ...resto,
         ...(corpo.exemplo === true ? { data: dataDoExemplo(f.data, agora) } : {}),
         produtora: { nome: nomeProdutora, instagram: p.instagram },
         ehFesta: true,

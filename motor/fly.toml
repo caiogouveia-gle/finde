@@ -2,12 +2,33 @@
 # com o sim do grupo, os passos estão no README (seção "No Fly").
 app = "finde-motor"
 primary_region = "gru"
+# O SIGTERM do deploy espera até 30 s: o Litestream fecha a réplica e o servidor
+# termina a execução do tempo 1 sem deixar o banco no meio (inicio.sh).
+kill_timeout = 30
 
 [build]
   # ./Dockerfile
 
+# UMA máquina só: o banco é SQLite num volume e a agenda de coletas roda dentro
+# do servidor; duas máquinas coletariam em dobro e gastariam em dobro. Criar com
+# `fly deploy --ha=false` e conferir com `fly machine list` (README, "No Fly").
 [env]
   FINDE_HORARIOS = "padrao"
+  # Prova acadêmica (D1, KTD18): liga o Instagram e as páginas na agenda, com os
+  # tetos atuais (Claude US$ 0,50 por execução e US$ 2,00 por dia; Apify US$ 0,25
+  # e 0,25). SAI DAQUI DEPOIS DE 07/12/2026 (D13).
+  FINDE_POC = "1"
+  # As imagens de divulgação moram no volume; o Litestream copia só o banco, e a
+  # perda delas com o volume fica aceita: o próximo ciclo baixa de novo as que
+  # têm endereço de origem (a linha sem arquivo não conta como conhecida), e o
+  # flyer do Instagram volta quando o post é lido de novo.
+  FINDE_IMAGENS = "/data/imagens"
+  # A lista privada de perfis do Instagram é enviada ao volume com
+  # `fly ssh sftp` (README, "No Fly"); fica fora da imagem (.dockerignore).
+  FINDE_INSTAGRAM_PERFIS = "/data/entrada/contatos.json"
+  # As correções da curadoria em lote, também no volume (opcional): sem o
+  # arquivo, a curadoria segue pelos comandos corrigir e ocultar.
+  FINDE_CURADORIA_LOTE = "/data/entrada/curadoria.json"
 
 [http_service]
   internal_port = 8080
