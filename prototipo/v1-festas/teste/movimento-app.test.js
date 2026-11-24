@@ -240,8 +240,9 @@ test('verif2: a aba Hoje vazia sai da linha das abas; casa · bairro · preço v
   assert.match(abas, /\.filter\(\(x\) => !\(x\.id === 'hoje' && x\.reais === 0 && c\.dia !== 'hoje'\)\)/);
   assert.doesNotMatch(APP, /el\('p', \{ class: '(capa|chamada)-onde' \}, ondeDe\(o\)\)/);
   assert.match(APP, /return partes\.length \? el\('p', \{ class: classe \}, partes\) : null;/);
-  // "a confirmar" numa linha só, na coluna de 64 px de todas as linhas.
-  assert.match(CSS, /\.linha \.hora-incerta \{ font-size: 13px; white-space: nowrap; \}/);
+  // "a confirmar" em 15 px, que quebra em duas linhas na coluna de 64 px
+  // (24/11/2026: 13 px em itálico serifado não se lia).
+  assert.doesNotMatch(CSS, /\.linha \.hora-incerta \{ font-size: 13px/);
   assert.match(CSS, /\.linha \{ position: relative; display: grid; grid-template-columns: 64px /);
   assert.match(CSS, /\.linha--sem-miniatura \{ grid-template-columns: 64px /);
 });

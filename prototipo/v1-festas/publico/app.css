@@ -305,7 +305,7 @@ button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
-  letter-spacing: .14em;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--rotulo);
 }
@@ -317,10 +317,10 @@ button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action
   text-wrap: balance;
 }
 .titulo em { font-style: italic; letter-spacing: inherit; }
-.titulo--abre { font-size: clamp(48px, 13.6vw, 56px); line-height: .98; letter-spacing: -.008em; word-spacing: .04em; }
-.titulo--pergunta { font-size: 44px; line-height: 1; letter-spacing: -.006em; word-spacing: .05em; }
-.titulo--resultado { font-size: 40px; line-height: 1.02; letter-spacing: -.005em; word-spacing: .04em; }
-.titulo--secao { font-size: 28px; line-height: 1.05; letter-spacing: -.004em; word-spacing: .04em; }
+.titulo--abre { font-size: clamp(48px, 13.6vw, 56px); line-height: 1.04; letter-spacing: 0; word-spacing: .05em; }
+.titulo--pergunta { font-size: 44px; line-height: 1.06; letter-spacing: 0; word-spacing: .05em; }
+.titulo--resultado { font-size: 40px; line-height: 1.08; letter-spacing: 0; word-spacing: .05em; }
+.titulo--secao { font-size: 28px; line-height: 1.12; letter-spacing: 0; word-spacing: .05em; }
 
 .fio { width: 36px; height: 0; margin: 0; border: 0; border-top: .5px solid var(--fio); }
 
@@ -364,7 +364,7 @@ button, a, label, input { -webkit-tap-highlight-color: transparent; touch-action
   border: 0;
   color: var(--rotulo);
   font: 500 12px/1 var(--sans);
-  letter-spacing: .14em;
+  letter-spacing: .16em;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -441,7 +441,7 @@ p.carregando {
   margin: auto 0;
   font-size: 12px;
   font-weight: 500;
-  letter-spacing: .14em;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--rotulo);
 }
@@ -635,7 +635,7 @@ p.carregando {
   align-self: flex-start;
   padding: 2px 5px 1px;
   border: .5px solid var(--tinta);
-  font-size: 10px; font-weight: 500; line-height: 1.35; letter-spacing: .14em; text-transform: uppercase;
+  font-size: 12px; font-weight: 500; line-height: 1.35; letter-spacing: .16em; text-transform: uppercase;
   color: var(--tinta);
   white-space: nowrap;
 }
@@ -651,7 +651,7 @@ p.carregando {
 /* Quem e onde (R6): o cartaz em miniatura ao lado do nome, da produtora e
    da casa; depois a frase do curador e o endereço com o mapa. */
 .cartaz { display: block; width: 96px; height: 120px; object-fit: cover; background: var(--fio-off); color: var(--tinta); font-size: 12px; }
-.cartaz--ausente { display: flex; align-items: flex-end; padding: var(--e2); font-family: var(--serifa); font-size: 15px; line-height: 1.05; overflow: hidden; }
+.cartaz--ausente { display: flex; align-items: flex-end; padding: var(--e2); font-family: var(--serifa); font-size: 15px; line-height: 1.1; overflow: hidden; }
 /* Tab no detalhe: o foco nunca fica escondido sob a barra fixa. */
 :root:has(body[data-tela="festa"]) { scroll-padding-bottom: calc(var(--barra) + var(--e4)); }
 .ficha-texto { display: flex; flex-direction: column; gap: var(--e1); min-width: 0; }
@@ -731,7 +731,7 @@ h2.secao-rotulo { margin: 0; }
 .barra-comprar-rotulo .seta { transition: transform 160ms var(--curva); }
 .barra-comprar:active { opacity: .85; }
 .barra-preco-valor { font-family: var(--serifa); font-size: 26px; line-height: 1; color: var(--tinta); white-space: nowrap; }
-.barra-preco-rotulo { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
+.barra-preco-rotulo { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
 @media (hover: hover) and (pointer: fine) {
   .barra-comprar:hover .barra-comprar-rotulo { border-bottom-color: var(--tinta); }
   .barra-comprar:hover .seta { transform: translateX(3px); }
@@ -781,7 +781,7 @@ h2.secao-rotulo { margin: 0; }
 
 /* Esta semana / A próxima: dois botões pequenos acima das opções. */
 .semanas { display: flex; gap: var(--e5); margin-top: var(--e5); }
-.semana { position: relative; min-height: 44px; padding: 0; border: 0; background: none; color: var(--rotulo); font: 500 12px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.semana { position: relative; min-height: 44px; padding: 0; border: 0; background: none; color: var(--rotulo); font: 500 12px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; cursor: pointer; }
 .semana[aria-pressed="true"] { color: var(--tinta); }
 .semana[aria-pressed="true"]::after { content: ''; position: absolute; left: 0; right: .14em; bottom: 10px; border-top: 1px solid var(--tinta); }
 .semanas + .opcoes { margin-top: var(--e2); }
@@ -796,16 +796,16 @@ h2.secao-rotulo { margin: 0; }
 
 .guia-cabeca { display: flex; flex-direction: column; }
 /* A edição entre dois fios (pseudo-elementos, para se desenharem por scaleX). */
-.edicao { position: relative; display: flex; justify-content: space-between; gap: var(--e2); margin-top: var(--e2); padding: 7px 0 6px; font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta); }
+.edicao { position: relative; display: flex; justify-content: space-between; gap: var(--e2); margin-top: var(--e2); padding: 7px 0 6px; font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--tinta); }
 .edicao::before, .edicao::after { content: ''; position: absolute; left: 0; right: 0; border-top: .5px solid var(--tinta); transform-origin: 0 50%; }
 .edicao::before { top: 0; }
 .edicao::after { bottom: 0; }
 .edicao span:nth-child(2) { color: var(--rotulo); }
 .guia-cabeca .base-viva { margin-top: var(--e2); }
-.topo .link--volta { font-size: 14px; color: var(--rotulo); border-bottom: 0; }
+.topo .link--volta { font-size: 15px; color: var(--rotulo); border-bottom: 0; }
 
 .guia-titulo { display: flex; flex-direction: column; gap: var(--e3); padding: var(--e6) 0 var(--e4); }
-.guia-titulo .pedido { margin: -4px 0; }
+.guia-titulo .pedido { margin: var(--e1) 0 calc(-1 * var(--e1)); }
 /* A linha única sem média (D3) e o aviso da lista: o traço rosé à esquerda. */
 .sem-media, .aviso-lista { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
 .sem-media::before, .aviso-lista::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
@@ -816,7 +816,7 @@ h2.secao-rotulo { margin: 0; }
 .abas { position: relative; display: flex; gap: 22px; flex: 1; overflow-x: auto; scrollbar-width: none; margin-bottom: -.5px; }
 .abas::-webkit-scrollbar { display: none; }
 .aba { flex: none; display: inline-flex; align-items: baseline; gap: 5px; min-height: 44px; padding: 10px 0 8px; border: 0; background: none; color: var(--rotulo); font: 400 20px/1 var(--serifa); cursor: pointer; }
-.aba sup { position: relative; top: -.5em; font: 500 11px/1 var(--sans); letter-spacing: .04em; vertical-align: baseline; }
+.aba sup { position: relative; top: -.5em; font: 500 12px/1 var(--sans); letter-spacing: .04em; vertical-align: baseline; }
 .aba[aria-pressed="true"] { color: var(--tinta); }
 .aba--vazia:not([aria-pressed="true"]) .aba-nome { opacity: .55; }
 .aba:focus-visible { outline-offset: -2px; }
@@ -840,17 +840,17 @@ h2.secao-rotulo { margin: 0; }
 .capa-fundo { position: absolute; inset: -48px; width: calc(100% + 96px); height: calc(100% + 96px); max-width: none; object-fit: cover; filter: blur(22px) saturate(1.15); transform: scale(1.06); }
 .capa-dentro { display: flex; flex-direction: column; padding: var(--e4) var(--lateral) var(--e5); }
 .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; }
-.etiqueta { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px; background: var(--vidro); border: .5px solid var(--vidro-fio); font-size: 12px; font-weight: 500; letter-spacing: .06em; color: var(--capa-tinta); }
+.etiqueta { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 8px; background: var(--vidro); border: .5px solid var(--vidro-fio); font-size: 12px; font-weight: 500; letter-spacing: .02em; color: var(--capa-tinta); }
 .etiqueta--cara { margin-left: auto; }
 /* Sem foto, o vidro não tem o que filtrar: a etiqueta fica um selo de fio. */
 .capa:not(:has(.capa-foto)) .etiqueta { background: transparent; border-color: rgb(243 235 227 / .55); }
 .capa .marca-exemplo { border-color: var(--capa-tinta); color: var(--capa-tinta); }
-.capa-quando { margin-top: 40px; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: var(--e3); }
+.capa-quando { margin-top: var(--e7); display: flex; align-items: baseline; flex-wrap: wrap; column-gap: var(--e3); }
 .capa-quando .hora { font-family: var(--serifa); font-size: 64px; line-height: .9; letter-spacing: 0; }
 .capa-quando .hora-incerta { font: italic 400 32px/1 var(--serifa); color: var(--capa-corrido); }
-.capa-dia { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--capa-corrido); }
-.capa-nome { margin-top: var(--e2); width: fit-content; max-width: 100%; font: 400 40px/1 var(--serifa); letter-spacing: -.005em; text-wrap: balance; overflow-wrap: break-word; }
-.capa-onde { margin-top: var(--e2); font-size: 14px; line-height: 1.45; color: var(--capa-corrido); }
+.capa-dia { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--capa-corrido); }
+.capa-nome { margin-top: var(--e2); width: fit-content; max-width: 100%; font: 400 40px/1.08 var(--serifa); letter-spacing: 0; word-spacing: .05em; text-wrap: balance; overflow-wrap: break-word; }
+.capa-onde { margin-top: var(--e2); font-size: 15px; line-height: 1.45; color: var(--capa-corrido); }
 .capa-onde b { font-weight: 500; color: var(--capa-tinta); }
 .capa .porque { margin-top: var(--e3); padding-top: var(--e3); border-top: .5px solid var(--vidro-fio); color: var(--capa-corrido); }
 .capa .porque b { color: var(--capa-tinta); }
@@ -863,28 +863,28 @@ h2.secao-rotulo { margin: 0; }
 .regua-trilho { position: absolute; left: 0; right: 0; top: 19px; border-top: .5px solid currentColor; opacity: .45; }
 .regua-festa { position: absolute; left: 0; right: 0; top: 18px; height: 3px; background: currentColor; transform-origin: 0 50%; }
 .regua-pico { position: absolute; top: 15.5px; width: 8px; height: 8px; margin-left: -4px; background: currentColor; }
-.regua-rot { position: absolute; top: 0; font-size: 11px; font-weight: 500; line-height: 14px; white-space: nowrap; }
+.regua-rot { position: absolute; top: 0; font-size: 12px; font-weight: 500; line-height: 14px; white-space: nowrap; }
 .regua-rot--fim { right: 0; }
 .regua-rot--meio { transform: translateX(-50%); }
 
 /* O porquê de cada cartão (R26): o que cabe na tinta, o que falta numa
    linha honesta. Vem de partesDoPorque. */
-.porque { font-size: 13px; line-height: 1.5; color: var(--rotulo); text-wrap: pretty; }
+.porque { font-size: 13px; line-height: 1.45; color: var(--rotulo); text-wrap: pretty; }
 .porque b { font-weight: 400; color: var(--tinta); }
 
 /* ---------------------------------------------------------------- as chamadas */
 
 /* Chamadas 2 e 3: tipográficas, como a programação. */
 .chamadas { border-top: .5px solid var(--tinta); margin-top: var(--e5); }
-.chamada { position: relative; display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: var(--e4); padding: var(--e4) 0 var(--e5); border-bottom: .5px solid var(--fio); text-decoration: none; color: inherit; }
+.chamada { position: relative; display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: var(--e4); padding: var(--e4) 0; border-bottom: .5px solid var(--fio); text-decoration: none; color: inherit; }
 .chamada:last-child { border-bottom-color: var(--tinta); }
 .chamada .hora, .linha .hora { font-family: var(--serifa); line-height: 1; letter-spacing: 0; color: var(--tinta); white-space: nowrap; }
 .chamada .hora { font-size: 32px; }
-.chamada-nome { width: fit-content; max-width: 100%; font: 400 22px/1.1 var(--serifa); color: var(--tinta); text-wrap: pretty; overflow-wrap: break-word; }
-.chamada-onde { margin-top: var(--e1); font-size: 13px; line-height: 1.4; color: var(--rotulo); }
+.chamada-nome { width: fit-content; max-width: 100%; font: 400 26px/1.12 var(--serifa); word-spacing: .05em; color: var(--tinta); text-wrap: pretty; overflow-wrap: break-word; }
+.chamada-onde { margin-top: var(--e1); font-size: 13px; line-height: 1.45; color: var(--rotulo); }
 .chamada-onde b { font-weight: 400; color: var(--tinta); }
-.chamada .porque { margin-top: 6px; }
-.pct { display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
+.chamada .porque { margin-top: var(--e1); }
+.pct { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
 .chamada:focus-visible, .linha:focus-visible { outline: 1.5px solid var(--foco); outline-offset: 2px; }
 .chamada:active > *, .linha:active > * { opacity: .72; }
 .hora-incerta { font-size: 18px; color: var(--rotulo); }
@@ -893,7 +893,6 @@ h2.secao-rotulo { margin: 0; }
    nenhuma regra ".x .hora" (24 px na linha, 27 px na chamada a 320) chega a
    ele. Duas linhas equilibradas, sem a versal que estourava a coluna. */
 .chamada .hora-incerta, .linha .hora-incerta { display: block; padding-top: 6px; font: italic 400 15px/1.15 var(--serifa); letter-spacing: 0; text-transform: none; white-space: normal; text-wrap: balance; hyphens: none; color: var(--rotulo); }
-.linha .hora-incerta { font-size: 13px; white-space: nowrap; }
 
 .mais { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: var(--e5); padding-top: var(--e4); }
 .mais .link .seta { transition: transform var(--mov-toque) var(--mov-saida); }
@@ -910,7 +909,7 @@ h2.secao-rotulo { margin: 0; }
 .todas-cabeca { padding-bottom: var(--e3); }
 .filtros { display: flex; flex-direction: column; gap: var(--e3); padding-bottom: var(--e4); }
 .filtros .zona { display: grid; grid-template-columns: 64px minmax(0, 1fr); column-gap: var(--e3); align-items: baseline; }
-.filtros .zona .rotulo { font-size: 11px; padding-top: 12px; }
+.filtros .zona .rotulo { font-size: 12px; padding-top: 12px; }
 .filtros .chips { column-gap: 18px; row-gap: 0; }
 .filtros .chip { font-size: 15px; }
 .filtros .sem-dado { flex-basis: 100%; font-size: 13px; line-height: 1.4; color: var(--rotulo); padding-bottom: var(--e1); }
@@ -918,24 +917,24 @@ h2.secao-rotulo { margin: 0; }
 .linhas:empty { display: none; }
 .linha { position: relative; display: grid; grid-template-columns: 64px minmax(0, 1fr) 40px; column-gap: var(--e3); align-items: start; padding: var(--e3) 0; border-bottom: .5px solid var(--fio); text-decoration: none; color: inherit; }
 .linha .hora { font-size: 24px; }
-.linha-nome { font: 400 19px/1.1 var(--serifa); color: var(--tinta); overflow-wrap: break-word; }
-.linha-onde { margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--rotulo); }
-.linha-aviso { margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--tinta); }
+.linha-nome { font: 500 16px/1.35 var(--sans); letter-spacing: 0; color: var(--tinta); overflow-wrap: break-word; }
+.linha-onde { margin-top: var(--e1); font-size: 13px; line-height: 1.45; color: var(--rotulo); }
+.linha-aviso { margin-top: var(--e1); font-size: 13px; line-height: 1.45; color: var(--tinta); }
 /* A coluna das horas tem 64 px em todas as linhas: "a confirmar" cabe numa
    linha só (nowrap), e as horas seguem alinhadas entre as linhas. */
 .linha--sem-miniatura { grid-template-columns: 64px minmax(0, 1fr); }
 .linha--marcada { background: color-mix(in srgb, var(--fio-off) 45%, transparent); }
 .linha--marcada .linha-nome { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.linha-esgotou { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta); }
+.linha-esgotou { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--tinta); }
 /* A miniatura do cartaz (só em "ver todas"): retrato preenche; paisagem
    cabe inteira sobre o fio apagado. */
 .mini { display: block; width: 40px; height: 50px; object-fit: cover; background: var(--fio-off); }
 .mini--paisagem { object-fit: cover; }
 .bloco-guia { display: flex; justify-content: space-between; align-items: baseline; padding: var(--e6) 0 var(--e2); }
-.exemplo { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta); }
+.exemplo { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--tinta); }
 .exemplo::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border: 1px solid var(--tinta); vertical-align: 1px; }
 .mapa-linha { display: flex; justify-content: space-between; align-items: center; padding: var(--e2) 0 var(--e3); }
-.mapa-linha .rotulo { font-size: 11px; }
+.mapa-linha .rotulo { font-size: 12px; }
 .mapa-linha .link { font-size: 14px; border-bottom: 0; }
 /* O lugar do mapa da lista (o mapa.js desenha dentro): de borda a borda. */
 .mapa-lugar { margin: var(--e3) calc(-1 * var(--lateral)) 0; }
@@ -945,10 +944,10 @@ h2.secao-rotulo { margin: 0; }
 
 /* ---------------------------------------------------------------- o detalhe */
 
-.topo--detalhe .link--volta { font-size: 14px; color: var(--rotulo); border-bottom: 0; }
+.topo--detalhe .link--volta { font-size: 15px; color: var(--rotulo); border-bottom: 0; }
 .capa--detalhe { margin-top: 0; cursor: default; }
 .capa--detalhe .capa-dentro { padding-top: var(--e5); }
-.capa--detalhe .capa-quando { margin-top: 2px; }
+.capa--detalhe .capa-quando { margin-top: var(--e2); }
 .capa--detalhe .capa-quando .hora { font-size: 72px; }
 .capa--detalhe .regua { margin-top: var(--e4); }
 .capa .ficha { display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e4); align-items: end; margin-top: var(--e5); }
@@ -957,20 +956,20 @@ h2.secao-rotulo { margin: 0; }
 .cartaz-botao:focus-visible { outline: 1.5px solid var(--capa-tinta); outline-offset: 3px; }
 .cartaz-botao .cartaz { width: 96px; height: 120px; }
 .cartaz--paisagem { object-fit: cover; }
-.ficha-nome { width: fit-content; max-width: 100%; font: 400 40px/1 var(--serifa); letter-spacing: -.005em; color: var(--capa-tinta); text-wrap: balance; overflow-wrap: anywhere; }
-.ficha-casa { margin-top: var(--e2); font-size: 14px; line-height: 1.4; color: var(--capa-corrido); }
-.ficha-credito { margin-top: var(--e3); font-size: 11px; line-height: 1.4; color: var(--capa-corrido); }
+.ficha-nome { width: fit-content; max-width: 100%; font: 400 32px/1.1 var(--serifa); letter-spacing: 0; word-spacing: .05em; color: var(--capa-tinta); text-wrap: balance; overflow-wrap: anywhere; }
+.ficha-casa { margin-top: var(--e2); font-size: 15px; line-height: 1.45; color: var(--capa-corrido); }
+.ficha-credito { margin-top: var(--e3); font-size: 12px; line-height: 1.4; color: var(--capa-corrido); }
 .tela-festa .secao { border-top: .5px solid var(--fio); }
 .tela-festa .capa + .secao { border-top: 0; }
 .secao .apoio { max-width: 38ch; }
 
 .cara-pct { display: flex; align-items: baseline; gap: var(--e2); margin: 0; }
-.cara-pct .rotulo { font-size: 11px; }
+.cara-pct .rotulo { font-size: 12px; }
 .cara-num { font: 400 30px/1 var(--serifa); color: var(--tinta); }
 .cara-peso { font-size: 13px; line-height: 1.45; color: var(--corrido); text-wrap: pretty; }
 .cara-partes { display: flex; flex-direction: column; gap: 10px; }
 .cara-linha { display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: var(--e3); align-items: baseline; }
-.cara-rotulo { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
+.cara-rotulo { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
 .cara-texto { font-size: 14px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
 .cara-linha--nao .cara-texto { color: var(--corrido); }
 .cara-linha--sem-dado .cara-texto { color: var(--rotulo); }
@@ -996,17 +995,17 @@ h2.secao-rotulo { margin: 0; }
 .juncao-frase { font-size: 14px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
 .par-imagens { display: flex; gap: 6px; }
 .par-imagens figure { display: flex; flex-direction: column; gap: 4px; margin: 0; }
-.par-imagens figcaption { font-size: 10px; letter-spacing: .06em; color: var(--rotulo); }
+.par-imagens figcaption { font-size: 12px; letter-spacing: 0; color: var(--rotulo); }
 
 /* De onde vem (pé): uma linha por campo; a divergência numa frase. */
-.de-onde { display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: var(--e3); row-gap: 6px; margin: 0; font-size: 13px; line-height: 1.45; }
-.de-onde dt { padding-top: 2px; font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
+.de-onde { display: grid; grid-template-columns: 72px minmax(0, 1fr); column-gap: var(--e3); row-gap: var(--e2); margin: 0; font-size: 13px; line-height: 1.45; }
+.de-onde dt { padding-top: 2px; font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
 .de-onde { align-items: baseline; }
 .de-onde-junto { font-size: 13px; line-height: 1.45; color: var(--corrido); text-wrap: pretty; }
 .de-onde dd { margin: 0; color: var(--corrido); }
 .divergencia { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
 .divergencia::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
-.vazios { padding: var(--e4) 0 var(--e2); border-top: .5px solid var(--fio-off); font-size: 13px; line-height: 1.45; color: var(--rotulo); }
+.vazios { padding: var(--e5) 0; border-top: .5px solid var(--fio-off); font-size: 13px; line-height: 1.45; color: var(--rotulo); }
 .ingresso-velho { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--tinta); }
 .ingresso-velho::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
 .status-curto { font-size: 13px; line-height: 1.5; color: var(--rotulo); }
@@ -1018,7 +1017,7 @@ h2.secao-rotulo { margin: 0; }
 .peca img { place-self: center; max-width: calc(100% - 32px); max-height: calc(100dvh - 160px); object-fit: contain; }
 .peca-pe { display: flex; justify-content: space-between; align-items: center; gap: var(--e4); padding: var(--e3) var(--lateral) max(var(--e5), env(safe-area-inset-bottom)); border-top: .5px solid rgb(243 235 227 / .3); font-size: 13px; line-height: 1.45; }
 .peca-pe a { color: var(--nude-claro); text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 4px; text-decoration-color: var(--rose); }
-.peca-fechar { min-height: 44px; padding: 0; border: 0; background: none; color: var(--nude-claro); font: 500 12px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+.peca-fechar { min-height: 44px; padding: 0; border: 0; background: none; color: var(--nude-claro); font: 500 12px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; cursor: pointer; }
 .peca-fechar:focus-visible { outline-color: var(--nude-claro); }
 
 /* No desktop o detalhe usa o lado esquerdo para o flyer inteiro, nítido, no
@@ -1046,7 +1045,6 @@ h2.secao-rotulo { margin: 0; }
   .chamada { grid-template-columns: 64px minmax(0, 1fr); column-gap: var(--e3); }
   .chamada .hora { font-size: 27px; }
   /* Na coluna de 64 px, "a confirmar" fica numa linha, como na de "ver todas". */
-  .chamada .hora-incerta { font-size: 13px; white-space: nowrap; }
 }
 
 /* ---------------------------------------------------------------- ajuste */
@@ -1139,20 +1137,20 @@ h2.secao-rotulo { margin: 0; }
 }
 .painel-convite .marca { font-size: 36px; align-self: flex-start; }
 /* "Convite de <nome>": um nome de 24 letras sem espaço quebra dentro do painel. */
-.painel-rotulo { padding-top: var(--e2); font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); overflow-wrap: anywhere; }
+.painel-rotulo { padding-top: var(--e2); font-size: 12px; font-weight: 500; line-height: 1.4; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); overflow-wrap: anywhere; }
 /* Festa fictícia no convite: a marca de exemplo logo abaixo do rótulo. */
 .painel-exemplo { margin: 0; display: flex; }
-.painel-titulo { font: 400 36px/1 var(--serifa); letter-spacing: -.005em; color: var(--tinta); text-wrap: balance; }
+.painel-titulo { font: 400 36px/1.08 var(--serifa); letter-spacing: 0; word-spacing: .05em; color: var(--tinta); text-wrap: balance; }
 .painel-titulo em { font-style: italic; }
 .painel-quando { display: flex; flex-direction: column; gap: 6px; margin-top: var(--e2); padding-top: 14px; border-top: .5px solid var(--fio-off); }
 .painel-hora { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 10px; row-gap: var(--e1); }
 .painel-hora .hora { font-family: var(--serifa); font-size: 52px; line-height: 1; letter-spacing: 0; color: var(--tinta); }
-.painel-media { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
-.painel-origem { font-size: 12px; line-height: 1.4; color: var(--rotulo); }
+.painel-media { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
+.painel-origem { font-size: 13px; line-height: 1.45; color: var(--rotulo); }
 .painel-nome { margin-top: var(--e3); font: 400 26px/1.05 var(--serifa); letter-spacing: 0; color: var(--tinta); text-wrap: balance; overflow-wrap: break-word; }
 /* O convite que passou é registro: o nome da festa no lugar de "Bora…?". */
-.painel-nome--registro { margin-top: var(--e1); font-size: 34px; line-height: 1; }
-.painel-onde { font-size: 12px; line-height: 1.45; color: var(--corrido); }
+.painel-nome--registro { margin-top: var(--e1); font-size: 34px; line-height: 1.08; }
+.painel-onde { font-size: 13px; line-height: 1.45; color: var(--corrido); }
 .painel-horario { font-size: 13px; line-height: 1.5; color: var(--tinta); text-wrap: pretty; }
 .painel-convite > .marca + .painel-rotulo { margin-top: 0; }
 
