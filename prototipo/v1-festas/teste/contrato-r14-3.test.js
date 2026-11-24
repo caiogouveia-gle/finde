@@ -169,3 +169,15 @@ test('/3: o export atual reexportado em /3 aceita o que o /2 aceitava, e mais', 
     fs.rmSync(pasta, { recursive: true, force: true });
   }
 });
+
+test('/3: título de plataforma com mais de 80 caracteres entra encurtado, sem perder a festa', () => {
+  const comSeparador = R.converterRegistro(copia(COMPLETO, { nome: 'Noite Exemplo APRESENTA: DJ Fictício @ Casa Exemplo | Domingo 13.12 (ATRAÇÃO Internacional' }));
+  assert.ok(comSeparador.festa, comSeparador.motivo);
+  assert.equal(comSeparador.festa.nome, 'Noite Exemplo APRESENTA: DJ Fictício @ Casa Exemplo');
+  const semSeparador = R.converterRegistro(copia(COMPLETO, { nome: 'Fulano e convidados numa festa de domingo à tarde com vivências de conexão e paz interior no jardim' }));
+  assert.ok(semSeparador.festa, semSeparador.motivo);
+  assert.ok(semSeparador.festa.nome.length <= 80);
+  assert.ok(semSeparador.festa.nome.endsWith('…'));
+  assert.ok(!/\s…$/.test(semSeparador.festa.nome));
+  assert.equal(R.converterRegistro(copia(COMPLETO, { nome: '   ' })).motivo, 'sem nome');
+});

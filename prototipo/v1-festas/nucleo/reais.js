@@ -39,6 +39,26 @@ const DIA_CURTO = C.DIAS_DA_SEMANA;
 const objeto = (v) => Boolean(v) && typeof v === 'object' && !Array.isArray(v);
 const texto = (v, max = 200) => (typeof v === 'string' && v.trim() !== '' && v.length <= max ? v.trim() : null);
 const numero = (v) => typeof v === 'number' && Number.isFinite(v);
+
+// O nome da festa cabe em 80 caracteres. Título de plataforma passa disso
+// ("Soirée APRESENTA: Fulano @ Casa | Domingo 13.12 (ATRAÇÃO ..."): fica a parte
+// antes do primeiro separador, se ela diz alguma coisa; senão, o corte na
+// última palavra inteira, com reticências. Recusar a festa inteira por causa do
+// título comprido tirava do app festa boa de sábado.
+const SEPARADORES_DE_TITULO = [' | ', ' – ', ' — ', ' - ', ' · ', ' (', ': '];
+function nomeCurto(v) {
+  if (typeof v !== 'string') return null;
+  const n = v.replace(/\s+/g, ' ').trim();
+  if (!n) return null;
+  if (n.length <= 80) return n;
+  for (const sep of SEPARADORES_DE_TITULO) {
+    const i = n.indexOf(sep);
+    if (i >= 8 && i <= 80) return n.slice(0, i).replace(/[\s,;:.\-–—·|]+$/, '');
+  }
+  const corte = n.slice(0, 79);
+  const espaco = corte.lastIndexOf(' ');
+  return `${(espaco >= 40 ? corte.slice(0, espaco) : corte).replace(/[\s,;:.\-–—·|]+$/, '')}…`;
+}
 const https = (v) => {
   if (typeof v !== 'string' || v.length > 600) return null;
   try {
@@ -326,7 +346,7 @@ function converterRegistro(r, contexto = {}) {
   if (r.ehFesta === false) return { motivo: 'não é festa' };
   if (r.exemplo === true) return { motivo: 'exemplo do motor' };
   if (r.oculta === true || objeto(r.oculta)) return { motivo: 'oculta pela curadoria' };
-  const nome = texto(r.nome, 80);
+  const nome = nomeCurto(r.nome);
   if (!nome) return { motivo: 'sem nome' };
   const dataDaFonte = typeof r.data === 'string' && DATA.test(r.data) && !Number.isNaN(Date.parse(`${r.data}T12:00:00Z`)) ? r.data : null;
   if (!dataDaFonte) return { motivo: 'sem data' };
