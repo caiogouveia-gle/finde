@@ -376,6 +376,14 @@ function dentroDe(pasta, arquivo) {
 // Cada imagem do item é { caminho?, url?, papel, origem, credito, leitura }: o
 // caminho é de um temporário que a fonte já deixou em <dir>/tmp; sem ele, baixa
 // da `url`. Uma imagem ruim vira aviso e não derruba as outras.
+function hostDaImagem(u) {
+  try {
+    return new URL(u).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
 async function processarPendentes(db, pendentes, ctx = {}) {
   const { fetch: fetchCtx, agora = () => new Date(), log, config = {}, dir, batimento, resolver, uv, offline } = ctx;
   const r = { processadas: 0, guardadas: 0, conhecidas: 0, recusadas: 0, passadas: 0, pendentes: (pendentes || []).length, avisos: [] };
@@ -393,6 +401,7 @@ async function processarPendentes(db, pendentes, ctx = {}) {
   const quando = agora().toISOString();
   const fila = [];
   const pastaTmp = path.join(dir, 'tmp');
+  const hostsRecusados = new Map(); // host -> imagens que deixaram de ser pedidas
 
   for (const pend of pendentes || []) {
     const { fonte, idExterno, festaId } = pend;
@@ -420,11 +429,21 @@ async function processarPendentes(db, pendentes, ctx = {}) {
       }
       let caminho = im.caminho || null;
       if (!caminho && urlOrigem) {
+        // Host de imagem que respondeu 429 ou 503 nesta execução não recebe
+        // outro pedido até a próxima (D14). 403 não trava: no CDN do Instagram
+        // é a URL assinada que venceu, não recusa do host.
+        const hostImg = hostDaImagem(urlOrigem);
+        if (hostImg && hostsRecusados.has(hostImg)) {
+          hostsRecusados.set(hostImg, hostsRecusados.get(hostImg) + 1);
+          r.recusadas += 1;
+          continue;
+        }
         const b = await baixarOuMotivo(urlOrigem, { fetch: fetchCtx, hosts, livre: LIVRES.has(im.papel), dir, resolver, limiteBytes: config.limiteBytes });
         bater();
         if (!b.ok) {
           r.recusadas += 1;
           avisar(`${urlOrigem}: ${b.motivo}`);
+          if (hostImg && /^status (429|503)$/.test(b.motivo) && !hostsRecusados.has(hostImg)) hostsRecusados.set(hostImg, 0);
           continue;
         }
         caminho = b.ok.caminho;
@@ -441,6 +460,9 @@ async function processarPendentes(db, pendentes, ctx = {}) {
       }
       fila.push({ dados, caminho });
     }
+  }
+  for (const [h, n] of hostsRecusados) {
+    if (n) avisar(`${h}: recusou o acesso; ${n} imagem(ns) deixaram de ser pedidas nesta execução (D14)`);
   }
 
   if (fila.length) {

@@ -256,3 +256,27 @@ test('extrair/3: o classificador desligado (classificar: false) não vai ao mode
   assert.equal(claude.pedidos.length, 0);
   assert.equal(cl.resumo().regras, 0);
 });
+
+test('classificar/4: o modelo vê o dia e o horário da festa (Quando), com a virada de dia', async () => {
+  const { linhaQuando: quando, SISTEMA, VERSAO_PROMPT } = require('../nucleo/classificar');
+  assert.equal(VERSAO_PROMPT, 'classificar/4');
+  assert.equal(quando({ data: '2026-12-05', inicio: '2026-12-05T20:00:00-03:00', fim: '2026-12-06T05:00:00-03:00' }), 'Quando: sábado, 05/12, das 20:00 às 05:00 (do dia seguinte)');
+  assert.equal(quando({ data: '2026-11-26', inicio: '2026-11-26T22:00:00-03:00' }), 'Quando: quinta, 26/11, a partir das 22:00');
+  assert.equal(quando({ inicio: '2026-11-27T21:00:00-03:00', fim: '2026-11-27T23:59:00-03:00' }), 'Quando: sexta, 27/11, das 21:00 às 23:59');
+  assert.equal(quando({}), '');
+  assert.equal(quando({ data: '2026-12-06', inicio: '2026-12-06T00:30:00-03:00' }), 'Quando: domingo, 06/12, a partir das 00:30 (madrugada)');
+  assert.match(SISTEMA, /começa entre 22:00 e 05:00/);
+  // A regra de horário não passa por cima dos casos false (revisão de 24/11).
+  assert.match(SISTEMA, /Não vale para os casos false acima \(concerto ou show sentado, sessão de escuta/);
+  assert.match(SISTEMA, /Roda de samba, pagode, forró/);
+});
+
+test('classificar/4: a linha Quando vai dentro de <evento> e muda o hash do cache', async () => {
+  const db = novoBanco();
+  const c = claudeFalso([BOA, BOA]);
+  const cl = criarClassificador({ db, claude: c, modelo: 'claude-haiku-5-5', agora: relogio(), log: logMudo });
+  await cl.classificar({ ...entrada(1), data: '2026-12-12', inicio: '2026-12-12T22:00:00-03:00', fim: '2026-12-13T04:30:00-03:00' });
+  assert.match(c.pedidos[0].messages[0].content, /<evento>[\s\S]*Quando: sábado, 12\/12, das 22:00 às 04:30 \(do dia seguinte\)[\s\S]*<\/evento>/);
+  await cl.classificar({ ...entrada(1), data: '2026-12-12', inicio: '2026-12-12T20:00:00-03:00' });
+  assert.equal(c.pedidos.length, 2, 'outro horário é outra entrada: não sai do cache');
+});

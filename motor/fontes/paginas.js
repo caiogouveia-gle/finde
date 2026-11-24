@@ -40,6 +40,13 @@ const MAX_TEXTO = 6000;
 const RECUSA = new Set([403, 429, 503]);
 const ESPERA_INGRESSE = 'script[type="application/ld+json"]';
 const IMAGEM_NA_FILA = /\.(?:jpe?g|png|webp|gif|svg)(?:[?#].*)?$/i;
+// A listagem da Sympla em SP tem ~30 páginas no bloco de festas e shows
+// (medido em 24/11/2026); o teto segura uma config errada.
+const MAX_PAGINAS_LISTAGEM = 30;
+// Quantos links uma agenda com `seguir` pode render por execução.
+const MAX_LINKS_AGENDA = 20;
+// Caminhos de busca e de perfil das plataformas não são página de evento.
+const CAMINHO_SEM_EVENTO = /^\/(?:search|busca|buscar|produtor|organizador|login|cadastro|ajuda|carrinho)(?:\/|$)/i;
 
 function hostDe(u) {
   try {
@@ -92,9 +99,12 @@ function planoDaUrl(u, config = {}) {
 // O worker abre o Chromium como neto do `uv`: por isso o filho nasce num grupo
 // próprio (detached) e o tempo-limite mata o grupo inteiro, sem esperar o
 // `close` (que só chegaria quando o último neto saísse).
-function lerPaginasPeloWorker(urls, { modo = 'dinamico', timeoutMs = 30000, pausaMs = 0, semRecursos = false, esperar = null, uv = process.env.UV || 'uv', limiteMs = null, aoLer = null } = {}) {
+function lerPaginasPeloWorker(urls, { modo = 'dinamico', timeoutMs = 30000, pausaMs = 0, semRecursos = false, esperar = null, uv = process.env.UV || 'uv', limiteMs = null, aoLer = null, travas = [] } = {}) {
   return new Promise((resolve) => {
-    const limite = limiteMs || (timeoutMs + pausaMs) * urls.length + 60000;
+    // No modo dinâmico cada URL abre um Chromium e soma a abertura, o goto e a
+    // espera do seletor: o limite reserva dois tempos e a partida por URL.
+    const porUrl = modo === 'dinamico' ? 2 * timeoutMs + 5000 : timeoutMs;
+    const limite = limiteMs || (porUrl + pausaMs) * urls.length + 60000;
     const env = envDoWorker();
     const filho = spawn(uv, ['run', '--project', PASTA_WORKER, 'python', path.join(PASTA_WORKER, 'ler.py')], { env, stdio: ['pipe', 'pipe', 'pipe'], detached: true });
     const linhas = [];
@@ -143,7 +153,7 @@ function lerPaginasPeloWorker(urls, { modo = 'dinamico', timeoutMs = 30000, paus
     });
     filho.on('close', (codigo) => terminar(codigo));
     filho.stdin.on('error', () => {});
-    filho.stdin.end(JSON.stringify({ urls, modo, timeoutMs, pausaMs, semRecursos, esperar }));
+    filho.stdin.end(JSON.stringify({ urls, modo, timeoutMs, pausaMs, semRecursos, esperar, travas }));
   });
 }
 
@@ -524,6 +534,73 @@ function urlsDaConfig(config, fila) {
   return [...alvos];
 }
 
+// Os links de evento que a página de uma casa aponta, só dos hosts da config
+// (sem imagem, busca nem perfil), sem repetir e até `maxLinks` (MAX_LINKS_AGENDA).
+// Data DDMMAA no fim do link ("/moving261126/", como a D-Edge publica): a festa
+// que já passou nem é aberta. Só seis dígitos depois de um não dígito; um id
+// numérico mais longo (a Sympla tem sete) não conta.
+function dataDoLink(u) {
+  let caminho = '';
+  try {
+    caminho = new URL(u).pathname;
+  } catch {
+    return null;
+  }
+  const m = caminho.match(/(?:^|\D)(\d{2})(\d{2})(\d{2})\/?$/);
+  if (!m) return null;
+  const [dd, mm, aa] = [Number(m[1]), Number(m[2]), 2000 + Number(m[3])];
+  // Só vale como data se o dia existe no mês e o ano está perto de hoje: um
+  // AAMMDD (261205) ou um id de seis dígitos não descarta link em silêncio.
+  const d = new Date(Date.UTC(aa, mm - 1, dd));
+  if (d.getUTCFullYear() !== aa || d.getUTCMonth() !== mm - 1 || d.getUTCDate() !== dd) return null;
+  const anoAgora = new Date().getUTCFullYear();
+  if (aa < anoAgora - 1 || aa > anoAgora + 1) return null;
+  return `${aa}-${m[2]}-${m[1]}`;
+}
+
+// A chave para não ler duas vezes o mesmo evento: sem www, sem barra final e
+// sem parâmetro de rastreio. Só para comparar; o pedido usa o link como veio.
+function chaveDeLink(u) {
+  const limpo = semCodigo(u);
+  if (!limpo) return null;
+  try {
+    const x = new URL(limpo);
+    return `${x.hostname.replace(/^www\./, '').toLowerCase()}${x.pathname.replace(/\/+$/, '') || '/'}${x.search}`;
+  } catch {
+    return limpo;
+  }
+}
+
+function linksDaAgenda(pagina, config, agenda = {}, hoje = null) {
+  const hosts = (config.hosts && config.hosts.length ? config.hosts : HOSTS_PADRAO).map((h) => h.toLowerCase().replace(/^www\./, ''));
+  const proprio = hostDe(pagina.final || pagina.url);
+  const pedido = agenda && Number.isFinite(agenda.maxLinks) ? agenda.maxLinks : MAX_LINKS_AGENDA;
+  const max = Math.max(0, Math.min(pedido, 50));
+  const vistos = new Map(); // chave -> link
+  if (!max) return [];
+  for (const l of pagina.links || []) {
+    const h = hostDe(l);
+    if (!h || h === proprio || !doHost(h, hosts) || ehUrlDeImagem(l)) continue;
+    let caminho = '/';
+    try {
+      caminho = new URL(l).pathname;
+    } catch {
+      continue;
+    }
+    // A raiz do host da plataforma não é evento; a de um subdomínio é
+    // (festival-exemplo.ingresse.com/).
+    if ((caminho === '/' && hosts.includes(h)) || CAMINHO_SEM_EVENTO.test(caminho)) continue;
+    const u = semCodigo(l);
+    const k = chaveDeLink(u);
+    if (!u || !k || vistos.has(k)) continue;
+    const quando = dataDoLink(u);
+    if (hoje && quando && quando < hoje) continue;
+    vistos.set(k, u);
+    if (vistos.size >= max) break;
+  }
+  return [...vistos.values()];
+}
+
 // Padrões de link de evento de cada plataforma (texto de regex; `padraoLink` da listagem manda).
 const PADRAO_LINK = {
   shotgun: '^https://shotgun\\.live/(?:[a-z]{2}(?:-[a-z]{2})?/)?events/[^/?#]+/?(?:[?#].*)?$',
@@ -563,6 +640,9 @@ module.exports = {
   lerPaginasPeloWorker,
   planoDaUrl,
   ehUrlDeImagem,
+  linksDaAgenda,
+  dataDoLink,
+  chaveDeLink,
   naJanela,
   async coletar(ctx) {
     const config = ctx.config || {};
@@ -586,19 +666,52 @@ module.exports = {
       if (typeof ctx.batimento === 'function') ctx.batimento();
     };
 
+    // Plataformas que recusaram nesta execução não recebem outro pedido até a
+    // próxima (D14). Trava: 429 em qualquer página (o site disse "pare"), ou
+    // 403/503 numa página de listagem. Um 403/503 de uma página avulsa (evento
+    // privado, removido, instabilidade) encerra só aquela página. A trava vale
+    // para a plataforma inteira (o domínio de config.hosts que casa, com os
+    // subdomínios); fora dela, o host exato. O leitor faz o mesmo dentro de um lote.
+    const hostsDaConfig = (config.hosts && config.hosts.length ? config.hosts : HOSTS_PADRAO).map((h) => h.toLowerCase().replace(/^www\./, ''));
+    const travasDaConfig = [...hostsDaConfig, ...(config.listagens || []).map((l) => l && hostDe(l.url)).filter(Boolean)];
+    const chaveDeTrava = (h) => (h ? travasDaConfig.filter((x) => doHost(h, [x])).sort((a, b) => a.length - b.length)[0] || h : null);
+    const recusados = new Map(); // plataforma -> páginas que deixaram de ser pedidas
+    const trava = (p, listagem) => p && (p.recusaAnterior || p.status === 429 || (listagem && RECUSA.has(p.status)));
+
     // Um pedido ao leitor, com pausa antes de todo pedido depois do primeiro.
-    async function lerLote(urls, { modo, semRecursos = false, esperar = null }) {
+    // As URLs de host que já recusou voltam marcadas, sem ir ao leitor.
+    async function lerLote(urls, { modo, semRecursos = false, esperar = null, listagem = false }) {
+      const pular = [];
+      const pedir = [];
+      for (const u of urls) {
+        const k = chaveDeTrava(hostDe(u));
+        if (k && recusados.has(k)) pular.push(u);
+        else pedir.push(u);
+      }
+      for (const u of pular) {
+        const k = chaveDeTrava(hostDe(u));
+        recusados.set(k, recusados.get(k) + 1);
+      }
+      const marcadas = pular.map((u) => ({ url: u, final: u, status: 0, titulo: '', texto: '', jsonld: [], links: [], dados: null, meta: null, recusaAnterior: true, erro: `${chaveDeTrava(hostDe(u))} recusou o acesso antes nesta execução; não pedi de novo (D14)` }));
+      if (!pedir.length) return marcadas;
       if (pedidos && pausaMs) await dormir(pausaMs);
       bater();
       pedidos += 1;
-      paginasLidas += urls.length;
-      const opcoes = { modo, timeoutMs, pausaMs, aoLer: bater };
+      const opcoes = { modo, timeoutMs, pausaMs, aoLer: bater, travas: travasDaConfig };
       if (semRecursos) opcoes.semRecursos = true;
       if (esperar) opcoes.esperar = esperar;
-      const lidas = await ler(urls, opcoes);
+      const lidas = (await ler(pedir, opcoes)) || [];
       bater();
-      paginasOk += (lidas || []).filter(doisXX).length;
-      return lidas;
+      paginasOk += lidas.filter(doisXX).length;
+      // Só conta o que foi pedido de fato: a recusa anterior do leitor não teve GET.
+      paginasLidas += lidas.filter((p) => !p.recusaAnterior).length;
+      for (const p of lidas) {
+        const k = chaveDeTrava(hostDe(p.url));
+        if (!k || !trava(p, listagem)) continue;
+        if (!recusados.has(k)) recusados.set(k, 0);
+        if (p.recusaAnterior) recusados.set(k, recusados.get(k) + 1);
+      }
+      return [...lidas, ...marcadas];
     }
 
     function aceitar(item, { uf, cidade, janela }) {
@@ -621,7 +734,8 @@ module.exports = {
       for (const p of paginas || []) {
         bater();
         if (!doisXX(p)) {
-          avisos.push(`${p.url}: ${motivoDaFalha(p)}`);
+          // A recusa anterior já entra no resumo por host, no fim da rodada.
+          if (!p.recusaAnterior) avisos.push(`${p.url}: ${motivoDaFalha(p)}`);
           continue;
         }
         const ld = eventosDoJsonld(p.jsonld || []).map((e) => brutoDeEvento(e)).filter(Boolean);
@@ -684,18 +798,29 @@ module.exports = {
 
     // 1. Agendas de casas e a fila de links: páginas avulsas, cada uma no modo
     // que o site pede (planoDaUrl). A fila só leva os hosts de config.hosts.
+    // Agenda com `seguir: true` (a casa lista as festas com link para a
+    // plataforma de ingresso, como a D-Edge para a Ingresse): da página da casa
+    // saem só os links de evento dos hosts da config, lidos como a fila; a página
+    // da casa não vai ao extrator quando rende link.
     const urls = urlsDaConfig(config, ctx.fila);
     if (urls.length) {
-      const agendas = new Set((config.agendas || []).map((a) => (typeof a === 'string' ? a : a && a.url)));
+      const cfgAgendas = new Map();
+      for (const a of config.agendas || []) {
+        const cfg = typeof a === 'string' ? { url: a } : a;
+        if (cfg && cfg.url) cfgAgendas.set(cfg.url, cfg);
+      }
       const grupos = new Map(); // chave do plano -> { plano, urls }
       for (const u of urls) {
-        const ehAgenda = agendas.has(u);
-        const plano = ehAgenda ? { modo: config.modo || 'dinamico', semRecursos: false, esperar: null, agenda: false } : planoDaUrl(u, config);
-        const chave = JSON.stringify([ehAgenda, plano.modo, plano.semRecursos, plano.esperar, plano.agenda]);
-        if (!grupos.has(chave)) grupos.set(chave, { plano, ehAgenda, urls: [] });
+        const agenda = cfgAgendas.get(u) || null;
+        const plano = agenda ? { modo: agenda.modo || config.modo || 'dinamico', semRecursos: false, esperar: null, agenda: false } : planoDaUrl(u, config);
+        const seguir = Boolean(agenda && agenda.seguir);
+        const chave = JSON.stringify([Boolean(agenda), seguir, plano.modo, plano.semRecursos, plano.esperar, plano.agenda]);
+        if (!grupos.has(chave)) grupos.set(chave, { plano, ehAgenda: Boolean(agenda), seguir, urls: [] });
         grupos.get(chave).urls.push(u);
       }
-      for (const { plano, ehAgenda, urls: grupo } of grupos.values()) {
+      const jaNaFila = new Set(urls.map((u) => chaveDeLink(u) || u));
+      const seguidos = [];
+      for (const { plano, ehAgenda, seguir, urls: grupo } of grupos.values()) {
         let paginas;
         try {
           paginas = await lerLote(grupo, plano);
@@ -703,20 +828,48 @@ module.exports = {
           avisos.push(`leitor de páginas falhou: ${e.message}`);
           continue;
         }
-        await mapear(paginas, { janela: false, unico: !ehAgenda && !plano.agenda, agenda: plano.agenda });
+        const restantes = [];
+        for (const p of paginas || []) {
+          const links = seguir && doisXX(p) ? linksDaAgenda(p, config, cfgAgendas.get(p.url), hoje) : [];
+          const novos = links.filter((u) => !jaNaFila.has(chaveDeLink(u)));
+          novos.forEach((u) => jaNaFila.add(chaveDeLink(u)));
+          seguidos.push(...novos);
+          if (seguir && doisXX(p) && !links.length) avisos.push(`${p.url}: a agenda não trouxe link de evento dos hosts da config`);
+          if (!links.length) restantes.push(p);
+        }
+        await mapear(restantes, { janela: false, unico: !ehAgenda && !plano.agenda, agenda: plano.agenda });
+      }
+      // Os links que as agendas apontaram, agrupados pelo modo de cada host.
+      const gruposSeguidos = new Map();
+      for (const u of seguidos) {
+        const plano = planoDaUrl(u, config);
+        const chave = JSON.stringify([plano.modo, plano.semRecursos, plano.esperar, plano.agenda]);
+        if (!gruposSeguidos.has(chave)) gruposSeguidos.set(chave, { plano, urls: [] });
+        gruposSeguidos.get(chave).urls.push(u);
+      }
+      for (const { plano, urls: grupo } of gruposSeguidos.values()) {
+        let paginas;
+        try {
+          paginas = await lerLote(grupo, plano);
+        } catch (e) {
+          avisos.push(`leitor de páginas falhou: ${e.message}`);
+          continue;
+        }
+        await mapear(paginas, { janela: false, unico: !plano.agenda, agenda: plano.agenda });
       }
     }
 
     // 2. Listagens de plataformas (Shotgun, Sympla): a página da cidade, depois cada evento.
     for (const lg of config.listagens || []) {
-      if (!lg || !lg.url || !hostDe(lg.url)) continue;
+      if (!lg || !lg.url || !hostDe(lg.url) || lg.ligada === false) continue;
       const modo = lg.modo || 'simples';
       const maxEventos = lg.maxEventos || 40;
       const padrao = lg.padraoLink || PADRAO_LINK[lg.id] || PADRAO_LINK.shotgun;
       // A listagem pagina por `?page=N` (conferido em 24/11/2026 na Sympla e no
-      // Shotgun): lê até `paginas` páginas, para na primeira que não traz evento
-      // novo ou que não volta 2xx (bloqueio encerra, sem repetir).
-      const maxPaginas = Math.max(1, Math.min(lg.paginas || 1, 10));
+      // Shotgun): lê até `paginas` páginas (no máximo MAX_PAGINAS_LISTAGEM), para
+      // na primeira que não traz evento novo ou que não volta 2xx (bloqueio
+      // encerra, sem repetir, e o host fica travado na execução).
+      const maxPaginas = Math.max(1, Math.min(lg.paginas || 1, MAX_PAGINAS_LISTAGEM));
       const cartoes = new Map();
       const achados = new Set();
       let falhou = false;
@@ -724,7 +877,7 @@ module.exports = {
         const urlPagina = n === 1 ? lg.url : `${lg.url}${lg.url.includes('?') ? '&' : '?'}page=${n}`;
         let pl;
         try {
-          pl = (await lerLote([urlPagina], { modo }))[0];
+          pl = (await lerLote([urlPagina], { modo, listagem: true }))[0];
         } catch (e) {
           avisos.push(`${lg.id || lg.url}: leitor falhou (${e.message})`);
           falhou = n === 1;
@@ -769,6 +922,33 @@ module.exports = {
     // sem preço que as regras leem como festa passam pelo navegador, e o extrator
     // tira os lotes do texto. Só os lotes: o resto continua o que o JSON disse.
     // Sem extrator (sem chave ou teto), ou com `precoSympla: false`, fica sem preço.
+    // O preço que o navegador já achou numa execução anterior volta do banco:
+    // a listagem e o __NEXT_DATA__ nunca trazem lotes, e sem isso os mesmos 40
+    // primeiros voltariam ao navegador todo dia e o resto ficaria sem preço.
+    if (ctx.db) {
+      let qLotes = null;
+      try {
+        qLotes = ctx.db.prepare(`SELECT v.valor FROM vinculos vi JOIN valores v ON v.festa_id = vi.festa_id
+          WHERE vi.fonte = 'paginas' AND vi.id_externo = ? AND v.campo = 'lotes' AND v.fonte = 'paginas' LIMIT 1`);
+      } catch {
+        qLotes = null; // banco sem o esquema (teste de unidade)
+      }
+      for (const i of qLotes ? itens : []) {
+        if (!/^pagina:https:\/\/www\.sympla\.com\.br\/evento\//.test(i.idExterno) || (i.bruto.lotes || []).length) continue;
+        let lotes = null;
+        try {
+          const linha = qLotes.get(i.idExterno);
+          lotes = linha ? JSON.parse(linha.valor) : null;
+        } catch {
+          lotes = null;
+        }
+        if (!Array.isArray(lotes) || !lotes.length) continue;
+        i.bruto.lotes = lotes;
+        const pg = i.bruto.paginas && i.bruto.paginas[0];
+        if (pg && !pg.campos.includes('lotes')) pg.campos.push('lotes');
+      }
+    }
+
     if (ctx.extrator && config.precoSympla !== false) {
       const sympla = itens.filter((i) => /^pagina:https:\/\/www\.sympla\.com\.br\/evento\//.test(i.idExterno)
         && !(i.bruto.lotes || []).length
@@ -787,7 +967,7 @@ module.exports = {
           const item = porUrl.get(semCodigo(p.url)) || porUrl.get(p.url);
           if (!item) continue;
           if (!doisXX(p)) {
-            avisos.push(`${p.url}: ${motivoDaFalha(p)}`);
+            if (!p.recusaAnterior) avisos.push(`${p.url}: ${motivoDaFalha(p)}`);
             continue;
           }
           let lido = null;
@@ -808,6 +988,9 @@ module.exports = {
       }
     }
 
+    for (const [h, n] of recusados) {
+      if (n) avisos.push(`${h}: recusou o acesso; ${n} página(s) deixaram de ser pedidas nesta execução (D14)`);
+    }
     if (ctx.log) ctx.log.info(`[motor] paginas: ${paginasLidas} páginas (${paginasOk} com 2xx), ${itens.length} festas`);
     // Sem nenhuma página 2xx (uv ausente, leitor caindo, tudo bloqueado), a
     // fonte não conta como rodada e tenta de novo na próxima execução.

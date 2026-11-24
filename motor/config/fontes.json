@@ -94,17 +94,24 @@
   "paginas": {
     "ligada": false,
     "pocAcademica": true,
-    "motivo": "Prova de conceito acadêmica, decisão do Caio em 24/11/2026: o Scrapling lê as listagens de Sympla e Shotgun em São Paulo (só as semanas de 03–06/12 e 10–13/12, em `janelas`), as páginas de ingresso que chegam pela fila (Ingresse, Sympla, Bileto, Guichê, Shotgun) e as agendas das casas, uma vez por dia e com pausa entre pedidos. Schema.org e dados da própria página primeiro, Claude Haiku depois. Bloqueio é recusa: 403, 429 e 503 encerram a leitura da página, sem proxy nem outro modo. Liga no Fly até 07/12/2026 (FINDE_POC).",
+    "motivo": "Prova de conceito acadêmica, decisão do Caio em 24/11/2026: o Scrapling lê as listagens de Sympla e Shotgun em São Paulo (a semana corrente, 26–29/11, e as semanas das apresentações, 03–06/12 e 10–13/12, em `janelas`; até 25 páginas da listagem da Sympla, funil de 24/11), as páginas de ingresso que chegam pela fila (Ingresse, Sympla, Bileto, Guichê; a Shotgun recusa robôs desde 24/11 e saiu) e as agendas das casas (a da D-Edge segue os links para a Ingresse), uma vez por dia e com pausa entre pedidos. Schema.org e dados da própria página primeiro, Claude Haiku depois. Bloqueio é recusa: 403, 429 e 503 encerram a leitura da página, sem proxy nem outro modo. Liga no Fly até 07/12/2026 (FINDE_POC).",
     "modo": "dinamico",
     "timeoutMs": 30000,
     "hosts": [
       "ingresse.com",
       "sympla.com.br",
       "bileto.sympla.com.br",
-      "shotgun.live",
       "guicheweb.com.br"
     ],
-    "agendas": [],
+    "agendas": [
+      {
+        "url": "https://www.d-edge.com.br/",
+        "casa": "D-Edge",
+        "modo": "simples",
+        "seguir": true,
+        "maxLinks": 12
+      }
+    ],
     "intervaloHoras": 20,
     "pausaMs": 2000,
     "dias": 14,
@@ -114,17 +121,23 @@
         "url": "https://shotgun.live/pt-br/cities/sao-paulo",
         "modo": "simples",
         "maxEventos": 120,
-        "paginas": 6
+        "paginas": 6,
+        "ligada": false,
+        "motivo": "Desligada em 24/11/2026: a Shotgun responde com o desafio anti-robô da Vercel (429) a qualquer cliente que não seja navegador; bloqueio é recusa (D14), então não se pede de novo todo dia. O host saiu também de hosts: link da Shotgun que chega pela fila não é pedido."
       },
       {
         "id": "sympla",
         "url": "https://www.sympla.com.br/eventos/sao-paulo-sp",
         "modo": "simples",
-        "maxEventos": 120,
-        "paginas": 8
+        "maxEventos": 350,
+        "paginas": 25
       }
     ],
     "janelas": [
+      [
+        "2026-11-26",
+        "2026-11-29"
+      ],
       [
         "2026-12-03",
         "2026-12-06"

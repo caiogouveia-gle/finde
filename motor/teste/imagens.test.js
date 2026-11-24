@@ -660,3 +660,21 @@ test('uma imagem ocultada que a coleta traz de novo continua oculta e sem arquiv
   assert.equal(db.prepare("SELECT oculta FROM imagens WHERE sha LIKE 'aaaa%'").get().oculta, 1);
   assert.deepEqual(I.imagensDaFesta(db, 'f2'), []);
 });
+
+test('processarPendentes: host de imagem que responde 429 não recebe outro pedido na execução (D14); 403 não trava', async () => {
+  const db = novoBanco();
+  const dir = pasta();
+  festa(db, 'f1', '2026-12-05', [['paginas', 'p:1'], ['paginas', 'p:2'], ['paginas', 'p:3'], ['paginas', 'p:4']]);
+  const e = ambiente((u) => (u.endsWith('/a.jpg') ? new Response('', { status: 429 }) : u.endsWith('/c.jpg') ? new Response('', { status: 403 }) : JPEG));
+  const pend = ['a', 'b', 'c', 'd'].map((n, i) => itemPendente('paginas', `p:${i + 1}`, 'f1', [{ url: `https://images.sympla.com.br/${n}.jpg`, papel: 'pagina-ingresso', origem: 'https://www.sympla.com.br/evento/x/1', credito: 'Sympla' }]));
+  const r = await I.processarPendentes(db, pend, { fetch: e.fetch, resolver: e.resolver, agora: relogio(), log: logMudo, config: { hosts: HOSTS }, dir, offline: true });
+  assert.deepEqual(e.pedidos.map((p) => p.url), ['https://images.sympla.com.br/a.jpg'], 'depois do 429 o host não é pedido de novo');
+  assert.equal(r.recusadas, 4);
+  assert.ok(r.avisos.some((a) => /^images\.sympla\.com\.br: recusou o acesso; 3 imagem\(ns\)/.test(a)));
+  // 403 sozinho não trava (URL assinada vencida no CDN do Instagram, por exemplo)
+  const e2 = ambiente((u) => (u.endsWith('/c.jpg') ? new Response('', { status: 403 }) : JPEG));
+  const db2 = novoBanco();
+  festa(db2, 'f1', '2026-12-05', [['paginas', 'p:3'], ['paginas', 'p:4']]);
+  await I.processarPendentes(db2, pend.slice(2), { fetch: e2.fetch, resolver: e2.resolver, agora: relogio(), log: logMudo, config: { hosts: HOSTS }, dir: pasta(), offline: true });
+  assert.equal(e2.pedidos.length, 2);
+});
