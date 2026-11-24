@@ -1,0 +1,10 @@
+[project]
+name = "finde-paginas"
+version = "0.1.0"
+description = "Leitor de páginas (Scrapling) e worker de imagem (Pillow) do motor do Finde: entrada no stdin, uma linha JSON por resposta."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    # Recodifica a peça de divulgação em WebP e calcula pHash e dHash (KTD7 do plano de 24/11).
+    "pillow==13.0.0",
+    "scrapling[fetchers]",
+]

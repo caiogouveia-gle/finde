@@ -23,7 +23,14 @@ const { entender } = require('./nucleo/entender');
 const { prepararBase, lerBase, deslocarDatas } = require('./nucleo/base');
 const { criarPlanos, ErroPlano } = require('./nucleo/planos');
 const R = require('./nucleo/reais');
+const L = require('./nucleo/lista');
 const FT = require('./publico/festa-texto');
+// A base viva do motor, as avaliações e as rotas novas do app (U22 a U25 do
+// plano de 24/11/2026) moram em nucleo/; aqui, só a ligação.
+const { criarFonteMotor } = require('./nucleo/fonte-motor');
+const { criarAvaliacoes } = require('./nucleo/avaliacoes');
+const A = require('./nucleo/rotas-app');
+const { cara: caraDe } = require('./nucleo/cara');
 
 const RAIZ = __dirname;
 const PUBLICO = path.join(RAIZ, 'publico');
@@ -45,18 +52,36 @@ const TIPOS_ARQUIVO = {
 };
 
 // Tudo vem daqui: scripts, estilos e fontes (servidas de publico/fontes).
-const CSP = [
+// No site `app`, o img-src ganha só a origem dos tiles do mapa (FINDE_TILES,
+// KTD16); a imagem de festa continua vindo daqui (/imagens/, D4).
+const cspCom = (imagensDeFora = '') => [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
   "font-src 'self'",
-  "img-src 'self' data:",
+  `img-src 'self' data:${imagensDeFora ? ` ${imagensDeFora}` : ''}`,
   "connect-src 'self'",
   "base-uri 'none'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
 ].join('; ');
+const CSP = cspCom();
+const TILES_PADRAO = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+// A origem (https://host) do endereço dos tiles, para a CSP. Endereço que não
+// é https fica fora: o mapa não carrega, e nada estranho entra na CSP.
+// O subdomínio "{s}" (a, b, c, d dos provedores) vira "*.".
+function origemDosTiles(modelo) {
+  const m = String(modelo || '');
+  try {
+    const u = new URL(m.replace(/\{[a-z]\}/g, 'a'));
+    if (u.protocol !== 'https:' || u.username || u.password) return null;
+    return /^https:\/\/\{s\}\./.test(m) ? `https://*.${u.host.slice(2)}` : u.origin;
+  } catch {
+    return null;
+  }
+}
 
 // same-origin: o endereço de origem só vai para o próprio servidor (o app
 // sabe se veio da landing); para fora, nada.
@@ -75,6 +100,14 @@ const CABECALHOS = {
 // um referrer com a origem da landing quer dizer a landing. O app e os
 // convites continuam em same-origin: o id de um convite não sai para fora.
 const REFERRER_DA_LANDING = { 'Referrer-Policy': 'strict-origin-when-cross-origin' };
+
+// Os cabeçalhos do site `app` (KTD16, KTD17): a CSP com os tiles e nada de
+// buscador. A landing segue com CABECALHOS. Cada resposta do app carrega os
+// dela em res.finde (ver cabecalhosDe).
+function cabecalhosDoApp(tiles) {
+  return { ...CABECALHOS, 'Content-Security-Policy': cspCom(origemDosTiles(tiles) || ''), 'X-Robots-Tag': 'noindex, noimageindex' };
+}
+const cabecalhosDe = (res) => (res && res.finde) || CABECALHOS;
 
 // ---------------------------------------------------------------- base
 
@@ -122,7 +155,7 @@ function criarFonteDaBase(caminho, log, relogio) {
 // fictícia, como antes. Relido quando o arquivo muda; o filtro do que já
 // passou é feito a cada pedido, pelo relógio, e não aqui.
 function criarFonteDosReais(caminho, log) {
-  let atual = { festas: [], marca: null };
+  let atual = { festas: [], marca: null, resumo: null };
   function carregar() {
     if (!caminho) return atual.festas;
     let marca;
@@ -133,12 +166,15 @@ function criarFonteDosReais(caminho, log) {
     }
     if (marca === atual.marca) return atual.festas;
     let festas = [];
+    let resumo = null;
     if (marca === 'sem-arquivo') {
       log.info(`[finde] sem festas reais (${caminho} não existe); só a base fictícia`);
     } else {
       try {
-        const r = R.converterExport(JSON.parse(fs.readFileSync(caminho, 'utf8')));
+        const bruto = JSON.parse(fs.readFileSync(caminho, 'utf8'));
+        const r = R.converterExport(bruto);
         festas = r.festas;
+        resumo = R.resumoDoExport(bruto);
         for (const a of r.avisos) log.warn(`[finde] reais: ${a}`);
         for (const x of r.fora) log.info(`[finde] reais: fora "${x.id}" (${x.motivo})`);
         log.info(`[finde] reais: ${festas.length} festas de ${caminho}`);
@@ -146,10 +182,16 @@ function criarFonteDosReais(caminho, log) {
         log.warn(`[finde] as festas reais de ${caminho} não abriram (${e.message}); sigo só com a base fictícia`);
       }
     }
-    atual = { festas, marca };
+    atual = { festas, marca, resumo };
     return festas;
   }
-  return { festas: carregar };
+  // O que o export diz de si ("Atualizado há…"), como o estado da fonte do motor.
+  const estado = () => {
+    carregar();
+    const r = atual.resumo || {};
+    return { origem: atual.resumo ? 'arquivo' : null, geradoEm: r.atualizadoEm || null, recebidas: r.total || 0, perfis: r.perfis || 0, sites: r.sites || 0, total: atual.festas.length };
+  };
+  return { festas: carregar, estado };
 }
 
 // ---------------------------------------------------------------- respostas
@@ -176,7 +218,7 @@ function enviarCorpo(req, res, status, cabecalhos, corpo, comprimido) {
       extra['Content-Encoding'] = 'gzip';
     }
   }
-  res.writeHead(status, { ...CABECALHOS, ...cabecalhos, ...extra, 'Content-Length': saida.length });
+  res.writeHead(status, { ...cabecalhosDe(res), ...cabecalhos, ...extra, 'Content-Length': saida.length });
   res.end(req && req.method === 'HEAD' ? undefined : saida);
 }
 
@@ -224,10 +266,11 @@ function enviarPagina(req, res, arquivo, { status = 200, titulo, descricao, dado
     pagina = pagina.replace('__DADOS__', () => (dados ? JSON.stringify(dados).replace(/</g, '\\u003c') : 'null'));
     if (titulo) {
       pagina = pagina
-        .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${escapar(titulo)}$2`)
-        .replace(/<title>[^<]*<\/title>/, `<title>${escapar(titulo)}</title>`);
+        // Função de troca: um "$2" ou "$&" no nome da festa é texto, não padrão.
+        .replace(/(<meta property="og:title" content=")[^"]*(")/, (_, a, b) => a + escapar(titulo) + b)
+        .replace(/<title>[^<]*<\/title>/, () => `<title>${escapar(titulo)}</title>`);
     }
-    if (descricao) pagina = pagina.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${escapar(descricao)}$2`);
+    if (descricao) pagina = pagina.replace(/(<meta property="og:description" content=")[^"]*(")/, (_, a, b) => a + escapar(descricao) + b);
     enviarCorpo(req, res, status, {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache',
@@ -262,7 +305,7 @@ function enviarArquivo(req, res, caminho) {
         });
       });
     }
-    res.writeHead(200, { ...CABECALHOS, ...cabecalhos, 'Content-Length': st.size });
+    res.writeHead(200, { ...cabecalhosDe(res), ...cabecalhos, 'Content-Length': st.size });
     if (req.method === 'HEAD') return res.end();
     fs.createReadStream(caminho).pipe(res);
   });
@@ -292,7 +335,7 @@ function estatico(req, res, pathname, pode = () => true) {
 // Referrer-Policy: no redirecionamento ela trocaria a de quem pediu, e o
 // /app?festa=<id> tocado na landing chegaria ao app sem a origem dela.
 function redirecionar(res, status, destino) {
-  const { 'Referrer-Policy': _, ...cabecalhos } = CABECALHOS;
+  const { 'Referrer-Policy': _, ...cabecalhos } = cabecalhosDe(res);
   res.writeHead(status, { ...cabecalhos, Location: destino, 'Cache-Control': 'no-cache', 'Content-Length': 0 });
   res.end();
 }
@@ -448,7 +491,11 @@ function exigirCriterios(bruto) {
   const c = motor.sanearCriterios(bruto);
   const faltam = motor.falta(c);
   if (faltam.length) throw new ErroPlano(400, 'Faltou responder umas perguntas. Vamos do começo?', { faltam });
-  return motor.completar(c);
+  const completo = motor.completar(c);
+  // A semana do pedido (KTD15): "esta" é o padrão; "proxima" segue com os critérios.
+  if (bruto && bruto.semana === 'proxima') completo.semana = 'proxima';
+  else delete completo.semana;
+  return completo;
 }
 
 function idsNaTela(bruto) {
@@ -459,11 +506,13 @@ function idsNaTela(bruto) {
   return bruto;
 }
 
-// A data da festa: o próximo dia da semana dela que ainda não acabou.
+// A data da festa: o próximo dia da semana dela que ainda não acabou. A
+// véspera conta enquanto a festa dela segue (à 1h de sábado, a de sexta que
+// vai até as 5h é de sexta), a mesma régua de quandoDaReal.
 // Devolve { data: 'AAAA-MM-DD', ate: ISO do fim da festa }.
 function dataDaFesta(f, agora) {
   const alvo = { sex: 5, sab: 6, dom: 0 }[f.dia];
-  for (let i = 0; i < 8; i++) {
+  for (let i = -1; i < 8; i++) {
     const d = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + i);
     if (d.getDay() !== alvo) continue;
     const fim = new Date(d.getTime() + f.fim * 3600 * 1000);
@@ -495,7 +544,10 @@ function proximaPista(base, agora = new Date()) {
   return f ? { linha: C.linhaDaFesta(f), nome: f.nome, origem: f.origemIdade } : null;
 }
 
-function formulario(base, reais = 0) {
+// extra (U24, KTD15): `semanas` ({ esta, proxima }, de rotas-app.diasDoFormulario),
+// `zonas` (os 14 bairros, de rotas-app.bairrosDoFormulario) e `base` (de onde
+// vem a lista: { atualizadoEm, total, perfis, sites }). Sem extra, como antes.
+function formulario(base, reais = 0, extra = {}) {
   const porDia = Object.fromEntries(C.ORDEM_DIAS.map((d) => [d, base.filter((f) => f.dia === d).length]));
   const inicios = base.map((f) => f.inicio);
   return {
@@ -508,13 +560,17 @@ function formulario(base, reais = 0) {
     ficticia: !reais,
     misto: reais > 0,
     reais,
-    dias: C.ORDEM_DIAS.map((id) => ({ id, rotulo: C.DIAS[id].nome })),
+    // "Sair quando?" com a data e as reais de cada opção, nesta semana e na
+    // próxima (R24); `dias` é a desta semana.
+    dias: extra.semanas ? extra.semanas.esta : C.ORDEM_DIAS.map((id) => ({ id, rotulo: C.DIAS[id].nome })),
+    semanas: extra.semanas || null,
+    base: extra.base || null,
     janelas: C.JANELAS.map((j) => ({ id: j.id, rotulo: `${j.rotulo} · ${j.nome}` })),
     faixas: C.FAIXAS.map((f) => ({ id: f.id, rotulo: f.rotulo })),
     // A faixa em que a pessoa se sente bem (R20): de 18 a 50, padrão 28 a 35.
     idade: { min: motor.IDADE_MIN, max: motor.IDADE_MAX, padrao: { min: 28, max: 35 } },
-    // Os bairros por zona (R19), na ordem das regiões do catálogo.
-    zonas: Object.entries(C.REGIOES).map(([id, nome]) => ({
+    // Os bairros por zona (R19, R29), na ordem das regiões do catálogo.
+    zonas: extra.zonas || Object.entries(C.REGIOES).map(([id, nome]) => ({
       id, nome, bairros: Object.entries(C.BAIRROS).filter(([, b]) => b.regiao === id).map(([bid, b]) => ({ id: bid, rotulo: b.nome })),
     })),
     tetos: C.TETOS.map((t) => ({ id: t.id, rotulo: t.rotulo })),
@@ -662,12 +718,26 @@ function montarServidor({
   site = process.env.FINDE_SITE,
   urlSite = process.env.FINDE_URL_SITE,
   urlApp = process.env.FINDE_URL_APP,
+  // A base viva (U22, KTD14): o motor pela rede privada do Fly. Sem URL, as
+  // reais vêm só do arquivo, como antes.
+  motorUrl = process.env.FINDE_MOTOR_URL,
+  fetch: buscar = globalThis.fetch,
+  // Os tiles do mapa (KTD16): o <meta name="finde-tiles"> e o img-src da CSP.
+  tiles = process.env.FINDE_TILES || TILES_PADRAO,
+  // Tokens só por variável (KTD20): o de admin do app (/api/reais/estado) e o
+  // que o app usa para mandar as avaliações ao motor.
+  adminToken = process.env.FINDE_ADMIN_TOKEN,
+  appToken = process.env.FINDE_APP_TOKEN,
 } = {}) {
   const sites = configurarSites({ site, urlSite, urlApp });
   const temLanding = sites.modo !== 'app';
   const temApp = sites.modo !== 'landing';
   const podeServir = estaticosDoModo(sites.modo);
-  const enderecos = { __URL_SITE__: sites.urlSite, __URL_APP__: sites.urlApp };
+  const enderecos = { __URL_SITE__: sites.urlSite, __URL_APP__: sites.urlApp, __TILES__: tiles };
+  const CABECALHOS_APP = cabecalhosDoApp(tiles);
+  // O que é do app num servidor com tudo junto (no modo app, tudo).
+  const ehDoApp = (pathname) => sites.modo === 'app'
+    || (temApp && (pathname === '/app' || pathname === '/app/' || /^\/(p|api|imagens)\//.test(pathname) || pathname === '/robots.txt'));
   log.info(sites.modo === 'landing' ? `[finde] só a landing; o app fica em ${sites.urlApp}`
     : sites.modo === 'app' ? `[finde] só o app; a landing fica em ${sites.urlSite}`
       : '[finde] landing em / e app em /app');
@@ -675,7 +745,12 @@ function montarServidor({
   fonte.base();
   const caminhoReais = reais !== undefined ? reais
     : process.env.FINDE_REAIS || (outraBase ? null : path.join(RAIZ, 'dados', 'reais.json'));
-  const fonteReais = criarFonteDosReais(caminhoReais ? path.resolve(caminhoReais) : null, log);
+  const reservaReais = caminhoReais ? path.resolve(caminhoReais) : null;
+  // Com o motor (e o app no ar), a base viva; a reserva é o arquivo da imagem.
+  const fonteMotor = temApp && motorUrl ? criarFonteMotor({
+    url: motorUrl, fetch: buscar, cache: path.join(path.resolve(varDir), 'reais-cache.json'), reserva: reservaReais, relogio, log,
+  }) : null;
+  const fonteReais = fonteMotor ? { festas: fonteMotor.festas, estado: fonteMotor.estado } : criarFonteDosReais(reservaReais, log);
   // A real cujo id já é de uma fictícia fica fora, com aviso: o link, o
   // convite e a lista confundiriam as duas.
   const colidiram = new Set();
@@ -695,35 +770,117 @@ function montarServidor({
   const reaisVigentes = () => R.vigentes(reaisSemColisao(), relogio());
   // Para achar uma festa pelo id: a base fictícia e as reais (passadas também,
   // para o convite e o link dizerem que ela passou).
-  const acharFesta = (id) => fonte.base().find((f) => f.id === id) || reaisSemColisao().find((f) => f.id === id) || null;
+  // Uma real também se acha por um id antigo (festa unida no motor, KTD1):
+  // o convite e o link mandados antes da união continuam abrindo.
+  const acharFesta = (id) => fonte.base().find((f) => f.id === id)
+    || reaisSemColisao().find((f) => f.id === id)
+    || reaisSemColisao().find((f) => Array.isArray(f.idsAntigos) && f.idsAntigos.includes(id)) || null;
   // A base de um pedido: as fictícias e as reais do dia pedido.
-  const baseDoPedido = (c) => [...R.reaisDoDia(reaisVigentes(), c.dia, relogio()).festas, ...fonte.base()];
+  const baseDoPedido = (c) => [...L.reaisDoPedido(reaisVigentes(), c, relogio()).festas, ...fonte.base()];
   // A landing sozinha não abre convite nenhum: os convites moram no app.
   // Os convites usam o mesmo relógio: "passou" é o do servidor.
-  const planos = temApp ? criarPlanos(path.resolve(varDir), { log, agora: () => new Date(relogio()).toISOString() }) : null;
+  const agoraIso = () => new Date(relogio()).toISOString();
+  // As avaliações pós-festa (U25): no volume, ao lado dos convites; o lote de
+  // festa real vai ao motor com FINDE_APP_TOKEN.
+  const avaliacoes = temApp ? criarAvaliacoes({ dir: path.resolve(varDir), motorUrl, token: appToken, fetch: buscar, agora: agoraIso, log }) : null;
+  const planos = temApp ? criarPlanos(path.resolve(varDir), { log, agora: agoraIso, contarAvaliacoes: avaliacoes.contagem }) : null;
+  // O que ficou pendente de outra subida vai agora, por trás.
+  if (avaliacoes && motorUrl && appToken && avaliacoes.pendentes().length) avaliacoes.enviarPendentes().catch(() => {});
+
+  // De onde vem a lista ("Atualizado há 3 h · 41 festas lidas de 50 perfis e
+  // 3 sites de ingresso", R23). Sem real nenhuma, null.
+  function infoDaBase() {
+    const e = fonteReais.estado ? fonteReais.estado() : null;
+    if (!e || !reaisSemColisao().length) return null;
+    return { atualizadoEm: e.geradoEm || null, total: e.recebidas || e.total || 0, perfis: e.perfis || 0, sites: e.sites || 0 };
+  }
+
+  // O formulário com as datas, os 14 bairros e a origem da lista (U24).
+  function oFormulario() {
+    const agoraMs = relogio();
+    const reais = reaisSemColisao();
+    // Sem real nenhuma, a primeira pergunta oferece os dias da base fictícia.
+    const ids = reais.length ? A.DIAS_DO_PEDIDO : ['sex', 'sab', 'dom'];
+    const semanas = A.diasDoFormulario({ reais, agoraMs, ids });
+    const zonas = A.bairrosDoFormulario({ reais: R.vigentes(reais, agoraMs), datas: semanas.esta.map((d) => d.data) });
+    return formulario(fonte.base(), reaisVigentes().length, { semanas, zonas, base: infoDaBase() });
+  }
 
   // Cada opção leva a data da festa: o detalhe abre com ela (R4). Fica aqui
   // para valer nos três caminhos da conversa.
-  // Com festa real vigente, a lista mistura (nucleo/reais.js, misturar):
-  // primeiro as reais do dia pedido, na próxima data dele (ou na seguinte,
-  // dizendo a data); depois, até três, as fictícias, marcadas como exemplo.
+  // Sem real nenhuma, o protótipo de antes: as fictícias, com a cara.
+  // Com festa real vigente (U24, KTD15, D11), a resposta tem a forma de
+  // teste/dados/resposta-festas-r14-3.json, montada por nucleo/lista.js
+  // (montarResultado): até 3 reais recomendadas, as demais do dia em
+  // maisDoDia, a contagem dos outros dias da semana e as fictícias só quando
+  // o dia não tem real, em `exemplos`, sem %. O servidor só junta.
   function resultado(criterios) {
     const base = fonte.base();
     const agoraMs = relogio();
     const agora = new Date(agoraMs);
-    const comData = (o) => ({ ...o, data: o.festa.real ? o.festa.data : (dataDaFesta(o.festa, agora) || {}).data || null });
+    // A fictícia de "hoje" leva a data da noite de hoje (antes das 6h, a da
+    // véspera): é dela que o filtro abaixo tira as festas.
+    const dataFicticia = (f) => (criterios.dia === 'hoje' ? L.noiteEmSaoPaulo(agoraMs) : (dataDaFesta(f, agora) || {}).data || null);
+    const comData = (o) => ({ ...o, data: o.festa.real ? o.festa.data : dataFicticia(o.festa) });
     const vigentes = reaisVigentes();
+    // Em "hoje", as fictícias só do dia da semana de hoje: o motor não filtra
+    // por dia com "hoje" (quem chama passa só as festas da data).
+    // "Hoje" é a noite de hoje (antes das 6h, a da véspera), como em lista.js.
+    const ficticiasDoPedido = criterios.dia === 'hoje' ? base.filter((f) => f.dia === L.idDoDia(L.noiteEmSaoPaulo(agoraMs))) : base;
     if (!vigentes.length) {
-      if (!base.length) return { opcoes: [], afrouxou: [], aviso: 'A lista de festas está vazia agora. Volte daqui a pouco.' };
-      const r = motor.escolher(criterios, base);
-      return { ...r, opcoes: r.opcoes.map(comData) };
+      const vazio = { maisDoDia: [], outrosDias: [], exemplos: [], nota: null, base: null, semMedia: false };
+      if (!base.length) return { opcoes: [], afrouxou: [], ...vazio, aviso: 'A lista de festas está vazia agora. Volte daqui a pouco.' };
+      const r = motor.escolher(criterios, ficticiasDoPedido);
+      return { ...vazio, ...r, opcoes: r.opcoes.map(comData) };
     }
-    const doDia = R.reaisDoDia(vigentes, criterios.dia, agoraMs);
-    const real = doDia.festas.length ? motor.escolher(criterios, doDia.festas) : null;
-    const ficticio = base.length ? motor.escolher(criterios, base) : null;
-    const m = R.misturar({ real, ficticio, dia: criterios.dia, data: doDia.data, distante: doDia.distante, noDia: doDia.festas.length });
-    if (!m.opcoes.length && !m.aviso) m.aviso = 'A lista de festas está vazia agora. Volte daqui a pouco.';
-    return { ...m, opcoes: m.opcoes.map(comData) };
+    const semana = criterios.semana === 'proxima' ? 'proxima' : 'esta';
+    const daData = L.reaisDoPedido(vigentes, { ...criterios, semana }, agoraMs).festas;
+    // "Hoje" é um dia da semana para o motor: o das festas de hoje.
+    const diaReal = criterios.dia === 'hoje' && daData.length ? daData[0].dia : criterios.dia;
+    const cReal = { ...criterios, dia: diaReal };
+    const pedidoReal = motor.completar(motor.sanearCriterios(cReal));
+    // A recusada de propósito (estilo, bairro, casa, "essa não") fica fora
+    // até de "ver todas", como em lista.resultadoDoPedido; a esgotada não
+    // disputa as 3 recomendadas e desce para o fim de maisDoDia.
+    const doPedido = daData.filter((f) => !motor.barrada(f, pedidoReal));
+    // O motor tira as recusadas sozinho; sem nenhuma que sobre, a fala dele
+    // ("Seguem…" ou a oferta de outro dia) continua valendo.
+    const naoEsgotadas = daData.filter((f) => f.esgotado !== true);
+    const real = naoEsgotadas.length ? motor.escolher(cReal, naoEsgotadas) : null;
+    const ficticio = ficticiasDoPedido.length && !daData.length ? motor.escolher(criterios, ficticiasDoPedido) : null;
+    const opcaoDe = (f) => ({ ...motor.opcao(f, pedidoReal), cara: caraDe(f, pedidoReal) });
+    const m = L.montarResultado({
+      real,
+      ficticio,
+      maisDoDia: doPedido.length ? A.maisDoDia({ festas: doPedido, recomendadas: real ? real.opcoes : [], opcaoDe }) : [],
+      outrosDias: A.outrosDias({ reais: vigentes, dia: criterios.dia, semana, agoraMs }),
+      criterios: { ...criterios, semana },
+    });
+    // O que a conversa ainda lê da escolha do motor (o aviso, a oferta, os blocos).
+    const fonteDaLista = real || ficticio || {};
+    const r = {
+      afrouxou: fonteDaLista.afrouxou || [],
+      atendem: fonteDaLista.atendem || 0,
+      casam: fonteDaLista.casam || 0,
+      noPedido: fonteDaLista.noPedido || 0,
+      blocos: fonteDaLista.blocos || {},
+      ...(fonteDaLista.oferta && !real ? { oferta: fonteDaLista.oferta } : {}),
+      misto: true,
+      ...m,
+      reais: (m.opcoes || []).length,
+      base: m.base || infoDaBase(),
+      opcoes: (m.opcoes || []).map(comData),
+      maisDoDia: (m.maisDoDia || []).map(comData),
+      exemplos: (m.exemplos || []).map(comData),
+    };
+    // Nada no dia: a lista não está vazia (há real vigente). Se o dia tinha
+    // real, foi o pedido que as tirou; se outro dia da semana tem, a nota e
+    // os outros dias já apontam para lá; só sem nada na semana a frase diz isso.
+    if (!r.opcoes.length && !r.exemplos.length && !r.maisDoDia.length && !r.aviso) {
+      if (daData.length) r.aviso = 'As festas reais desse dia são as que você tirou do pedido.';
+      else if (!r.outrosDias.some((d) => d.reais > 0)) r.aviso = 'Não achei festa real nesta semana ainda. A lista se atualiza durante o dia.';
+    }
+    return r;
   }
 
   // A fala do Finde mais a nota da mistura (o que é real e o que é exemplo).
@@ -732,10 +889,12 @@ function montarServidor({
   const comNota = (fala, r) => (r && r.nota && !r.reais ? [r.nota, fala] : [fala, r && r.nota]).filter(Boolean).join(' ');
 
   const rotas = {
-    'GET /api/formulario': () => [200, formulario(fonte.base(), reaisVigentes().length)],
+    'GET /api/formulario': () => [200, oFormulario()],
 
     'POST /api/festas': (corpo) => {
-      const criterios = exigirCriterios(corpo.criterios);
+      // A semana pode vir dentro dos critérios ou ao lado deles.
+      const bruto = corpo.semana !== undefined && corpo.criterios && typeof corpo.criterios === 'object' ? { ...corpo.criterios, semana: corpo.semana } : corpo.criterios;
+      const criterios = exigirCriterios(bruto);
       const r = resultado(criterios);
       if (r.oferta) criterios.oferta = r.oferta.frase;
       return [200, {
@@ -757,6 +916,10 @@ function montarServidor({
         // Festa real sem som ou sem preço não entra nessas contas.
         estilosMostrados: naTela.map((f) => f.estilos[0]).filter(Boolean),
         precosMostrados: naTela.map((f) => f.preco).filter((p) => typeof p === 'number'),
+        // "dia 5" precisa do relógio; com real na tela, o bairro citado filtra
+        // (a real não tem a distância em minutos).
+        agoraMs: relogio(),
+        ...(naTela.some((f) => f.real) ? { comDistancia: false } : {}),
       };
 
       let { mudar, pedidos, duvida, diaRecusado } = entender(corpo.texto, contexto);
@@ -780,6 +943,7 @@ function montarServidor({
         delete mudanca.faixa;
       }
       const depois = motor.completar({ ...antes, ...mudanca });
+      if (antes.semana && !depois.semana) depois.semana = antes.semana;
       delete depois.oferta;
       depois.firmes = conversa.firmesDe(antes, depois);
       const base = baseDoPedido(depois);
@@ -824,7 +988,7 @@ function montarServidor({
       let oferta = fala.entendeu ? r.oferta : undefined;
       if (duvida && duvida.dia) {
         const nome = C.DIAS[duvida.dia].frase;
-        oferta = { frase: nome, rotulo: `Mudar ${duvida.dia === 'sex' ? 'pra' : 'pro'} ${nome}` };
+        oferta = { frase: nome, rotulo: `Mudar ${C.proDia(duvida.dia)}` };
       }
       if (oferta) criterios.oferta = oferta.frase;
       return [200, {
@@ -856,7 +1020,12 @@ function montarServidor({
     },
   };
 
-  const pagina = (req, res, nome, opcoes = {}) => enviarPagina(req, res, path.join(PUBLICO, nome), { ...opcoes, enderecos });
+  // A imagem da prévia do link: compartilhar.png, ou o flyer da festa real do
+  // convite (U24), sempre em endereço absoluto.
+  const pagina = (req, res, nome, opcoes = {}) => enviarPagina(req, res, path.join(PUBLICO, nome), {
+    ...opcoes,
+    enderecos: { ...enderecos, __IMAGEM_COMPARTILHAR__: `${origem(req)}/compartilhar.png`, ...(opcoes.enderecos || {}) },
+  });
 
   // A landing vem montada: o destaque do herói e as telas da demo saem daqui.
   const landing = (req, res) => pagina(req, res, 'landing.html', {
@@ -875,7 +1044,7 @@ function montarServidor({
   }, Buffer.from(trocarEnderecos(NAO_ACHEI, enderecos), 'utf8'));
 
   // Os dados da primeira tela vão junto com o HTML: uma ida e volta a menos.
-  const app = (req, res) => pagina(req, res, 'index.html', { dados: formulario(fonte.base(), reaisVigentes().length) });
+  const app = (req, res) => pagina(req, res, 'index.html', { dados: oFormulario() });
 
   // /p/:id: 404 de verdade quando o convite não existe; quando existe, as
   // metas de compartilhamento dizem a festa.
@@ -895,13 +1064,25 @@ function montarServidor({
     // Festa fictícia: a prévia diz que é exemplo antes de tudo, porque no
     // grupo ninguém vê o rodapé do protótipo.
     const ficticia = f.real !== true;
-    const titulo = `${ficticia ? 'Exemplo · ' : ''}Bora ${dia.id === 'sex' ? 'na' : 'no'} ${dia.frase}? ${f.nome}, ${o.hora}${media}`;
+    const titulo = `${ficticia ? 'Exemplo · ' : ''}Bora ${dia.artigo || (dia.id === 'sex' ? 'na' : 'no')} ${dia.frase}? ${f.nome}, ${o.hora}${media}`;
     // Festa real sem casa ou sem endereço: o que tem, sem "null".
     const onde = [f.casa, f.endereco && f.endereco.texto].filter(Boolean).join(', ') || 'Endereço não divulgado';
     const mediaLonga = temMedia ? ` Média de ${f.mediaIdade} anos${f.origemIdade ? `, ${f.origemIdade}` : ''}.` : '';
     const ondeFrase = ficticia ? `Festa fictícia, exemplo do protótipo. ${onde.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR'))}` : onde;
     const descricao = `${ondeFrase} · ${FT.precoNaLista(f)}. ${o.horario}${mediaLonga}`;
-    return pagina(req, res, 'plano.html', { titulo, descricao });
+    // Festa real com flyer: a versão 1080 na prévia do link (R35), servida
+    // por /imagens/ enquanto o convite estiver vivo.
+    const flyer = !ficticia && f.cartaz && typeof f.cartaz === 'object' && /^\/imagens\/[a-f0-9]{16}-1080\.webp$/.test(f.cartaz.arquivo) ? f.cartaz.arquivo : null;
+    const enderecosDoConvite = flyer ? { __IMAGEM_COMPARTILHAR__: `${origem(req)}${flyer}` } : {};
+    // O flyer é retrato (cerca de 1080×1350): as metas dizem o tamanho dele, ou
+    // saem, para o leitor da prévia não montar o cartão paisagem e cortar.
+    const lado = (v) => Number.isInteger(v) && v > 0 && v <= 4096;
+    const medidas = flyer && lado(f.cartaz.largura) && lado(f.cartaz.altura) ? [f.cartaz.largura, f.cartaz.altura] : null;
+    const trocas = flyer ? {
+      '<meta property="og:image:width" content="1200">': medidas ? `<meta property="og:image:width" content="${medidas[0]}">` : '',
+      '<meta property="og:image:height" content="630">': medidas ? `<meta property="og:image:height" content="${medidas[1]}">` : '',
+    } : undefined;
+    return pagina(req, res, 'plano.html', { titulo, descricao, enderecos: enderecosDoConvite, trocas });
   }
 
   async function api(req, res, pathname) {
@@ -933,6 +1114,27 @@ function montarServidor({
     json(res, status, resposta);
   }
 
+  // As rotas novas do app (nucleo/rotas-app.js): estado da base, agenda,
+  // avaliação e imagens.
+  const rotaDoApp = temApp ? A.ligarRotasApp({
+    fonteMotor,
+    reais: reaisSemColisao,
+    listaAtual: fonteReais.festas,
+    achar: acharFesta,
+    planos,
+    avaliacoes,
+    quando: (f) => (f.real ? { data: f.data } : dataDaFesta(f, new Date(relogio())) || {}),
+    imagens: A.criarImagens({ dir: path.join(path.resolve(varDir), 'imagens'), reserva: path.join(RAIZ, 'dados', 'imagens'), motorUrl, fetch: buscar, log }),
+    adminToken,
+    relogio,
+    log,
+    origem,
+    json,
+    erro,
+    enviarCorpo,
+    lerCorpo,
+  }) : null;
+
   return http.createServer(async (req, res) => {
     let endereco;
     try {
@@ -941,7 +1143,17 @@ function montarServidor({
       return erro(res, 400, 'Endereço malformado.');
     }
     const { pathname, search } = endereco;
+    // O site app sai com a CSP dos tiles e sem buscador (KTD16, KTD17).
+    if (ehDoApp(pathname)) res.finde = CABECALHOS_APP;
     try {
+      if (temApp && fonteMotor && (pathname.startsWith('/api/') || pathname.startsWith('/p/') || pathname.startsWith('/imagens/')
+        || pathname === '/app' || pathname === '/app/' || (sites.modo === 'app' && (pathname === '/' || pathname === '/index.html')))) {
+        // O boot a frio espera a lista nova até 2 s; depois, a atualização
+        // corre por trás quando passou a validade (KTD14).
+        await fonteMotor.pronta();
+        fonteMotor.atualizar().catch(() => {});
+      }
+      if (rotaDoApp && rotaDoApp(req, res, endereco)) return undefined;
       if (pathname.startsWith('/api/')) {
         // A landing sozinha não tem API: festas, conversa e convites moram no app.
         if (!temApp) return erro(res, 404, 'Não achei esse caminho.');

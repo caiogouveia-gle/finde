@@ -25,7 +25,7 @@ function festa(id, extra = {}) {
 
 // Todos os pedidos de formulário possíveis, sem estilo e com um estilo.
 function* todosOsPedidos() {
-  for (const dia of C.ORDEM_DIAS) {
+  for (const dia of C.DIAS_FICTICIOS) {
     for (const j of C.JANELAS) {
       for (const fx of C.FAIXAS) {
         for (const teto of [50, 80, 150, 'sem-limite']) {
@@ -80,7 +80,7 @@ test('festa que fura o pedido diz o quê, em primeiro lugar, no porquê', () => 
 });
 
 test('quem pede 36 ou mais não recebe média 29 calada', () => {
-  for (const dia of C.ORDEM_DIAS) {
+  for (const dia of C.DIAS_FICTICIOS) {
     const r = motor.escolher({ dia, janela: 'noite', faixa: '36+', teto: 80 }, base);
     for (const o of r.opcoes) assert.ok(o.festa.mediaIdade >= 33, `${o.festa.id} média ${o.festa.mediaIdade}`);
     for (const o of r.opcoes.filter((x) => x.festa.mediaIdade < 35)) assert.match(o.motivos[0], /abaixo da sua faixa/);
@@ -450,4 +450,156 @@ test('furaHorario é a régua do horário: a mesma do porquê, do bloco e do afr
       assert.equal(motor.foraDoPedido(o.festa, cc).includes('horario'), motor.furaHorario(o.festa, cc), o.festa.id);
     }
   }
+});
+
+// ---------------------------------------------------------------- U27 (plano de 24/11/2026)
+
+// Festa real no formato do conversor (/3), com dados fictícios.
+function real(id, extra = {}) {
+  return {
+    ...festa(id, { faixas: [], frase: null, distanciaMin: null, origemIdade: null, mediaIdade: null, esquenta: null, fim: null, inicio: 22 }),
+    data: '2026-11-28', dataDaNoite: '2026-11-28', real: true, local: null, esgotado: false, ...extra,
+  };
+}
+const PEDIDO_NOVO = { dia: 'sab', janela: 'noite', idade: { min: 28, max: 35 }, teto: 80 };
+
+test('o pedido aceita "hoje", quinta e a semana; quarta segue recusada; os 14 bairros entram', () => {
+  const c = motor.sanearCriterios({ dia: 'qui', semana: 'proxima', bairros: ['interlagos', 'pinheiros', 'atlantida'], evitarBairros: ['santana'] });
+  assert.deepEqual(c, { dia: 'qui', semana: 'proxima', bairros: ['interlagos', 'pinheiros'], evitarBairros: ['santana'] });
+  assert.equal(motor.sanearCriterios({ dia: 'hoje' }).dia, 'hoje');
+  assert.equal(motor.sanearCriterios({ dia: 'qua' }).dia, undefined);
+  assert.equal(motor.sanearCriterios({ semana: 'outra' }).semana, undefined);
+  assert.deepEqual(C.ORDEM_DIAS, ['hoje', 'qui', 'sex', 'sab', 'dom']);
+  // "hoje" sempre é desta semana; o pedido diz a semana que vem.
+  assert.equal(motor.completar({ ...PEDIDO_NOVO, dia: 'hoje', semana: 'proxima' }).semana, 'esta');
+  assert.equal(motor.completar(PEDIDO_NOVO).semana, 'esta');
+  const prox = motor.completar({ ...PEDIDO_NOVO, semana: 'proxima' });
+  assert.equal(motor.pedidoEmPartes(prox)[0].texto, 'Sábado da semana que vem');
+  assert.match(motor.resumoDoPedido(prox), /^Sáb que vem · /);
+  assert.equal(motor.pedidoEmPartes(motor.completar({ ...PEDIDO_NOVO, bairros: ['interlagos'] }))[2].texto, 'em Interlagos');
+});
+
+test('"hoje": o motor aceita as festas que quem chama passou, de qualquer dia', () => {
+  const seg = real('na-segunda', { dia: 'seg', data: '2026-11-30', dataDaNoite: '2026-11-30' });
+  const r = motor.escolher({ ...PEDIDO_NOVO, dia: 'hoje' }, [seg]);
+  assert.deepEqual(ids(r), ['na-segunda']);
+  assert.equal(r.opcoes[0].dia, 'Seg');
+  // A oferta de outro dia nunca é "hoje".
+  const vazio = motor.escolher({ ...PEDIDO_NOVO, dia: 'qui', teto: 0, firmes: ['preco'] }, base);
+  assert.doesNotMatch(vazio.aviso, /hoje/i);
+});
+
+test('preço ausente fica no bloco do pedido, dito uma vez (no porquê), e não vira "quase"', () => {
+  const f = real('sem-preco', { preco: null });
+  const o = motor.escolher(PEDIDO_NOVO, [f]).opcoes[0];
+  assert.equal(o.bloco, 'pedido');
+  assert.equal(o.atende, true);
+  assert.deepEqual(o.incertos, []);
+  assert.equal(o.aviso, null);
+  assert.ok(o.porque.falta.some((x) => x.criterio === 'preco'));
+  // Na % a sua cara, conta a metade, e a festa não chega a 100%.
+  assert.ok(o.cara.semDado.includes('preco'));
+  assert.ok(o.cara.pct < 100);
+});
+
+test('LUNA no Centro não some num pedido de Pinheiros; a festa sem bairro fica abaixo dela, em "Local a confirmar"', () => {
+  const luna = real('luna', { bairro: 'centro', regiao: 'centro', inicio: 23 });
+  const semBairro = real('sem-bairro', { bairro: null, regiao: null, inicio: 22 });
+  const c = { ...PEDIDO_NOVO, bairros: ['pinheiros'] };
+  const r = motor.escolher(c, [semBairro, luna]);
+  assert.deepEqual(ids(r), ['luna', 'sem-bairro']);
+  assert.deepEqual(r.opcoes.map((o) => o.bloco), ['longe', 'local']);
+  assert.equal(r.blocos.local, 'Local a confirmar');
+  assert.equal(r.blocos.longe, 'Longe de Pinheiros');
+  assert.equal(r.opcoes[0].atende, false);
+  // E em "ver todas" (ordenarTodas), a mesma ordem.
+  assert.deepEqual(motor.ordenarTodas(c, [semBairro, luna]).map((o) => o.festa.id), ['luna', 'sem-bairro']);
+  // A fictícia longe continua fora, como antes.
+  assert.equal(motor.lugar({ ...luna, real: false }, motor.completar(c)), null);
+});
+
+test('real com coordenada: vizinha até 3 km do ponto do bairro pedido, com a distância em km', () => {
+  const c = { ...PEDIDO_NOVO, bairros: ['pinheiros'] };
+  // Na Vila Madalena (Praça Benedito Calixto), a 1,3 km do Largo da Batata.
+  const perto = real('perto', { bairro: 'vila-madalena', local: { lat: -23.5611, lng: -46.6825, precisao: 'rua' } });
+  // Na Bela Vista, a uns 5 km: mesma cidade, longe.
+  const longe = real('longe', { bairro: 'bela-vista', regiao: 'centro', local: { lat: -23.5579, lng: -46.644, precisao: 'casa' } });
+  // Precisão de bairro não mede.
+  const soBairro = real('so-bairro', { bairro: 'bela-vista', regiao: 'centro', local: { lat: -23.5579, lng: -46.644, precisao: 'bairro' } });
+  const cc = motor.completar(c);
+  assert.equal(motor.lugar(perto, cc), 'perto');
+  assert.equal(motor.lugar(longe, cc), 'longe');
+  assert.equal(motor.distanciaKm(perto, cc), 1.3);
+  assert.ok(motor.distanciaKm(longe, cc) > 4);
+  assert.equal(motor.distanciaKm(soBairro, cc), null);
+  const r = motor.escolher(c, [perto, longe]);
+  assert.equal(r.opcoes[0].festa.id, 'perto');
+  assert.equal(r.opcoes[0].distanciaKm, 1.3);
+  assert.ok(r.opcoes[0].motivos.includes('a 1,3 km de Pinheiros'), r.opcoes[0].motivos.join(' | '));
+  // A real sem coordenada não ganha os minutos da tabela das fictícias.
+  const semPonto = motor.escolher(c, [real('sem-ponto', { bairro: 'vila-madalena' })]).opcoes[0];
+  assert.ok(!semPonto.motivos.some((m) => /min /.test(m)), semPonto.motivos.join(' | '));
+  assert.equal(semPonto.distanciaKm, null);
+});
+
+test('horário sem início: não fura, a régua não sai e a opção diz que é incerto', () => {
+  const f = real('sem-inicio', { inicio: null, horarioIncerto: true });
+  const r = motor.escolher(PEDIDO_NOVO, [f, real('com-inicio', { inicio: 23 })]);
+  assert.deepEqual(ids(r), ['com-inicio', 'sem-inicio']);
+  const o = r.opcoes[1];
+  assert.equal(o.horarioIncerto, true);
+  assert.equal(o.hora, null);
+  assert.equal(o.linha, 'Sáb · horário a confirmar · Pinheiros');
+  assert.equal(o.horario, 'O horário ainda não foi divulgado.');
+  assert.deepEqual(o.fora, []);
+  assert.ok(o.porque.falta.some((x) => x.criterio === 'horario'));
+  assert.equal(motor.furaHorario(f, motor.completar(PEDIDO_NOVO)), false);
+});
+
+test('o porquê em dados: até duas partes que cabem, na ordem dos pesos, e tudo o que falta', () => {
+  const f = real('porque', { inicio: 23, mediaIdade: 31, origemIdade: 'informada pela produtora', estilos: [], preco: 40 });
+  const c = { ...PEDIDO_NOVO, bairros: ['pinheiros'] };
+  const o = motor.escolher(c, [f]).opcoes[0];
+  assert.deepEqual(o.porque.cabe, [{ criterio: 'horario', valor: '23h' }, { criterio: 'idade', valor: 'média 31' }]);
+  assert.deepEqual(o.porque.falta, [{ criterio: 'som', valor: null }]);
+  // A fictícia também traz o porquê (a lista tira dela o pct e a cara).
+  const fic = motor.escolher({ ...PEDIDO_NOVO, teto: 'sem-limite' }, base).opcoes[0];
+  assert.ok(fic.porque.cabe.length >= 1 && fic.porque.cabe.length <= 2);
+  // Avaliação de quem foi: "4 de 5 da idade", nunca a média sozinha.
+  const av = real('av', { mediaIdade: 31, avaliacaoIdade: { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 } });
+  const oa = motor.escolher(PEDIDO_NOVO, [av]).opcoes[0];
+  assert.deepEqual(oa.porque.cabe.find((x) => x.criterio === 'idade'), { criterio: 'idade', valor: '4 de 5 da idade' });
+  assert.doesNotMatch(oa.linha, /média/);
+});
+
+test('avaliação de outra faixa não fura a idade (é sem dado); a da faixa cruza e cabe', () => {
+  const av = (naMedida, faixa) => real(`av-${faixa.join('-')}`, { mediaIdade: 45, avaliacaoIdade: { avaliacoes: 6, naMedida, faixa, convites: 2 } });
+  const c = motor.completar(PEDIDO_NOVO);
+  assert.equal(motor.idadeNoPedido(av(0.8, [29, 34]), c), 'dentro');
+  assert.equal(motor.idadeNoPedido(av(0.2, [29, 34]), c), 'fora');
+  assert.equal(motor.idadeNoPedido(av(0.8, [41, 48]), c), 'sem');
+  const o = motor.escolher(PEDIDO_NOVO, [av(0.8, [41, 48])]).opcoes[0];
+  assert.deepEqual(o.fora, []);
+  assert.notEqual(o.bloco, 'faixa');
+});
+
+test('ordenarTodas: todas as reais do dia, menos as recusadas, na ordem do motor', () => {
+  const festas = [
+    real('cabe', { inicio: 23 }),
+    real('cara', { inicio: 23, preco: 300 }),
+    real('recusada', { inicio: 23 }),
+    real('outro-dia', { inicio: 23, dia: 'dom', data: '2026-11-29', dataDaNoite: '2026-11-29' }),
+  ];
+  const todas = motor.ordenarTodas({ ...PEDIDO_NOVO, evitar: ['recusada'] }, festas);
+  assert.deepEqual(todas.map((o) => o.festa.id), ['cabe', 'cara']);
+  assert.ok(todas.every((o) => o.porque && o.cara && 'distanciaKm' in o));
+});
+
+test('revisão cara-de-ia-03: o aviso diz o que falta pelo nome, e não "sem todos os dados"', () => {
+  const sab = base.filter((f) => f.dia === 'sab');
+  const bairro = sab[0].bairro;
+  // Uma festa sem bairro nem coordenada entra incerta num pedido com bairro.
+  const semBairro = { ...sab[0], id: 'sem-bairro-teste', bairro: null, regiao: null, coordenada: null, lat: null, lng: null };
+  const r = motor.escolher({ dia: 'sab', janela: 'noite', faixa: '30-35', teto: 'sem-limite', bairros: [bairro] }, [semBairro, ...sab.filter((f) => f.bairro === bairro).slice(0, 1)]);
+  assert.equal(r.aviso, 'Uma cabe no pedido; a outra entrou sem dizer o bairro.');
 });

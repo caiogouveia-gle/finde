@@ -163,6 +163,13 @@ test('fly.toml é a landing e fly.app.toml é o app: cada um aponta para o outro
   assert.equal(valor(landing, 'FINDE_URL_APP'), `https://${valor(app, 'app')}.fly.dev/`);
   assert.equal(valor(app, 'FINDE_URL_SITE'), `https://${valor(landing, 'app')}.fly.dev/`);
   assert.match(app, /fly deploy -c fly\.app\.toml/);
+  // O app lê o motor pela rede privada e diz de onde vêm os tiles (U24); a landing, não.
+  assert.equal(valor(app, 'FINDE_MOTOR_URL'), 'http://finde-motor.internal:8080');
+  assert.match(valor(app, 'FINDE_TILES'), /^https:\/\/.+\{z\}\/\{x\}\/\{y\}/);
+  assert.equal(valor(landing, 'FINDE_MOTOR_URL'), undefined);
+  assert.equal(valor(landing, 'FINDE_TILES'), undefined);
+  // Nenhum segredo no toml: só o nome dele em comentário.
+  assert.doesNotMatch(app, /^\s*FINDE_(APP|ADMIN)_TOKEN\s*=/m);
   for (const [nome, toml] of [['fly.toml', landing], ['fly.app.toml', app]]) {
     assert.equal(valor(toml, 'primary_region'), 'gru', nome);
     assert.match(toml, /\[mounts\]\s*\n\s*source = "finde_convites"\s*\n\s*destination = "\/data"/, nome);
@@ -482,4 +489,43 @@ test('o cartão do herói e a demo saem da base fictícia e dizem que são exemp
   assert.deepEqual([...d.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), ['#demo']);
   assert.match(corpo, /Demo · festas fictícias/);
   assert.match(corpo, /role="group" aria-label="Demonstração do app finde, com festas fictícias"/);
+});
+
+// ---------------------------------------------------------------- noindex (U24, KTD17)
+
+test('X-Robots-Tag: no app em tudo (inclusive em /), na landing em nada; robots.txt só no app', async () => {
+  for (const caminho of ['/', '/app', '/api/formulario', '/app.js', '/robots.txt']) {
+    const r = await pedir(raiz.app, caminho);
+    assert.equal(r.cabecalhos['x-robots-tag'], 'noindex, noimageindex', `app ${caminho}`);
+    assert.match(r.cabecalhos['content-security-policy'], /img-src 'self' data: https:\/\/tile\.openstreetmap\.org/, `app ${caminho}`);
+  }
+  for (const caminho of ['/', '/landing.css', '/nao-existe']) {
+    const r = await pedir(raiz.landing, caminho);
+    assert.equal(r.cabecalhos['x-robots-tag'], undefined, `landing ${caminho}`);
+    assert.match(r.cabecalhos['content-security-policy'], /img-src 'self' data:(;|$)/, `landing ${caminho}`);
+  }
+  assert.equal((await pedir(raiz.landing, '/robots.txt')).status, 404);
+  assert.equal((await pedir(raiz.landing, '/app')).cabecalhos['x-robots-tag'], undefined);
+  const robots = await pedir(raiz.app, '/robots.txt');
+  assert.equal(robots.status, 200);
+  assert.match(robots.cabecalhos['content-type'], /^text\/plain/);
+  assert.equal(robots.corpo, 'User-agent: *\nDisallow: /imagens/\nDisallow: /api/\n');
+  // Tudo junto: o app leva, a landing não.
+  assert.equal((await pedir(raiz.junto, '/app')).cabecalhos['x-robots-tag'], 'noindex, noimageindex');
+  assert.equal((await pedir(raiz.junto, '/')).cabecalhos['x-robots-tag'], undefined);
+});
+
+test('FINDE_TILES do ambiente entra na CSP do app', async () => {
+  const antes = process.env.FINDE_TILES;
+  process.env.FINDE_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png';
+  let base;
+  try {
+    base = await subir(MODOS.app);
+  } finally {
+    if (antes === undefined) delete process.env.FINDE_TILES;
+    else process.env.FINDE_TILES = antes;
+  }
+  const csp = (await pedir(base, '/')).cabecalhos['content-security-policy'];
+  assert.match(csp, /img-src 'self' data: https:\/\/\*\.basemaps\.cartocdn\.com(;|$)/);
+  assert.doesNotMatch(csp, /openstreetmap/);
 });

@@ -1,0 +1,516 @@
+{
+  "_leia": "Fixture de forma do contrato finde-r14/3 (KTD1 do plano de 24/11/2026). Dados fictícios. Congelada depois da fundação: só a costura muda. As chaves de cada registro são as que montarRegistro emite.",
+  "contrato": "finde-r14/3",
+  "geradoEm": "2026-11-26T12:05:00.000Z",
+  "execucaoId": 42,
+  "total": 3,
+  "festas": [
+    {
+      "contrato": "finde-r14/3",
+      "id": "noite-exemplo-20261205-a1b2",
+      "nome": "Noite Exemplo",
+      "produtora": "Coletivo Exemplo",
+      "casa": "Casa Exemplo",
+      "endereco": {
+        "texto": "Rua Exemplo, 100 - Pinheiros, São Paulo - SP",
+        "bairro": "pinheiros",
+        "bairroNome": "Pinheiros",
+        "regiao": "oeste",
+        "cidade": "São Paulo",
+        "cidadeOrigem": "fonte",
+        "cep": "05400-000",
+        "lugar": "casa-exemplo",
+        "lat": -23.56671,
+        "lng": -46.69341,
+        "precisao": "rua",
+        "origemGeo": "pagina",
+        "atribuicaoOsm": false
+      },
+      "data": "2026-12-05",
+      "dataDaNoite": "2026-12-05",
+      "inicio": "2026-12-05T23:00:00-03:00",
+      "pistaCheia": null,
+      "fim": "2026-12-06T05:00:00-03:00",
+      "lotes": [
+        {
+          "nome": "1º lote",
+          "preco": 40,
+          "disponivel": true,
+          "taxa": 4
+        },
+        {
+          "nome": "2º lote",
+          "preco": 60,
+          "disponivel": null
+        }
+      ],
+      "precoAPartirDe": {
+        "valor": 40,
+        "lote": "1º lote",
+        "esgotadosAntes": 0
+      },
+      "esgotado": false,
+      "entradaNaPorta": null,
+      "linkCompra": "https://ingressos.example/evento/noite-exemplo",
+      "linkEvento": null,
+      "instagram": null,
+      "imagens": [
+        {
+          "id": "0123456789abcdef",
+          "arquivo": "imagens/0123456789abcdef-1080.webp",
+          "miniatura": "imagens/0123456789abcdef-480.webp",
+          "largura": 1080,
+          "altura": 1350,
+          "papel": "pagina-ingresso",
+          "fonte": "paginas",
+          "credito": "Divulgação · Ingressos Exemplo",
+          "origem": "https://ingressos.example/evento/noite-exemplo",
+          "conferidoEm": "2026-11-25T10:30:00-03:00",
+          "principal": true,
+          "origens": [
+            {
+              "fonte": "paginas",
+              "origem": "https://ingressos.example/evento/noite-exemplo",
+              "credito": "Divulgação · Ingressos Exemplo"
+            },
+            {
+              "fonte": "indicacao",
+              "origem": "https://ingressos.example/evento/noite-exemplo",
+              "credito": "Cartaz indicado · Coletivo Exemplo"
+            }
+          ]
+        }
+      ],
+      "cartaz": {
+        "id": "0123456789abcdef",
+        "arquivo": "imagens/0123456789abcdef-1080.webp",
+        "miniatura": "imagens/0123456789abcdef-480.webp",
+        "largura": 1080,
+        "altura": 1350,
+        "papel": "pagina-ingresso",
+        "fonte": "paginas",
+        "credito": "Divulgação · Ingressos Exemplo",
+        "origem": "https://ingressos.example/evento/noite-exemplo",
+        "conferidoEm": "2026-11-25T10:30:00-03:00",
+        "principal": true,
+        "origens": [
+          {
+            "fonte": "paginas",
+            "origem": "https://ingressos.example/evento/noite-exemplo",
+            "credito": "Divulgação · Ingressos Exemplo"
+          },
+          {
+            "fonte": "indicacao",
+            "origem": "https://ingressos.example/evento/noite-exemplo",
+            "credito": "Cartaz indicado · Coletivo Exemplo"
+          }
+        ]
+      },
+      "paginas": [
+        {
+          "tipo": "ingresso",
+          "nome": "Ingressos Exemplo",
+          "url": "https://ingressos.example/evento/noite-exemplo",
+          "lidoEm": "2026-11-24T12:00:00-03:00",
+          "campos": [
+            "nome",
+            "lotes"
+          ]
+        }
+      ],
+      "lineup": [
+        "DJ Exemplo",
+        "Outra Exemplo"
+      ],
+      "estilos": [
+        "house-disco"
+      ],
+      "idadeMinima": null,
+      "regras": {},
+      "mediaIdade": {
+        "valor": 31.4,
+        "origem": "avaliacoes",
+        "avaliacoes": 5,
+        "naMedida": 0.8,
+        "faixa": [
+          29,
+          34
+        ],
+        "convites": 2
+      },
+      "ehFesta": true,
+      "exemplo": false,
+      "classificacao": {
+        "por": "claude",
+        "conferidoEm": "2026-11-25T10:30:00-03:00",
+        "tipo": "festa"
+      },
+      "fontes": [
+        {
+          "id": "paginas",
+          "nome": "Página lida no navegador",
+          "url": "https://ingressos.example/evento/noite-exemplo",
+          "conferidoEm": "2026-11-25T10:30:00-03:00",
+          "vinculo": {
+            "regra": "escore",
+            "escore": 9,
+            "sinais": [
+              {
+                "sinal": "link",
+                "peso": 4,
+                "detalhe": "mesmo link de compra"
+              },
+              {
+                "sinal": "nome",
+                "peso": 3,
+                "detalhe": "nome igual sem datas"
+              },
+              {
+                "sinal": "imagem",
+                "peso": 1.5,
+                "detalhe": "pHash a 10 do flyer"
+              },
+              {
+                "sinal": "lugar",
+                "peso": 2,
+                "detalhe": "mesmo lugar do cadastro (casa-exemplo)"
+              }
+            ]
+          }
+        },
+        {
+          "id": "indicacao",
+          "nome": "Lido na página do ingresso",
+          "url": "https://ingressos.example/evento/noite-exemplo",
+          "conferidoEm": "2026-11-24T12:00:00-03:00",
+          "vinculo": {
+            "regra": "nova",
+            "escore": null,
+            "sinais": []
+          }
+        }
+      ],
+      "divergencias": [
+        {
+          "campo": "precoAPartirDe",
+          "valores": [
+            {
+              "fonte": "paginas",
+              "valor": 40,
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            {
+              "fonte": "indicacao",
+              "valor": 45,
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            }
+          ]
+        }
+      ],
+      "idsAntigos": [
+        "noite-exemplo-20261205-c3d4"
+      ],
+      "revisar": [
+        {
+          "motivo": "candidato-a-fusao",
+          "detalhe": "escore 3,5 com outra-noite-exemplo-20261205-e5f6"
+        }
+      ],
+      "coletadoEm": "2026-11-25T10:30:00-03:00",
+      "campos": {
+        "nome": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "produtora": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "casa": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "endereco": {
+          "fonte": "indicacao",
+          "conferidoEm": "2026-11-24T12:00:00-03:00",
+          "subcampos": {
+            "texto": {
+              "fonte": "indicacao",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "cidade": {
+              "fonte": "indicacao",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "bairro": {
+              "fonte": "indicacao",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "geo": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            }
+          }
+        },
+        "data": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "inicio": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "fim": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "lotes": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "lineup": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "estilos": {
+          "fonte": "claude",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "mediaIdade": {
+          "fonte": "avaliacoes",
+          "conferidoEm": "2026-11-26T09:00:00-03:00"
+        },
+        "ehFesta": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "tipo": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        },
+        "geo": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-25T10:30:00-03:00"
+        }
+      }
+    },
+    {
+      "contrato": "finde-r14/3",
+      "id": "festa-minima-20261204-b2c3",
+      "nome": "Festa Mínima",
+      "produtora": null,
+      "casa": null,
+      "endereco": {
+        "texto": null,
+        "bairro": null,
+        "bairroNome": null,
+        "regiao": null,
+        "cidade": "São Paulo",
+        "cidadeOrigem": "fonte",
+        "cep": null,
+        "lugar": null,
+        "lat": null,
+        "lng": null,
+        "precisao": null,
+        "origemGeo": null,
+        "atribuicaoOsm": false
+      },
+      "data": "2026-12-04",
+      "dataDaNoite": "2026-12-04",
+      "inicio": "2026-12-04T23:00:00-03:00",
+      "pistaCheia": null,
+      "fim": null,
+      "lotes": [],
+      "precoAPartirDe": null,
+      "esgotado": false,
+      "entradaNaPorta": null,
+      "linkCompra": null,
+      "linkEvento": null,
+      "instagram": null,
+      "imagens": [],
+      "cartaz": null,
+      "paginas": [],
+      "lineup": null,
+      "estilos": [],
+      "idadeMinima": null,
+      "regras": {},
+      "mediaIdade": null,
+      "ehFesta": null,
+      "exemplo": false,
+      "classificacao": null,
+      "fontes": [
+        {
+          "id": "indicacao",
+          "nome": "Lido na página do ingresso",
+          "url": null,
+          "conferidoEm": "2026-11-24T12:00:00-03:00",
+          "vinculo": {
+            "regra": "nova",
+            "escore": null,
+            "sinais": []
+          }
+        }
+      ],
+      "divergencias": [],
+      "idsAntigos": [],
+      "revisar": [],
+      "coletadoEm": "2026-11-24T12:00:00-03:00",
+      "campos": {
+        "nome": {
+          "fonte": "indicacao",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "indicacao",
+          "conferidoEm": "2026-11-24T12:00:00-03:00",
+          "subcampos": {
+            "texto": null,
+            "cidade": {
+              "fonte": "indicacao",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "bairro": null,
+            "geo": null
+          }
+        },
+        "data": {
+          "fonte": "indicacao",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "indicacao",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        }
+      }
+    },
+    {
+      "contrato": "finde-r14/3",
+      "id": "depois-da-meia-noite-20261128-d4e5",
+      "nome": "Depois da Meia-Noite",
+      "produtora": null,
+      "casa": "Galpão Exemplo",
+      "endereco": {
+        "texto": "Rua Exemplo, 200 - Barra Funda, São Paulo - SP",
+        "bairro": "barra-funda",
+        "bairroNome": "Barra Funda",
+        "regiao": "oeste",
+        "cidade": "São Paulo",
+        "cidadeOrigem": "fonte",
+        "cep": null,
+        "lugar": null,
+        "lat": null,
+        "lng": null,
+        "precisao": null,
+        "origemGeo": null,
+        "atribuicaoOsm": false
+      },
+      "data": "2026-11-28",
+      "dataDaNoite": "2026-11-27",
+      "inicio": "2026-11-28T00:30:00-03:00",
+      "pistaCheia": null,
+      "fim": null,
+      "lotes": [
+        {
+          "nome": "Pista",
+          "preco": 50,
+          "disponivel": true
+        }
+      ],
+      "precoAPartirDe": {
+        "valor": 50,
+        "lote": "Pista",
+        "esgotadosAntes": 0
+      },
+      "esgotado": false,
+      "entradaNaPorta": null,
+      "linkCompra": "https://ingressos.example/evento/depois-da-meia-noite",
+      "linkEvento": null,
+      "instagram": null,
+      "imagens": [],
+      "cartaz": null,
+      "paginas": [],
+      "lineup": null,
+      "estilos": [],
+      "idadeMinima": null,
+      "regras": {},
+      "mediaIdade": null,
+      "ehFesta": true,
+      "exemplo": false,
+      "classificacao": {
+        "por": "paginas",
+        "conferidoEm": "2026-11-24T12:00:00-03:00",
+        "tipo": null
+      },
+      "fontes": [
+        {
+          "id": "paginas",
+          "nome": "Página lida no navegador",
+          "url": "https://ingressos.example/evento/depois-da-meia-noite",
+          "conferidoEm": "2026-11-24T12:00:00-03:00",
+          "vinculo": {
+            "regra": "link",
+            "escore": null,
+            "sinais": []
+          }
+        }
+      ],
+      "divergencias": [],
+      "idsAntigos": [],
+      "revisar": [],
+      "coletadoEm": "2026-11-24T12:00:00-03:00",
+      "campos": {
+        "nome": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "casa": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "endereco": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00",
+          "subcampos": {
+            "texto": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "cidade": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "bairro": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "geo": null
+          }
+        },
+        "data": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "inicio": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "lotes": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "linkCompra": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        },
+        "ehFesta": {
+          "fonte": "paginas",
+          "conferidoEm": "2026-11-24T12:00:00-03:00"
+        }
+      }
+    }
+  ]
+}

@@ -4,3 +4,5 @@ var/
 *.log
 # Festas reais no app (ferramentas/reais.js): dado real, fora do git; entra na imagem do Fly.
 prototipo/v1-festas/dados/reais*
+# Cópia local das imagens das festas reais (ferramentas/reais.js, KTD14 do plano de 24/11): peça de terceiro, fora do git.
+prototipo/v1-festas/dados/imagens/

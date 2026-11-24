@@ -6,7 +6,12 @@
 // Pesos: horário 30, idade 25, bairro 20, preço 15, som 10. Critério que a
 // pessoa não pediu (nenhum som marcado, a cidade inteira, sem teto, idade de
 // 18 a 50 ou mais) sai da conta, e os pesos dos outros se renormalizam.
-// Crédito: cabe = 1; 'quase' = 0,5; não cabe = 0.
+// Crédito: cabe = 1; 'quase' = 0,5; não cabe = 0. Duas exceções (KTD15,
+// U27), com o crédito na própria parte: o som parecido vale 0,5 + 0,4 ×
+// afinidade (quem tem o dado nunca fica abaixo de quem não tem); a idade pela
+// avaliação de quem foi vale a proporção que achou o público da idade
+// (naMedida) quando a faixa de quem avaliou cruza a pedida, e 0,5 (sem dado)
+// quando não cruza (KTD13).
 //
 // Cada parte cabe numa linha do detalhe a 390 px (até umas 36 letras) quando
 // cabe no pedido: o rótulo ao lado (cabe, quase, não cabe) já dá o veredito,
@@ -35,7 +40,8 @@ const QUASE_PRECO_DIVISOR = 5;
 // só se sabe o horário, e contar zero puniria a festa pelo que a fonte não
 // disse. Assim, festa com dado faltando nunca chega a 100%.
 const num = (x) => typeof x === 'number' && Number.isFinite(x);
-const credito = (cabe) => (cabe === true ? 1 : cabe === 'quase' || cabe === null ? 0.5 : 0);
+const creditoPadrao = (cabe) => (cabe === true ? 1 : cabe === 'quase' || cabe === null ? 0.5 : 0);
+const credito = (r) => (num(r.credito) ? r.credito : creditoPadrao(r.cabe));
 
 const HORAS = ['', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze'];
 
@@ -74,6 +80,8 @@ function nomeDoSom(id) {
 function horario(f, c) {
   const j = M.janelaPorId(c.janela);
   if (!j) return null;
+  // Festa real sem início: não se sabe, conta a metade.
+  if (M.semInicio(f)) return { cabe: null, texto: 'horário não divulgado' };
   const cabe = !M.furaHorario(f, c) ? true : !M.furaHorario(f, c, M.TOLERANCIA_AFROUXADA) ? 'quase' : false;
   const comeca = `começa ${C.asHoras(f.inicio)}`;
   if (cabe !== true) return { cabe, texto: furoDoHorario(f, c, j) || `${comeca}, fora do seu horário` };
@@ -120,6 +128,17 @@ function idade(f, c) {
   if (c.idade && c.idade.min <= M.IDADE_MIN && c.idade.max >= M.IDADE_MAX) return null;
   const fx = M.faixaDe(c);
   if (!fx) return null;
+  // Pela avaliação de quem foi: a média não fala sozinha (KTD13).
+  const a = M.avaliacao(f);
+  if (a) {
+    const de = `${Math.round(a.naMedida * a.avaliacoes)} de ${a.avaliacoes}`;
+    if (!M.avaliacaoCruza(f, c)) return { cabe: null, credito: 0.5, texto: 'quem avaliou é de outra faixa' };
+    return {
+      cabe: a.naMedida >= 0.75 ? true : a.naMedida >= 0.5 ? 'quase' : false,
+      credito: a.naMedida,
+      texto: `${de} acharam o público da idade`,
+    };
+  }
   if (!num(f.mediaIdade)) return { cabe: null, texto: 'média de idade não informada' };
   if (f.mediaIdade >= fx.min && f.mediaIdade <= fx.max) return { cabe: true, texto: 'média dentro da sua faixa' };
   const abaixo = f.mediaIdade < fx.min;
@@ -131,17 +150,23 @@ function idade(f, c) {
 }
 
 // Bairro marcado = cabe; vizinho de um marcado (a mesma noção do motor) = quase.
+// A real com coordenada mede em linha reta (R29): vizinha até 3 km, com os km.
 function bairro(f, c) {
   if (!c.bairros || !c.bairros.length) return null;
-  if (!f.bairro) return { cabe: null, texto: 'bairro não informado' };
-  const b = C.BAIRROS[f.bairro];
-  const onde = b ? b.em : `em ${f.bairro}`;
+  const km = M.maisPerto(f, c);
+  if (!f.bairro && !km) return { cabe: null, texto: 'bairro não informado' };
+  const b = f.bairro ? C.BAIRROS[f.bairro] : null;
+  const onde = b ? b.em : f.bairro ? `em ${f.bairro}` : 'no endereço divulgado';
   const um = c.bairros.length === 1;
-  if (c.bairros.includes(f.bairro)) return { cabe: true, texto: `${onde}, ${um ? 'como' : 'um dos que'} você marcou` };
+  if (f.bairro && c.bairros.includes(f.bairro)) return { cabe: true, texto: `${onde}, ${um ? 'como' : 'um dos que'} você marcou` };
+  if (km && M.lugar(f, c) === 'perto') return { cabe: 'quase', texto: `${onde}, a ${M.emKm(km.km)} ${km.de}` };
+  if (!f.bairro) return { cabe: false, texto: `a ${M.emKm(km.km)} ${km.de}` };
   const perto = b && c.bairros
     .filter((x) => C.BAIRROS[x] && M.vizinho(x, f.bairro))
     .map((x) => [x, C.minutosEntre(x, f.bairro)])
     .sort((a, z) => a[1] - z[1] || c.bairros.indexOf(a[0]) - c.bairros.indexOf(z[0]))[0];
+  // A tabela de minutos é só das fictícias (R29); a real sem coordenada diz a região.
+  if (perto && f.real === true) return { cabe: 'quase', texto: `${onde}, na região ${C.BAIRROS[perto[0]].de}` };
   if (perto) return { cabe: 'quase', texto: `${onde}, a ${perto[1]} min ${C.BAIRROS[perto[0]].de}` };
   const marcado = um && C.BAIRROS[c.bairros[0]];
   return { cabe: false, texto: `${onde}, longe ${marcado ? marcado.de : 'dos que você marcou'}` };
@@ -185,7 +210,8 @@ function som(f, c) {
   const maisPerto = f.estilos.reduce((a, e) => (lembra(e) > lembra(a) ? e : a), f.estilos[0]);
   if (lembra(maisPerto) > 0) {
     const pedido = c.estilos.reduce((a, p) => (afinidade(p, maisPerto) > afinidade(a, maisPerto) ? p : a), c.estilos[0]);
-    return { cabe: false, texto: `${parece}${nomeDoSom(maisPerto)}, parecido com ${nomeDoSom(pedido)}` };
+    // Parecido vale 0,5 + 0,4 × afinidade: nunca abaixo de quem não diz o som.
+    return { cabe: 'quase', credito: Math.round((0.5 + 0.4 * lembra(maisPerto)) * 100) / 100, texto: `${parece}${nomeDoSom(maisPerto)}, parecido com ${nomeDoSom(pedido)}` };
   }
   return { cabe: false, texto: `${parece}${nomeDoSom(maisPerto)}, fora ${um ? 'do que' : 'dos que'} você pediu` };
 }
@@ -205,11 +231,13 @@ function cara(f, c) {
   for (const criterio of CRITERIOS) {
     const r = AVALIAR[criterio](f, c);
     if (!r) continue;
-    partes.push({ criterio, cabe: r.cabe, texto: r.texto });
+    const parte = { criterio, cabe: r.cabe, texto: r.texto };
+    if (num(r.credito)) parte.credito = r.credito;
+    partes.push(parte);
     if (r.cabe === null) semDado.push(criterio);
     else conhecidos += 1;
     pesos += PESOS[criterio];
-    soma += PESOS[criterio] * credito(r.cabe);
+    soma += PESOS[criterio] * credito(r);
   }
   if (!pesos) return null;
   if (!conhecidos) return { pct: null, partes, semDado };
@@ -219,4 +247,4 @@ function cara(f, c) {
   return semDado.length ? { pct, partes, semDado } : { pct, partes };
 }
 
-module.exports = { cara, PESOS, CRITERIOS, emHoras, emAnos, nomeDoSom };
+module.exports = { cara, PESOS, CRITERIOS, emHoras, emAnos, nomeDoSom, credito };

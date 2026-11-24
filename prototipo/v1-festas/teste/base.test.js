@@ -15,9 +15,16 @@ test('a base inteira é válida: cerca de 36 festas, nenhum aviso', () => {
   assert.ok(base.length >= 34 && base.length <= 40, `${base.length} festas`);
 });
 
+// Os dias e os bairros da base fictícia são os de sempre: sexta a domingo e
+// os sete das três zonas. O pedido pode abrir mais dias (quinta, "hoje") e os
+// 14 bairros do motor (U26, U29); a base não precisa cobri-los.
+const DIAS_DA_BASE = ['sex', 'sab', 'dom'];
+const BAIRROS_DA_BASE = ['pinheiros', 'vila-madalena', 'barra-funda', 'centro', 'bela-vista', 'jardins', 'vila-mariana'];
+
 test('cobre os três dias, os sete bairros e as quatro faixas', () => {
-  for (const d of C.ORDEM_DIAS) assert.ok(base.some((f) => f.dia === d), d);
-  for (const b of Object.keys(C.BAIRROS)) assert.ok(base.some((f) => f.bairro === b), b);
+  for (const d of DIAS_DA_BASE) assert.ok(base.some((f) => f.dia === d), d);
+  for (const b of BAIRROS_DA_BASE) assert.ok(base.some((f) => f.bairro === b), b);
+  assert.ok(base.every((f) => BAIRROS_DA_BASE.includes(f.bairro) && DIAS_DA_BASE.includes(f.dia)));
   for (const fx of C.FAIXAS) assert.ok(base.some((f) => f.faixas.includes(fx.id)), fx.id);
   for (const e of C.ID_ESTILOS) assert.ok(base.some((f) => f.estilos.includes(e)), e);
 });
@@ -41,7 +48,7 @@ test('no máximo duas patrocinadas, todas identificadas pelo selo', () => {
 
 test('a regiao bate com o bairro e a média cai numa das faixas atendidas', () => {
   for (const f of base) {
-    assert.equal(f.regiao, C.BAIRROS[f.bairro].regiao, f.id);
+    assert.equal(f.regiao, C.TODOS_OS_BAIRROS[f.bairro].regiao, f.id);
     const fx = C.FAIXAS.find((x) => f.mediaIdade >= x.min && f.mediaIdade <= x.max);
     assert.ok(f.faixas.includes(fx.id), f.id);
   }
@@ -97,4 +104,19 @@ test('validarFesta aceita a forma documentada e devolve os campos ruins', () => 
   assert.deepEqual(validarFesta(bruto.festas[0]), []);
   assert.deepEqual(validarFesta({}).slice(0, 3), ['id', 'nome', 'produtora']);
   assert.deepEqual(validarFesta([]), ['não é um objeto']);
+});
+
+test('os caminhos novos de imagem e o ponto: valem os de /imagens/ e dentro de São Paulo', () => {
+  const boa = { ...bruto.festas[0] };
+  const img = { id: '0123456789abcdef', arquivo: '/imagens/0123456789abcdef-1080.webp', miniatura: '/imagens/0123456789abcdef-480.webp', credito: 'Divulgação', origem: 'https://ingressos.example/x' };
+  assert.deepEqual(validarFesta({ ...boa, imagens: [img], cartaz: img, local: { lat: -23.56, lng: -46.69, precisao: 'rua' } }), []);
+  assert.deepEqual(validarFesta({ ...boa, imagens: [{ ...img, arquivo: '/imagens/../segredo.webp' }] }), ['imagens']);
+  assert.deepEqual(validarFesta({ ...boa, imagens: [{ ...img, origem: 'http://inseguro.example' }] }), ['imagens']);
+  assert.deepEqual(validarFesta({ ...boa, cartaz: { ...img, id: 'ZZ' } }), ['cartaz']);
+  assert.deepEqual(validarFesta({ ...boa, local: { lat: -22.9, lng: -43.2 } }), ['local']);
+  const { base: limpa } = prepararBase([{ ...boa, imagens: [img], local: { lat: -23.56, lng: -46.69, precisao: 'rua' } }]);
+  assert.deepEqual(limpa[0].imagens, [img]);
+  assert.ok(Object.isFrozen(limpa[0].imagens[0]) && Object.isFrozen(limpa[0].local));
+  assert.deepEqual(base[0].imagens, []);
+  assert.equal(base[0].local, null);
 });

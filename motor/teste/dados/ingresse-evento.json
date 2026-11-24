@@ -1,0 +1,67 @@
+{
+ "evento": {
+  "url": "https://www.ingresse.com/festa-exemplo-05-12/",
+  "final": "https://www.ingresse.com/festa-exemplo-05-12/",
+  "status": 200,
+  "titulo": "Festa Exemplo (Edição de Dezembro)",
+  "texto": "Acessibilidade\nBrazil\nNoite de pista na Casa Exemplo, com DJs convidados.\n05.12 - 19h às 05h\nProibida a entrada de menores de idade.\nWhere live begins.",
+  "jsonld": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": "Festa Exemplo (Edição de Dezembro)",
+    "startDate": "2026-12-05T22:00:00+00:00",
+    "location": {
+     "@type": "Place",
+     "name": "Casa Exemplo",
+     "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Rua Exemplo, 91",
+      "addressLocality": "São Paulo",
+      "postalCode": "01000-000",
+      "addressCountry": "BRA"
+     }
+    },
+    "image": [
+     "https://kraken.ingresse.example/event/posters/999001/large/1.jpg",
+     "https://kraken.ingresse.example/event/posters/999001/medium/2.jpg",
+     "https://kraken.ingresse.example/event/posters/999001/small/3.jpg"
+    ],
+    "description": "<p>Noite de pista na Casa Exemplo, com DJs convidados.</p><p>05.12 - 19h às 05h</p><p>Proibida a entrada de menores de idade.</p>"
+   }
+  ],
+  "links": [],
+  "dados": null,
+  "meta": {
+   "ogImage": "https://kraken.ingresse.example/event/posters/999001/medium/2.jpg",
+   "ogImageWidth": null,
+   "ogImageHeight": null,
+   "twitterImage": null
+  }
+ },
+ "cart": {
+  "url": "https://cart.ingresse.com/00000000-0000-4000-8000-000000000001/tickets",
+  "final": "https://cart.ingresse.com/00000000-0000-4000-8000-000000000001/tickets",
+  "status": 200,
+  "titulo": "Festa Exemplo - Ingresse",
+  "texto": "Ticket purchase. This is step 1 of 3: ticket selection for Festa Exemplo, taking place between November 27 and November 28, 2026\nAccess account\nFesta Exemplo\nShare\nI need help\nOfficial sale sold out\nHave an access code?",
+  "jsonld": [],
+  "links": [
+   "https://sobre.ingresse.com/privacy-policy"
+  ],
+  "dados": null,
+  "meta": null
+ },
+ "casca": {
+  "url": "https://www.ingresse.com/festa-exemplo-casca/",
+  "final": "https://www.ingresse.com/festa-exemplo-casca/",
+  "status": 200,
+  "titulo": "Ingresse",
+  "texto": "Please wait\nWhere live begins.",
+  "jsonld": [],
+  "links": [],
+  "dados": null,
+  "meta": null,
+  "observacao": "sintética: a casca que a Ingresse serve antes do evento carregar"
+ }
+}

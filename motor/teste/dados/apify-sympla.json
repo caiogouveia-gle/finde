@@ -1,0 +1,46 @@
+[
+  {
+    "id": 3012345,
+    "url": "https://www.sympla.com.br/evento/baile-do-terraco/3012345",
+    "name": "Baile do Terraço",
+    "type": "PRESENCIAL",
+    "startDate": "2026-11-14T22:00:00-03:00",
+    "endDate": "2026-11-15T04:00:00-03:00",
+    "venue": { "name": "Terraço Exemplo", "city": "São Paulo", "state": "SP" },
+    "location": { "formattedAddress": "Rua Exemplo, 500 - Barra Funda, São Paulo - SP" },
+    "organizer": { "name": "Coletivo Exemplo", "url": "https://www.sympla.com.br/produtor/coletivo-exemplo" },
+    "ticketSummary": { "minPrice": 45.5, "soldOut": false },
+    "category": "Festas e Shows",
+    "tags": ["house", "baile"]
+  },
+  {
+    "id": 3012346,
+    "url": "https://www.sympla.com.br/evento/live-de-estudo/3012346",
+    "name": "Live de Estudo",
+    "type": "ONLINE",
+    "startDate": "2026-11-14T20:00:00-03:00",
+    "venue": { "name": "Online", "city": "São Paulo", "state": "SP" },
+    "category": "Cursos"
+  },
+  {
+    "id": 3012347,
+    "url": "https://www.sympla.com.br/evento/festa-na-serra/3012347",
+    "name": "Festa na Serra",
+    "type": "PRESENCIAL",
+    "startDate": "2026-11-14T21:00:00-03:00",
+    "venue": { "name": "Clube da Serra", "city": "Campos do Jordão", "state": "SP" },
+    "category": "Festas e Shows"
+  },
+  {
+    "id": 3012348,
+    "url": "https://www.sympla.com.br/evento/sarau-esgotado/3012348",
+    "name": "Sarau Esgotado",
+    "type": "PRESENCIAL",
+    "startDate": "2026-11-15T01:30:00Z",
+    "venue": { "name": "Casa Exemplo", "city": "São Paulo", "state": "SP" },
+    "location": "Rua das Flores, 10 - Pinheiros",
+    "ticketSummary": { "lowestPrice": 30, "isSoldOut": true },
+    "category": "Teatro",
+    "tags": []
+  }
+]

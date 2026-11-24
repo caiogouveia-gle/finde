@@ -1,0 +1,7638 @@
+{
+ "contrato": "finde-r14/3",
+ "geradoEm": "2026-11-24T03:58:07.912Z",
+ "execucaoId": 13,
+ "total": 45,
+ "festas": [
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-1-20261124-4925",
+   "nome": "Festa Fictícia 1",
+   "produtora": {
+    "nome": "Coletivo Fictício 1",
+    "instagram": "https://www.instagram.com/perfil_ficticio_1/"
+   },
+   "casa": "Casa Fictícia 1",
+   "endereco": {
+    "texto": null,
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01001-000",
+    "lugar": "casa-ficticia-1",
+    "lat": -23.52452,
+    "lng": -46.70864,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-24",
+   "dataDaNoite": "2026-11-24",
+   "inicio": "2026-11-24T19:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_1/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-1",
+     "lidoEm": "2026-11-24T00:52:24-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "casa",
+      "lineup",
+      "estilos"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 1.1"
+   ],
+   "estilos": [
+    "eletronica"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-1",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "estilos": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": null,
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-2-20261124-bd87",
+   "nome": "Festa Fictícia 2",
+   "produtora": {
+    "nome": "Coletivo Fictício 2",
+    "instagram": "https://www.instagram.com/perfil_ficticio_2/"
+   },
+   "casa": "Casa Fictícia 2",
+   "endereco": {
+    "texto": "Rua Fictícia, 102",
+    "bairro": "centro",
+    "bairroNome": "Sé",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01002-000",
+    "lugar": "casa-ficticia-2",
+    "lat": -23.508,
+    "lng": -46.69536,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-24",
+   "dataDaNoite": "2026-11-24",
+   "inicio": "2026-11-24T19:30:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 0,
+     "disponivel": null
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 0,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_2/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-2",
+     "lidoEm": "2026-11-24T00:52:06-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "casa",
+      "lotes",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 2.1"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-2",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lotes": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-3-20261125-0d4d",
+   "nome": "Festa Fictícia 3",
+   "produtora": {
+    "nome": "Coletivo Fictício 3",
+    "instagram": "https://www.instagram.com/perfil_ficticio_3/"
+   },
+   "casa": "Casa Fictícia 3",
+   "endereco": {
+    "texto": "Rua Fictícia, 103",
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01003-000",
+    "lugar": "casa-ficticia-3",
+    "lat": -23.494,
+    "lng": -46.70832,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-25",
+   "dataDaNoite": "2026-11-25",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_3/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "lidoEm": "2026-11-24T00:53:19-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 3.1",
+    "Artista 3.2"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-4-20261125-d550",
+   "nome": "Festa Fictícia 4",
+   "produtora": {
+    "nome": "Coletivo Fictício 4",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 4",
+   "endereco": {
+    "texto": "Rua Fictícia, 104",
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01004-000",
+    "lugar": "casa-ficticia-4",
+    "lat": -23.50296,
+    "lng": -46.67376,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-25",
+   "dataDaNoite": "2026-11-25",
+   "inicio": "2026-11-25T19:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-26T00:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 0,
+     "disponivel": false
+    }
+   ],
+   "precoAPartirDe": null,
+   "esgotado": true,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-4",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-4",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-4",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 4.1",
+    "Artista 4.2",
+    "Artista 4.3"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {
+    "lista": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:28-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-4",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:28-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:28-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-5-20261125-b5fe",
+   "nome": "Festa Fictícia 5",
+   "produtora": {
+    "nome": "Coletivo Fictício 5",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 5",
+   "endereco": {
+    "texto": "Rua Fictícia, 105",
+    "bairro": "centro",
+    "bairroNome": "Campos Elíseos",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01005-000",
+    "lugar": "casa-ficticia-5",
+    "lat": -23.61944,
+    "lng": -46.58464,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-25",
+   "dataDaNoite": "2026-11-25",
+   "inicio": "2026-11-25T21:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-26T04:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 10,
+     "disponivel": true
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 10,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-5",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-5",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-5",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 5.1",
+    "Artista 5.2",
+    "Artista 5.3"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {
+    "vestimenta": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:25-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-5",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:25-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:25-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-6-20261125-72d5",
+   "nome": "Festa Fictícia 6",
+   "produtora": {
+    "nome": "Coletivo Fictício 6",
+    "instagram": "https://www.instagram.com/perfil_ficticio_4/"
+   },
+   "casa": "Casa Fictícia 6",
+   "endereco": {
+    "texto": "Rua Fictícia, 106",
+    "bairro": "bela-vista",
+    "bairroNome": "Bela Vista",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01006-000",
+    "lugar": "casa-ficticia-6",
+    "lat": -23.57198,
+    "lng": -46.67184,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-25",
+   "dataDaNoite": "2026-11-25",
+   "inicio": "2026-11-25T21:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 0,
+     "disponivel": null
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 0,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_4/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-6",
+     "lidoEm": "2026-11-24T00:53:28-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "casa",
+      "endereco",
+      "lotes",
+      "lineup",
+      "estilos"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 6.1"
+   ],
+   "estilos": [
+    "mpb-samba"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-6",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lotes": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "estilos": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-7-20261126-465e",
+   "nome": "Festa Fictícia 7",
+   "produtora": {
+    "nome": "Coletivo Fictício 3",
+    "instagram": "https://www.instagram.com/perfil_ficticio_3/"
+   },
+   "casa": "Casa Fictícia 3",
+   "endereco": {
+    "texto": "Rua Fictícia, 107",
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01007-000",
+    "lugar": "casa-ficticia-3",
+    "lat": -23.494,
+    "lng": -46.70832,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-26",
+   "dataDaNoite": "2026-11-26",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_3/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "lidoEm": "2026-11-24T00:53:19-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 7.1",
+    "Artista 7.2"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-8-20261126-7658",
+   "nome": "Festa Fictícia 8",
+   "produtora": {
+    "nome": "Coletivo Fictício 7",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 7",
+   "endereco": {
+    "texto": "Rua Fictícia, 108",
+    "bairro": "pinheiros",
+    "bairroNome": "Pinheiros",
+    "regiao": "oeste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01008-000",
+    "lugar": "casa-ficticia-7",
+    "lat": -23.56694,
+    "lng": -46.68336,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-26",
+   "dataDaNoite": "2026-11-26",
+   "inicio": "2026-11-26T20:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-27T04:30:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 0,
+     "disponivel": true,
+     "ate": "21:30"
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 20,
+     "disponivel": true
+    },
+    {
+     "nome": "Lote 3",
+     "preco": 30,
+     "disponivel": true
+    },
+    {
+     "nome": "Lote 4",
+     "preco": 100,
+     "disponivel": true
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 0,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-7",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-7",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-7",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 8.1"
+   ],
+   "estilos": [
+    "indie-rock"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:31-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-7",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:31-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:31-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-9-20261126-e291",
+   "nome": "Festa Fictícia 9",
+   "produtora": {
+    "nome": "Coletivo Fictício 8",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 8",
+   "endereco": {
+    "texto": "Rua Fictícia, 109",
+    "bairro": "bela-vista",
+    "bairroNome": "Bela Vista",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01009-000",
+    "lugar": "casa-ficticia-8",
+    "lat": -23.52438,
+    "lng": -46.73088,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-26",
+   "dataDaNoite": "2026-11-26",
+   "inicio": "2026-11-26T21:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-26T23:59:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 20,
+     "disponivel": true
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 20,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-8",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-8",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-8",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": [],
+   "estilos": [],
+   "idadeMinima": 18,
+   "regras": {
+    "documento": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:39-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-8",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "separada",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "curadoria",
+     "conferidoEm": "2026-11-24T03:02:37-03:00"
+    },
+    "idadeMinima": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:39-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:39-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:39-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-10-20261126-1a41",
+   "nome": "Festa Fictícia 10",
+   "produtora": {
+    "nome": "Coletivo Fictício 6",
+    "instagram": "https://www.instagram.com/perfil_ficticio_4/"
+   },
+   "casa": "Casa Fictícia 6",
+   "endereco": {
+    "texto": "Rua Fictícia, 110",
+    "bairro": "bela-vista",
+    "bairroNome": "Bela Vista",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01010-000",
+    "lugar": "casa-ficticia-6",
+    "lat": -23.57198,
+    "lng": -46.67184,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-26",
+   "dataDaNoite": "2026-11-26",
+   "inicio": "2026-11-26T21:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 25,
+     "disponivel": null
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 25,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_4/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-9",
+     "lidoEm": "2026-11-24T00:53:04-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "casa",
+      "endereco",
+      "lotes",
+      "lineup",
+      "estilos"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 10.1",
+    "Artista 10.2"
+   ],
+   "estilos": [
+    "mpb-samba"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-9",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lotes": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "estilos": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-11-20261126-2790",
+   "nome": "Festa Fictícia 11",
+   "produtora": {
+    "nome": "Coletivo Fictício 9",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 9",
+   "endereco": {
+    "texto": null,
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-26",
+   "dataDaNoite": "2026-11-26",
+   "inicio": "2026-11-26T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-27T05:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 15,
+     "disponivel": false
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 20,
+     "disponivel": false
+    },
+    {
+     "nome": "Lote 3",
+     "preco": 30,
+     "disponivel": true
+    },
+    {
+     "nome": "Lote 4",
+     "preco": 0,
+     "disponivel": false
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 30,
+    "lote": "Lote 1",
+    "esgotadosAntes": 3
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-10",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-10",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-10",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:29-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-10",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:29-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": null,
+      "cidade": null,
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": null
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-12-20261126-fdfb",
+   "nome": "Festa Fictícia 12",
+   "produtora": {
+    "nome": "Coletivo Fictício 10",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 10",
+   "endereco": {
+    "texto": "Rua Fictícia, 112",
+    "bairro": "bela-vista",
+    "bairroNome": "Consolação",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01012-000",
+    "lugar": "casa-ficticia-9",
+    "lat": -23.57646,
+    "lng": -46.63312,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-26",
+   "dataDaNoite": "2026-11-26",
+   "inicio": "2026-11-26T23:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-27T05:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 20,
+     "disponivel": true
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 20,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-11",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-11",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-11",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 12.1",
+    "Artista 12.2",
+    "Artista 12.3",
+    "Artista 12.4",
+    "Artista 12.5"
+   ],
+   "estilos": [
+    "house-disco",
+    "eletronica"
+   ],
+   "idadeMinima": null,
+   "regras": {
+    "vestimenta": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:37-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-11",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:37-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:37-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:37-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-13-20261126-9124",
+   "nome": "Festa Fictícia 13",
+   "produtora": {
+    "nome": "Coletivo Fictício 8",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 8",
+   "endereco": {
+    "texto": "Rua Fictícia, 113",
+    "bairro": "bela-vista",
+    "bairroNome": "Bela Vista",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01013-000",
+    "lugar": "casa-ficticia-8",
+    "lat": -23.52438,
+    "lng": -46.73088,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-26",
+   "dataDaNoite": "2026-11-26",
+   "inicio": "2026-11-26T23:59:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-27T04:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 20,
+     "disponivel": true
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 20,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-12",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-12",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-12",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 13.1"
+   ],
+   "estilos": [],
+   "idadeMinima": 18,
+   "regras": {
+    "documento": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:39-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-12",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "separada",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:39-03:00"
+    },
+    "idadeMinima": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:39-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:39-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:39-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-14-20261127-dd18",
+   "nome": "Festa Fictícia 14",
+   "produtora": {
+    "nome": "Coletivo Fictício 3",
+    "instagram": "https://www.instagram.com/perfil_ficticio_3/"
+   },
+   "casa": "Casa Fictícia 3",
+   "endereco": {
+    "texto": "Rua Fictícia, 114",
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01014-000",
+    "lugar": "casa-ficticia-3",
+    "lat": -23.494,
+    "lng": -46.70832,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-27",
+   "dataDaNoite": "2026-11-27",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_3/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "lidoEm": "2026-11-24T00:53:19-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa",
+      "lineup",
+      "estilos"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 14.1",
+    "Artista 14.2"
+   ],
+   "estilos": [
+    "house-disco"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "estilos": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-15-20261127-7714",
+   "nome": "Festa Fictícia 15",
+   "produtora": {
+    "nome": "Coletivo Fictício 11",
+    "instagram": "https://www.instagram.com/perfil_ficticio_5/"
+   },
+   "casa": null,
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-27",
+   "dataDaNoite": "2026-11-27",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_5/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-13",
+     "lidoEm": "2026-11-24T00:51:51-03:00",
+     "campos": [
+      "nome",
+      "data"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-13",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-16-20261127-3a3c",
+   "nome": "Festa Fictícia 16",
+   "produtora": {
+    "nome": "Coletivo Fictício 12",
+    "instagram": "https://www.instagram.com/perfil_ficticio_6/"
+   },
+   "casa": "Casa Fictícia 11",
+   "endereco": {
+    "texto": "Rua Fictícia, 116",
+    "bairro": "mooca",
+    "bairroNome": "Carrão",
+    "regiao": "leste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01016-000",
+    "lugar": "casa-ficticia-10",
+    "lat": -23.57576,
+    "lng": -46.67776,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-27",
+   "dataDaNoite": "2026-11-27",
+   "inicio": "2026-11-27T18:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 10,
+     "disponivel": null,
+     "ate": "20:00"
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 15,
+     "disponivel": null
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 10,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_6/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-14",
+     "lidoEm": "2026-11-24T00:52:41-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "casa",
+      "endereco",
+      "lotes",
+      "lineup",
+      "estilos"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 16.1",
+    "Artista 16.2"
+   ],
+   "estilos": [
+    "mpb-samba"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-14",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lotes": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "estilos": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-17-20261127-587a",
+   "nome": "Festa Fictícia 17",
+   "produtora": {
+    "nome": "Coletivo Fictício 6",
+    "instagram": "https://www.instagram.com/perfil_ficticio_4/"
+   },
+   "casa": "Casa Fictícia 6",
+   "endereco": {
+    "texto": "Rua Fictícia, 117",
+    "bairro": "bela-vista",
+    "bairroNome": "Bela Vista",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01017-000",
+    "lugar": "casa-ficticia-6",
+    "lat": -23.57198,
+    "lng": -46.67184,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-27",
+   "dataDaNoite": "2026-11-27",
+   "inicio": "2026-11-27T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 25,
+     "disponivel": null
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 25,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_4/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-15",
+     "lidoEm": "2026-11-24T00:52:17-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "casa",
+      "endereco",
+      "lotes",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 17.1",
+    "Artista 17.2"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-15",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lotes": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-18-20261127-157c",
+   "nome": "Festa Fictícia 18",
+   "produtora": {
+    "nome": "Coletivo Fictício 13",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 12",
+   "endereco": {
+    "texto": "Rua Fictícia, 118",
+    "bairro": "bela-vista",
+    "bairroNome": "Bela Vista",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01018-000",
+    "lugar": "casa-ficticia-11",
+    "lat": -23.48028,
+    "lng": -46.6336,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-27",
+   "dataDaNoite": "2026-11-27",
+   "inicio": "2026-11-27T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-28T04:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 40,
+     "disponivel": true
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 40,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-16",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-16",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-16",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 18.1",
+    "Artista 18.2",
+    "Artista 18.3",
+    "Artista 18.4",
+    "Artista 18.5",
+    "Artista 18.6"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:42-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-16",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:42-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:42-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-19-20261127-75d0",
+   "nome": "Festa Fictícia 19",
+   "produtora": {
+    "nome": "Coletivo Fictício 14",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 13",
+   "endereco": {
+    "texto": "Rua Fictícia, 119",
+    "bairro": "barra-funda",
+    "bairroNome": "Parque Industrial Tomas Edson",
+    "regiao": "oeste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01019-000",
+    "lugar": "casa-ficticia-12",
+    "lat": -23.54034,
+    "lng": -46.66912,
+    "precisao": "rua",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-27",
+   "dataDaNoite": "2026-11-27",
+   "inicio": "2026-11-27T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-28T06:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 20,
+     "disponivel": true,
+     "ate": "23:30"
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 35,
+     "disponivel": true
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 20,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-17",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-17",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-17",
+     "lidoEm": "2026-11-24T00:56:24-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "lotes",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 19.1"
+   ],
+   "estilos": [
+    "eletronica"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:40-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-17",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lotes": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:40-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:40-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:40-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-20-20261127-77da",
+   "nome": "Festa Fictícia 20",
+   "produtora": null,
+   "casa": null,
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-27",
+   "dataDaNoite": "2026-11-27",
+   "inicio": "2026-11-27T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 130,
+     "disponivel": true,
+     "taxa": 16.9,
+     "condicoes": [
+      "feminino"
+     ]
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 160,
+     "disponivel": true,
+     "taxa": 20.8,
+     "condicoes": [
+      "masculino"
+     ]
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 160,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0,
+    "genero": {
+     "feminino": {
+      "valor": 130,
+      "lote": "1º lote, feminino"
+     },
+     "masculino": {
+      "valor": 160,
+      "lote": "1º lote, masculino"
+     }
+    }
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-18",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-18",
+     "lidoEm": "2026-11-16T21:57:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "lotes",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {
+    "lista": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-18",
+     "conferidoEm": "2026-11-16T21:57:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-16T21:57:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:50:25-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "endereco": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00",
+     "subcampos": {
+      "texto": null,
+      "cidade": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "bairro": null,
+      "geo": null
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-21-20261128-b556",
+   "nome": "Festa Fictícia 21",
+   "produtora": {
+    "nome": "Coletivo Fictício 11",
+    "instagram": "https://www.instagram.com/perfil_ficticio_5/"
+   },
+   "casa": null,
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_5/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-13",
+     "lidoEm": "2026-11-24T00:51:51-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 21.1",
+    "Artista 21.2"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-13",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-22-20261128-f47b",
+   "nome": "Festa Fictícia 22",
+   "produtora": {
+    "nome": "Coletivo Fictício 3",
+    "instagram": "https://www.instagram.com/perfil_ficticio_3/"
+   },
+   "casa": "Casa Fictícia 3",
+   "endereco": {
+    "texto": "Rua Fictícia, 122",
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01022-000",
+    "lugar": "casa-ficticia-3",
+    "lat": -23.494,
+    "lng": -46.70832,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_3/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "lidoEm": "2026-11-24T00:53:19-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 22.1",
+    "Artista 22.2"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-23-20261128-cc95",
+   "nome": "Festa Fictícia 23",
+   "produtora": {
+    "nome": "Coletivo Fictício 15",
+    "instagram": "https://www.instagram.com/perfil_ficticio_7/"
+   },
+   "casa": "Casa Fictícia 14",
+   "endereco": {
+    "texto": "Rua Fictícia, 123",
+    "bairro": "butanta",
+    "bairroNome": "Jd Peri Peri",
+    "regiao": "oeste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01023-000",
+    "lugar": "casa-ficticia-13",
+    "lat": -23.50016,
+    "lng": -46.7176,
+    "precisao": "rua",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": "2026-11-28T15:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-28T23:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 0,
+     "disponivel": null
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 0,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_7/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-19",
+     "lidoEm": "2026-11-24T00:53:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "fim",
+      "casa",
+      "endereco",
+      "lotes",
+      "lineup",
+      "estilos"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 23.1",
+    "Artista 23.2",
+    "Artista 23.3"
+   ],
+   "estilos": [
+    "mpb-samba"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-19",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "fim": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lotes": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "estilos": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-24-20261128-7cc6",
+   "nome": "Festa Fictícia 24",
+   "produtora": {
+    "nome": "Coletivo Fictício 16",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 15",
+   "endereco": {
+    "texto": "Rua Fictícia, 124",
+    "bairro": "pinheiros",
+    "bairroNome": "Pinheiros",
+    "regiao": "oeste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01024-000",
+    "lugar": "casa-ficticia-14",
+    "lat": -23.4856,
+    "lng": -46.60544,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": "2026-11-28T16:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-29T01:00:00-03:00",
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-20",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-20",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-20",
+     "lidoEm": "2026-11-24T00:57:11-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:58-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-20",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:58-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-25-20261128-72f4",
+   "nome": "Festa Fictícia 25",
+   "produtora": {
+    "nome": "Coletivo Fictício 17",
+    "instagram": null
+   },
+   "casa": null,
+   "endereco": {
+    "texto": "Rua Fictícia, 125",
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": "2026-11-28T21:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-29T05:00:00-03:00",
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-21",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-21",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-21",
+     "lidoEm": "2026-11-24T00:57:11-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [
+    "mpb-samba"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:49-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-21",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:49-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:49-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": null,
+      "geo": null
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-26-20261128-5631",
+   "nome": "Festa Fictícia 26",
+   "produtora": null,
+   "casa": null,
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": "2026-11-28T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 450,
+     "disponivel": true,
+     "taxa": 54,
+     "condicoes": [
+      "feminino"
+     ]
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 530,
+     "disponivel": true,
+     "taxa": 63.6,
+     "condicoes": [
+      "masculino"
+     ]
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 530,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0,
+    "genero": {
+     "feminino": {
+      "valor": 450,
+      "lote": "Lote 02, feminino"
+     },
+     "masculino": {
+      "valor": 530,
+      "lote": "Lote 02, masculino"
+     }
+    }
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-22",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-22",
+     "lidoEm": "2026-11-19T12:10:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "lotes",
+      "linkCompra",
+      "cartaz"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-22",
+     "conferidoEm": "2026-11-19T12:10:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-19T12:10:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "endereco": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00",
+     "subcampos": {
+      "texto": null,
+      "cidade": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "bairro": null,
+      "geo": null
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-27-20261128-df07",
+   "nome": "Festa Fictícia 27",
+   "produtora": null,
+   "casa": "Casa Fictícia 16",
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": "2026-11-28T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-29T06:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 170,
+     "disponivel": true,
+     "taxa": 17,
+     "ate": "23:30"
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 190,
+     "disponivel": true,
+     "taxa": 19
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 170,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-23",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [
+    {
+     "id": "f1696d170f07c229",
+     "arquivo": "imagens/f1696d170f07c229-1080.webp",
+     "miniatura": "imagens/f1696d170f07c229-480.webp",
+     "largura": 810,
+     "altura": 1079,
+     "papel": "cartaz-indicado",
+     "fonte": "indicacao",
+     "credito": "Divulgação · Fonte Fictícia 1",
+     "origem": "https://ingressos.example/evento/festa-ficticia-23",
+     "conferidoEm": "2026-11-24T03:03:50-03:00",
+     "principal": true,
+     "origens": [
+      {
+       "fonte": "indicacao",
+       "origem": "https://ingressos.example/evento/festa-ficticia-23",
+       "credito": "Divulgação · Fonte Fictícia 1"
+      }
+     ]
+    }
+   ],
+   "cartaz": {
+    "id": "f1696d170f07c229",
+    "arquivo": "imagens/f1696d170f07c229-1080.webp",
+    "miniatura": "imagens/f1696d170f07c229-480.webp",
+    "largura": 810,
+    "altura": 1079,
+    "papel": "cartaz-indicado",
+    "fonte": "indicacao",
+    "credito": "Divulgação · Fonte Fictícia 1",
+    "origem": "https://ingressos.example/evento/festa-ficticia-23",
+    "conferidoEm": "2026-11-24T06:03:50.000Z",
+    "principal": true,
+    "origens": [
+     {
+      "fonte": "indicacao",
+      "origem": "https://ingressos.example/evento/festa-ficticia-23",
+      "credito": "Divulgação · Fonte Fictícia 1"
+     }
+    ]
+   },
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-23",
+     "lidoEm": "2026-11-19T12:15:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "fim",
+      "casa",
+      "lotes",
+      "linkCompra",
+      "cartaz",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 27.1"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-23",
+     "conferidoEm": "2026-11-19T12:15:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-19T12:15:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "casa": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "fim": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lineup": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "endereco": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00",
+     "subcampos": {
+      "texto": null,
+      "cidade": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "bairro": null,
+      "geo": null
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-28-20261128-0862",
+   "nome": "Festa Fictícia 28",
+   "produtora": null,
+   "casa": "Casa Fictícia 17",
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": "2026-11-28T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 200,
+     "disponivel": true,
+     "taxa": 24
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 200,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-24",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-24",
+     "lidoEm": "2026-11-19T12:12:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "lotes",
+      "linkCompra",
+      "casa",
+      "endereco"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-24",
+     "conferidoEm": "2026-11-19T12:12:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-19T12:12:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "casa": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-29-20261128-dd0b",
+   "nome": "Festa Fictícia 29",
+   "produtora": {
+    "nome": "Coletivo Fictício 18",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 18",
+   "endereco": {
+    "texto": "Rua Fictícia, 129",
+    "bairro": "centro",
+    "bairroNome": "Centro Histórico",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01029-000",
+    "lugar": "casa-ficticia-15",
+    "lat": -23.49918,
+    "lng": -46.72944,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-28",
+   "dataDaNoite": "2026-11-28",
+   "inicio": "2026-11-28T23:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-29T07:00:00-03:00",
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-25",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-25",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-25",
+     "lidoEm": "2026-11-24T00:57:11-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [
+    "house-disco",
+    "indie-rock"
+   ],
+   "idadeMinima": 18,
+   "regras": {
+    "lista": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:50-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-25",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:50-03:00"
+    },
+    "idadeMinima": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:50-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:50-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:50-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-30-20261129-c1fc",
+   "nome": "Festa Fictícia 30",
+   "produtora": {
+    "nome": "Coletivo Fictício 3",
+    "instagram": "https://www.instagram.com/perfil_ficticio_3/"
+   },
+   "casa": "Casa Fictícia 3",
+   "endereco": {
+    "texto": "Rua Fictícia, 130",
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "casa",
+    "cep": "01030-000",
+    "lugar": "casa-ficticia-3",
+    "lat": -23.494,
+    "lng": -46.70832,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-29",
+   "dataDaNoite": "2026-11-29",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_3/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "lidoEm": "2026-11-24T00:53:19-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 30.1",
+    "Artista 30.2"
+   ],
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-3",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-31-20261129-50e4",
+   "nome": "Festa Fictícia 31",
+   "produtora": {
+    "nome": "Coletivo Fictício 19",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 19",
+   "endereco": {
+    "texto": "Rua Fictícia, 131",
+    "bairro": "pinheiros",
+    "bairroNome": "Pinheiros",
+    "regiao": "oeste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01031-000",
+    "lugar": "casa-ficticia-16",
+    "lat": -23.571,
+    "lng": -46.6528,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-11-29",
+   "dataDaNoite": "2026-11-29",
+   "inicio": "2026-11-29T19:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-11-30T05:00:00-03:00",
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-26",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-26",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-26",
+     "lidoEm": "2026-11-24T00:57:11-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 31.1",
+    "Artista 31.2"
+   ],
+   "estilos": [],
+   "idadeMinima": 18,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:54-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-26",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:54-03:00"
+    },
+    "idadeMinima": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:54-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:54-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-32-20261203-63d1",
+   "nome": "Festa Fictícia 32",
+   "produtora": {
+    "nome": "Coletivo Fictício 20",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 20",
+   "endereco": {
+    "texto": "Rua Fictícia, 132",
+    "bairro": "pinheiros",
+    "bairroNome": "Pinheiros",
+    "regiao": "oeste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01032-000",
+    "lugar": "casa-ficticia-17",
+    "lat": -23.5535,
+    "lng": -46.73328,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-03",
+   "dataDaNoite": "2026-12-03",
+   "inicio": "2026-12-03T19:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-12-03T22:00:00-03:00",
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-27",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-27",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-27",
+     "lidoEm": "2026-11-24T00:57:11-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 32.1",
+    "Artista 32.2",
+    "Artista 32.3",
+    "Artista 32.4",
+    "Artista 32.5",
+    "Artista 32.6",
+    "Artista 32.7"
+   ],
+   "estilos": [
+    "indie-rock"
+   ],
+   "idadeMinima": null,
+   "regras": {
+    "lista": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:58:05-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-27",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:58:05-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:58:05-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:58:05-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:58:05-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-33-20261205-58b2",
+   "nome": "Festa Fictícia 33",
+   "produtora": {
+    "nome": "Coletivo Fictício 21",
+    "instagram": "https://www.instagram.com/perfil_ficticio_8/"
+   },
+   "casa": "Casa Fictícia 21",
+   "endereco": {
+    "texto": "Rua Fictícia, 133",
+    "bairro": "interlagos",
+    "bairroNome": "Interlagos",
+    "regiao": "sul",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "cep",
+    "cep": "01033-000",
+    "lugar": "casa-ficticia-18",
+    "lat": -23.6193,
+    "lng": -46.6808,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-05",
+   "dataDaNoite": "2026-12-05",
+   "inicio": "2026-12-05T12:30:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-12-06T00:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 722.93,
+     "disponivel": null,
+     "taxa": 144.59
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 361.46,
+     "disponivel": null,
+     "taxa": 72.29,
+     "condicoes": [
+      "meia"
+     ]
+    },
+    {
+     "nome": "Lote 3",
+     "preco": 469.9,
+     "disponivel": null,
+     "taxa": 93.98,
+     "condicoes": [
+      "meia-social"
+     ]
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 722.93,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-28",
+   "linkEvento": "https://pagina.example/29",
+   "instagram": "https://www.instagram.com/perfil_ficticio_9/",
+   "imagens": [
+    {
+     "id": "98b427b3c8279bcb",
+     "arquivo": "imagens/98b427b3c8279bcb-1080.webp",
+     "miniatura": "imagens/98b427b3c8279bcb-480.webp",
+     "largura": 140,
+     "altura": 186,
+     "papel": "cartaz-indicado",
+     "fonte": "indicacao",
+     "credito": "Divulgação · Fonte Fictícia 2",
+     "origem": "https://ingressos.example/evento/festa-ficticia-30",
+     "conferidoEm": "2026-11-24T03:03:50-03:00",
+     "principal": true,
+     "origens": [
+      {
+       "fonte": "indicacao",
+       "origem": "https://ingressos.example/evento/festa-ficticia-30",
+       "credito": "Divulgação · Fonte Fictícia 2"
+      }
+     ]
+    }
+   ],
+   "cartaz": {
+    "id": "98b427b3c8279bcb",
+    "arquivo": "imagens/98b427b3c8279bcb-1080.webp",
+    "miniatura": "imagens/98b427b3c8279bcb-480.webp",
+    "largura": 140,
+    "altura": 186,
+    "papel": "cartaz-indicado",
+    "fonte": "indicacao",
+    "credito": "Divulgação · Fonte Fictícia 2",
+    "origem": "https://ingressos.example/evento/festa-ficticia-30",
+    "conferidoEm": "2026-11-24T06:03:50.000Z",
+    "principal": true,
+    "origens": [
+     {
+      "fonte": "indicacao",
+      "origem": "https://ingressos.example/evento/festa-ficticia-30",
+      "credito": "Divulgação · Fonte Fictícia 2"
+     }
+    ]
+   },
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-28",
+     "lidoEm": "2026-11-24T00:55:43-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "data",
+      "linkCompra",
+      "lineup"
+     ]
+    },
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-31",
+     "lidoEm": "2026-11-24T00:52:36-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa"
+     ]
+    },
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-32",
+     "lidoEm": "2026-11-24T00:51:58-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa"
+     ]
+    },
+    {
+     "tipo": "materia",
+     "nome": "Página materia",
+     "url": "https://pagina.example/33",
+     "lidoEm": "2026-11-19T12:20:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "lotes",
+      "linkCompra",
+      "lineup"
+     ]
+    },
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-30",
+     "lidoEm": "2026-11-19T11:25:00-03:00",
+     "campos": [
+      "inicio",
+      "fim",
+      "idadeMinima",
+      "endereco",
+      "produtora",
+      "linkCompra",
+      "cartaz"
+     ]
+    },
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://www.instagram.com/perfil_ficticio_9/",
+     "lidoEm": "2026-11-16T21:52:00-03:00",
+     "campos": [
+      "instagram",
+      "produtora",
+      "ehFesta"
+     ]
+    },
+    {
+     "tipo": "oficial",
+     "nome": "Página oficial",
+     "url": "https://pagina.example/29",
+     "lidoEm": "2026-11-16T21:51:00-03:00",
+     "campos": [
+      "linkEvento"
+     ]
+    },
+    {
+     "tipo": "materia",
+     "nome": "Página materia",
+     "url": "https://pagina.example/34",
+     "lidoEm": "2026-11-16T21:50:00-03:00",
+     "campos": [
+      "casa",
+      "endereco"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 33.1",
+    "Artista 33.2",
+    "Artista 33.3",
+    "Artista 33.4",
+    "Artista 33.5",
+    "Artista 33.6",
+    "Artista 33.7",
+    "Artista 33.8",
+    "Artista 33.9",
+    "Artista 33.10",
+    "Artista 33.11",
+    "Artista 33.12",
+    "Artista 33.13",
+    "Artista 33.14",
+    "Artista 33.15",
+    "Artista 33.16",
+    "Artista 33.17",
+    "Artista 33.18"
+   ],
+   "estilos": [],
+   "idadeMinima": 16,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-28",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "escore",
+      "escore": 9,
+      "sinais": [
+       {
+        "sinal": "lugar",
+        "peso": 2,
+        "detalhe": "lugar (fictício)"
+       },
+       {
+        "sinal": "nome",
+        "peso": 3,
+        "detalhe": "nome (fictício)"
+       },
+       {
+        "sinal": "perfil",
+        "peso": 2,
+        "detalhe": "perfil (fictício)"
+       },
+       {
+        "sinal": "lineup",
+        "peso": 2,
+        "detalhe": "lineup (fictício)"
+       }
+      ]
+     }
+    },
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-30",
+     "conferidoEm": "2026-11-19T12:20:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    },
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-32",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "escore",
+      "escore": 7,
+      "sinais": [
+       {
+        "sinal": "lugar",
+        "peso": 2,
+        "detalhe": "lugar (fictício)"
+       },
+       {
+        "sinal": "nome",
+        "peso": 3,
+        "detalhe": "nome (fictício)"
+       },
+       {
+        "sinal": "perfil",
+        "peso": 2,
+        "detalhe": "perfil (fictício)"
+       }
+      ]
+     }
+    },
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-31",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "escore",
+      "escore": 7,
+      "sinais": [
+       {
+        "sinal": "lugar",
+        "peso": 2,
+        "detalhe": "lugar (fictício)"
+       },
+       {
+        "sinal": "nome",
+        "peso": 3,
+        "detalhe": "nome (fictício)"
+       },
+       {
+        "sinal": "perfil",
+        "peso": 2,
+        "detalhe": "perfil (fictício)"
+       }
+      ]
+     }
+    }
+   ],
+   "divergencias": [
+    {
+     "campo": "linkCompra",
+     "valores": [
+      {
+       "fonte": "paginas",
+       "valor": "https://ingressos.example/evento/festa-ficticia-28",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      {
+       "fonte": "indicacao",
+       "valor": "https://ingressos.example/evento/festa-ficticia-30",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      }
+     ]
+    }
+   ],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "fim": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "instagram": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lineup": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "idadeMinima": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "endereco": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "cidade": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "bairro": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-34-20261205-acc3",
+   "nome": "Festa Fictícia 34",
+   "produtora": null,
+   "casa": "Casa Fictícia 3",
+   "endereco": {
+    "texto": "Rua Fictícia, 134",
+    "bairro": "centro",
+    "bairroNome": "República",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01034-000",
+    "lugar": "casa-ficticia-3",
+    "lat": -23.494,
+    "lng": -46.70832,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-05",
+   "dataDaNoite": "2026-12-05",
+   "inicio": "2026-12-05T19:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-35",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-35",
+     "lidoEm": "2026-11-24T00:55:45-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 34.1"
+   ],
+   "estilos": [
+    "eletronica"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:18-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-35",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:18-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:18-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:18-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-35-20261205-2c8a",
+   "nome": "Festa Fictícia 35",
+   "produtora": null,
+   "casa": null,
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-12-05",
+   "dataDaNoite": "2026-12-05",
+   "inicio": "2026-12-05T20:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 100,
+     "disponivel": true,
+     "taxa": 13
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 100,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-36",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [
+    {
+     "id": "fcca240e6b86327d",
+     "arquivo": "imagens/fcca240e6b86327d-1080.webp",
+     "miniatura": "imagens/fcca240e6b86327d-480.webp",
+     "largura": 1080,
+     "altura": 1438,
+     "papel": "cartaz-indicado",
+     "fonte": "indicacao",
+     "credito": "Divulgação · Fonte Fictícia 1",
+     "origem": "https://ingressos.example/evento/festa-ficticia-36",
+     "conferidoEm": "2026-11-24T03:03:50-03:00",
+     "principal": true,
+     "origens": [
+      {
+       "fonte": "indicacao",
+       "origem": "https://ingressos.example/evento/festa-ficticia-36",
+       "credito": "Divulgação · Fonte Fictícia 1"
+      }
+     ]
+    }
+   ],
+   "cartaz": {
+    "id": "fcca240e6b86327d",
+    "arquivo": "imagens/fcca240e6b86327d-1080.webp",
+    "miniatura": "imagens/fcca240e6b86327d-480.webp",
+    "largura": 1080,
+    "altura": 1438,
+    "papel": "cartaz-indicado",
+    "fonte": "indicacao",
+    "credito": "Divulgação · Fonte Fictícia 1",
+    "origem": "https://ingressos.example/evento/festa-ficticia-36",
+    "conferidoEm": "2026-11-24T06:03:50.000Z",
+    "principal": true,
+    "origens": [
+     {
+      "fonte": "indicacao",
+      "origem": "https://ingressos.example/evento/festa-ficticia-36",
+      "credito": "Divulgação · Fonte Fictícia 1"
+     }
+    ]
+   },
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-36",
+     "lidoEm": "2026-11-19T12:00:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "lotes",
+      "linkCompra",
+      "cartaz"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-36",
+     "conferidoEm": "2026-11-19T12:00:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-19T12:00:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-36-20261205-ae52",
+   "nome": "Festa Fictícia 36",
+   "produtora": {
+    "nome": "Coletivo Fictício 22",
+    "instagram": "https://www.instagram.com/perfil_ficticio_10/"
+   },
+   "casa": "Casa Fictícia 22",
+   "endereco": {
+    "texto": "Rua Fictícia, 136",
+    "bairro": "santana",
+    "bairroNome": "Campo de Marte",
+    "regiao": "norte",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01036-000",
+    "lugar": "casa-ficticia-19",
+    "lat": -23.60684,
+    "lng": -46.60544,
+    "precisao": "bairro",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-05",
+   "dataDaNoite": "2026-12-05",
+   "inicio": "2026-12-05T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-37",
+   "instagram": "https://www.instagram.com/perfil_ficticio_10/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-37",
+     "lidoEm": "2026-11-24T00:55:48-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio"
+     ]
+    },
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-38",
+     "lidoEm": "2026-11-24T00:54:20-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa",
+      "estilos"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 36.1"
+   ],
+   "estilos": [
+    "mpb-samba",
+    "funk"
+   ],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-37",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "escore",
+      "escore": 5,
+      "sinais": [
+       {
+        "sinal": "nome",
+        "peso": 3,
+        "detalhe": "nome (fictício)"
+       },
+       {
+        "sinal": "perfil",
+        "peso": 2,
+        "detalhe": "perfil (fictício)"
+       }
+      ]
+     }
+    },
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-38",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [
+    "festa-ficticia-37-20261205-f3dc"
+   ],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:22-03:00"
+    },
+    "estilos": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:22-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-37-20261205-c7a7",
+   "nome": "Festa Fictícia 37",
+   "produtora": {
+    "nome": "Coletivo Fictício 23",
+    "instagram": null
+   },
+   "casa": "Casa Fictícia 23",
+   "endereco": {
+    "texto": "Rua Fictícia, 137",
+    "bairro": "centro",
+    "bairroNome": "Anhangabaú",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01037-000",
+    "lugar": "casa-ficticia-20",
+    "lat": -23.5899,
+    "lng": -46.72384,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-05",
+   "dataDaNoite": "2026-12-05",
+   "inicio": "2026-12-05T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-12-06T06:00:00-03:00",
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-39",
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-39",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-39",
+     "lidoEm": "2026-11-24T00:57:11-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio",
+      "fim",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 37.1",
+    "Artista 37.2",
+    "Artista 37.3"
+   ],
+   "estilos": [
+    "pop-2000"
+   ],
+   "idadeMinima": 18,
+   "regras": {
+    "documento": "texto trocado na anonimização",
+    "vestimenta": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:55-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-39",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "fim": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "lineup": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:55-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:55-03:00"
+    },
+    "idadeMinima": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:55-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:55-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:55-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-38-20261206-6d53",
+   "nome": "Festa Fictícia 38",
+   "produtora": {
+    "nome": "Coletivo Fictício 21",
+    "instagram": "https://www.instagram.com/perfil_ficticio_8/"
+   },
+   "casa": "Casa Fictícia 21",
+   "endereco": {
+    "texto": "Rua Fictícia, 138",
+    "bairro": "interlagos",
+    "bairroNome": "Interlagos",
+    "regiao": "sul",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "cep",
+    "cep": "01038-000",
+    "lugar": "casa-ficticia-18",
+    "lat": -23.6193,
+    "lng": -46.6808,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-06",
+   "dataDaNoite": "2026-12-06",
+   "inicio": "2026-12-06T12:30:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-12-07T00:00:00-03:00",
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 722.93,
+     "disponivel": null,
+     "taxa": 144.59
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 361.46,
+     "disponivel": null,
+     "taxa": 72.29,
+     "condicoes": [
+      "meia"
+     ]
+    },
+    {
+     "nome": "Lote 3",
+     "preco": 469.9,
+     "disponivel": null,
+     "taxa": 93.98,
+     "condicoes": [
+      "meia-social"
+     ]
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 722.93,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-28",
+   "linkEvento": "https://pagina.example/29",
+   "instagram": "https://www.instagram.com/perfil_ficticio_9/",
+   "imagens": [
+    {
+     "id": "98b427b3c8279bcb",
+     "arquivo": "imagens/98b427b3c8279bcb-1080.webp",
+     "miniatura": "imagens/98b427b3c8279bcb-480.webp",
+     "largura": 140,
+     "altura": 186,
+     "papel": "cartaz-indicado",
+     "fonte": "indicacao",
+     "credito": "Divulgação · Fonte Fictícia 2",
+     "origem": "https://ingressos.example/evento/festa-ficticia-30",
+     "conferidoEm": "2026-11-24T03:03:50-03:00",
+     "principal": true,
+     "origens": [
+      {
+       "fonte": "indicacao",
+       "origem": "https://ingressos.example/evento/festa-ficticia-30",
+       "credito": "Divulgação · Fonte Fictícia 2"
+      }
+     ]
+    }
+   ],
+   "cartaz": {
+    "id": "98b427b3c8279bcb",
+    "arquivo": "imagens/98b427b3c8279bcb-1080.webp",
+    "miniatura": "imagens/98b427b3c8279bcb-480.webp",
+    "largura": 140,
+    "altura": 186,
+    "papel": "cartaz-indicado",
+    "fonte": "indicacao",
+    "credito": "Divulgação · Fonte Fictícia 2",
+    "origem": "https://ingressos.example/evento/festa-ficticia-30",
+    "conferidoEm": "2026-11-24T06:03:50.000Z",
+    "principal": true,
+    "origens": [
+     {
+      "fonte": "indicacao",
+      "origem": "https://ingressos.example/evento/festa-ficticia-30",
+      "credito": "Divulgação · Fonte Fictícia 2"
+     }
+    ]
+   },
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-28",
+     "lidoEm": "2026-11-24T00:55:43-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "data",
+      "linkCompra",
+      "lineup"
+     ]
+    },
+    {
+     "tipo": "materia",
+     "nome": "Página materia",
+     "url": "https://pagina.example/33",
+     "lidoEm": "2026-11-19T12:20:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "lotes",
+      "linkCompra",
+      "lineup"
+     ]
+    },
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-30",
+     "lidoEm": "2026-11-19T11:25:00-03:00",
+     "campos": [
+      "inicio",
+      "fim",
+      "idadeMinima",
+      "endereco",
+      "produtora",
+      "linkCompra",
+      "cartaz"
+     ]
+    },
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://www.instagram.com/perfil_ficticio_9/",
+     "lidoEm": "2026-11-16T21:52:00-03:00",
+     "campos": [
+      "instagram",
+      "produtora",
+      "ehFesta"
+     ]
+    },
+    {
+     "tipo": "oficial",
+     "nome": "Página oficial",
+     "url": "https://pagina.example/29",
+     "lidoEm": "2026-11-16T21:51:00-03:00",
+     "campos": [
+      "linkEvento"
+     ]
+    },
+    {
+     "tipo": "materia",
+     "nome": "Página materia",
+     "url": "https://pagina.example/34",
+     "lidoEm": "2026-11-16T21:50:00-03:00",
+     "campos": [
+      "casa",
+      "endereco"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 38.1",
+    "Artista 38.2",
+    "Artista 38.3",
+    "Artista 38.4",
+    "Artista 38.5",
+    "Artista 38.6",
+    "Artista 38.7",
+    "Artista 38.8",
+    "Artista 38.9",
+    "Artista 38.10",
+    "Artista 38.11",
+    "Artista 38.12",
+    "Artista 38.13",
+    "Artista 38.14",
+    "Artista 38.15",
+    "Artista 38.16",
+    "Artista 38.17",
+    "Artista 38.18",
+    "Artista 38.19",
+    "Artista 38.20"
+   ],
+   "estilos": [],
+   "idadeMinima": 16,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-28",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "escore",
+      "escore": 9,
+      "sinais": [
+       {
+        "sinal": "lugar",
+        "peso": 2,
+        "detalhe": "lugar (fictício)"
+       },
+       {
+        "sinal": "nome",
+        "peso": 3,
+        "detalhe": "nome (fictício)"
+       },
+       {
+        "sinal": "perfil",
+        "peso": 2,
+        "detalhe": "perfil (fictício)"
+       },
+       {
+        "sinal": "lineup",
+        "peso": 2,
+        "detalhe": "lineup (fictício)"
+       }
+      ]
+     }
+    },
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-30",
+     "conferidoEm": "2026-11-19T12:20:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [
+    {
+     "campo": "linkCompra",
+     "valores": [
+      {
+       "fonte": "paginas",
+       "valor": "https://ingressos.example/evento/festa-ficticia-28",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      {
+       "fonte": "indicacao",
+       "valor": "https://ingressos.example/evento/festa-ficticia-30",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      }
+     ]
+    }
+   ],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "fim": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "instagram": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lineup": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "idadeMinima": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "endereco": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "cidade": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "bairro": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-39-20261211-0038",
+   "nome": "Festa Fictícia 39",
+   "produtora": {
+    "nome": "Coletivo Fictício 24",
+    "instagram": "https://www.instagram.com/perfil_ficticio_11/"
+   },
+   "casa": "Casa Fictícia 24",
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-12-11",
+   "dataDaNoite": "2026-12-11",
+   "inicio": "2026-12-11T19:00:00-03:00",
+   "pistaCheia": null,
+   "fim": "2026-12-12T03:00:00-03:00",
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_11/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-40",
+     "lidoEm": "2026-11-24T00:53:09-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "fim",
+      "casa"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-40",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "inicio": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "fim": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-40-20261211-c466",
+   "nome": "Festa Fictícia 40",
+   "produtora": null,
+   "casa": "Casa Fictícia 25",
+   "endereco": {
+    "texto": null,
+    "bairro": "centro",
+    "bairroNome": "Canindé",
+    "regiao": "centro",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": null,
+    "lugar": "casa-ficticia-21",
+    "lat": -23.48406,
+    "lng": -46.67216,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-11",
+   "dataDaNoite": "2026-12-11",
+   "inicio": "2026-12-11T22:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 440,
+     "disponivel": true,
+     "taxa": 48.4
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 220,
+     "disponivel": true,
+     "taxa": 24.2,
+     "condicoes": [
+      "meia-social"
+     ]
+    },
+    {
+     "nome": "Lote 3",
+     "preco": 1200,
+     "disponivel": true,
+     "taxa": 132
+    },
+    {
+     "nome": "Lote 4",
+     "preco": 600,
+     "disponivel": true,
+     "taxa": 66,
+     "condicoes": [
+      "meia-social"
+     ]
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 440,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-41",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [
+    {
+     "id": "713c447d7b69b571",
+     "arquivo": "imagens/713c447d7b69b571-1080.webp",
+     "miniatura": "imagens/713c447d7b69b571-480.webp",
+     "largura": 810,
+     "altura": 1080,
+     "papel": "cartaz-indicado",
+     "fonte": "indicacao",
+     "credito": "Divulgação · Fonte Fictícia 3",
+     "origem": "https://ingressos.example/evento/festa-ficticia-41",
+     "conferidoEm": "2026-11-24T03:03:50-03:00",
+     "principal": true,
+     "origens": [
+      {
+       "fonte": "indicacao",
+       "origem": "https://ingressos.example/evento/festa-ficticia-41",
+       "credito": "Divulgação · Fonte Fictícia 3"
+      }
+     ]
+    }
+   ],
+   "cartaz": {
+    "id": "713c447d7b69b571",
+    "arquivo": "imagens/713c447d7b69b571-1080.webp",
+    "miniatura": "imagens/713c447d7b69b571-480.webp",
+    "largura": 810,
+    "altura": 1080,
+    "papel": "cartaz-indicado",
+    "fonte": "indicacao",
+    "credito": "Divulgação · Fonte Fictícia 3",
+    "origem": "https://ingressos.example/evento/festa-ficticia-41",
+    "conferidoEm": "2026-11-24T06:03:50.000Z",
+    "principal": true,
+    "origens": [
+     {
+      "fonte": "indicacao",
+      "origem": "https://ingressos.example/evento/festa-ficticia-41",
+      "credito": "Divulgação · Fonte Fictícia 3"
+     }
+    ]
+   },
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-41",
+     "lidoEm": "2026-11-19T09:05:00-03:00",
+     "campos": [
+      "inicio",
+      "lotes",
+      "casa"
+     ]
+    },
+    {
+     "tipo": "revenda",
+     "nome": "Página revenda",
+     "url": "https://ingressos.example/evento/festa-ficticia-42",
+     "lidoEm": "2026-11-19T09:00:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa",
+      "descricao",
+      "cartaz",
+      "linkCompra",
+      "lineup"
+     ]
+    }
+   ],
+   "lineup": [
+    "Artista 40.1"
+   ],
+   "estilos": [
+    "house-disco"
+   ],
+   "idadeMinima": null,
+   "regras": {
+    "documento": "texto trocado na anonimização"
+   },
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:50:21-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-41",
+     "conferidoEm": "2026-11-19T09:05:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-19T09:05:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "casa": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lineup": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "estilos": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:50:21-03:00"
+    },
+    "regras": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:50:21-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "endereco": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00",
+     "subcampos": {
+      "texto": null,
+      "cidade": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "bairro": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-41-20261212-bfce",
+   "nome": "Festa Fictícia 41",
+   "produtora": null,
+   "casa": null,
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-12-12",
+   "dataDaNoite": "2026-12-12",
+   "inicio": "2026-12-12T20:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 119,
+     "disponivel": true,
+     "taxa": 16.66
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 119,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-43",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [
+    {
+     "id": "4366081f690e826d",
+     "arquivo": "imagens/4366081f690e826d-1080.webp",
+     "miniatura": "imagens/4366081f690e826d-480.webp",
+     "largura": 589,
+     "altura": 786,
+     "papel": "cartaz-indicado",
+     "fonte": "indicacao",
+     "credito": "Divulgação · Fonte Fictícia 1",
+     "origem": "https://ingressos.example/evento/festa-ficticia-43",
+     "conferidoEm": "2026-11-24T03:03:50-03:00",
+     "principal": true,
+     "origens": [
+      {
+       "fonte": "indicacao",
+       "origem": "https://ingressos.example/evento/festa-ficticia-43",
+       "credito": "Divulgação · Fonte Fictícia 1"
+      }
+     ]
+    }
+   ],
+   "cartaz": {
+    "id": "4366081f690e826d",
+    "arquivo": "imagens/4366081f690e826d-1080.webp",
+    "miniatura": "imagens/4366081f690e826d-480.webp",
+    "largura": 589,
+    "altura": 786,
+    "papel": "cartaz-indicado",
+    "fonte": "indicacao",
+    "credito": "Divulgação · Fonte Fictícia 1",
+    "origem": "https://ingressos.example/evento/festa-ficticia-43",
+    "conferidoEm": "2026-11-24T06:03:50.000Z",
+    "principal": true,
+    "origens": [
+     {
+      "fonte": "indicacao",
+      "origem": "https://ingressos.example/evento/festa-ficticia-43",
+      "credito": "Divulgação · Fonte Fictícia 1"
+     }
+    ]
+   },
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-43",
+     "lidoEm": "2026-11-19T12:00:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "lotes",
+      "linkCompra",
+      "cartaz"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-43",
+     "conferidoEm": "2026-11-19T12:00:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-19T12:00:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-42-20261212-94fc",
+   "nome": "Festa Fictícia 42",
+   "produtora": {
+    "nome": "Coletivo Fictício 25",
+    "instagram": "https://www.instagram.com/perfil_ficticio_12/"
+   },
+   "casa": "Casa Fictícia 26",
+   "endereco": {
+    "texto": "Rua Fictícia, 142",
+    "bairro": "santo-amaro",
+    "bairroNome": "Brooklin",
+    "regiao": "sul",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": "01042-000",
+    "lugar": "casa-ficticia-22",
+    "lat": -23.49848,
+    "lng": -46.67072,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2026-12-12",
+   "dataDaNoite": "2026-12-12",
+   "inicio": "2026-12-12T21:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-44",
+   "instagram": "https://www.instagram.com/perfil_ficticio_12/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-44",
+     "lidoEm": "2026-11-24T00:55:48-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data",
+      "inicio"
+     ]
+    },
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-45",
+     "lidoEm": "2026-11-24T00:54:17-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "casa"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "curadoria",
+    "conferidoEm": "2026-11-24T03:02:24-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-44",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "escore",
+      "escore": 5,
+      "sinais": [
+       {
+        "sinal": "nome",
+        "peso": 3,
+        "detalhe": "nome (fictício)"
+       },
+       {
+        "sinal": "perfil",
+        "peso": 2,
+        "detalhe": "perfil (fictício)"
+       }
+      ]
+     }
+    },
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-45",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [
+    "festa-ficticia-44-20261212-3423"
+   ],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "casa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "inicio": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "curadoria",
+     "conferidoEm": "2026-11-24T03:02:24-03:00"
+    },
+    "bairroDaCasa": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "instagram",
+       "conferidoEm": "2026-11-24T00:54:20-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-43-20261219-4751",
+   "nome": "Festa Fictícia 43",
+   "produtora": {
+    "nome": "Coletivo Fictício 26",
+    "instagram": "https://www.instagram.com/perfil_ficticio_13/"
+   },
+   "casa": null,
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": null,
+    "cidadeOrigem": null,
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-12-19",
+   "dataDaNoite": "2026-12-19",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": null,
+   "instagram": "https://www.instagram.com/perfil_ficticio_13/",
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "instagram",
+     "nome": "Página instagram",
+     "url": "https://posts.example/p/post-ficticio-46",
+     "lidoEm": "2026-11-24T00:54:06-03:00",
+     "campos": [
+      "nome",
+      "data"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "instagram",
+    "conferidoEm": "2026-11-24T00:54:20-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "instagram",
+     "nome": "Post no Instagram",
+     "url": "https://posts.example/p/post-ficticio-46",
+     "conferidoEm": "2026-11-24T00:54:20-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [
+    {
+     "motivo": "sem-cidade",
+     "detalhe": "detalhe trocado na anonimização"
+    }
+   ],
+   "coletadoEm": "2026-11-24T00:54:20-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "produtora": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "data": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "instagram": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    },
+    "ehFesta": {
+     "fonte": "instagram",
+     "conferidoEm": "2026-11-24T00:54:20-03:00"
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-44-20261219-3780",
+   "nome": "Festa Fictícia 44",
+   "produtora": null,
+   "casa": "Casa Fictícia 27",
+   "endereco": {
+    "texto": null,
+    "bairro": null,
+    "bairroNome": null,
+    "regiao": null,
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": null,
+    "lugar": null,
+    "lat": null,
+    "lng": null,
+    "precisao": null,
+    "origemGeo": null,
+    "atribuicaoOsm": false
+   },
+   "data": "2026-12-19",
+   "dataDaNoite": "2026-12-19",
+   "inicio": "2026-12-19T18:00:00-03:00",
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [
+    {
+     "nome": "Lote 1",
+     "preco": 120,
+     "disponivel": true,
+     "taxa": 14.4
+    },
+    {
+     "nome": "Lote 2",
+     "preco": 150,
+     "disponivel": true,
+     "taxa": 18
+    }
+   ],
+   "precoAPartirDe": {
+    "valor": 120,
+    "lote": "Lote 1",
+    "esgotadosAntes": 0
+   },
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": "https://ingressos.example/evento/festa-ficticia-47",
+   "linkEvento": null,
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-47",
+     "lidoEm": "2026-11-19T12:00:00-03:00",
+     "campos": [
+      "nome",
+      "data",
+      "inicio",
+      "casa",
+      "endereco",
+      "lotes",
+      "linkCompra"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "indicacao",
+    "conferidoEm": "2026-11-24T00:50:04-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "indicacao",
+     "nome": "Lido na página do ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-47",
+     "conferidoEm": "2026-11-19T12:00:00-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-19T12:00:00-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "casa": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "data": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "inicio": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "lotes": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "linkCompra": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "ehFesta": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00"
+    },
+    "endereco": {
+     "fonte": "indicacao",
+     "conferidoEm": "2026-11-24T00:50:04-03:00",
+     "subcampos": {
+      "texto": null,
+      "cidade": {
+       "fonte": "indicacao",
+       "conferidoEm": "2026-11-24T00:50:04-03:00"
+      },
+      "bairro": null,
+      "geo": null
+     }
+    }
+   }
+  },
+  {
+   "contrato": "finde-r14/3",
+   "id": "festa-ficticia-45-20270409-0657",
+   "nome": "Festa Fictícia 45",
+   "produtora": null,
+   "casa": "Casa Fictícia 28",
+   "endereco": {
+    "texto": "Rua Fictícia, 145",
+    "bairro": "perdizes",
+    "bairroNome": "Pacaembu",
+    "regiao": "oeste",
+    "cidade": "São Paulo",
+    "cidadeOrigem": "fonte",
+    "cep": null,
+    "lugar": "casa-ficticia-23",
+    "lat": -23.59158,
+    "lng": -46.61008,
+    "precisao": "casa",
+    "origemGeo": "curado",
+    "atribuicaoOsm": true
+   },
+   "data": "2027-04-09",
+   "dataDaNoite": "2027-04-09",
+   "inicio": null,
+   "pistaCheia": null,
+   "fim": null,
+   "lotes": [],
+   "precoAPartirDe": null,
+   "esgotado": false,
+   "entradaNaPorta": null,
+   "linkCompra": null,
+   "linkEvento": "https://ingressos.example/evento/festa-ficticia-48",
+   "instagram": null,
+   "imagens": [],
+   "cartaz": null,
+   "paginas": [
+    {
+     "tipo": "ingresso",
+     "nome": "Página ingresso",
+     "url": "https://ingressos.example/evento/festa-ficticia-48",
+     "lidoEm": "2026-11-24T00:55:43-03:00",
+     "campos": [
+      "nome",
+      "casa",
+      "endereco",
+      "data"
+     ]
+    }
+   ],
+   "lineup": null,
+   "estilos": [],
+   "idadeMinima": null,
+   "regras": {},
+   "mediaIdade": null,
+   "ehFesta": true,
+   "exemplo": false,
+   "classificacao": {
+    "por": "claude",
+    "conferidoEm": "2026-11-24T00:57:13-03:00",
+    "tipo": null
+   },
+   "fontes": [
+    {
+     "id": "paginas",
+     "nome": "Página lida no navegador",
+     "url": "https://ingressos.example/evento/festa-ficticia-48",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "vinculo": {
+      "regra": "nova",
+      "escore": null,
+      "sinais": []
+     }
+    }
+   ],
+   "divergencias": [],
+   "idsAntigos": [],
+   "revisar": [],
+   "coletadoEm": "2026-11-24T00:57:11-03:00",
+   "campos": {
+    "nome": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "casa": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "data": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "linkEvento": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00"
+    },
+    "ehFesta": {
+     "fonte": "claude",
+     "conferidoEm": "2026-11-24T00:57:13-03:00"
+    },
+    "endereco": {
+     "fonte": "paginas",
+     "conferidoEm": "2026-11-24T00:57:11-03:00",
+     "subcampos": {
+      "texto": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "cidade": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "bairro": {
+       "fonte": "paginas",
+       "conferidoEm": "2026-11-24T00:57:11-03:00"
+      },
+      "geo": {
+       "fonte": "curado",
+       "conferidoEm": "2026-11-24T00:00:00-03:00"
+      }
+     }
+    }
+   }
+  }
+ ],
+ "_leia": "Fixture gerada por prototipo/v1-festas/ferramentas/anonimizar.js a partir de um export real do motor: só a forma e as lacunas; nomes, casas, endereços, perfis, URLs, créditos e coordenadas são fictícios."
+}

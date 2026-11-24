@@ -102,3 +102,46 @@ test('indicar: perfil vai para a lista de contatos, festa vira esqueleto, repeti
   assert.throws(() => indicar(raiz, 'https://a.example/', { tipo: 'outro' }), /não existe/);
   fs.rmSync(raiz, { recursive: true, force: true });
 });
+
+// ---- o cartaz vira item.imagens (M33, D4) -----------------------------------
+
+test('cartaz da indicação vira item.imagens com papel cartaz-indicado e some do bruto', () => {
+  const corpo = {
+    festas: [
+      {
+        id: 'baile-x', origem: 'https://ingressos.example/baile-x', nome: 'Baile X', data: '2026-11-14', produtora: { nome: 'Coletivo Exemplo' },
+        cartaz: 'https://ticket-backend-prod.imgix.net/media/event/abc/cartaz.jpeg',
+        leitura: [{ url: 'https://www.ingresse.com/baile-x/', lidoEm: '2026-11-16T20:00:00-03:00', campos: ['data', 'cartaz'], tipo: 'ingresso', nome: 'Ingresse' }],
+      },
+      { id: 'sem-https', origem: 'https://ingressos.example/y', nome: 'Y', data: '2026-11-14', cartaz: 'http://inseguro.example/c.jpg' },
+      { id: 'sem-cartaz', origem: 'https://ingressos.example/z', nome: 'Z', data: '2026-11-14' },
+    ],
+  };
+  const { itens } = indicacao.itensDaIndicacao(corpo, { origem: 'x.json', mtime: '2026-11-16T00:00:00.000Z', agora: new Date('2026-11-10T15:00:00Z') });
+  const [a, b, c] = itens;
+  assert.deepEqual(a.imagens, [{
+    url: 'https://ticket-backend-prod.imgix.net/media/event/abc/cartaz.jpeg',
+    papel: 'cartaz-indicado', origem: 'https://www.ingresse.com/baile-x/', credito: 'Divulgação · Coletivo Exemplo', leitura: null,
+  }]);
+  assert.equal(a.bruto.cartaz, undefined, 'nenhuma fonte emite cartaz no bruto');
+  assert.equal(b.imagens, undefined, 'http não é aceito');
+  assert.equal(b.bruto.cartaz, undefined);
+  assert.equal(c.imagens, undefined);
+});
+
+test('cartaz do envio da produtora vira item.imagens com papel cartaz-enviado, só https', () => {
+  const envio = require('../fontes/envio');
+  const corpo = {
+    produtora: { nome: 'Coletivo Exemplo', instagram: '@coletivo_exemplo' },
+    festas: [
+      { id: 'a', nome: 'A', data: '2026-11-14', linkEvento: 'https://coletivo.example/a', cartaz: 'https://coletivo.example/cartazes/a.jpg' },
+      { id: 'b', nome: 'B', data: '2026-11-14', cartaz: 'https://coletivo.example/cartazes/b.jpg' },
+      { id: 'c', nome: 'C', data: '2026-11-14', cartaz: 'ftp://x.example/c.jpg' },
+    ],
+  };
+  const { itens } = envio.itensDoEnvio(corpo, { origem: 'x.json', conferidoEm: '2026-11-16T00:00:00.000Z' });
+  assert.deepEqual(itens[0].imagens, [{ url: 'https://coletivo.example/cartazes/a.jpg', papel: 'cartaz-enviado', origem: 'https://coletivo.example/a', credito: 'Divulgação · Coletivo Exemplo', leitura: null }]);
+  assert.equal(itens[1].imagens[0].origem, 'https://coletivo.example/cartazes/b.jpg', 'sem link de evento, a origem é o próprio cartaz publicado');
+  assert.equal(itens[2].imagens, undefined);
+  assert.ok(itens.every((i) => i.bruto.cartaz === undefined));
+});

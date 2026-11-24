@@ -2,6 +2,8 @@
 // Planos: uma festa mandada pro grupo, e quem respondeu "tô dentro" ou "não rola".
 // Guardados em <var>/planos.json, regravado inteiro a cada mudança
 // (arquivo temporário e rename, para nunca deixar o arquivo pela metade).
+// Depois da festa, quem disse "tô dentro" pode avaliar (R34, KTD13): `avaliar`
+// confere quem pode e devolve o que nucleo/avaliacoes.js guarda, sem o nome.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -18,6 +20,8 @@ class ErroPlano extends Error {
 const LIMITE_NOME = 24;
 const LIMITE_RESPOSTAS = 60;
 const RESPOSTAS = ['dentro', 'fora'];
+const RESPOSTAS_AVALIACAO = ['mais-novo', 'na-medida', 'mais-velho'];
+const FINALIDADE = 'Opcional e sem nome: serve para dizer a quem procura esta festa se o público tinha a idade de quem foi. A resposta fica guardada até 31/12/2026.';
 const FORMATO_ID = /^[a-z0-9]{8}$/;
 
 // Nome de gente: guardado como texto, do jeito que veio (a página escreve com
@@ -44,8 +48,14 @@ function novoId(existe) {
 }
 
 // O que vai para fora. `passou`: a festa já acabou, e o convite não aceita mais resposta.
-function vista(plano, agora) {
+// Depois da festa, `podeAvaliar` (alguém disse "tô dentro"), quantas
+// avaliações a festa tem e de quantos convites (sem nomes) e a linha de
+// finalidade do formulário.
+function vista(plano, agora, contar = null) {
   const nomes = (r) => plano.respostas.filter((x) => x.resposta === r).map((x) => x.nome);
+  const passou = Boolean(plano.ate && agora && new Date(agora) > new Date(plano.ate));
+  const festaId = plano.festa && plano.festa.festa ? plano.festa.festa.id : null;
+  const contagem = contar && festaId ? contar(festaId) : { avaliacoes: 0, convites: 0 };
   return {
     id: plano.id,
     autor: plano.autor,
@@ -53,13 +63,17 @@ function vista(plano, agora) {
     festa: plano.festa,
     pedido: plano.pedido,
     data: plano.data || null,
-    passou: Boolean(plano.ate && agora && new Date(agora) > new Date(plano.ate)),
+    passou,
     dentro: nomes('dentro'),
     fora: nomes('fora'),
+    podeAvaliar: passou && nomes('dentro').length > 0,
+    avaliacoes: { total: contagem.avaliacoes, convites: contagem.convites },
+    finalidadeAvaliacao: FINALIDADE,
   };
 }
 
-function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = console } = {}) {
+// contarAvaliacoes(festaId) -> { avaliacoes, convites } (nucleo/avaliacoes.js).
+function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = console, contarAvaliacoes = null } = {}) {
   fs.mkdirSync(pasta, { recursive: true });
   const arquivo = path.join(pasta, 'planos.json');
   let planos = {};
@@ -119,11 +133,11 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
       if (nome) registrar(plano, nome, 'dentro');
       planos[id] = plano;
       gravar();
-      return vista(plano, agora());
+      return vista(plano, agora(), contarAvaliacoes);
     },
 
     ler(id) {
-      return vista(pegar(id), agora());
+      return vista(pegar(id), agora(), contarAvaliacoes);
     },
 
     existe(id) {
@@ -135,12 +149,45 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
       const plano = pegar(id);
       const limpo = exigirNome(nome);
       if (!RESPOSTAS.includes(resposta)) throw new ErroPlano(400, 'Responda "dentro" ou "fora".');
-      if (vista(plano, agora()).passou) throw new ErroPlano(410, 'Essa já foi. O convite não aceita mais resposta.');
+      if (vista(plano, agora(), contarAvaliacoes).passou) throw new ErroPlano(410, 'Essa já foi. O convite não aceita mais resposta.');
       registrar(plano, limpo, resposta, confirmar === true);
       gravar();
-      return vista(plano, agora());
+      return vista(plano, agora(), contarAvaliacoes);
+    },
+
+    // Quem pode avaliar: o nome que disse "tô dentro", depois da festa. Devolve
+    // o que a avaliação leva (o nome só para fazer a chave; não é guardado).
+    // A idade é obrigatória para contar (18 a 60).
+    avaliar(id, nome, aparelho, resposta, idade) {
+      const plano = pegar(id);
+      const limpo = exigirNome(nome);
+      if (!RESPOSTAS_AVALIACAO.includes(resposta)) throw new ErroPlano(400, 'Responda "mais-novo", "na-medida" ou "mais-velho".');
+      if (!(Number.isInteger(idade) && idade >= 18 && idade <= 60)) throw new ErroPlano(400, 'Diga a sua idade (de 18 a 60): sem ela, a resposta não conta.');
+      if (typeof aparelho !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(aparelho)) throw new ErroPlano(400, 'Faltou o aparelho.');
+      if (!vista(plano, agora()).passou) throw new ErroPlano(409, 'A festa ainda não aconteceu. A pergunta abre depois dela.');
+      const dentro = plano.respostas.find((r) => chaveNome(r.nome) === chaveNome(limpo) && r.resposta === 'dentro');
+      if (!dentro) throw new ErroPlano(403, 'Só quem disse "tô dentro" neste convite responde.');
+      const festa = plano.festa && plano.festa.festa ? plano.festa.festa : {};
+      return { planoId: plano.id, festaId: festa.id, real: festa.real === true, nome: dentro.nome, aparelho, resposta, idade };
+    },
+
+    // Os hashes das imagens citadas por convite de festa que não passou: a
+    // rota /imagens/ continua servindo o flyer de um convite vivo, mesmo que
+    // a festa saia da base (KTD14).
+    imagensVigentes() {
+      const hashes = new Set();
+      const momento = agora();
+      for (const plano of Object.values(planos)) {
+        if (vista(plano, momento).passou) continue;
+        const f = plano.festa && plano.festa.festa;
+        if (!f) continue;
+        for (const img of [...(Array.isArray(f.imagens) ? f.imagens : []), f.cartaz]) {
+          if (img && typeof img === 'object' && typeof img.id === 'string') hashes.add(img.id);
+        }
+      }
+      return hashes;
     },
   };
 }
 
-module.exports = { criarPlanos, limparNome, ErroPlano, LIMITE_NOME, LIMITE_RESPOSTAS };
+module.exports = { criarPlanos, limparNome, ErroPlano, LIMITE_NOME, LIMITE_RESPOSTAS, RESPOSTAS_AVALIACAO, FINALIDADE };

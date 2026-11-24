@@ -153,3 +153,41 @@ test('M10: duas execuções não rodam ao mesmo tempo; trava velha é liberada',
   assert.ok(r2.execucaoId);
   assert.equal(db.prepare('SELECT estado FROM execucoes WHERE id = ?').get(id).estado, 'erro');
 });
+
+test('U8: execução com batimento recente não é abandonada aos 30 min; sem batimento há 10 min, é', async () => {
+  const db = novoBanco();
+  const id = travar(db, 'comando', AGORA);
+  // A execução longa bateu há 6 min (31 min depois do início).
+  db.prepare('UPDATE execucoes SET atualizado_em = ? WHERE id = ?').run(new Date(AGORA.getTime() + 25 * 60e3).toISOString(), id);
+  const depois = relogio(new Date(AGORA.getTime() + 31 * 60e3));
+  const r = await executar({ db, fontes: [], agora: depois, log: logMudo });
+  assert.equal(r.recusada, true);
+  assert.equal(db.prepare('SELECT estado FROM execucoes WHERE id = ?').get(id).estado, 'rodando');
+  // Onze minutos sem batimento: abandonada, e a nova começa.
+  const maisTarde = relogio(new Date(AGORA.getTime() + 36 * 60e3));
+  const r2 = await executar({ db, fontes: [], agora: maisTarde, log: logMudo });
+  assert.ok(r2.execucaoId);
+  const velha = db.prepare('SELECT estado, resumo FROM execucoes WHERE id = ?').get(id);
+  assert.equal(velha.estado, 'erro');
+  assert.match(velha.resumo, /sem batimento/);
+});
+
+test('U8: o batimento anda a cada item e a fonte recebe `batimento` para bater a cada página', async () => {
+  const db = novoBanco();
+  const agora = relogio();
+  let recebeu = null;
+  const fonte = {
+    id: 'paginas',
+    nome: 'paginas',
+    coletar: async ({ batimento }) => {
+      recebeu = typeof batimento;
+      agora.andar(60e3);
+      batimento();
+      return { itens: [{ idExterno: 'p', bruto: { nome: 'X', data: '2026-11-28' } }], avisos: [] };
+    },
+  };
+  const r = await executar({ db, fontes: [fonte], agora, log: logMudo, apify: null, fontesDeFesta: [] });
+  assert.equal(recebeu, 'function');
+  const e = db.prepare('SELECT inicio, atualizado_em FROM execucoes WHERE id = ?').get(r.execucaoId);
+  assert.ok(e.atualizado_em > e.inicio);
+});

@@ -1,6 +1,15 @@
 node_modules
 var
-entrada/*.json
+# Dado real (envios, contatos, curadoria em lote) não entra na imagem. As
+# indicações (links públicos de página de ingresso) entram; a lista de perfis
+# (grupo/contatos.json) e entrada/curadoria.json vão para o volume por sftp.
+entrada/*
+!entrada/LEIA-ME.md
+!entrada/indicacoes
+entrada/grupo
+# O plano B do Mac não roda no Fly.
+deploy/mac-reserva
+coletores/paginas/.venv
 teste
 *.log
 .DS_Store

@@ -145,3 +145,73 @@ test('pedido explícito na conversa vira dimensão firme, só quando muda algo',
   assert.deepEqual(conversa.firmesDe({ ...antes, firmes: ['preco'] }, { ...antes, voltaMax: 23 }), ['preco', 'horario']);
   assert.deepEqual(conversa.firmesDe(antes, { ...antes }), []);
 });
+
+// ---------------------------------------------------------------- U28 (plano de 24/11/2026)
+
+const TERCA = Date.parse('2026-11-24T12:00:00-03:00');
+
+const casosU28 = [
+  // dias novos e a semana
+  ['e na quinta?', { dia: 'qui' }, ['dia']],
+  ['quinta', { dia: 'qui' }, ['dia']],
+  ['tem algo hoje?', { dia: 'hoje' }, ['dia']],
+  ['hoje eu topo house', { dia: 'hoje', estilos: ['house-disco'] }, ['dia', 'estilo']],
+  ['semana que vem', { semana: 'proxima' }, ['semana']],
+  ['e no próximo fim de semana?', { semana: 'proxima' }, ['semana']],
+  ['sábado da semana que vem', { dia: 'sab', semana: 'proxima' }, ['dia', 'semana']],
+  ['nesse fim de semana mesmo', { semana: 'esta' }, ['semana']],
+  // limite de idade não é teto; "quanto custa?" não muda nada
+  ['sem limite de idade', {}, ['limite-idade']],
+  ['tem limite de idade?', {}, ['limite-idade']],
+  ['quanto custa?', {}, ['quanto-custa']],
+  ['qual o preço?', {}, ['quanto-custa']],
+  // "tem mais?" acrescenta; "outras" troca
+  ['tem mais?', {}, ['mais']],
+  ['mostra mais', {}, ['mais']],
+  // os outros bairros do motor
+  ['perto de Santana', { perto: 'santana' }, ['perto']],
+];
+
+for (const [frase, mudar, pedidos] of casosU28) {
+  test(`entende "${frase}" (U28)`, () => {
+    const r = entender(frase, { ...atuais, agoraMs: TERCA });
+    assert.deepEqual(r.mudar, mudar);
+    assert.deepEqual(r.pedidos, pedidos);
+  });
+}
+
+test('"sem limite de idade" não mexe no teto; "sem limite" sozinho tira', () => {
+  assert.equal(entender('sem limite de idade', atuais).mudar.teto, undefined);
+  assert.equal(entender('sem limite de idade, até 50 reais', atuais).mudar.teto, 50);
+  assert.equal(entender('sem limite', atuais).mudar.teto, 'sem-limite');
+  assert.equal(entender('limite de idade de 25', atuais).mudar.faixa, undefined);
+});
+
+test('"dia 5" num pedido de 24/11 vai para o sábado 05/12, da semana que vem', () => {
+  const r = entender('e dia 5?', { ...atuais, agoraMs: TERCA });
+  assert.deepEqual(r.mudar, { dia: 'sab', semana: 'proxima' });
+  assert.deepEqual(r.pedidos, ['data']);
+  assert.equal(r.data, '2026-12-05');
+  // Dia 28 é o sábado desta semana; dia 1 é uma terça, fora do recorte.
+  assert.deepEqual(entender('dia 28', { ...atuais, agoraMs: TERCA }).mudar, { dia: 'sab', semana: 'esta' });
+  const terca = entender('dia 1', { ...atuais, agoraMs: TERCA });
+  assert.deepEqual(terca.mudar, {});
+  assert.deepEqual(terca.pedidos, ['data-fora']);
+  // Sem relógio, "dia 5" não vira data nenhuma.
+  assert.deepEqual(entender('dia 5', atuais).pedidos, []);
+});
+
+test('bairro citado sem distância conhecida (as reais) filtra pelo bairro; com distância, ordena por perto', () => {
+  assert.deepEqual(entender('pinheiros', { ...atuais, comDistancia: false }), { mudar: { bairros: ['pinheiros'] }, pedidos: ['bairro'] });
+  assert.deepEqual(entender('tem algo em Interlagos?', { ...atuais, comDistancia: false }).mudar, { bairros: ['interlagos'] });
+  // Referência que não é bairro vai para o bairro dela.
+  assert.deepEqual(entender('largo da batata', { ...atuais, comDistancia: false }).mudar, { bairros: ['pinheiros'] });
+  // "perto de" continua pedindo perto, e a lista fictícia segue ordenando por minutos.
+  assert.deepEqual(entender('perto de pinheiros', { ...atuais, comDistancia: false }).mudar, { perto: 'pinheiros' });
+  assert.deepEqual(entender('pinheiros', atuais).mudar, { perto: 'pinheiros' });
+});
+
+test('"outras" troca a lista; "tem mais?" só acrescenta (não tira as da tela)', () => {
+  assert.ok(entender('outras', atuais).mudar.evitar.length);
+  assert.equal(entender('tem mais?', atuais).mudar.evitar, undefined);
+});

@@ -5,6 +5,11 @@
 
 const HORARIOS_PADRAO = '07:00,12:00,17:00,21:00';
 
+const { executar, SEM_BATIMENTO_MIN } = require('./coleta');
+const { fontesLigadas } = require('../fontes');
+const { limparImagens } = require('./imagens');
+const { podarUso } = require('./uso');
+
 function lerHorarios(texto = HORARIOS_PADRAO) {
   const hs = String(texto).split(',').map((t) => t.trim()).filter(Boolean).map((t) => {
     const m = t.match(/^(\d{1,2}):(\d{2})$/);
@@ -48,4 +53,50 @@ function iniciarAgenda({ horarios = HORARIOS_PADRAO, tarefa, agora = () => new D
   return { parar: () => { parada = true; clearTimeout(timer); } };
 }
 
-module.exports = { lerHorarios, proximoDisparo, iniciarAgenda, HORARIOS_PADRAO };
+// Uma execução com batimento recente (a trava a consideraria viva).
+function outraRodando(db, agora) {
+  const limite = new Date(agora.getTime() - SEM_BATIMENTO_MIN * 60e3).toISOString();
+  return Boolean(db.prepare("SELECT 1 FROM execucoes WHERE estado = 'rodando' AND COALESCE(atualizado_em, inicio) >= ? LIMIT 1").get(limite));
+}
+
+// A tarefa que a agenda roda (M37, KTD18): liga o Instagram e as páginas quando
+// o ambiente diz `poc` (FINDE_POC=1, no Fly até 07/12/2026), executa, e no fim
+// limpa as imagens das festas passadas e poda o uso da API com mais de 30 dias.
+// `rodar` e `limpar` trocam a execução e a limpeza nos testes.
+function criarTarefaDeColeta({ db, amb, config, claude = null, agora = () => new Date(), log = console, rodar = executar, limpar = limparImagens }) {
+  return async function tarefaDeColeta() {
+    const { fontes, config: cfg } = fontesLigadas(config, { exemplos: amb.comExemplos, poc: Boolean(amb.poc) });
+    let recusada = false;
+    try {
+      const r = await rodar({ db, fontes, gatilho: 'agenda', claude, config: cfg, agora, log, dirImagens: amb.imagens });
+      recusada = Boolean(r && r.recusada);
+      if (r && !r.recusada) {
+        log.info(`[motor] coleta ${r.execucaoId}: ${r.festasTocadas} festas, ${r.festasNovas} novas, US$ ${r.classificacao ? r.classificacao.gastoUsd : 0}`);
+      }
+      return r;
+    } finally {
+      // A limpeza vale mesmo quando a coleta falhou. Não quando outra execução
+      // está rodando (a recusada pela trava, ou uma que começou depois): no
+      // tempo 2 dela o worker já gravou os WebP e as linhas de imagens só
+      // entram no fim do lote, e a limpeza os apagaria como órfãos.
+      try {
+        if (recusada || outraRodando(db, agora())) {
+          log.info('[motor] outra execução está rodando: a limpeza de imagens fica para a próxima');
+        } else {
+          const imgs = cfg.imagens || {};
+          const l = limpar(db, amb.imagens, { agora, folgaDias: imgs.folgaDias, maxMb: imgs.maxMb, log });
+          if (l && (l.apagadas || l.orfaos || l.temporarios)) log.info(`[motor] imagens limpas: ${l.apagadas} apagadas, ${l.orfaos} órfãos, ${l.temporarios} temporários`);
+        }
+      } catch (e) {
+        log.warn(`[motor] a limpeza de imagens falhou: ${e.message}`);
+      }
+      try {
+        podarUso(db, { agora: agora(), dias: 30 });
+      } catch (e) {
+        log.warn(`[motor] a poda do uso falhou: ${e.message}`);
+      }
+    }
+  };
+}
+
+module.exports = { lerHorarios, proximoDisparo, iniciarAgenda, criarTarefaDeColeta, HORARIOS_PADRAO };

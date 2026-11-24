@@ -69,11 +69,13 @@ test('quase vale meio: horário só abrindo, 2 anos fora, bairro vizinho, até 2
   assert.equal(p.bairro.texto, 'na Vila Madalena, a 6 min de Pinheiros');
   assert.equal(p.preco.cabe, 'quase');
   assert.equal(p.preco.texto, 'R$ 96, R$ 16 acima do seu teto');
-  // Som parecido não ganha crédito (só o pedido cabe), mas diz que é parecido.
-  assert.equal(p.som.cabe, false);
+  // Som parecido (U27, KTD15) vale 0,5 + 0,4 × afinidade: eletrônica lembra
+  // house com afinidade 1, então 0,9; e diz que é parecido.
+  assert.equal(p.som.cabe, 'quase');
+  assert.equal(p.som.credito, 0.9);
   assert.equal(p.som.texto, 'eletrônica, parecido com house e disco');
-  // (30 + 25 + 20 + 15) × 0,5 = 45 de 100.
-  assert.equal(r.pct, 45);
+  // (30 + 25 + 20 + 15) × 0,5 + 10 × 0,9 = 54 de 100.
+  assert.equal(r.pct, 54);
 });
 
 test('quase tem limite: além do horário aberto, de 3 anos ou de 20%, não cabe', () => {
@@ -165,7 +167,7 @@ test('preço: teto zero e preço no teto têm frase própria; bairros e sons no 
 test('som parecido nomeia o estilo da festa que mais lembra o pedido, pelo rótulo inteiro', () => {
   // Pedido de funk; a festa é house e disco + pop anos 2000. Quem lembra funk é o pop.
   const p = porCriterio(cara(festa({ estilos: ['house-disco', 'pop-2000'] }), pedido({ estilos: ['funk'] })));
-  assert.deepEqual(p.som, { criterio: 'som', cabe: false, texto: 'pop anos 2000, parecido com funk' });
+  assert.deepEqual(p.som, { criterio: 'som', cabe: 'quase', credito: 0.74, texto: 'pop anos 2000, parecido com funk' });
   // Sem nada parecido, fica o som principal da festa.
   const fora = porCriterio(cara(festa({ estilos: ['mpb-samba', 'indie-rock'] }), pedido({ estilos: ['eletronica'] })));
   assert.equal(fora.som.texto, 'MPB e samba, fora do que você pediu');
@@ -188,7 +190,7 @@ test('horas por extenso, anos em algarismos (como a linha da faixa no detalhe)',
 // A grade de pedidos: o formulário antigo (faixa fixa) e o novo (intervalo,
 // bairros), com e sem teto e som, nos três dias e três janelas.
 function* grade() {
-  for (const dia of C.ORDEM_DIAS) {
+  for (const dia of C.DIAS_FICTICIOS) {
     for (const j of C.JANELAS) {
       for (const fx of C.FAIXAS) {
         for (const teto of [0, 50, 80, 150, 'sem-limite']) {
@@ -233,6 +235,9 @@ test('toda opção do motor traz a cara bem formada, e o resto da opção fica i
     for (const o of motor.escolher(p, base).opcoes) {
       const { cara: k, ...resto } = o;
       assert.deepEqual(resto, motor.opcao(o.festa, c));
+      // Os campos da U27 (distanciaKm, porque) estão na opção, a do detalhe também.
+      assert.equal(o.distanciaKm, null);
+      assert.ok(Array.isArray(o.porque.cabe) && Array.isArray(o.porque.falta));
       assert.ok(Number.isInteger(k.pct) && k.pct >= 0 && k.pct <= 100);
       assert.ok(k.partes.length >= 1 && k.partes[0].criterio === 'horario');
       let soma = 0;
@@ -243,7 +248,8 @@ test('toda opção do motor traz a cara bem formada, e o resto da opção fica i
         assert.ok(typeof parte.texto === 'string' && parte.texto.length > 0 && parte.texto.length <= 80, parte.texto);
         assert.doesNotMatch(parte.texto, /undefined|null|NaN/);
         pesos += PESOS[parte.criterio];
-        soma += PESOS[parte.criterio] * (parte.cabe === true ? 1 : parte.cabe === 'quase' ? 0.5 : 0);
+        const credito = typeof parte.credito === 'number' ? parte.credito : parte.cabe === true ? 1 : parte.cabe === 'quase' ? 0.5 : 0;
+        soma += PESOS[parte.criterio] * credito;
       }
       assert.equal(k.pct, Math.round((soma * 100) / pesos));
     }
@@ -253,7 +259,7 @@ test('toda opção do motor traz a cara bem formada, e o resto da opção fica i
 // A grade do formulário novo (intervalo de idade e bairros), com os sons e
 // tetos que mais furam: 1.728 pedidos.
 function* gradeNova() {
-  for (const dia of C.ORDEM_DIAS) for (const j of C.JANELAS) {
+  for (const dia of C.DIAS_FICTICIOS) for (const j of C.JANELAS) {
     for (const bairros of [[], ['pinheiros'], ['centro', 'jardins'], ['vila-mariana']]) {
       for (const idade of [{ min: 28, max: 35 }, { min: 18, max: 50 }, { min: 25, max: 30 }, { min: 33, max: 40 }]) {
         for (const teto of [0, 50, 80, 'sem-limite']) {
@@ -415,4 +421,80 @@ test('API: /api/festas e o ajuste em uma frase (/api/conversa) devolvem a cara, 
     const preco = o.cara.partes.find((p) => p.criterio === 'preco');
     assert.equal(preco.cabe, o.festa.preco <= teto ? true : (o.festa.preco - teto) * 5 <= teto ? 'quase' : false);
   }
+});
+
+// ---------------------------------------------------------------- U27 (plano de 24/11/2026)
+
+test('propriedade: iguais menos no som, cara(casa) > cara(parecido) ≥ cara(sem som)', () => {
+  let pares = 0;
+  for (const pedidos of [['house-disco'], ['funk'], ['pop-2000'], ['mpb-samba', 'indie-rock'], ['eletronica']]) {
+    for (const f of base) {
+      const parecido = C.ESTILOS.map((e) => e.id).find((e) => !pedidos.includes(e) && pedidos.some((p) => (C.AFINIDADE[p] || {})[e] > 0));
+      if (!parecido) continue;
+      for (const extra of [{}, { bairros: [] }, { teto: 'sem-limite' }]) {
+        const c = pedido({ estilos: pedidos, ...extra });
+        const casa = cara({ ...f, estilos: [pedidos[0]] }, c).pct;
+        const quase = cara({ ...f, estilos: [parecido] }, c).pct;
+        const sem = cara({ ...f, estilos: [] }, c).pct;
+        assert.ok(casa > quase, `${f.id} ${pedidos} casa ${casa} parecido ${quase}`);
+        assert.ok(quase >= sem, `${f.id} ${pedidos} parecido ${quase} sem ${sem}`);
+        pares += 1;
+      }
+    }
+  }
+  assert.ok(pares > 100, String(pares));
+});
+
+test('propriedade: nenhuma real com dado faltando chega a 100%', () => {
+  const faltas = [{ mediaIdade: null }, { bairro: null }, { preco: null }, { estilos: [] }, { inicio: null, horarioIncerto: true }];
+  for (const p of grade()) {
+    const c = motor.completar(motor.sanearCriterios(p));
+    for (const f of base.filter((x) => x.dia === c.dia).slice(0, 4)) {
+      for (const falta of faltas) {
+        const k = cara({ ...f, ...falta, real: true }, c);
+        if (k && k.semDado && k.semDado.length) assert.ok(k.pct === null || k.pct < 100, `${f.id} ${JSON.stringify(falta)} ${k.pct}`);
+      }
+    }
+  }
+});
+
+test('horário sem início conta a metade, como o que não se sabe', () => {
+  const k = cara(festa({ inicio: null, horarioIncerto: true, esquenta: null, fim: null }), pedido());
+  const p = porCriterio(k);
+  assert.deepEqual(p.horario, { criterio: 'horario', cabe: null, texto: 'horário não divulgado' });
+  assert.ok(k.semDado.includes('horario'));
+  // 30 × 0,5 + o resto inteiro (70) = 85.
+  assert.equal(k.pct, 85);
+});
+
+test('idade pela avaliação de quem foi: vale naMedida quando a faixa cruza, e 0,5 quando não cruza', () => {
+  const av = festa({ mediaIdade: 31, avaliacaoIdade: { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 } });
+  const so = (idade) => pedido({ idade, bairros: [], teto: 'sem-limite', estilos: [], janela: 'comeco-da-noite' });
+  const dentro = cara(av, so({ min: 28, max: 35 }));
+  const pDentro = porCriterio(dentro).idade;
+  assert.equal(pDentro.credito, 0.8);
+  assert.equal(pDentro.cabe, true);
+  assert.equal(pDentro.texto, '4 de 5 acharam o público da idade');
+  // Horário 30 × 1 + idade 25 × 0,8 = 50 de 55.
+  assert.equal(dentro.pct, Math.round((30 + 25 * 0.8) * 100 / 55));
+  const fora = cara(av, so({ min: 40, max: 50 }));
+  const pFora = porCriterio(fora).idade;
+  assert.equal(pFora.credito, 0.5);
+  assert.equal(pFora.cabe, null);
+  assert.ok(fora.semDado.includes('idade'));
+  assert.equal(fora.pct, Math.round((30 + 25 * 0.5) * 100 / 55));
+  // A média 31 nunca aparece sozinha.
+  assert.doesNotMatch(JSON.stringify(dentro.partes), /31/);
+});
+
+test('bairro de real com coordenada: perto pela distância em linha reta, em km', () => {
+  const r = { real: true, local: { lat: -23.5611, lng: -46.6825, precisao: 'rua' } };
+  const p = porCriterio(cara(festa({ ...r, bairro: 'vila-madalena' }), pedido()));
+  assert.deepEqual(p.bairro, { criterio: 'bairro', cabe: 'quase', texto: 'na Vila Madalena, a 1,3 km de Pinheiros' });
+  // Sem coordenada, a real da mesma região diz a região, e não os minutos das fictícias.
+  const q = porCriterio(cara(festa({ real: true, bairro: 'vila-madalena' }), pedido()));
+  assert.deepEqual(q.bairro, { criterio: 'bairro', cabe: 'quase', texto: 'na Vila Madalena, na região de Pinheiros' });
+  // Os 14 bairros do motor no pedido.
+  const i = porCriterio(cara(festa({ real: true, bairro: 'interlagos' }), pedido({ bairros: ['interlagos'] })));
+  assert.equal(i.bairro.texto, 'em Interlagos, como você marcou');
 });

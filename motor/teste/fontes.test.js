@@ -93,14 +93,14 @@ test('envio pelo endpoint: o nome da produtora vem do cadastro, não do corpo', 
 test('M3: o registro de fontes diz o que está desligado e por quê', () => {
   const config = lerConfig();
   const fontes = descreverFontes(config);
-  for (const id of ['instagram', 'resident-advisor', 'eventbrite', 'sympla', 'shotgun', 'dice', 'fever', 'google-places', 'sesc-sp', 'guia-da-parik']) {
+  for (const id of ['instagram', 'resident-advisor', 'eventbrite', 'sympla', 'shotgun', 'dice', 'fever', 'google-places', 'sesc-sp', 'guia-da-parik', 'ingresse', 'visite-sao-paulo', 'ma-to', 'guia-da-semana', 'catraca-livre']) {
     const f = fontes.find((x) => x.id === id);
     assert.ok(f, id);
     assert.equal(f.ligada, false);
     assert.ok(f.motivo.length > 40, id);
   }
   assert.equal(fontes.find((x) => x.id === 'ical').ligada, false);
-  assert.equal(DESLIGADAS.length, 10);
+  assert.equal(DESLIGADAS.length, 15);
 });
 
 test('fontesLigadas não muda a configuração original', () => {
@@ -109,4 +109,63 @@ test('fontesLigadas não muda a configuração original', () => {
   const { fontes } = fontesLigadas(config, { exemplos: true });
   assert.equal(JSON.stringify(config), antes);
   assert.deepEqual(fontes.map((f) => f.id), ['envio', 'mapas-culturais', 'indicacao']);
+});
+
+// ---------------------------------------------------------------- a prova de conceito (U20, U21; D1, D14, KTD4, KTD18)
+
+const { fontesDeFesta, FONTES_DE_FESTA, CONECTORES } = require('../fontes');
+
+test('config/fontes.json: os blocos da prova de conceito completa e os tetos do D1 intactos', () => {
+  const c = lerConfig();
+  assert.equal(c.curadoria.ligada, true);
+  assert.equal(c.curadoria.arquivo, 'entrada/curadoria.json');
+  assert.equal(c.avaliacoes.ligada, true);
+  assert.equal(c.avaliacoes.minimo, 5);
+  assert.equal(c.avaliacoes.minimoConvites, 2);
+  assert.equal(c.imagens.maxMb, 300);
+  assert.equal(c.imagens.folgaDias, 7);
+  assert.ok(Array.isArray(c.imagens.hosts) && c.imagens.hosts.length > 0);
+  assert.equal(c.geocodificacao.provedor, 'nominatim');
+  assert.equal(c.geocodificacao.maxPorRodada, 20);
+  assert.equal(c.correlacao.une, 5);
+  assert.equal(c.correlacao.talvez, 3);
+  // O Instagram e as páginas são da prova (ligam com --poc ou FINDE_POC), e dizem até quando.
+  for (const id of ['instagram', 'paginas']) {
+    assert.equal(c[id].pocAcademica, true);
+    assert.equal(c[id].ligada, false);
+    assert.match(c[id].motivo, /07\/12\/2026/);
+  }
+  // Bloqueio é recusa (D14): nenhuma listagem pede proxy.
+  assert.ok(!(c.paginas.listagens || []).some((l) => l.proxy));
+  assert.doesNotMatch(JSON.stringify(c), /FINDE_PROXY_URL/);
+});
+
+test('as fontes de festa (curadoria, avaliações) não são conectores: não entram em fontesLigadas nem em descreverFontes', () => {
+  const config = lerConfig();
+  for (const id of ['curadoria', 'avaliacoes']) {
+    assert.ok(FONTES_DE_FESTA[id], id);
+    assert.equal(CONECTORES[id], undefined, id);
+    assert.equal(descreverFontes(config).some((f) => f.id === id), false, id);
+  }
+  const { fontes } = fontesLigadas(config, { poc: true });
+  assert.equal(fontes.some((f) => f.deFesta), false);
+});
+
+test('fontesDeFesta: avaliações, depois a curadoria (que vale sobre tudo); ligada:false tira só a que pediu', () => {
+  assert.deepEqual(fontesDeFesta(lerConfig()).map((f) => f.id), ['avaliacoes', 'curadoria']);
+  assert.deepEqual(fontesDeFesta({}).map((f) => f.id), ['avaliacoes', 'curadoria']);
+  assert.deepEqual(fontesDeFesta({ avaliacoes: { ligada: false } }).map((f) => f.id), ['curadoria']);
+  assert.deepEqual(fontesDeFesta({ curadoria: { ligada: false } }).map((f) => f.id), ['avaliacoes']);
+  for (const f of fontesDeFesta({})) assert.equal(typeof f.aplicar, 'function');
+});
+
+test('com --poc a prova liga Instagram e páginas, e a reserva do Apify continua de fora', () => {
+  const config = lerConfig();
+  const ids = (o) => fontesLigadas(config, o).fontes.map((f) => f.id);
+  assert.ok(!ids({}).includes('instagram'));
+  assert.ok(ids({ poc: true }).includes('instagram'));
+  assert.ok(ids({ poc: true }).includes('paginas'));
+  for (const reserva of ['sympla-apify', 'shotgun-apify', 'ra-apify']) assert.ok(!ids({ poc: true }).includes(reserva), reserva);
+  assert.deepEqual(ids({ poc: true, so: 'instagram' }), ['instagram']);
+  assert.deepEqual(ids({ so: 'instagram' }), [], 'sem --poc a fonte da prova não liga nem pedida por nome');
 });

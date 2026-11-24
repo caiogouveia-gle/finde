@@ -73,7 +73,9 @@ test('GET /api/formulario traz as cinco perguntas e a contagem, sem cache', asyn
   assert.equal(r.status, 200);
   assert.equal(r.corpo.total, 37);
   assert.equal(r.corpo.ficticia, true);
-  assert.deepEqual(r.corpo.dias.map((d) => d.id), ['sex', 'sab', 'dom']);
+  // Sem real nenhuma, os dias da base fictícia, com data (U24).
+  assert.deepEqual(r.corpo.dias.map((d) => d.id).filter((id) => id !== 'hoje' && id !== 'qui'), ['sex', 'sab', 'dom']);
+  assert.ok(r.corpo.dias.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d.data) && typeof d.rotulo === 'string' && d.reais === 0));
   assert.deepEqual(r.corpo.faixas.map((f) => f.rotulo), ['18 a 24', '25 a 29', '30 a 35', '36 ou mais']);
   assert.deepEqual(r.corpo.tetos.map((t) => t.rotulo), ['R$ 50', 'R$ 80', 'R$ 150', 'Sem limite']);
   assert.equal(r.corpo.estilos.length, 6);
@@ -447,6 +449,28 @@ test('a base fictícia anda com o relógio do servidor', async () => {
   }
 });
 
+test('"hoje" sem festa real: as fictícias são só as do dia da semana de hoje (costura)', async () => {
+  const outra = fs.mkdtempSync(path.join(os.tmpdir(), 'finde-hoje-'));
+  // Sábado, 28/11: só fictícias de sábado; numa segunda, nenhuma (a base é de sexta a domingo).
+  let agora = Date.parse('2026-11-28T15:00:00-03:00');
+  const s = criarServidor({ dados: DADOS, varDir: path.join(outra, 'var'), log: mudo, relogio: () => agora });
+  await new Promise((r) => s.listen(0, '127.0.0.1', r));
+  const pedir = () => fetch(`http://127.0.0.1:${s.address().port}/api/festas`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { ...PEDIDO, dia: 'hoje' } }),
+  }).then((x) => x.json());
+  try {
+    const sab = await pedir();
+    assert.ok(sab.opcoes.length > 0);
+    assert.ok(sab.opcoes.every((o) => o.festa.dia === 'sab'), sab.opcoes.map((o) => o.festa.dia).join());
+    agora = Date.parse('2026-11-30T15:00:00-03:00');
+    const seg = await pedir();
+    assert.equal(seg.opcoes.filter((o) => ['sex', 'sab', 'dom'].includes(o.festa.dia)).length, 0);
+  } finally {
+    await new Promise((r2) => s.close(r2));
+    fs.rmSync(outra, { recursive: true, force: true });
+  }
+});
+
 test('cartazes: cada festa tem o seu, servido como webp', async () => {
   const { festas } = JSON.parse(fs.readFileSync(DADOS, 'utf8'));
   for (const f of festas) {
@@ -470,11 +494,15 @@ test('/fora.html: a página de saída do protótipo, sem script inline', async (
 
 const PEDIDO_NOVO = { dia: 'sab', janela: 'fim-de-tarde', idade: { min: 28, max: 35 }, teto: 80, estilos: [], bairros: ['pinheiros', 'centro'] };
 
-test('formulário traz as zonas com os bairros e a faixa padrão de 28 a 35', async () => {
+test('formulário traz as zonas com os 14 bairros do motor e a faixa padrão de 28 a 35', async () => {
   const r = await chamar('GET', '/api/formulario');
   assert.deepEqual(r.corpo.idade, { min: 18, max: 50, padrao: { min: 28, max: 35 } });
-  assert.deepEqual(r.corpo.zonas.map((z) => z.nome), ['Zona Oeste', 'Centro', 'Centro-Sul']);
-  assert.equal(r.corpo.zonas.flatMap((z) => z.bairros).length, 7);
+  assert.deepEqual(r.corpo.zonas.map((z) => z.nome), ['Zona Oeste', 'Centro', 'Centro-Sul', 'Zona Norte', 'Zona Sul', 'Zona Leste']);
+  assert.equal(r.corpo.zonas.flatMap((z) => z.bairros).length, 14);
+  // Sem festa na semana, o bairro aparece sem contagem.
+  assert.ok(r.corpo.zonas.flatMap((z) => z.bairros).every((b) => !('reais' in b)));
+  // O ponto de cada bairro, para o círculo dos bairros pedidos no mapa.
+  assert.ok(r.corpo.zonas.flatMap((z) => z.bairros).every((b) => b.ponto && b.ponto.lat < -23.3 && b.ponto.lng < -46.3));
 });
 
 test('festas com bairros e intervalo: blocos, frase do pedido e nada de faixa obrigatória', async () => {
@@ -511,4 +539,305 @@ test('conversa com intervalo: "mais velha" desloca o intervalo; no teto, diz que
   r = await pedir({ min: 18, max: 50 }, 'tem gente da minha idade?');
   assert.match(r.corpo.resposta, /18 a 50/);
   assert.doesNotMatch(r.corpo.resposta, /25 a 29/);
+});
+
+// ---------------------------------------------------------------- U24: o servidor do app
+
+const MOTOR_DIR = path.join(__dirname, '..', '..', '..', 'motor');
+const FIXTURE = JSON.parse(fs.readFileSync(path.join(MOTOR_DIR, 'teste', 'dados', 'registro-r14-3.json'), 'utf8'));
+const SHA = '0123456789abcdef';
+// Um WebP mínimo (cabeçalho RIFF/WEBP): o app só confere os bytes mágicos.
+const WEBP = Buffer.concat([Buffer.from('RIFF'), Buffer.from([20, 0, 0, 0]), Buffer.from('WEBPVP8 '), Buffer.alloc(12)]);
+const extras = [];
+after(async () => {
+  for (const s of extras) await new Promise((r) => s.close(r));
+});
+
+async function subirApp(opcoes = {}) {
+  const s = criarServidor({
+    dados: DADOS, reais: null, varDir: path.join(pasta, `var-u24-${extras.length}`), log: mudo,
+    site: 'app', urlSite: 'https://finde.fly.dev/', ...opcoes,
+  });
+  await new Promise((r) => s.listen(0, '127.0.0.1', r));
+  extras.push(s);
+  const base = `http://127.0.0.1:${s.address().port}`;
+  const ir = async (caminho, init = {}) => {
+    const r = await fetch(base + caminho, init);
+    const tipo = r.headers.get('content-type') || '';
+    return { status: r.status, cabecalhos: r.headers, corpo: tipo.includes('json') ? await r.json() : tipo.startsWith('image/') ? Buffer.from(await r.arrayBuffer()) : await r.text() };
+  };
+  return { base, ir, varDir: path.join(pasta, `var-u24-${extras.length - 1}`) };
+}
+
+// O motor falso: serve a lista que estiver em `m.lista` e as imagens de `m.imagens`.
+async function motorFalso() {
+  const m = { lista: { contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, execucaoId: 1, total: 3, festas: FIXTURE.festas }, imagens: new Map(), pedidos: [] };
+  m.servidor = http.createServer((req, res) => {
+    m.pedidos.push(req.url);
+    if (req.url.startsWith('/api/festas')) {
+      res.writeHead(200, { 'Content-Type': 'application/json', ETag: `"${m.lista.execucaoId}"` });
+      return res.end(JSON.stringify(m.lista));
+    }
+    const nome = req.url.replace(/^\/imagens\//, '');
+    if (m.imagens.has(nome)) {
+      res.writeHead(200, { 'Content-Type': 'image/webp' });
+      return res.end(m.imagens.get(nome));
+    }
+    res.writeHead(404);
+    return res.end();
+  });
+  await new Promise((r) => m.servidor.listen(0, '127.0.0.1', r));
+  extras.push(m.servidor);
+  m.url = `http://127.0.0.1:${m.servidor.address().port}`;
+  return m;
+}
+
+const ESPERA = (ms) => new Promise((r) => setTimeout(r, ms));
+
+test('CSP do app: a origem dos tiles só no img-src; trocar FINDE_TILES troca a CSP; a landing segue com a de hoje', async () => {
+  const osm = await subirApp();
+  const csp = (await osm.ir('/')).cabecalhos.get('content-security-policy');
+  assert.match(csp, /img-src 'self' data: https:\/\/tile\.openstreetmap\.org(;|$)/);
+  assert.equal(csp.match(/tile\.openstreetmap\.org/g).length, 1);
+  assert.match(csp, /connect-src 'self'(;|$)/);
+  assert.match(csp, /default-src 'self'(;|$)/);
+  const carto = await subirApp({ tiles: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png' });
+  assert.match((await carto.ir('/api/formulario')).cabecalhos.get('content-security-policy'), /img-src 'self' data: https:\/\/\*\.basemaps\.cartocdn\.com(;|$)/);
+  // Endereço que não é https não entra na CSP.
+  const torto = await subirApp({ tiles: 'http://tiles.example/{z}/{x}/{y}.png' });
+  assert.match((await torto.ir('/')).cabecalhos.get('content-security-policy'), /img-src 'self' data:(;|$)/);
+  // O <meta name="finde-tiles"> leva o endereço (quando a página já tem o marcador, U32).
+  const html = (await carto.ir('/')).corpo;
+  if (/name="finde-tiles"/.test(fs.readFileSync(path.join(__dirname, '..', 'publico', 'index.html'), 'utf8'))) {
+    assert.match(html, /<meta name="finde-tiles" content="https:\/\/\{s\}\.basemaps\.cartocdn\.com\/light_all\/\{z\}\/\{x\}\/\{y\}\.png">/);
+  }
+  assert.doesNotMatch(html, /__TILES__/);
+  // A landing: a CSP de antes, sem tiles e sem X-Robots-Tag.
+  const landing = await chamar('GET', '/');
+  assert.equal(landing.cabecalhos.get('content-security-policy').includes('openstreetmap'), false);
+  assert.match(landing.cabecalhos.get('content-security-policy'), /img-src 'self' data:(;|$)/);
+  assert.equal(landing.cabecalhos.get('x-robots-tag'), null);
+});
+
+test('noindex: X-Robots-Tag em toda resposta do app; robots.txt fecha só /imagens/ e /api/', async () => {
+  const app = await subirApp();
+  for (const caminho of ['/', '/app', '/api/formulario', '/app.js', '/robots.txt', '/imagens/nada.webp', '/p/zzzzzzzz']) {
+    assert.equal((await app.ir(caminho)).cabecalhos.get('x-robots-tag'), 'noindex, noimageindex', caminho);
+  }
+  const robots = await app.ir('/robots.txt');
+  assert.equal(robots.status, 200);
+  assert.equal(robots.corpo, 'User-agent: *\nDisallow: /imagens/\nDisallow: /api/\n');
+  assert.doesNotMatch(robots.corpo, /Disallow: \/\s*$/m);
+  // Tudo junto: o app em /app leva; a landing em / não.
+  assert.equal((await chamar('GET', '/app')).cabecalhos.get('x-robots-tag'), 'noindex, noimageindex');
+  assert.equal((await chamar('GET', '/')).cabecalhos.get('x-robots-tag'), null);
+});
+
+test('formulário (U24): data, rótulo e reais de cada dia; "Hoje, sexta" uma vez numa sexta; "Hoje" sem festa vai para o fim', async () => {
+  const reais = path.join(pasta, 'reais-u24.json');
+  fs.writeFileSync(reais, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas: FIXTURE.festas }));
+  // Sexta, 27/11: hoje é sexta; a festa de 00h30 de sábado é da sexta.
+  let agora = Date.parse('2026-11-27T12:00:00-03:00');
+  const app = await subirApp({ reais, relogio: () => agora });
+  let f = (await app.ir('/api/formulario')).corpo;
+  assert.equal(f.misto, true);
+  const hoje = f.dias.filter((d) => d.hoje);
+  assert.equal(hoje.length, 1);
+  assert.deepEqual([hoje[0].id, hoje[0].rotulo, hoje[0].data, hoje[0].reais], ['sex', 'Hoje, sexta', '2026-11-27', 1]);
+  assert.equal(f.dias.filter((d) => d.id === 'hoje').length, 0);
+  assert.ok(f.dias.every((d) => d.data >= '2026-11-27'), 'nenhum dia que passou');
+  const sab = f.dias.find((d) => d.id === 'sab');
+  assert.deepEqual([sab.rotulo, sab.data, sab.reais], ['Sábado, 28 nov', '2026-11-28', 0]);
+  const prox = f.semanas.proxima;
+  assert.deepEqual(prox.filter((d) => ['sex', 'sab'].includes(d.id)).map((d) => [d.rotulo, d.reais]), [['Sexta, 4 dez', 1], ['Sábado, 5 dez', 1]]);
+  assert.ok(prox.every((d) => d.id !== 'hoje' && d.hoje === false));
+  // Os 14 bairros; o de Pinheiros tem festa na semana que vem, não nesta.
+  assert.equal(f.zonas.flatMap((z) => z.bairros).length, 14);
+  // A origem da lista.
+  assert.deepEqual(f.base, { atualizadoEm: '2026-11-26T09:05:00-03:00', total: 3, perfis: 0, sites: 1 });
+  // Segunda, 30/11: "Hoje" sem festa real vai para o fim.
+  agora = Date.parse('2026-11-30T12:00:00-03:00');
+  f = (await app.ir('/api/formulario')).corpo;
+  const ultimo = f.dias[f.dias.length - 1];
+  assert.deepEqual([ultimo.id, ultimo.rotulo, ultimo.reais, ultimo.hoje], ['hoje', 'Hoje, segunda', 0, true]);
+  assert.equal(f.dias.filter((d) => d.hoje).length, 1);
+});
+
+test('POST /api/festas (U24): a forma de resposta-festas-r14-3.json, com a base e os outros dias', async () => {
+  const reais = path.join(pasta, 'reais-u24b.json');
+  fs.writeFileSync(reais, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas: FIXTURE.festas }));
+  const app = await subirApp({ reais, relogio: () => Date.parse('2026-11-26T12:00:00-03:00') });
+  const r = await app.ir('/api/festas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 }, semana: 'proxima' }) });
+  assert.equal(r.status, 200);
+  for (const k of ['criterios', 'pedido', 'pedidoPartes', 'resposta', 'opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base', 'semMedia']) assert.ok(k in r.corpo, k);
+  assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), ['noite-exemplo-20261205-a1b2']);
+  assert.equal(r.corpo.opcoes[0].festa.cartaz.arquivo, `/imagens/${SHA}-1080.webp`);
+  assert.deepEqual(r.corpo.exemplos, []);
+  assert.ok(r.corpo.outrosDias.some((d) => d.dia === 'sex' && d.data === '2026-12-04' && d.reais === 1));
+  assert.equal(r.corpo.base.total, 3);
+  assert.equal(r.corpo.semMedia, false);
+});
+
+test('/imagens/: fora do padrão e hash fora da base dão 404; com o motor, grava o cache; a que sai da base dá 404 na atualização seguinte', async () => {
+  const m = await motorFalso();
+  m.imagens.set(`${SHA}-1080.webp`, WEBP);
+  m.imagens.set(`${SHA}-480.webp`, WEBP);
+  m.imagens.set('aaaaaaaaaaaaaaaa-480.webp', WEBP);
+  let agora = Date.parse('2026-11-26T12:00:00-03:00');
+  const app = await subirApp({ motorUrl: m.url, relogio: () => agora, adminToken: 'admin-de-teste' });
+  for (const nome of ['x.webp', `${SHA}-720.webp`, `${SHA.toUpperCase()}-480.webp`, '..%2Fservidor.js', `${SHA}-480.webp/../x`]) {
+    assert.equal((await app.ir(`/imagens/${nome}`)).status, 404, nome);
+  }
+  // Hash que a base não cita, mesmo que o motor tenha.
+  assert.equal((await app.ir('/imagens/aaaaaaaaaaaaaaaa-480.webp')).status, 404);
+  const img = await app.ir(`/imagens/${SHA}-480.webp`);
+  assert.equal(img.status, 200);
+  assert.equal(img.cabecalhos.get('content-type'), 'image/webp');
+  assert.equal(img.cabecalhos.get('cache-control'), 'public, max-age=86400');
+  assert.equal(img.cabecalhos.get('x-robots-tag'), 'noindex, noimageindex');
+  assert.deepEqual(img.corpo, WEBP);
+  const noCache = path.join(app.varDir, 'imagens', `${SHA}-480.webp`);
+  assert.ok(fs.existsSync(noCache));
+  // Do cache: o motor não é chamado de novo.
+  const antes = m.pedidos.filter((u) => u.startsWith('/imagens/')).length;
+  assert.equal((await app.ir(`/imagens/${SHA}-480.webp`)).status, 200);
+  assert.equal(m.pedidos.filter((u) => u.startsWith('/imagens/')).length, antes);
+  // O motor ocultou a imagem: a lista nova chega sem ela.
+  m.lista = { ...m.lista, execucaoId: 2, festas: FIXTURE.festas.map((f) => ({ ...f, imagens: [], cartaz: null })) };
+  agora += 11 * 60e3;
+  await app.ir('/api/formulario'); // passa a validade: a atualização corre por trás
+  for (let i = 0; i < 40 && m.pedidos.filter((u) => u.startsWith('/api/festas')).length < 2; i++) await ESPERA(25);
+  const estado = async () => (await app.ir('/api/reais/estado', { headers: { Authorization: 'Bearer admin-de-teste' } })).corpo.estado;
+  for (let i = 0; i < 40 && (await estado()).execucaoId !== 2; i++) await ESPERA(25);
+  assert.equal((await app.ir(`/imagens/${SHA}-480.webp`)).status, 404);
+  assert.equal(fs.existsSync(noCache), false);
+});
+
+test('/api/reais/estado pede o token de admin do app', async () => {
+  const app = await subirApp({ adminToken: 'admin-de-teste' });
+  assert.equal((await app.ir('/api/reais/estado')).status, 401);
+  assert.equal((await app.ir('/api/reais/estado', { headers: { Authorization: 'Bearer admin-de-test' } })).status, 401);
+  assert.equal((await app.ir('/api/reais/estado', { headers: { Authorization: 'Bearer admin-de-testX' } })).status, 401);
+  const ok = await app.ir('/api/reais/estado', { headers: { Authorization: 'Bearer admin-de-teste' } });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.corpo.fonte, 'arquivo');
+  // Sem token configurado, ninguém entra.
+  const sem = await subirApp({ adminToken: undefined });
+  assert.equal((await sem.ir('/api/reais/estado', { headers: { Authorization: 'Bearer qualquer' } })).status, 401);
+});
+
+test('convite de festa real com flyer: a prévia leva a versão 1080, absoluta; a festa que passou diz que passou', async () => {
+  const reais = path.join(pasta, 'reais-u24c.json');
+  fs.writeFileSync(reais, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas: FIXTURE.festas }));
+  let agora = Date.parse('2026-11-26T12:00:00-03:00');
+  const app = await subirApp({ reais, relogio: () => agora });
+  const p = await app.ir('/api/planos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 }, festa: 'noite-exemplo-20261205-a1b2' }) });
+  assert.equal(p.status, 201);
+  const html = (await app.ir(`/p/${p.corpo.id}`, { headers: { 'X-Forwarded-Proto': 'https' } })).corpo;
+  assert.doesNotMatch(html, /__IMAGEM_COMPARTILHAR__/);
+  if (/__IMAGEM_COMPARTILHAR__/.test(fs.readFileSync(path.join(__dirname, '..', 'publico', 'plano.html'), 'utf8'))) {
+    assert.match(html, new RegExp(`content="https://127\\.0\\.0\\.1:\\d+/imagens/${SHA}-1080\\.webp"`));
+  }
+  // O flyer é retrato: as metas dizem 1080×1350, não 1200×630 (revisão app-8).
+  assert.match(html, /<meta property="og:image:width" content="1080">/);
+  assert.match(html, /<meta property="og:image:height" content="1350">/);
+  assert.doesNotMatch(html, /content="630"/);
+  // O convite vivo segura a imagem mesmo que a festa saia da base.
+  // A festa que passou: o link diz que passou.
+  agora = Date.parse('2026-12-07T12:00:00-03:00');
+  const passada = await app.ir('/api/festa/noite-exemplo-20261205-a1b2');
+  assert.equal(passada.status, 404);
+  assert.equal(passada.corpo.passou, true);
+});
+
+// ---------------------------------------------------------------- revisão de 24/11 (app-1, app-2, app-3, app-5)
+
+// Cinco reais no sábado 05/12, a partir da noite-exemplo da fixture.
+function cincoNoSabado({ funk = null, esgotada = null } = {}) {
+  const modelo = FIXTURE.festas[0];
+  return ['a', 'b', 'c', 'd', 'e'].map((l, i) => ({
+    ...modelo,
+    id: `noite-${l}-20261205-a1b${i}`,
+    nome: `Noite ${l.toUpperCase()}`,
+    inicio: `2026-12-05T${String(22 + (i % 2)).padStart(2, '0')}:00:00-03:00`,
+    estilos: l === funk ? ['funk'] : ['house-disco'],
+    esgotado: l === esgotada,
+  }));
+}
+async function appCom(festas, agoraIso) {
+  const arq = path.join(pasta, `reais-rev-${extras.length}.json`);
+  fs.writeFileSync(arq, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas }));
+  return subirApp({ reais: arq, relogio: () => Date.parse(agoraIso) });
+}
+const pedirFestas = (app, criterios, extra = {}) => app.ir('/api/festas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios, ...extra }) });
+
+test('revisão app-1: a festa recusada de propósito não volta em "ver todas" (maisDoDia)', async () => {
+  const app = await appCom(cincoNoSabado({ funk: 'a' }), '2026-12-01T12:00:00-03:00');
+  const r = (await pedirFestas(app, { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150, evitarEstilos: ['funk'] })).corpo;
+  const ids = [...r.opcoes, ...r.maisDoDia].map((o) => o.festa.id);
+  assert.equal(ids.length, 4);
+  assert.ok(!ids.includes('noite-a-20261205-a1b0'), 'a de funk ficou fora');
+  // "essa não": o id recusado também sai de maisDoDia.
+  const r2 = (await pedirFestas(app, { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150, evitar: ['noite-e-20261205-a1b4'] })).corpo;
+  assert.ok(![...r2.opcoes, ...r2.maisDoDia].some((o) => o.festa.id === 'noite-e-20261205-a1b4'));
+});
+
+test('revisão app-2: esgotada não ocupa vaga; as 3 recomendadas são abertas e ela desce para o fim', async () => {
+  const app = await appCom(cincoNoSabado({ esgotada: 'a' }), '2026-12-01T12:00:00-03:00');
+  const r = (await pedirFestas(app, { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 })).corpo;
+  assert.equal(r.opcoes.length, 3);
+  assert.ok(r.opcoes.every((o) => o.festa.esgotado !== true));
+  const ultima = r.maisDoDia[r.maisDoDia.length - 1];
+  assert.equal(ultima.festa.id, 'noite-a-20261205-a1b0');
+  assert.equal(ultima.esgotada, true);
+});
+
+test('revisão app-3: à 1h30 de sábado, a festa de sexta que segue rolando é "hoje"', async () => {
+  // A fixture tem a "depois da meia-noite": noite de sexta 27/11, começa 00h30 de sábado, sem fim.
+  const app = await appCom(FIXTURE.festas, '2026-11-28T01:30:00-03:00');
+  const f = (await app.ir('/api/formulario')).corpo;
+  const hoje = f.dias.find((d) => d.hoje);
+  assert.deepEqual([hoje.id, hoje.rotulo, hoje.data, hoje.reais], ['sex', 'Hoje, sexta', '2026-11-27', 1]);
+  const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 150 })).corpo;
+  assert.deepEqual([...r.opcoes, ...r.maisDoDia].map((o) => o.festa.id), ['depois-da-meia-noite-20261128-d4e5']);
+  assert.deepEqual(r.exemplos, []);
+  // Às 7h de sábado a noite virou: "hoje" é sábado, e a de sexta passou.
+  const depois = await appCom(FIXTURE.festas, '2026-11-28T07:00:00-03:00');
+  const f2 = (await depois.ir('/api/formulario')).corpo;
+  assert.equal(f2.dias.find((d) => d.hoje).data, '2026-11-28');
+});
+
+test('verif-app-3: entre 0h e 6h, a fictícia de "hoje" é da noite de hoje, não da semana seguinte', async () => {
+  for (const hora of ['2026-11-28T00:30:00-03:00', '2026-11-28T05:59:00-03:00']) {
+    const app = await appCom([], hora);
+    const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 'sem-limite' })).corpo;
+    const datas = [...r.opcoes, ...(r.exemplos || [])].map((o) => `${o.festa.dia} ${o.data}`);
+    assert.ok(datas.length, hora);
+    for (const d of datas) assert.equal(d, 'sex 2026-11-27', hora);
+  }
+  // A sexta que ainda segue à 1h de sábado: o convite também é de sexta.
+  const { dataDaFesta } = require('../servidor');
+  assert.equal(dataDaFesta({ dia: 'sex', fim: 29 }, new Date(2026, 10, 28, 1)).data, '2026-11-27');
+  assert.equal(dataDaFesta({ dia: 'sex', fim: 25 }, new Date(2026, 10, 28, 2)).data, '2026-12-04');
+});
+
+test('verif-app-5: "$2" ou "$&" no nome da festa não vira padrão de troca nas metas do convite', async () => {
+  const nome = 'Noite $2 data-x=$2y $& $` fim';
+  const app = await appCom([{ ...FIXTURE.festas[0], nome }], '2026-12-01T12:00:00-03:00');
+  const p = await app.ir('/api/planos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 }, festa: FIXTURE.festas[0].id }) });
+  assert.equal(p.status, 201);
+  const html = (await app.ir(`/p/${p.corpo.id}`)).corpo;
+  const og = html.match(/<meta property="og:title" content="([^"]*)">/);
+  assert.ok(og, 'og:title inteiro, sem aspas soltas');
+  assert.ok(og[1].includes('Noite $2 data-x=$2y $&amp; $` fim'), og[1]);
+  assert.ok(html.match(/<title>([^<]*)<\/title>/)[1].includes('Noite $2 data-x=$2y'));
+  assert.doesNotMatch(html, /" data-x=/);
+});
+
+test('revisão app-5: "hoje" sem real num dia útil não diz que a lista está vazia quando outro dia tem', async () => {
+  const app = await appCom(FIXTURE.festas, '2026-12-01T20:00:00-03:00');
+  const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 150 })).corpo;
+  assert.deepEqual(r.opcoes, []);
+  assert.ok(r.outrosDias.some((d) => d.reais > 0));
+  assert.doesNotMatch(`${r.aviso || ''} ${r.resposta}`, /lista de festas está vazia/);
 });

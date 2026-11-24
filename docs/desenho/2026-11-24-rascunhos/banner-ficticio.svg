@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Banner fictício (paisagem) para o rascunho: mostra a regra de contain. -->
+  <rect width="1200" height="630" fill="#1C2B5A"/>
+  <rect x="0" y="470" width="1200" height="160" fill="#F2C230"/>
+  <text x="70" y="250" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="170" fill="#F4F1EA">pop arquivo</text>
+  <text x="74" y="350" font-family="Helvetica, Arial, sans-serif" font-size="56" fill="#F4F1EA">sexta · 22h · galpão barra funda</text>
+  <text x="70" y="575" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="64" fill="#1C2B5A">FESTA FICTÍCIA DO PROTÓTIPO</text>
+</svg>

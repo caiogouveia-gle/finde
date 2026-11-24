@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  MODELO do LaunchAgent do plano B do motor (br.finde.motor-reserva). NÃO está instalado.
+  Troque __HOME__ pelo caminho da casa (ex.: /Users/nome), salve em
+  ~/Library/LaunchAgents/br.finde.motor-reserva.plist e siga o LEIA-ME.md.
+  O script mora em ~/Library/Application Support (fora do ~/Documents, que o TCC
+  não deixa um agente ler).
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>br.finde.motor-reserva</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>__HOME__/Library/Application Support/finde-motor/motor/deploy/mac-reserva/rodar.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <!-- node, uv e fly moram em ~/.local/bin (sem Homebrew) -->
+    <key>PATH</key>
+    <string>__HOME__/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>HOME</key>
+    <string>__HOME__</string>
+  </dict>
+  <!-- uma coleta por dia, às 07h; a coleta paga já tem teto de gasto por dia -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>7</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/finde-motor-reserva.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/finde-motor-reserva.log</string>
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>

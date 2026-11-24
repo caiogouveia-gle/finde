@@ -15,6 +15,8 @@
 // A lista sai em ordem de horário; a patrocinada fica no lugar dela, nunca em primeiro.
 
 const C = require('./catalogo');
+// A distância em linha reta da real com coordenada (R29).
+const G = require('./geo');
 // A conta do preço do detalhe (o "a partir de"), a mesma do navegador.
 const FT = require('../publico/festa-texto');
 // O "% a sua cara" (nucleo/cara.js) usa funções daqui; carrega na hora de
@@ -39,9 +41,14 @@ const IDADE_MIN = 18;
 const IDADE_MAX = 50;
 // Bairro vizinho (R19): mesma região, ou até 12 min de carro pela tabela.
 const MINUTOS_VIZINHO = 12;
+// Real com coordenada (precisão casa ou rua): vizinha até 3 km em linha reta
+// do ponto do bairro pedido (R29, U27).
+const KM_VIZINHO = 3;
 // Os blocos da lista, na ordem: o que cabe; bairro vizinho; o que fura o
-// pedido em som, horário ou preço; média fora da faixa.
-const BLOCOS = ['pedido', 'perto', 'quase', 'faixa'];
+// pedido em som, horário ou preço; média fora da faixa; a real de bairro
+// conhecido e longe (nunca some, U27); a real sem bairro ("Local a
+// confirmar", abaixo das que cabem, R29).
+const BLOCOS = ['pedido', 'perto', 'quase', 'faixa', 'longe', 'local'];
 const DIMENSOES = ['horario', 'preco', 'idade'];
 
 const janelaPorId = (id) => C.JANELAS.find((j) => j.id === id);
@@ -53,8 +60,66 @@ const NUMERAL = ['nenhuma', 'uma', 'duas', 'três'];
 // não ganha ponto, e quando o pedido perguntou aquilo ela sai do bloco do
 // pedido dizendo o que não se sabe (incertos).
 const num = (x) => typeof x === 'number' && Number.isFinite(x);
+// Festa real sem início (horarioIncerto, U23): o horário não fura nem cabe;
+// no "% a sua cara" conta a metade, e a régua não é desenhada.
+const semInicio = (f) => !C.temInicio(f);
 // A hora em que a pessoa chega com a festa cheia: a pista cheia, ou, sem ela, o começo.
 const chegada = (f) => (num(f.esquenta) ? f.esquenta : f.inicio);
+// O início para ordenar: sem ele, a festa vai para o fim do bloco.
+const inicioParaOrdem = (f) => (semInicio(f) ? 99 : f.inicio);
+
+// A avaliação de quem foi (KTD13): { avaliacoes, naMedida, faixa: [min, max],
+// convites }, ou null. Com ela, a média (o `valor`) nunca fala sozinha.
+function avaliacao(f) {
+  const a = f && f.avaliacaoIdade;
+  if (!a || typeof a !== 'object' || !Array.isArray(a.faixa) || a.faixa.length !== 2) return null;
+  if (!num(a.naMedida) || a.naMedida < 0 || a.naMedida > 1 || !num(a.faixa[0]) || !num(a.faixa[1])) return null;
+  if (!(Number.isInteger(a.avaliacoes) && a.avaliacoes > 0)) return null;
+  return a;
+}
+// A média que fala como média do público: a da produtora ou das edições.
+const mediaDe = (f) => (avaliacao(f) ? null : (num(f.mediaIdade) ? f.mediaIdade : null));
+// A faixa de quem avaliou cruza a faixa pedida.
+function avaliacaoCruza(f, c) {
+  const a = avaliacao(f);
+  const fx = faixaDe(c);
+  return Boolean(a && fx && Math.min(a.faixa[0], a.faixa[1]) <= fx.max && Math.max(a.faixa[0], a.faixa[1]) >= fx.min);
+}
+
+// O ponto da real com coordenada boa para medir (casa ou rua; bairro nunca).
+function pontoDa(f) {
+  const l = f && f.local;
+  if (!l || !['casa', 'rua'].includes(l.precisao) || !num(l.lat) || !num(l.lng)) return null;
+  return { lat: l.lat, lng: l.lng };
+}
+// De onde medir: os bairros pedidos (o mais perto) ou o ponto citado na conversa.
+function pontosDoPedido(c) {
+  if (c.bairros && c.bairros.length) return c.bairros.map((b) => [C.BAIRROS[b], G.pontoDoBairro(b)]).filter(([, p]) => p);
+  if (c.perto && C.REFERENCIAS[c.perto]) {
+    const r = C.REFERENCIAS[c.perto];
+    const p = r.ponto || G.pontoDoBairro(r.bairro);
+    return p ? [[r, p]] : [];
+  }
+  return [];
+}
+// A distância em km, uma casa decimal, da real com coordenada até o ponto
+// pedido mais perto, e de onde: { km, de } ou null.
+function maisPerto(f, c) {
+  const p = pontoDa(f);
+  if (!p) return null;
+  let melhor = null;
+  for (const [ref, ponto] of pontosDoPedido(c)) {
+    const km = G.haversineKm(ponto, p);
+    if (km !== null && (!melhor || km < melhor.km)) melhor = { km: Math.round(km * 10) / 10, de: ref.de };
+  }
+  return melhor;
+}
+const distanciaKm = (f, c) => {
+  const m = maisPerto(f, c);
+  return m ? m.km : null;
+};
+// "1,2 km"
+const emKm = (km) => `${String(km).replace('.', ',')} km`;
 // O fim que pesa contra quando passa da sua volta. Na festa real, não: ela
 // seria punida por dizer o fim, enquanto a que não diz passa inteira, e dá
 // pra sair antes do fim. O fim cedo demais (antes de você chegar) vale para
@@ -81,7 +146,9 @@ const tetoValido = (v) => v === 'sem-limite' || (Number.isInteger(v) && v >= 0 &
 function sanearCriterios(bruto) {
   const c = {};
   if (!bruto || typeof bruto !== 'object' || Array.isArray(bruto)) return c;
-  if (Object.hasOwn(C.DIAS, bruto.dia)) c.dia = bruto.dia;
+  // O pedido aceita "hoje" e quinta a domingo (D2), em "esta" semana ou na "proxima".
+  if (C.ORDEM_DIAS.includes(bruto.dia)) c.dia = bruto.dia;
+  if (bruto.semana === 'esta' || bruto.semana === 'proxima') c.semana = bruto.semana;
   if (janelaPorId(bruto.janela)) c.janela = bruto.janela;
   if (faixaPorId(bruto.faixa)) c.faixa = bruto.faixa;
   // idade: { min, max } inteiros, aparados a 18–50 e na ordem certa.
@@ -91,11 +158,12 @@ function sanearCriterios(bruto) {
     c.idade = { min: apara(Math.min(i.min, i.max)), max: apara(Math.max(i.min, i.max)) };
   }
   // bairros: vazio é São Paulo inteira.
-  if (Array.isArray(bruto.bairros)) c.bairros = [...new Set(bruto.bairros.filter((b) => Object.hasOwn(C.BAIRROS, b)))];
+  // Os 14 bairros do motor (R29).
+  if (Array.isArray(bruto.bairros)) c.bairros = [...new Set(bruto.bairros.filter((b) => Object.hasOwn(C.TODOS_OS_BAIRROS, b)))];
   if (tetoValido(bruto.teto)) c.teto = bruto.teto;
   if (bruto.estilos !== undefined) c.estilos = listaDeEstilos(bruto.estilos);
   if (bruto.evitarEstilos !== undefined) c.evitarEstilos = listaDeEstilos(bruto.evitarEstilos);
-  if (Array.isArray(bruto.evitarBairros)) c.evitarBairros = [...new Set(bruto.evitarBairros.filter((b) => Object.hasOwn(C.BAIRROS, b)))];
+  if (Array.isArray(bruto.evitarBairros)) c.evitarBairros = [...new Set(bruto.evitarBairros.filter((b) => Object.hasOwn(C.TODOS_OS_BAIRROS, b)))];
   if (Array.isArray(bruto.evitarCasas)) c.evitarCasas = [...new Set(bruto.evitarCasas.filter((b) => Object.hasOwn(C.CASAS, b)))];
   if (bruto.perto === null) c.perto = null;
   else if (typeof bruto.perto === 'string' && Object.hasOwn(C.REFERENCIAS, bruto.perto)) c.perto = bruto.perto;
@@ -147,17 +215,23 @@ function vizinho(a, b) {
   return C.BAIRROS[a].regiao === C.BAIRROS[b].regiao || C.minutosEntre(a, b) <= MINUTOS_VIZINHO;
 }
 
-// Onde a festa fica em relação aos bairros pedidos: 'pedido', 'perto' ou null (longe).
+// Onde a festa fica em relação aos bairros pedidos: 'pedido', 'perto',
+// 'incerto' (sem bairro nem coordenada), 'longe' (real de bairro conhecido e
+// longe: nunca some da lista, U27) ou null (fictícia longe: sai).
+// A real com coordenada é vizinha até 3 km do ponto de um bairro pedido; sem
+// coordenada, pela região (e pela tabela de minutos, nos sete da base).
 function lugar(f, c) {
-  if (!c.bairros.length || c.bairros.includes(f.bairro)) return 'pedido';
-  // Sem bairro (festa real sem endereço): não se sabe se fica no pedido.
-  if (!f.bairro) return 'incerto';
-  return c.bairros.some((b) => vizinho(b, f.bairro)) ? 'perto' : null;
+  if (!c.bairros.length || (f.bairro && c.bairros.includes(f.bairro))) return 'pedido';
+  const m = maisPerto(f, c);
+  if (!f.bairro && !m) return 'incerto';
+  const perto = (m && m.km <= KM_VIZINHO) || (f.bairro && c.bairros.some((b) => vizinho(b, f.bairro)));
+  if (perto) return 'perto';
+  return f.real === true ? 'longe' : null;
 }
 
 function completar(c) {
   const r = {
-    dia: c.dia, janela: c.janela, faixa: c.faixa, teto: c.teto, bairros: c.bairros || [],
+    dia: c.dia, semana: c.dia === 'hoje' ? 'esta' : c.semana || 'esta', janela: c.janela, faixa: c.faixa, teto: c.teto, bairros: c.bairros || [],
     estilos: c.estilos || [], evitarEstilos: c.evitarEstilos || [],
     evitarBairros: c.evitarBairros || [], evitarCasas: c.evitarCasas || [],
     perto: c.perto || null, voltaMax: c.voltaMax || null, evitar: c.evitar || [], firmes: c.firmes || [],
@@ -182,7 +256,7 @@ function completar(c) {
 function pedidoEmPartes(c) {
   const j = janelaPorId(c.janela);
   const partes = [
-    { chave: 'dia', texto: C.DIAS[c.dia].nome },
+    { chave: 'dia', texto: `${C.DIAS[c.dia].nome}${c.semana === 'proxima' ? ' da semana que vem' : ''}` },
     { chave: 'janela', texto: `das ${j.rotulo}` },
     c.idade ? { chave: 'idade', texto: `gente de ${nomeIdade(c.idade)}` } : { chave: 'faixa', texto: `gente de ${C.nomeFaixa(c.faixa)}` },
     { chave: 'teto', texto: c.teto === 'sem-limite' ? 'sem teto de preço' : c.teto === 0 ? 'só de graça' : `até R$ ${c.teto}` },
@@ -205,7 +279,7 @@ function pedidoEmPartes(c) {
 // "Sáb · 19h à 1h · 30 a 35 · até R$ 80 · house"
 function resumoDoPedido(c) {
   const idade = c.idade ? `${c.idade.min} a ${c.idade.max}${c.idade.max >= IDADE_MAX ? '+' : ''}` : C.nomeFaixa(c.faixa);
-  const partes = [C.DIAS[c.dia].curto, janelaPorId(c.janela).rotulo, idade, C.rotuloTeto(c.teto)];
+  const partes = [`${C.DIAS[c.dia].curto}${c.semana === 'proxima' ? ' que vem' : ''}`, janelaPorId(c.janela).rotulo, idade, C.rotuloTeto(c.teto)];
   if (c.bairros && c.bairros.length) partes.splice(2, 0, c.bairros.map((b) => C.BAIRROS[b].nome).join(', '));
   if (c.estilos && c.estilos.length > 2) partes.push('vários sons');
   else if (c.estilos && c.estilos.length) partes.push(C.listaDeEstilos(c.estilos));
@@ -227,6 +301,8 @@ function faixasVizinhas(id) {
 
 // A hora de chegar e a de voltar: a janela é as duas coisas.
 function cabeNoHorario(f, janela, folga) {
+  // Sem início, não se sabe: não fura (o "% a sua cara" conta a metade).
+  if (semInicio(f)) return true;
   const volta = janela.fim + (folga > TOLERANCIA ? VOLTA_AFROUXADA : 0);
   const chega = chegada(f);
   return chega >= janela.inicio - folga
@@ -257,8 +333,9 @@ function precoPara(f, c) {
   if (!num(f.preco) || !c || !Array.isArray(f.lotes)) return f.preco;
   const j = janelaPorId(c.janela);
   if (!j) return f.preco;
-  const chega = Math.max(j.inicio, f.inicio);
-  const vencido = (l) => typeof l.ate === 'string' && /^\d{2}:\d{2}$/.test(l.ate) && horaDoLote(l.ate, f.inicio) < chega;
+  const inicio = semInicio(f) ? j.inicio : f.inicio;
+  const chega = Math.max(j.inicio, inicio);
+  const vencido = (l) => typeof l.ate === 'string' && /^\d{2}:\d{2}$/.test(l.ate) && horaDoLote(l.ate, inicio) < chega;
   if (!f.lotes.some(vencido)) return f.preco;
   const p = FT.preco({ lotes: f.lotes.filter((l) => !vencido(l)), entradaNaPorta: f.entradaNaPorta || null });
   return num(p.valor) ? p.valor : f.preco;
@@ -268,12 +345,27 @@ function precoPara(f, c) {
 const cabeNoPreco = (f, teto, c = null) => teto === 'sem-limite' || !num(f.preco) || precoPara(f, c) <= teto;
 
 // Distância, em anos, da média da festa até a faixa pedida (0 dentro dela).
+// A avaliação de quem foi não fura: cruza a faixa (cabe) ou é de outra
+// faixa (sem dado, KTD13).
 function foraDaFaixa(f, c) {
   const fx = faixaDe(c);
-  if (!num(f.mediaIdade)) return 0;
-  if (f.mediaIdade < fx.min) return fx.min - f.mediaIdade;
-  if (f.mediaIdade > fx.max) return f.mediaIdade - fx.max;
+  const m = mediaDe(f);
+  if (m === null) return 0;
+  if (m < fx.min) return fx.min - m;
+  if (m > fx.max) return m - fx.max;
   return 0;
+}
+
+// A idade da festa diante do pedido: 'dentro', 'fora' ou 'sem' (sem dado).
+// Pela avaliação de quem foi: dentro quando a faixa cruza e a maioria achou
+// o público da idade; de outra faixa, sem dado.
+function idadeNoPedido(f, c) {
+  if (avaliacao(f)) {
+    if (!avaliacaoCruza(f, c)) return 'sem';
+    return avaliacao(f).naMedida >= 0.5 ? 'dentro' : 'fora';
+  }
+  if (mediaDe(f) === null) return 'sem';
+  return (c.idade ? foraDaFaixa(f, c) > 0 : foraDaFaixa(f, c) > IDADE_TOLERADA) ? 'fora' : 'dentro';
 }
 
 // Estilo recusado barra a festa, a não ser que o som principal dela tenha
@@ -285,11 +377,17 @@ function barradaPorEstilo(f, c) {
 
 const barradaPorCasa = (f, c) => Boolean(f.casa) && c.evitarCasas.some((k) => C.semAcento(f.casa).includes(k));
 
+// "hoje": o dia vem da data, e quem chama passa só as festas dela (lista.js).
+const doDia = (f, c) => c.dia === 'hoje' || f.dia === c.dia;
+
+// O que a pessoa recusou de propósito: a festa que já saiu, o bairro, o som
+// e o tipo de casa. Fica fora até de "ver todas".
+const barrada = (f, c) => c.evitar.includes(f.id) || (Boolean(f.bairro) && c.evitarBairros.includes(f.bairro))
+  || barradaPorEstilo(f, c) || barradaPorCasa(f, c);
+
 function passa(f, c, nivel) {
-  if (f.dia !== c.dia) return false;
-  if (c.evitar.includes(f.id)) return false;
-  if (c.evitarBairros.includes(f.bairro)) return false;
-  if (barradaPorEstilo(f, c) || barradaPorCasa(f, c)) return false;
+  if (!doDia(f, c)) return false;
+  if (barrada(f, c)) return false;
   if (c.voltaMax && fimLimita(f) && f.fim > c.voltaMax) return false;
   if (!lugar(f, c)) return false;
   if (!cabeNoHorario(f, janelaPorId(c.janela), nivel.folga)) return false;
@@ -320,7 +418,8 @@ function pontuar(f, c) {
   const faixa = faixaDe(c);
   const janela = janelaPorId(c.janela);
   let s = 0;
-  if (num(f.mediaIdade)) s += 3 * clamp(1 - Math.abs(f.mediaIdade - faixa.centro) / 6);
+  if (avaliacao(f)) s += avaliacaoCruza(f, c) ? 3 * avaliacao(f).naMedida : 0;
+  else if (num(f.mediaIdade)) s += 3 * clamp(1 - Math.abs(f.mediaIdade - faixa.centro) / 6);
   if (num(f.esquenta)) s += 2 * clamp(1 - Math.abs(f.esquenta - (janela.inicio + 2)) / 4);
   if (c.estilos.length) {
     if (c.estilos.includes(f.estilos[0])) s += 3;
@@ -328,6 +427,7 @@ function pontuar(f, c) {
     else s += 1.5 * afinidade(f, c);
   }
   if (c.perto && distancia(f, c.perto) !== null) s += 6 * clamp(1 - distancia(f, c.perto) / 30);
+  else if (c.perto && distanciaKm(f, c) !== null) s += 6 * clamp(1 - distanciaKm(f, c) / 6);
   return Math.round(s * 1000) / 1000;
 }
 
@@ -376,8 +476,9 @@ function violacoes(f, c) {
   const anos = foraDaFaixa(f, c);
   // Com o intervalo, qualquer ano fora conta; até 3, "um pouco" (R21).
   if (c.idade ? anos > 0 : anos > IDADE_TOLERADA) {
-    const lado = f.mediaIdade < faixaDe(c).min ? 'abaixo' : 'acima';
-    v.push(`média ${f.mediaIdade}, ${c.idade && anos <= QUASE_NA_FAIXA ? 'um pouco ' : ''}${lado} da sua faixa`);
+    const m = mediaDe(f);
+    const lado = m < faixaDe(c).min ? 'abaixo' : 'acima';
+    v.push(`média ${m}, ${c.idade && anos <= QUASE_NA_FAIXA ? 'um pouco ' : ''}${lado} da sua faixa`);
   }
   // Sem som informado não é "fora do seu som": é o "som não informado" de incertos.
   if (c.estilos.length && f.estilos.length && !casaComEstilo(f, c)) v.push(afinidade(f, c) > 0 ? 'som parecido, não o pedido' : 'fora do seu som');
@@ -386,6 +487,8 @@ function violacoes(f, c) {
   // pergunta "A que horas chegar e voltar?"; o "% a sua cara" fala igual.
   const j = janelaPorId(c.janela);
   const volta = c.voltaMax ? Math.min(c.voltaMax, j.fim) : j.fim;
+  // Sem início, o horário não fura: fica no porquê, no que falta.
+  if (semInicio(f)) return v;
   // Sem a pista cheia, quem fala é o começo ("começa às 20h, antes do seu horário").
   const chega = chegada(f);
   const verbo = num(f.esquenta) ? 'enche' : 'começa';
@@ -398,13 +501,14 @@ function violacoes(f, c) {
 }
 
 // O que o pedido perguntou e a festa não diz (festa real sem o dado). Não
-// fura o pedido, mas também não cabe nele: a festa vai para o bloco "quase",
-// com isto no aviso. A idade fica de fora (ela só ordena, e o cartão já diz
-// "sem média").
+// fura o pedido, mas também não cabe nele: a festa vai para o bloco "quase"
+// (ou "Local a confirmar", sem bairro), com isto no aviso. A idade fica de
+// fora (ela só ordena, e o cartão já diz "sem média"). O preço também (R27):
+// sem ele, a festa fica no bloco do pedido e o que falta sai uma vez, no
+// porquê; o horário sem início, idem.
 function incertos(f, c) {
   const v = [];
   if (c.bairros.length && lugar(f, c) === 'incerto') v.push('bairro não informado');
-  if (c.teto !== 'sem-limite' && !num(f.preco)) v.push('preço não informado');
   if (c.estilos.length && !f.estilos.length) v.push('som não informado');
   return v;
 }
@@ -413,11 +517,17 @@ function incertos(f, c) {
 function distintivos(f, c) {
   const m = [];
   // Bloco dos vizinhos: quão perto do bairro marcado mais próximo.
+  const km = maisPerto(f, c);
   if (c.bairros.length && lugar(f, c) === 'perto') {
-    const [b, min] = c.bairros.map((x) => [x, C.minutosEntre(x, f.bairro)]).sort((a, z) => a[1] - z[1])[0];
-    m.push(`a ${min} min ${C.BAIRROS[b].de}`);
+    if (km) m.push(`a ${emKm(km.km)} ${km.de}`);
+    // A tabela de minutos é só das fictícias (R29).
+    else if (f.real !== true) {
+      const [b, min] = c.bairros.map((x) => [x, C.minutosEntre(x, f.bairro)]).sort((a, z) => a[1] - z[1])[0];
+      m.push(`a ${min} min ${C.BAIRROS[b].de}`);
+    }
   }
   if (c.perto && distancia(f, c.perto) !== null) m.push(`a ${distancia(f, c.perto)} min ${C.REFERENCIAS[c.perto].de}`);
+  else if (c.perto && km) m.push(`a ${emKm(km.km)} ${km.de}`);
   const pago = precoPara(f, c);
   if (!num(pago)) { /* preço não informado: nada a dizer */ } else if (pago === 0) m.push('de graça');
   // Sem conta de troco: o quanto o preço cabe no teto, em palavras.
@@ -444,13 +554,13 @@ function opcao(f, c) {
     festa: f,
     patrocinada: f.selo === 'patrocinado',
     // Cabe no pedido: sem furo, sem dúvida e no bairro pedido (vizinho não conta).
-    atende: fora.length === 0 && naoSei.length === 0 && !(c.bairros.length && lugar(f, c) === 'perto'),
+    atende: fora.length === 0 && naoSei.length === 0 && !(c.bairros.length && ['perto', 'longe'].includes(lugar(f, c))),
     fora,
     incertos: naoSei,
     linha: C.linhaDaFesta(f),
-    hora: C.horaCheia(f.inicio),
-    dia: C.DIAS[f.dia].curto,
-    bairro: f.bairro ? C.BAIRROS[f.bairro].nome : null,
+    hora: semInicio(f) ? null : C.horaCheia(f.inicio),
+    dia: C.DIAS[f.dia] ? C.DIAS[f.dia].curto : null,
+    bairro: f.bairro && C.BAIRROS[f.bairro] ? C.BAIRROS[f.bairro].nome : null,
     horario: C.fraseDoHorario(f),
     preco: num(f.preco) ? C.reais(f.preco) : null,
     origem: { curta: f.origemIdadeCurta, longa: f.origemIdade },
@@ -462,14 +572,72 @@ function opcao(f, c) {
     distancia: c.perto ? distancia(f, c.perto) : null,
     // O bloco da lista (R19, R21): no pedido, perto dos bairros, ou fora da faixa.
     bloco: bloco(f, c),
+    // U27: a distância em linha reta (real com coordenada), o porquê em dados
+    // (KTD15), o horário sem início (a régua não é desenhada) e a esgotada.
+    distanciaKm: distanciaKm(f, c),
+    porque: porqueDe(f, c, caraDe(f, c)),
+    horarioIncerto: semInicio(f),
+    esgotada: f.esgotado === true,
   };
+}
+
+// ---------------------------------------------------------------- o porquê, em dados (U27)
+
+// O valor curto de cada critério na festa, ou null quando ela não diz.
+function valorDoCriterio(f, c, criterio) {
+  if (criterio === 'horario') return semInicio(f) ? null : C.hora(f.inicio);
+  if (criterio === 'idade') {
+    const a = avaliacao(f);
+    if (a) return `${Math.round(a.naMedida * a.avaliacoes)} de ${a.avaliacoes} da idade`;
+    return mediaDe(f) === null ? null : `média ${mediaDe(f)}`;
+  }
+  if (criterio === 'bairro') {
+    if (f.bairro && C.BAIRROS[f.bairro]) return C.BAIRROS[f.bairro].nome;
+    const m = maisPerto(f, c);
+    return m ? `a ${emKm(m.km)}` : null;
+  }
+  if (criterio === 'preco') return num(f.preco) ? C.reais(precoPara(f, c)) : null;
+  if (criterio === 'som') {
+    if (!f.estilos || !f.estilos.length) return null;
+    return C.nomeEstilo(f.estilos.find((e) => c.estilos.includes(e)) || f.estilos[0]);
+  }
+  return null;
+}
+
+// porque: { cabe: [{ criterio, valor }], falta: [{ criterio, valor: null }] }
+// (KTD15). cabe: até duas partes do "% a sua cara" que cabem inteiras, na
+// ordem dos pesos; falta: os critérios que a festa não diz, pedidos ou não.
+// O texto sai de partesDoPorque (publico/festa-texto.js).
+const CRITERIOS_DO_PORQUE = ['horario', 'idade', 'bairro', 'preco', 'som'];
+function porqueDe(f, c, k) {
+  const partes = k && Array.isArray(k.partes) ? k.partes : [];
+  const cabe = CRITERIOS_DO_PORQUE
+    .filter((x) => partes.some((p) => p.criterio === x && p.cabe === true))
+    .map((criterio) => ({ criterio, valor: valorDoCriterio(f, c, criterio) }))
+    .filter((x) => x.valor !== null)
+    .slice(0, 2);
+  const falta = CRITERIOS_DO_PORQUE.filter((x) => valorDoCriterio(f, c, x) === null).map((criterio) => ({ criterio, valor: null }));
+  return { cabe, falta };
+}
+
+// A opção da lista: a de opcao mais o "% a sua cara". Só acrescenta um
+// campo: não mexe em quais festas entram nem na ordem. O `pct` solto entra
+// na lista (lista.js), para a opção daqui e a do detalhe sem pedido
+// (GET /api/festa/<id>, só motor.opcao) terem as mesmas chaves, fora a cara.
+function opcaoCompleta(f, c) {
+  return { ...opcao(f, c), cara: caraDe(f, c) };
 }
 
 function bloco(f, c) {
   if (c.idade && foraDaFaixa(f, c) > 0) return 'faixa';
+  const onde = lugar(f, c);
+  // Sem bairro, "Local a confirmar", abaixo das que cabem (R29); de bairro
+  // conhecido e longe, logo acima dela (a real nunca some, U27).
+  if (onde === 'incerto') return 'local';
+  if (onde === 'longe') return 'longe';
   // No formulário novo, nada que fure o pedido fica misturado com o que cabe.
   if (c.idade && (violacoes(f, c).length || incertos(f, c).length)) return 'quase';
-  return lugar(f, c) === 'perto' ? 'perto' : 'pedido';
+  return onde === 'perto' ? 'perto' : 'pedido';
 }
 const posicaoDoBloco = (f, c) => BLOCOS.indexOf(bloco(f, c));
 
@@ -502,6 +670,7 @@ function foraDoPedido(f, c) {
   if (c.estilos.length && f.estilos.length && !casaComEstilo(f, c)) fora.push('estilo');
   // Bairro vizinho não é o pedido: entra rotulado, e não conta como "cabe".
   if (c.bairros.length && lugar(f, c) === 'perto') fora.push('lugar');
+  if (c.bairros.length && lugar(f, c) === 'longe') fora.push('longe');
   if (incertos(f, c).length) fora.push('incerto');
   return fora;
 }
@@ -518,7 +687,13 @@ function textoDoAviso({ ordem, c, nivelUsado, impedimento }) {
   if (dims.has('preco')) como.push(nivelUsado.teto === 'sem-limite' ? 'sem teto' : `subindo o teto pra R$ ${nivelUsado.teto}`);
   if (dims.has('idade')) como.push(c.idade ? 'com média fora da sua faixa' : 'com média de idade vizinha');
   if (dims.has('lugar')) como.push('em bairros vizinhos');
-  if (dims.has('incerto')) como.push('sem todos os dados');
+  if (dims.has('longe')) como.push('em outros bairros');
+  // O que falta, pelo nome ("sem dizer o bairro"), e não "sem todos os dados".
+  if (dims.has('incerto')) {
+    const faltam = new Set(ordem.flatMap((x) => incertos(x.festa, c)));
+    const nomes = [faltam.has('bairro não informado') ? 'o bairro' : null, faltam.has('som não informado') ? 'o som' : null].filter(Boolean);
+    como.push(nomes.length ? `sem dizer ${nomes.join(' nem ')}` : 'sem todos os dados');
+  }
   if (dims.has('estilo')) {
     // "Som parecido" só quando todas as de fora do som pedido são mesmo parecidas.
     const parecido = ordem.filter((x) => x.festa.estilos.length && !casaComEstilo(x.festa, c)).every((x) => afinidade(x.festa, c) > 0);
@@ -603,10 +778,12 @@ function ofertaQuandoVazio(c, base) {
   if ((c.evitarEstilos.length || c.evitarCasas.length || c.evitarBairros.length) && tenta({ evitarEstilos: [], evitarCasas: [], evitarBairros: [] })) {
     return { texto: 'Com tudo o que você tirou, nada cabe.', frase: 'pode tudo de novo', rotulo: 'Liberar o que tirei' };
   }
-  for (const d of C.ORDEM_DIAS.filter((x) => x !== c.dia)) {
+  // Outro dia da mesma semana ("hoje" não: a base de "hoje" é a do dia).
+  for (const d of C.ORDEM_DIAS.filter((x) => x !== c.dia && x !== 'hoje')) {
     if (tenta({ dia: d })) {
       const nome = C.DIAS[d].frase;
-      return { texto: `${c.firmes.length ? 'Nada cabe nesse pedido.' : 'Nada cabe nesse pedido, nem afrouxando.'} ${d === 'sex' ? 'Na' : 'No'} ${nome}, sim.`, frase: nome, rotulo: `Ver ${d === 'sex' ? 'a' : 'o'} ${nome}` };
+      const no = C.noDia(d);
+      return { texto: `${c.firmes.length ? 'Nada cabe nesse pedido.' : 'Nada cabe nesse pedido, nem afrouxando.'} ${no[0].toUpperCase()}${no.slice(1)}, sim.`, frase: nome, rotulo: `Ver ${C.DIAS[d].artigo === 'na' ? 'a' : 'o'} ${nome}` };
     }
   }
   return { texto: 'Nada cabe nesse pedido. Tente outro dia ou outro horário.', frase: null, rotulo: null };
@@ -617,24 +794,24 @@ function impedimentoDoEstilo(criterios, base, estilo) {
   const c = completar(sanearCriterios(criterios));
   // Base sem som classificado nesse dia (festas reais sem estilo): não dá
   // para dizer que "não tem house"; não se sabe.
-  if (!base.some((f) => f.dia === c.dia && f.estilos.length)) return null;
-  const doDia = base.filter((f) => f.dia === c.dia && f.estilos.includes(estilo));
+  if (!base.some((f) => doDia(f, c) && f.estilos.length)) return null;
+  const desteDia = base.filter((f) => doDia(f, c) && f.estilos.includes(estilo));
   const nome = C.nomeEstilo(estilo);
-  const noDia = c.dia === 'sex' ? 'na sexta' : `no ${C.DIAS[c.dia].frase}`;
-  if (!doDia.length) return `Não tem ${nome} ${noDia}.`;
+  const noDia = C.noDia(c.dia);
+  if (!desteDia.length) return `Não tem ${nome} ${noDia}.`;
   const j = janelaPorId(c.janela);
   const motivosDe = (f) => {
     if (c.evitar.includes(f.id)) return 'já saiu da lista';
     if (barradaPorEstilo(f, { ...c, estilos: [estilo] })) return `tem ${C.listaDeEstilos(f.estilos.filter((e) => c.evitarEstilos.includes(e)))}, que você tirou`;
     if (c.voltaMax && fimLimita(f) && f.fim > c.voltaMax) return 'acaba depois da sua volta';
-    const comMedia = num(f.mediaIdade) ? `, com média ${f.mediaIdade}` : '';
+    const comMedia = mediaDe(f) !== null ? `, com média ${mediaDe(f)}` : '';
     if (!cabeNoHorario(f, j, TOLERANCIA_AFROUXADA)) return `só ${C.asHoras(f.inicio)}${comMedia}`;
-    if (!cabeNoPreco(f, c.teto, c) && foraDaFaixa(f, c) > IDADE_TOLERADA) return `só acima de R$ ${c.teto} e com média ${f.mediaIdade}`;
+    if (!cabeNoPreco(f, c.teto, c) && foraDaFaixa(f, c) > IDADE_TOLERADA) return `só acima de R$ ${c.teto} e com média ${mediaDe(f)}`;
     if (!cabeNoPreco(f, c.teto, c)) return `só acima de R$ ${c.teto}`;
-    if (foraDaFaixa(f, c) > IDADE_TOLERADA) return `só com média ${f.mediaIdade}`;
+    if (foraDaFaixa(f, c) > IDADE_TOLERADA) return `só com média ${mediaDe(f)}`;
     return null;
   };
-  const razoes = doDia.map(motivosDe).filter(Boolean);
+  const razoes = desteDia.map(motivosDe).filter(Boolean);
   if (!razoes.length) return null;
   return `${nome[0].toUpperCase()}${nome.slice(1)} ${noDia}, ${razoes[0]}.`;
 }
@@ -660,11 +837,12 @@ function escolher(criteriosBrutos, base) {
   // dela, mas nunca em primeiro.
   const pago = (x) => (x.festa.selo === 'patrocinado' ? 1 : 0);
   const ordem = [...finais].sort((a, b) => posicaoDoBloco(a.festa, c) - posicaoDoBloco(b.festa, c)
-    || a.festa.inicio - b.festa.inicio || pago(a) - pago(b) || a.festa.id.localeCompare(b.festa.id));
+    || inicioParaOrdem(a.festa) - inicioParaOrdem(b.festa) || pago(a) - pago(b) || a.festa.id.localeCompare(b.festa.id));
 
-  // Cada opção leva o "% a sua cara" calculado pelo pedido. Só um campo a
-  // mais: não mexe em quais festas entram nem na ordem.
-  const opcoes = ordem.map((x) => ({ ...opcao(x.festa, c), cara: caraDe(x.festa, c) }));
+  // Cada opção leva o "% a sua cara" calculado pelo pedido, a distância em
+  // km e o porquê em dados (opcaoCompleta). Só campos a mais: não mexe em
+  // quais festas entram nem na ordem.
+  const opcoes = ordem.map((x) => opcaoCompleta(x.festa, c));
   const afrouxou = DIMENSOES.filter((k) => ordem.some((x) => foraDoPedido(x.festa, c).includes(k)));
   const casam = ordem.filter((x) => casaComEstilo(x.festa, c)).length;
   const atendem = opcoes.filter((o) => o.atende).length;
@@ -675,6 +853,8 @@ function escolher(criteriosBrutos, base) {
     perto: c.bairros.length ? `Perto ${juntar(c.bairros.map((b) => C.BAIRROS[b].de))}` : 'Perto das suas regiões',
     quase: 'Quase no seu pedido',
     faixa: 'Fora da sua faixa',
+    longe: c.bairros.length ? `Longe ${juntar(c.bairros.map((b) => C.BAIRROS[b].de))}` : 'Em outros bairros',
+    local: 'Local a confirmar',
   };
   if (!ordem.length) {
     const o = ofertaQuandoVazio(c, base);
@@ -688,9 +868,26 @@ function escolher(criteriosBrutos, base) {
   return resultado;
 }
 
+// ordenarTodas(criterios, festas) -> [opcao] — todas as festas do dia, menos
+// as recusadas de propósito, na ordem do motor: o bloco, o "% a sua cara",
+// os pontos, o horário. Para "Ver todas as N de sexta" (maisDoDia, R25): a
+// real nunca some por não caber; ela diz o que fura.
+function ordenarTodas(criteriosBrutos, festas) {
+  const c = completar(sanearCriterios(criteriosBrutos));
+  const pct = (k) => (k && num(k.pct) ? k.pct : -1);
+  return (festas || [])
+    .filter((f) => doDia(f, c) && !barrada(f, c))
+    .map((f) => ({ f, o: opcaoCompleta(f, c), pontos: pontuar(f, c) }))
+    .sort((a, b) => posicaoDoBloco(a.f, c) - posicaoDoBloco(b.f, c) || pct(b.o.cara) - pct(a.o.cara)
+      || b.pontos - a.pontos || inicioParaOrdem(a.f) - inicioParaOrdem(b.f) || a.f.id.localeCompare(b.f.id))
+    .map((x) => x.o);
+}
+
 module.exports = {
   TOLERANCIA, TOLERANCIA_AFROUXADA, CHAVES_OBRIGATORIAS, DIMENSOES, QUASE_NA_FAIXA, IDADE_TOLERADA,
   sanearCriterios, falta, completar, resumoDoPedido, pedidoEmPartes, escolher, opcao, distancia, pontuar,
   foraDoPedido, furaHorario, fimLimita, incertos, lugar, proximoDegrau, faixasVizinhas, cabeNoHorario, janelaPorId, impedimentoDoEstilo, casaComEstilo,
   precoMinimo, precoPara, juntar, vizinho, faixaDe, afinidade, IDADE_MIN, IDADE_MAX, BLOCOS, deslocarIdade, faixaDoIntervalo, nomeIdade,
+  KM_VIZINHO, ordenarTodas, opcaoCompleta, porqueDe, valorDoCriterio, barrada, doDia, semInicio, avaliacao, avaliacaoCruza, mediaDe,
+  idadeNoPedido, distanciaKm, maisPerto, emKm, bloco,
 };

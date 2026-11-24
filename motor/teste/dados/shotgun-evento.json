@@ -1,0 +1,74 @@
+{
+ "url": "https://shotgun.live/pt-br/events/festa-exemplo",
+ "final": "https://shotgun.live/pt-br/events/festa-exemplo",
+ "status": 200,
+ "titulo": "Festa Exemplo",
+ "texto": "Eventos em São Paulo\nFesta Exemplo\nPor\nProdutora Exemplo\nsábado 14 nov\nde\n18:30\na\n01:00\nCasa Exemplo\nRua Exemplo, 104 - Bairro Exemplo, São Paulo - SP, 01000-000, Brasil\nIngressos\nDescrição\nNoite de pista com DJs convidados na Casa Exemplo.",
+ "jsonld": [
+  {
+   "@context": "https://schema.org",
+   "@type": "MusicEvent",
+   "name": "Festa Exemplo",
+   "url": "https://shotgun.live/pt-br/events/festa-exemplo",
+   "image": "https://assets.shotgun.example/image/upload/c_limit,w_1200,h_630,f_jpg,q_auto:good/production/artworks/capa-exemplo.png",
+   "startDate": "2026-11-14T21:30:00.000Z",
+   "doorTime": "2026-11-14T21:30:00.000Z",
+   "endDate": "2026-11-15T04:00:00.000Z",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+   "location": {
+    "@type": "Place",
+    "name": "Casa Exemplo",
+    "address": {
+     "@type": "PostalAddress",
+     "streetAddress": "Rua Exemplo, 104 - Bairro Exemplo, São Paulo - SP, 01000-000, Brasil",
+     "addressLocality": "Bairro Exemplo",
+     "postalCode": "01000-000",
+     "addressCountry": "BR"
+    },
+    "geo": {
+     "@type": "GeoCoordinates",
+     "latitude": -23.55123,
+     "longitude": -46.63311
+    }
+   },
+   "description": "Noite de pista com DJs convidados na Casa Exemplo.\n\n📅 14 de novembro\n⏰ 18h30\n📍 Rua Exemplo, 104 - São Paulo/SP",
+   "organizer": {
+    "@type": "LocalBusiness",
+    "name": "Produtora Exemplo",
+    "url": "https://shotgun.live/pt-br/venues/produtora-exemplo"
+   },
+   "performer": [
+    {
+     "@type": "MusicGroup",
+     "name": "DJ Exemplo A",
+     "url": "https://shotgun.live/pt-br/artists/dj-exemplo-a"
+    },
+    {
+     "@type": "MusicGroup",
+     "name": "DJ Exemplo B",
+     "url": "https://shotgun.live/pt-br/artists/dj-exemplo-b"
+    }
+   ],
+   "offers": [
+    {
+     "@type": "Offer",
+     "availability": "https://schema.org/InStock",
+     "name": "Lote Exemplo",
+     "price": 40,
+     "priceCurrency": "BRL",
+     "validFrom": "2026-11-15T16:56:29.000Z",
+     "url": "https://shotgun.live/pt-br/events/festa-exemplo"
+    }
+   ]
+  }
+ ],
+ "links": [],
+ "dados": null,
+ "meta": {
+  "ogImage": "https://assets.shotgun.example/image/upload/c_limit,w_1200,h_630,f_jpg,q_auto:good/production/artworks/capa-exemplo.png",
+  "ogImageWidth": 1200,
+  "ogImageHeight": 630,
+  "twitterImage": null
+ }
+}

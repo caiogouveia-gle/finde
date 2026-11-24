@@ -1,0 +1,128 @@
+{
+ "simples": {
+  "url": "https://www.sympla.com.br/evento/baile-exemplo-29-11/3999001",
+  "final": "https://www.sympla.com.br/evento/baile-exemplo-29-11/3999001",
+  "status": 200,
+  "titulo": "Baile Exemplo 29.11",
+  "texto": "Fale com o produtor\nProdutora Exemplo\nBaile Exemplo 29.11\nDe 29 de novembro de 2026, às 19h00; até 30 de novembro de 2026, às 05h00.\nEvento presencial em\nCasa Exemplo, São Paulo - SP\nDescrição do evento\nBaile com DJs convidados.",
+  "jsonld": [],
+  "links": [],
+  "dados": {
+   "props": {
+    "pageProps": {
+     "hydrationData": {
+      "eventHydration": {
+       "event": {
+        "name": "Baile Exemplo 29.11",
+        "id": 3999001,
+        "newUrl": "https://www.sympla.com.br/evento/baile-exemplo-29-11/3999001",
+        "slug": "baile-exemplo-29-11",
+        "startDate": "2026-11-29 19:00:00",
+        "endDate": "2026-11-30 05:00:00",
+        "startDateMultiFormat": {
+         "ptBR": "29/11/2026 19:00:00",
+         "default": "2026-11-29 19:00:00",
+         "ISO8601": "2026-11-29T19:00:00-03:00"
+        },
+        "endDateMultiFormat": {
+         "ptBR": "30/11/2026 05:00:00",
+         "default": "2026-11-30 05:00:00",
+         "ISO8601": "2026-11-30T05:00:00-03:00"
+        },
+        "strippedDetail": "Baile com DJs convidados. Entrada pela portaria principal.",
+        "published": true,
+        "cancelled": false,
+        "privateEvent": false,
+        "onlineInfo": null,
+        "eventsAddress": {
+         "id": 989563,
+         "name": "Casa Exemplo",
+         "address": "Rua Exemplo",
+         "addressNum": "104",
+         "addressAlt": "",
+         "neighborhood": "Bairro Exemplo",
+         "city": "São Paulo",
+         "state": "SP",
+         "zipCode": "01000-000",
+         "country": "BRASIL",
+         "geolocation": {
+          "latitude": -23.55123,
+          "longitude": -46.63311
+         }
+        },
+        "eventsHost": {
+         "name": "Produtora Exemplo"
+        },
+        "images": {
+         "logoFileName": "abc123exemplo.jpg",
+         "logoUrl": "https://images.sympla.example/abc123exemplo.jpg",
+         "logoLarge": "https://images.sympla.example/abc123exemplo-lg.jpg",
+         "logoSmall": "https://images.sympla.example/abc123exemplo-xs.jpg",
+         "logoCover": "https://images.sympla.example/abc123exemplo-cover.jpg",
+         "logoProfile": "https://images.sympla.example/abc123exemplo-profile.jpg"
+        },
+        "logoUrl": "https://images.sympla.example/abc123exemplo.jpg",
+        "logoType": "BANNER_16_9",
+        "bannerAltText": "Banner do evento Baile Exemplo 29.11",
+        "ticketsNomenclature": "TICKETING"
+       }
+      }
+     }
+    }
+   },
+   "page": "/evento/[slug]/[id]",
+   "query": {
+    "slug": "baile-exemplo-29-11",
+    "id": "3999001"
+   }
+  },
+  "meta": null
+ },
+ "dinamico": {
+  "url": "https://www.sympla.com.br/evento/baile-exemplo-29-11/3999001",
+  "final": "https://www.sympla.com.br/evento/baile-exemplo-29-11/3999001",
+  "status": 200,
+  "titulo": "Baile Exemplo 29.11 em São Paulo - Sympla",
+  "texto": "Baile Exemplo 29.11\nDe 29 de novembro de 2026, às 19h00; até 30 de novembro de 2026, às 05h00.\nEvento presencial em\nCasa Exemplo, São Paulo - SP\nIngressos\nPista\nR$ 20,00\nTaxa: R$ 5,31\nR$ 20,00\nCamarote\nR$ 40,00\nTaxa: R$ 5,29\nDescrição do evento\nBaile com DJs convidados.",
+  "jsonld": [
+   {
+    "@type": "Event",
+    "@context": "https://schema.org",
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "location": {
+     "@type": "Place",
+     "name": "Casa Exemplo",
+     "address": {
+      "streetAddress": "Rua Exemplo 104 ",
+      "addressLocality": "São Paulo",
+      "postalCode": "01000-000",
+      "addressRegion": "SP",
+      "addressCountry": "BR"
+     }
+    },
+    "eventStatus": "https://schema.org/EventScheduled",
+    "name": "Baile Exemplo 29.11",
+    "startDate": "2026-11-29T19:00:00-03:00",
+    "endDate": "2026-11-30T05:00:00-03:00",
+    "image": [
+     "https://images.sympla.example/abc123exemplo-xs.jpg"
+    ],
+    "description": "Baile com DJs convidados.",
+    "offers": [],
+    "organizer": {
+     "url": "",
+     "@type": "Organization",
+     "name": "Produtora Exemplo"
+    }
+   }
+  ],
+  "links": [],
+  "dados": null,
+  "meta": {
+   "ogImage": "https://images.sympla.example/abc123exemplo-lg.jpg",
+   "ogImageWidth": 1200,
+   "ogImageHeight": 630,
+   "twitterImage": "https://images.sympla.example/abc123exemplo-lg.jpg"
+  }
+ }
+}

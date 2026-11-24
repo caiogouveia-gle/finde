@@ -1,0 +1,88 @@
+[
+  {
+    "recordType": "event",
+    "id": 88101,
+    "eventSlug": "noite-de-techno-exemplo",
+    "title": "Noite de Techno Exemplo",
+    "url": "https://shotgun.live/pt-br/events/noite-de-techno-exemplo",
+    "startDate": "2026-11-15T01:00:00.000Z",
+    "endDate": "2026-11-15T08:00:00.000Z",
+    "doorTime": "2026-11-15T01:00:00.000Z",
+    "venueName": "Galpão Exemplo",
+    "city": "São Paulo",
+    "venueAddress": "Av. Exemplo, 1200 - Barra Funda",
+    "genreNames": [
+      "techno",
+      "house"
+    ],
+    "priceAmount": 60,
+    "priceDisplay": "R$ 60,00",
+    "isSoldOut": false,
+    "artistNames": [
+      "DJ Um",
+      "DJ Dois"
+    ],
+    "lineup": [
+      {
+        "name": "DJ Um"
+      },
+      {
+        "name": "DJ Dois"
+      },
+      {
+        "name": "Convidada Três"
+      }
+    ],
+    "tickets": [
+      {
+        "name": "1º lote",
+        "price": 60,
+        "availability": "sold_out"
+      },
+      {
+        "name": "2º lote",
+        "price": 80,
+        "availability": "available"
+      },
+      {
+        "name": "Lote promocional",
+        "price": 50,
+        "availability": "coming_soon"
+      }
+    ],
+    "organizerName": "Selo Exemplo"
+  },
+  {
+    "recordType": "event",
+    "id": 88102,
+    "eventSlug": "festa-sem-lotes",
+    "title": "Festa sem Lotes",
+    "url": "https://shotgun.live/pt-br/events/festa-sem-lotes",
+    "startDate": "2026-11-21T23:30:00.000Z",
+    "venueName": "Casa Exemplo",
+    "city": "São Paulo",
+    "genreNames": [],
+    "priceAmount": 35,
+    "isSoldOut": true,
+    "artistNames": [
+      "Banda Exemplo"
+    ],
+    "organizerName": "Produtora Exemplo"
+  },
+  {
+    "recordType": "event",
+    "id": 88103,
+    "eventSlug": "festa-rio",
+    "title": "Festa no Rio",
+    "url": "https://shotgun.live/pt-br/events/festa-rio",
+    "startDate": "2026-11-21T23:30:00.000Z",
+    "venueName": "Clube Exemplo",
+    "city": "Rio de Janeiro"
+  },
+  {
+    "recordType": "venue",
+    "id": 7,
+    "title": "Galpão Exemplo",
+    "city": "São Paulo"
+  }
+]

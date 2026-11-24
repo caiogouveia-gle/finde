@@ -15,6 +15,14 @@ primary_region = "gru"
   FINDE_SITE = "app"
   FINDE_URL_SITE = "https://finde.fly.dev/"
   FINDE_URL_APP = "/"
+  # A base viva (R23, KTD14): o motor pela rede privada do Fly (6PN), sem
+  # CORS. Fora do ar, o app serve /data/reais-cache.json ou dados/reais.json.
+  FINDE_MOTOR_URL = "http://finde-motor.internal:8080"
+  # Os tiles do mapa (D8, KTD16): o <meta name="finde-tiles"> e o img-src da
+  # CSP saem daqui; trocar de provedor é trocar esta linha e reiniciar.
+  FINDE_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+  # Segredos (fly secrets, nunca aqui): FINDE_APP_TOKEN (manda as avaliações
+  # ao motor) e FINDE_ADMIN_TOKEN (GET /api/reais/estado).
 
 [http_service]
   internal_port = 8080
@@ -37,6 +45,8 @@ primary_region = "gru"
   memory = "256mb"
 
 # Os convites mandados ao grupo moram aqui; sem o volume, sumiriam a cada deploy.
+# Também: a última lista boa do motor (reais-cache.json), as avaliações
+# (avaliacoes.json e o sal, 0600) e o cache dos flyers (imagens/).
 [mounts]
   source = "finde_convites"
   destination = "/data"

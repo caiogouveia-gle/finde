@@ -251,7 +251,7 @@ test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na me
     '(Exemplo: festa fictícia do protótipo do Finde.)',
     '',
     'Sáb, 21 nov · 17h00 · média 30 anos (informada pela produtora)',
-    'Disco ao Pôr do Sol',
+    'Disco ao Pôr do Sol, com Duda Maré',
     'terraço em Pinheiros · a partir de R$ 80',
     '',
     'Diz aqui se você tá dentro:',
@@ -264,7 +264,10 @@ test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na me
   const sem = T.mensagem({ data: 'sex, 20 nov', hora: '18h00', bairro: 'Barra Funda', festa: festa({ casa: 'galpão', origemIdade: null }), link: 'x' });
   assert.equal(sem[3], 'Sex, 20 nov · 18h00 · média 31 anos');
   assert.match(sem[5], /^galpão · Barra Funda · /);
-  assert.equal(T.mensagem({ data: 'dom, 22 nov', hora: '16h00', bairro: 'Centro', festa: festa({ mediaIdade: null }), link: 'x' })[3], 'Dom, 22 nov · 16h00 · média de idade ainda não informada');
+  // Sem média, a mensagem não abre com "média não informada" (R35).
+  const semMedia = T.mensagem({ data: 'dom, 22 nov', hora: '16h00', bairro: 'Centro', festa: festa({ mediaIdade: null }), link: 'x' });
+  assert.equal(semMedia[3], 'Dom, 22 nov · 16h00');
+  assert.doesNotMatch(semMedia.join('\n'), /não informad/);
   // A real sai sem a linha de exemplo.
   const real = T.mensagem({ data: 'sex, 20 nov', hora: '18h00', bairro: null, festa: festa({ real: true, exemplo: false }), link: 'x' });
   assert.equal(real[1], '');
@@ -319,7 +322,8 @@ test('cartão da lista para leitor de tela: a média uma vez só, com a origem',
   assert.equal(T.cartaoFalado({ ...o, patrocinada: true }, { nova: true }), 'Sex · 18h00 · Pinheiros · média 32 anos, informada pela produtora · R$ 60 · patrocinado · nova na lista');
   assert.equal(T.cartaoFalado({ festa: festa({ mediaIdade: null }), linha: 'Sáb · 22h00 · Centro' }), 'Sáb · 22h00 · Centro · média de idade não informada · R$ 60');
   assert.equal(T.linhaSemMedia('Sáb · 17h00 · Pinheiros · média 30 anos'), 'Sáb · 17h00 · Pinheiros');
-  assert.match(APP, /const lido = FT\.cartaoFalado\(/);
+  // No guia, cada cartão é um link (?festa=) com o texto inteiro dentro.
+  assert.match(APP, /const hrefDe = \(o\) => `\?festa=\$\{encodeURIComponent\(o\.festa\.id\)\}`;/);
 });
 
 test('casa com bairro: o bairro só entra quando a casa não o diz', () => {
@@ -569,4 +573,245 @@ test('rodapé: toda tela do app traz a nota do protótipo, a pergunta 1 inclusiv
   assert.match(pergunta, /el\('div', \{ class: 'pe' \}, continuar,[^\n]*\),\s*fim\);/);
   const CSS = fs.readFileSync(path.join(PUBLICO, 'app.css'), 'utf8');
   assert.match(CSS, /\.rodape--junto \{ margin-top: 0; padding-top: var\(--e5\); \}/);
+});
+
+// ------------------------------------------------------------ o guia e o detalhe (U29–U31, plano de 24/11/2026)
+
+const COMUM_FONTE = fs.readFileSync(path.join(PUBLICO, 'comum.js'), 'utf8');
+const PLANO_FONTE = fs.readFileSync(path.join(PUBLICO, 'plano.js'), 'utf8');
+const CONVERTIDA = require('./dados/festa-r14-3-convertida.json').festa;
+const RESPOSTA = require('./dados/resposta-festas-r14-3.json');
+const NA_FIXTURE = Date.parse('2026-11-26T12:00:00-03:00');
+
+test('porquê do cartão: até duas partes que cabem e uma linha honesta do que falta', () => {
+  const o = RESPOSTA.comReais.opcoes[0];
+  assert.deepEqual(T.partesDoPorque(o), { cabe: ['começa às 23h', '4 de 5 que foram acharam o público da idade'], falta: 'Não diz o som.' });
+  assert.deepEqual(T.porqueDoCartao(o), { cabe: 'Começa às 23h e 4 de 5 que foram acharam o público da idade.', falta: 'Não diz o som.' });
+  // Uma parte só, e o bairro com a preposição dele.
+  const uma = { porque: { cabe: [{ criterio: 'bairro', valor: 'Vila Madalena' }], falta: [{ criterio: 'preco', valor: null }, { criterio: 'som', valor: null }] } };
+  assert.deepEqual(T.porqueDoCartao(uma), { cabe: 'Fica na Vila Madalena.', falta: 'Não diz o preço nem o som.' });
+  // Nenhuma: os dois vazios, e o cartão não mostra a linha.
+  assert.deepEqual(T.partesDoPorque({ porque: { cabe: [], falta: [] } }), { cabe: [], falta: '' });
+  assert.deepEqual(T.partesDoPorque({}), { cabe: [], falta: '' });
+  assert.deepEqual(T.porqueDoCartao({ porque: { cabe: [], falta: [] } }), { cabe: '', falta: '' });
+  // Com a linha única no cabeçalho (D3), a média não se repete no cartão.
+  const tres = { porque: { cabe: [], falta: [{ criterio: 'idade', valor: null }, { criterio: 'som', valor: null }, { criterio: 'bairro', valor: null }] } };
+  assert.equal(T.partesDoPorque(tres).falta, 'Não diz a média de idade, o bairro nem o som.');
+  assert.equal(T.partesDoPorque(tres, { semMedia: true }).falta, 'Não diz o bairro nem o som.');
+  // Mais de duas que cabem: ficam as duas primeiras; preço sem quebra.
+  const muitas = { porque: { cabe: [{ criterio: 'preco', valor: 'R$ 40' }, { criterio: 'horario', valor: '0h' }, { criterio: 'som', valor: 'House e disco' }], falta: [] } };
+  assert.deepEqual(T.partesDoPorque(muitas).cabe, ['sai por R$ 40, dentro do teto', 'começa à meia-noite']);
+  assert.equal(T.porqueDoCartao(muitas).cabe, 'Sai por R$ 40, dentro do teto; começa à meia-noite.');
+  // A preposição de cada bairro é a do catálogo.
+  for (const b of Object.values(C.TODOS_OS_BAIRROS)) assert.equal(`${T.EM_BAIRRO[b.nome]} ${b.nome}`, b.em, b.nome);
+});
+
+test('base viva: "Atualizado há 3h" e o que foi lido; sem a data, nada', () => {
+  assert.deepEqual(T.baseViva({ atualizadoEm: '2026-11-26T09:05:00-03:00', total: 41, perfis: 50, sites: 3 }, NA_FIXTURE),
+    { quando: 'Atualizado há 2h', conta: '41 festas lidas de 50 perfis e 3 sites de ingresso' });
+  assert.deepEqual(T.baseViva({ atualizadoEm: '2026-11-26T09:05:00-03:00', total: 1, perfis: 1, sites: 1 }, NA_FIXTURE).conta, '1 festa lida de 1 perfil e 1 site de ingresso');
+  assert.equal(T.baseViva(null), null);
+  assert.equal(T.baseViva({ total: 3 }), null);
+});
+
+test('preço sem valor com link: "Ver ingressos", com a compra e o serviço; nunca "a venda não abriu"', () => {
+  const p = T.preco(festa({ lotes: [], preco: null, linkCompra: 'https://shotgun.live/pt-br/events/x' }));
+  assert.equal(p.tipo, 'sem-preco');
+  assert.equal(p.compra, true);
+  assert.equal(p.servico, 'Shotgun');
+  assert.equal(p.valor, null);
+  assert.equal(T.rotuloDaCompra(p), 'Ver ingressos');
+  assert.equal(T.rotuloDaCompra(T.preco(festa())), 'Comprar');
+  // Sem link, sem compra.
+  assert.equal(T.preco(festa({ lotes: [], preco: null, linkCompra: null })).compra, false);
+  // O /3 não diz se a venda abriu: a frase não existe mais em lugar nenhum.
+  for (const fonte of [COMUM_FONTE, APP, PLANO_FONTE, fs.readFileSync(path.join(PUBLICO, 'festa-texto.js'), 'utf8')]) {
+    assert.doesNotMatch(fonte, /venda ainda não abriu/i);
+  }
+});
+
+test('preço conferido há mais de 72 h: marcado e fora da barra', () => {
+  const agora = Date.parse('2026-11-30T12:00:00-03:00');
+  assert.equal(T.precoVelho({ precoConferidoEm: '2026-11-27T11:00:00-03:00' }, agora), true);
+  assert.equal(T.precoVelho({ precoConferidoEm: '2026-11-27T13:00:00-03:00' }, agora), false);
+  assert.equal(T.precoVelho({}, agora), false);
+  // A leitura da página que deu o preço manda sobre o carimbo do campo (costura):
+  // uma indicação reprocessada hoje não confere o preço de novo.
+  const lida = { tipo: 'ingresso', url: 'https://ingressos.example/e', campos: ['lotes'], lidoEm: '2026-11-25T10:00:00-03:00' };
+  assert.equal(T.precoVelho({ precoConferidoEm: '2026-11-30T09:00:00-03:00', paginas: [lida] }, agora), true);
+  assert.equal(T.precoVelho({ precoConferidoEm: '2026-11-20T09:00:00-03:00', paginas: [{ ...lida, lidoEm: '2026-11-30T08:00:00-03:00' }] }, agora), false);
+  const barra = APP.slice(APP.indexOf('function barraDaFesta'), APP.indexOf('// ------------------------------------------------------------ mandar pro grupo'));
+  assert.match(barra, /const velho = FT\.precoVelho\(f\);/);
+  assert.match(barra, /p\.compra && !velho && p\.valor !== null/);
+});
+
+test('fontes que acharam a festa: sem claude, regras, curadoria e avaliações', () => {
+  assert.deepEqual(T.encontradaEm(CONVERTIDA), ['paginas', 'indicacao']);
+  const f = { fontes: ['claude', 'regras', 'instagram', 'curadoria', 'avaliacoes', 'paginas', 'instagram'].map((id) => ({ id, nome: id })) };
+  assert.deepEqual(T.encontradaEm(f), ['instagram', 'paginas']);
+  assert.deepEqual(T.encontradaEm({ encontradaEm: ['claude', 'envio'], fontes: [] }), ['envio']);
+  assert.deepEqual(T.encontradaEm({}), []);
+});
+
+test('lista das fontes: um link https por fonte (a página ou o post, nunca o perfil), o que se leu e quando', () => {
+  const fs1 = T.fontesDaFesta(CONVERTIDA, NA_FIXTURE);
+  assert.deepEqual(fs1.map((x) => x.id), ['paginas', 'indicacao']);
+  assert.equal(fs1[0].url, 'https://ingressos.example/evento/noite-exemplo');
+  assert.equal(fs1[0].leu, 'Nome, horário, preço, endereço, lineup e flyer · conferido ontem');
+  const f = {
+    encontradaEm: ['instagram', 'paginas', 'envio', 'ical'],
+    fontes: [
+      { id: 'instagram', nome: 'Instagram', url: 'https://www.instagram.com/p/ABC123/', conferidoEm: '2026-11-26T10:00:00-03:00' },
+      { id: 'paginas', nome: 'Página', url: 'http://sympla.com.br/evento/x', conferidoEm: '2026-11-26T09:00:00-03:00' },
+      { id: 'envio', nome: 'Enviado pela produtora', url: 'https://www.instagram.com/perfil_da_casa/', conferidoEm: '2026-11-25T09:00:00-03:00' },
+      { id: 'ical', nome: 'Agenda', url: 'javascript:alert(1)', conferidoEm: '2026-11-24T09:00:00-03:00' },
+    ],
+  };
+  const lista = T.fontesDaFesta(f, NA_FIXTURE);
+  assert.equal(lista.length, 4);
+  assert.deepEqual(lista.map((x) => x.url), ['https://www.instagram.com/p/ABC123/', null, null, null]);
+  assert.equal(lista[0].rotuloLink, 'Ver o post');
+  assert.equal(lista[0].nome, 'Post no Instagram');
+  for (const x of lista) if (x.url) assert.match(x.url, /^https:\/\//);
+});
+
+test('a frase da junção: pelo link, pelo escore com imagem (a imagem por último) e à mão', () => {
+  assert.deepEqual(T.fraseDaJuncao(CONVERTIDA), { frase: 'Juntamos pelo link de compra, pelo nome, pela casa e pelo mesmo flyer.', imagem: true });
+  const so = (vinculo) => ({ fontes: [{ id: 'a', vinculo: { regra: 'nova', sinais: [] } }, { id: 'b', vinculo }] });
+  assert.deepEqual(T.fraseDaJuncao(so({ regra: 'link', escore: null, sinais: [] })), { frase: 'Juntamos pelo link de compra.', imagem: false });
+  assert.deepEqual(T.fraseDaJuncao(so({ regra: 'escore', escore: 6, sinais: [{ sinal: 'imagem', peso: 3 }, { sinal: 'nome', peso: 3 }, { sinal: 'lugar', peso: -2 }] })),
+    { frase: 'Juntamos pelo nome e pelo mesmo flyer.', imagem: true });
+  assert.deepEqual(T.fraseDaJuncao(so({ regra: 'manual', escore: null, sinais: [] })), { frase: 'Juntamos à mão, na curadoria do finde.', imagem: false });
+  assert.equal(T.fraseDaJuncao(so({ regra: 'nova', sinais: [] })), null);
+  assert.equal(T.fraseDaJuncao({}), null);
+});
+
+test('divergência: só quando os valores já normalizados diferem, dita numa frase', () => {
+  assert.deepEqual(T.divergencias(CONVERTIDA), ['A página do ingresso diz R$ 40; a indicação diz R$ 45. Mostramos o que diz a página do ingresso.']);
+  const d = (campo, a, b, extra = {}) => T.divergencias({ ...extra, divergencias: [{ campo, valores: [{ fonte: 'instagram', valor: a }, { fonte: 'paginas', valor: b }] }] });
+  // Iguais depois de normalizar: nada.
+  assert.deepEqual(d('precoAPartirDe', 40, 40.0), []);
+  assert.deepEqual(d('casa', 'Casa de Francisca', 'casa de  francisca'), []);
+  assert.deepEqual(d('casa', 'Pão de Açúcar', 'Pao de Acucar'), []);
+  assert.deepEqual(d('inicio', 23, '2026-12-05T23:00:00-03:00'), []);
+  assert.deepEqual(d('linkCompra', 'https://www.sympla.com.br/evento/x/', 'https://sympla.com.br/evento/x'), []);
+  assert.deepEqual(d('data', '2026-12-05', '2026-12-05T00:00:00-03:00'), []);
+  // Diferentes: a frase, e o que mostramos.
+  assert.deepEqual(d('inicio', 19, 18, { inicio: 18 }), ['O post diz 19h; a página do ingresso diz 18h. Mostramos o que diz a página do ingresso.']);
+  // Campo fora da lista dos cinco: nada.
+  assert.deepEqual(d('lineup', ['A'], ['B']), []);
+});
+
+test('a frase da avaliação: o que a pergunta mede, nunca "média do público"', () => {
+  assert.equal(T.fraseDaAvaliacao(CONVERTIDA), '4 de 5 que foram, de 29 a 34 anos, acharam o público da idade deles.');
+  assert.equal(T.fraseDaAvaliacao({ avaliacaoIdade: { avaliacoes: 6, naMedida: 0.5, faixa: [31, 31], convites: 2 } }), '3 de 6 que foram, com 31 anos, acharam o público da idade deles.');
+  assert.equal(T.fraseDaAvaliacao({ mediaIdade: 31 }), null);
+  assert.doesNotMatch(T.fraseDaAvaliacao(CONVERTIDA), /média/);
+});
+
+test('de onde vem: uma linha por campo, com a casa curada e a atribuição do OpenStreetMap', () => {
+  const linhas = T.deOndeVem(CONVERTIDA, NA_FIXTURE);
+  assert.deepEqual(linhas.map((x) => x.campo), ['Horário', 'Preço', 'Local', 'Som', 'Idade']);
+  assert.equal(linhas.find((x) => x.campo === 'Som').texto, 'Leitura da descrição da página.');
+  const curada = T.deOndeVem({ ...CONVERTIDA, endereco: { ...CONVERTIDA.endereco, cidadeOrigem: 'casa' }, local: { ...CONVERTIDA.local, origemGeo: 'curado', atribuicaoOsm: true } }, NA_FIXTURE);
+  assert.equal(curada.find((x) => x.campo === 'Local').texto, 'Cadastro da casa no finde; cidade pelo cadastro da casa; mapa © OpenStreetMap.');
+});
+
+test('vazios numa linha só no pé; o fim não se repete em outra frase do horário', () => {
+  const xamego = {
+    real: true, nome: 'Xamêgo', inicio: 22, fim: null, esquenta: null, mediaIdade: null, endereco: null, lotes: [], preco: null, linkCompra: null,
+    estilos: [], lineup: [], produtora: null, regras: {}, idadeMinima: null,
+  };
+  const v = T.vaziosDaFesta(xamego);
+  assert.equal(v, 'Não divulgado: fim, média de idade, endereço, preço, som, lineup, produtora, regras da porta.');
+  assert.equal((v.match(/fim/g) || []).length, 1);
+  assert.equal(T.vaziosDaFesta({ ...xamego, real: undefined }), '');
+  assert.equal(T.vaziosDaFesta(CONVERTIDA), 'Não divulgado: regras da porta.');
+  // O detalhe não tem mais a frase solta do fim: o vazio fica só no pé.
+  assert.doesNotMatch(APP, /A hora de acabar não foi divulgada/);
+  assert.match(APP, /const vazios = FT\.vaziosDaFesta\(f\);/);
+});
+
+test('a peça de divulgação: o objeto do /3 ou o caminho da fictícia; crédito e alt', () => {
+  const c = T.cartazDe(CONVERTIDA);
+  assert.equal(c.miniatura, '/imagens/0123456789abcdef-480.webp');
+  assert.equal(c.arquivo, '/imagens/0123456789abcdef-1080.webp');
+  assert.equal(c.paisagem, false);
+  assert.equal(T.creditoDaPeca(c), 'Pôster · divulgação Ingressos Exemplo');
+  assert.equal(T.altDaPeca(c, 'Noite Exemplo'), 'Pôster de Noite Exemplo, divulgação de Ingressos Exemplo');
+  const flyer = T.cartazDe({ cartaz: { ...CONVERTIDA.cartaz, papel: 'flyer', credito: 'Divulgação · @casaexemplo', origem: 'https://www.instagram.com/p/X1/', largura: 1600, altura: 900 } });
+  assert.equal(flyer.paisagem, true);
+  assert.equal(T.creditoDaPeca(flyer), 'Flyer · divulgação @casaexemplo');
+  assert.equal(flyer.origemRotulo, 'ver no Instagram');
+  assert.equal(T.cartazDe({ cartaz: '/cartazes/sexta-sem-pressa.webp' }).miniatura, '/cartazes/sexta-sem-pressa.webp');
+  // Caminho fora do padrão não vira imagem.
+  for (const ruim of ['https://cdn.example/x.jpg', '/imagens/../x.webp', '/imagens/0123-480.webp', { arquivo: '//x/y.webp' }, null]) assert.equal(T.cartazDe({ cartaz: ruim }), null);
+});
+
+test('convite: sem "média não informada", com casa, bairro, preço e lineup; e a mensagem "como foi?"', () => {
+  assert.doesNotMatch(COMUM_FONTE, /'média não informada'/);
+  assert.match(COMUM_FONTE, /texto: `com \$\{lineup\.length > 3/);
+  const linhas = T.mensagem({ data: 'sex, 27 nov', hora: '23h00', bairro: 'Pinheiros', festa: festa({ real: true, mediaIdade: null, casa: 'Casa Exemplo', lineup: ['DJ Exemplo'] }), link: 'https://finde.example/p/abcd1234' });
+  assert.equal(linhas[2], 'Sex, 27 nov · 23h00');
+  assert.equal(linhas[3], 'X, com DJ Exemplo');
+  assert.equal(linhas[4], 'Casa Exemplo · Pinheiros · R$ 60');
+  // Sem preço: a linha fica com a casa e o bairro.
+  const semPreco = T.mensagem({ data: 'sex, 27 nov', hora: '23h00', bairro: 'Pinheiros', festa: festa({ real: true, casa: 'Casa Exemplo', lotes: [], preco: null }), link: 'x' });
+  assert.equal(semPreco[4], 'Casa Exemplo · Pinheiros');
+  assert.deepEqual(T.mensagemComoFoi({ festa: { nome: 'Sexta Sem Pressa' }, link: 'https://finde.example/p/abcd1234' }), [
+    'Como foi a Sexta Sem Pressa? Responde em 10 segundos: o público era da nossa idade?',
+    'https://finde.example/p/abcd1234',
+  ]);
+  // A avaliação no convite: só resposta com idade de 18 a 60, com aparelho e sem expor o nome em outro lugar.
+  assert.match(PLANO_FONTE, /n < 18 \|\| n > 60/);
+  assert.match(PLANO_FONTE, /`\/api\/planos\/\$\{encodeURIComponent\(id\)\}\/avaliacao`, \{ nome: meuNomeAqui\(\), aparelho: aparelho\(\), resposta: marcada\.value, idade: n \}/);
+  assert.match(PLANO_FONTE, /Guardamos sem o seu nome, até 31\/12\/2026\./);
+});
+
+test('páginas do app: noindex, tiles pela meta, mapa e local com defer, sem preload da Fraunces', () => {
+  const index = fs.readFileSync(path.join(PUBLICO, 'index.html'), 'utf8');
+  const plano = fs.readFileSync(path.join(PUBLICO, 'plano.html'), 'utf8');
+  for (const html of [index, plano]) {
+    assert.match(html, /<meta name="robots" content="noindex, noimageindex">/);
+    assert.doesNotMatch(html, /fraunces-italico-300\.woff2" as="font"/);
+  }
+  assert.match(index, /<meta name="finde-tiles" content="__TILES__">/);
+  assert.match(index, /<script src="\/local\.js" defer><\/script>\s*<script src="\/mapa\.js" defer><\/script>\s*<script src="\/app\.js" defer><\/script>/);
+  assert.match(plano, /<meta property="og:image" content="__IMAGEM_COMPARTILHAR__">/);
+});
+
+// ---------------------------------------------------------------- revisão de desenho de 24/11
+
+test('revisão: semViuva prende o número à unidade e ao "há"; horaCurta tira os zeros da hora cheia', () => {
+  const NB = ' ';
+  assert.equal(T.semViuva('conferido há 2h'), `conferido há${NB}2h`);
+  assert.equal(T.semViuva('Noite Exemplo 11 anos · DJ Exemplo'), `Noite Exemplo 11${NB}anos · DJ Exemplo`);
+  assert.equal(T.semViuva('Rua Clarice Vasconcelos Prado, 1.658'), `Rua Clarice Vasconcelos Prado,${NB}1.658`);
+  assert.equal(T.semViuva('a partir de R$ 70'), `a partir de${NB}R$${NB}70`);
+  assert.equal(T.horaCurta('22h00'), '22h');
+  assert.equal(T.horaCurta('22h30'), '22h30');
+});
+
+test('revisão cara-de-ia-02: dois links da Ingresse diferentes não viram "um link da Ingresse; um link da Ingresse"', () => {
+  const f = {
+    linkCompra: 'https://www.ingresse.com/primavera-sab',
+    divergencias: [{ campo: 'linkCompra', valores: [{ fonte: 'paginas', valor: 'https://www.ingresse.com/primavera-sab' }, { fonte: 'indicacao', valor: 'https://www.ingresse.com/primavera' }] }],
+  };
+  const [frase] = T.divergencias(f);
+  assert.equal(frase, 'As fontes levam a páginas diferentes da Ingresse; o botão abre a que veio da página do ingresso.');
+  // Valores que se dizem diferente seguem na frase de sempre.
+  const preco = T.divergencias({ precoAPartirDe: 40, divergencias: [{ campo: 'precoAPartirDe', valores: [{ fonte: 'paginas', valor: 40 }, { fonte: 'indicacao', valor: 45 }] }] });
+  assert.match(preco[0], /^A página do ingresso diz .*; a indicação diz /);
+});
+
+test('revisão cara-de-ia-08: "de onde vem" com tudo da mesma fonte vira uma frase só', () => {
+  const agora = Date.parse('2026-11-24T12:00:00-03:00');
+  const c = { fonte: 'indicacao', conferidoEm: '2026-11-24T10:00:00-03:00' };
+  const linhas = T.deOndeVem({ campos: { inicio: c, lotes: c, endereco: c } }, agora);
+  assert.equal(linhas.length, 1);
+  assert.equal(linhas[0].junto, true);
+  assert.equal(linhas[0].texto, 'Horário, preço e local vieram de uma indicação ao finde, há 2h.');
+  // Fontes diferentes: uma linha por campo, como antes.
+  const varias = T.deOndeVem({ campos: { inicio: c, lotes: { ...c, fonte: 'paginas' } } }, agora);
+  assert.deepEqual(varias.map((x) => x.campo), ['Horário', 'Preço']);
 });

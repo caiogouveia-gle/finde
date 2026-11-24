@@ -187,3 +187,84 @@ test('a data da festa no convite: o próximo dia da semana dela que ainda não a
   // No domingo às 2h já acabou: é o sábado seguinte.
   assert.equal(dataDaFesta(groove, new Date(2026, 10, 15, 2)).data, '2026-11-21');
 });
+
+// ---------------------------------------------------------------- U28 (plano de 24/11/2026)
+// A fala sobre listas de festas reais, direto em conversa.responder (sem o servidor).
+
+const motor = require('../nucleo/motor');
+const { entender } = require('../nucleo/entender');
+
+function real(id, extra = {}) {
+  return {
+    id, nome: `Festa ${id}`, casa: `Casa ${id}`, bairro: 'pinheiros', regiao: 'oeste', dia: 'sab', data: '2026-11-28', dataDaNoite: '2026-11-28',
+    inicio: 23, esquenta: null, fim: null, mediaIdade: null, faixas: [], preco: 40, estilos: ['house-disco'], selo: 'editorial',
+    distanciaMin: null, idadeMinima: null, real: true, ...extra,
+  };
+}
+const PEDIDO_REAL = motor.completar({ dia: 'sab', janela: 'noite', idade: { min: 28, max: 35 }, teto: 150, bairros: [], estilos: [] });
+// A fala para um texto sobre uma lista de reais.
+function falar(texto, festas, extra = {}) {
+  const { mudar, pedidos, duvida } = entender(texto, { ...PEDIDO_REAL, agoraMs: Date.parse('2026-11-24T12:00:00-03:00'), comDistancia: false });
+  const depois = motor.completar({ ...PEDIDO_REAL, ...motor.sanearCriterios(mudar) });
+  const resultado = { ...motor.escolher(depois, festas), ...extra };
+  return conversa.responder({ pedidos, antes: PEDIDO_REAL, depois, antesIds: festas.map((f) => f.id), resultado, nomeDe: (id) => id, duvida }).texto;
+}
+
+test('"tem com gente da minha idade?" com três reais sem média: nenhuma divulgou', () => {
+  const tres = [real('a'), real('b', { inicio: 23.5 }), real('c', { inicio: 24 })];
+  assert.match(falar('tem com gente da minha idade?', tres), /^Nenhuma delas divulgou a média de idade ainda\./);
+  // Uma com média dentro e duas sem: separa os três grupos, sem dizer "não" a quem não divulgou.
+  const mistas = [real('a', { mediaIdade: 31 }), real('b', { inicio: 23.5 }), real('c', { inicio: 24 })];
+  assert.match(falar('tem com gente da minha idade?', mistas), /^Uma com média de 28 a 35; as outras duas não divulgaram a média\./);
+  const tresGrupos = [real('a', { mediaIdade: 31 }), real('b', { inicio: 23.5, mediaIdade: 45 }), real('c', { inicio: 24 })];
+  assert.match(falar('tem com gente da minha idade?', tresGrupos), /^Uma com média de 28 a 35, uma fora da sua faixa; a outra não divulgou a média\./);
+});
+
+test('a avaliação de quem foi diz o que a pergunta mede', () => {
+  const av = real('av', { nome: 'Noite Exemplo', mediaIdade: 31, avaliacaoIdade: { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 } });
+  const fala = falar('da minha idade?', [av]);
+  assert.match(fala, /Na Noite Exemplo, 4 de 5 que foram, de 29 a 34 anos, acharam o público da idade deles\./);
+  assert.doesNotMatch(fala, /média de 31|média 31/);
+});
+
+test('"quanto custa?" lista os preços, e diz quem não divulgou', () => {
+  const tres = [real('a', { preco: 40 }), real('b', { inicio: 23.5, preco: 60 }), real('c', { inicio: 24, preco: null })];
+  assert.match(falar('quanto custa?', tres), /^A primeira custa R\$ 40; a segunda, R\$ 60; a terceira não divulgou o preço\./);
+  assert.match(falar('quanto custa?', [real('a', { preco: 0 })]), /^É de graça\./);
+});
+
+test('"sem limite de idade" fala da idade mínima e não mexe no teto', () => {
+  const festas = [real('a', { idadeMinima: 18 }), real('b', { inicio: 23.5 })];
+  assert.match(falar('sem limite de idade?', festas), /^Festa a, só a partir de 18; a outra não diz\./);
+  assert.match(falar('tem limite de idade?', [real('a')]), /^Ela não divulgou limite de idade\./);
+});
+
+test('bairro citado com reais filtra; "tem mais?" aponta para as outras do dia', () => {
+  assert.match(falar('pinheiros', [real('a')]), /^Em Pinheiros, então\./);
+  assert.match(falar('tem mais?', [real('a')], { maisDoDia: [{}, {}, {}, {}] }), /^Mais quatro no sábado, logo abaixo\./);
+  assert.match(falar('tem mais?', [real('a')], { maisDoDia: [] }), /^Já mostrei todas que tenho no sábado\./);
+});
+
+test('o artigo de cada dia: "na quinta", "no sábado", "pra hoje"; a semana e a data', () => {
+  assert.match(falar('quinta', [real('a', { dia: 'qui' })]), /^Quinta, então\./);
+  assert.match(falar('sábado da semana que vem', [real('a')]), /^Sábado da semana que vem, então\./);
+  assert.match(falar('dia 5', [real('a')]), /^Sábado da semana que vem, então\./);
+  assert.match(falar('semana que vem', [real('a')]), /^No sábado da semana que vem, então\./);
+  assert.match(falar('dia 1', [real('a')]), /^Eu só olho hoje e de quinta a domingo/);
+  // A dúvida sobre o dia pergunta com o artigo dele.
+  const r = conversa.responder({ pedidos: [], antes: PEDIDO_REAL, depois: PEDIDO_REAL, antesIds: [], resultado: { opcoes: [] }, nomeDe: (id) => id, duvida: { dia: 'qui' } });
+  assert.equal(r.texto, 'Muda pra quinta?');
+  const h = conversa.responder({ pedidos: [], antes: PEDIDO_REAL, depois: PEDIDO_REAL, antesIds: [], resultado: { opcoes: [] }, nomeDe: (id) => id, duvida: { dia: 'hoje' } });
+  assert.equal(h.texto, 'Muda pra hoje?');
+});
+
+test('"perto de" sem supor três festas: duas na tela, as duas perto', () => {
+  const duas = [
+    real('a', { local: { lat: -23.5611, lng: -46.6825, precisao: 'rua' } }),
+    real('b', { inicio: 23.5, local: { lat: -23.5669, lng: -46.6931, precisao: 'casa' } }),
+  ];
+  const depois = motor.completar({ ...PEDIDO_REAL, perto: 'pinheiros' });
+  const resultado = motor.escolher(depois, duas);
+  const r = conversa.responder({ pedidos: ['perto'], antes: PEDIDO_REAL, depois, antesIds: ['a', 'b'], resultado, nomeDe: (id) => id });
+  assert.match(r.texto, /^As duas ficam a até 1,3 km de Pinheiros\./);
+});

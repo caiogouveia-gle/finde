@@ -1,0 +1,1030 @@
+{
+  "_leia": "Forma da resposta de POST /api/festas do app depois do plano de 24/11/2026 (KTD15, R23 a R26). Congelada depois da fundação: só a costura muda. montarResultado (nucleo/lista.js) devolve as chaves opcoes, maisDoDia, outrosDias, exemplos, aviso, nota, base e semMedia; o servidor junta criterios, pedido, pedidoPartes e resposta. Cada opção real traz pct, exemplo: false, distanciaKm (null sem coordenada) e porque: { cabe, falta }, com itens { criterio, valor }; a fictícia traz exemplo: true e não traz pct nem cara (D11). comReais: sábado com reais (nenhuma fictícia); semReais: dia sem real (só exemplos, abaixo). outrosDias conta as reais dos outros dias de quinta a domingo da mesma semana. Dados fictícios.",
+  "comReais": {
+    "criterios": {
+      "dia": "sab",
+      "janela": "noite",
+      "faixa": "30-35",
+      "teto": 150,
+      "bairros": [],
+      "estilos": [],
+      "evitarEstilos": [],
+      "evitarBairros": [],
+      "evitarCasas": [],
+      "perto": null,
+      "voltaMax": null,
+      "evitar": [],
+      "firmes": [],
+      "inicioMin": 22,
+      "fimMax": 27,
+      "idade": {
+        "min": 28,
+        "max": 35
+      }
+    },
+    "pedido": "Sáb · 22h às 3h · 28 a 35 · até R$ 150",
+    "pedidoPartes": [
+      {
+        "chave": "dia",
+        "texto": "Sábado"
+      },
+      {
+        "chave": "janela",
+        "texto": "das 22h às 3h"
+      },
+      {
+        "chave": "bairros",
+        "texto": "em toda a cidade"
+      },
+      {
+        "chave": "idade",
+        "texto": "gente de 28 a 35"
+      },
+      {
+        "chave": "teto",
+        "texto": "até R$ 150"
+      }
+    ],
+    "resposta": "Uma festa real cabe nesse pedido; completei com exemplos.",
+    "opcoes": [
+      {
+        "festa": {
+          "id": "noite-exemplo-20261205-a1b2",
+          "nome": "Noite Exemplo",
+          "produtora": "Coletivo Exemplo",
+          "casa": "Casa Exemplo",
+          "bairro": "pinheiros",
+          "bairroNome": "Pinheiros",
+          "regiao": "oeste",
+          "dia": "sab",
+          "diaDaSemana": "sab",
+          "data": "2026-12-05",
+          "dataDaNoite": "2026-12-05",
+          "inicio": 23,
+          "horarioIncerto": false,
+          "esquenta": null,
+          "fim": 29,
+          "mediaIdade": 31,
+          "origemIdade": "a partir de 5 avaliações de quem foi",
+          "origemIdadeCurta": "5 avaliações",
+          "origemDetalhe": null,
+          "avaliacaoIdade": {
+            "avaliacoes": 5,
+            "naMedida": 0.8,
+            "faixa": [
+              29,
+              34
+            ],
+            "convites": 2
+          },
+          "faixas": [],
+          "preco": 40,
+          "precoConferidoEm": "2026-11-25T10:30:00-03:00",
+          "esgotado": false,
+          "estilos": [
+            "house-disco"
+          ],
+          "estilosInferidos": true,
+          "frase": null,
+          "selo": "editorial",
+          "distanciaMin": null,
+          "endereco": {
+            "texto": "Rua Exemplo, 100 - Pinheiros, São Paulo - SP",
+            "bairro": "pinheiros",
+            "regiao": "oeste",
+            "cidade": "São Paulo",
+            "cidadeOrigem": "fonte",
+            "cep": "05400-000",
+            "lugar": "casa-exemplo"
+          },
+          "local": {
+            "lat": -23.56671,
+            "lng": -46.69341,
+            "precisao": "rua",
+            "origemGeo": "pagina",
+            "lugar": "casa-exemplo",
+            "atribuicaoOsm": false
+          },
+          "lotes": [
+            {
+              "nome": "1º lote",
+              "preco": 40,
+              "disponivel": true,
+              "taxa": 4
+            },
+            {
+              "nome": "2º lote",
+              "preco": 60,
+              "disponivel": null
+            }
+          ],
+          "entradaNaPorta": null,
+          "linkCompra": "https://ingressos.example/evento/noite-exemplo",
+          "linkEvento": null,
+          "instagram": null,
+          "imagens": [
+            {
+              "id": "0123456789abcdef",
+              "arquivo": "/imagens/0123456789abcdef-1080.webp",
+              "miniatura": "/imagens/0123456789abcdef-480.webp",
+              "largura": 1080,
+              "altura": 1350,
+              "papel": "pagina-ingresso",
+              "fonte": "paginas",
+              "credito": "Divulgação · Ingressos Exemplo",
+              "origem": "https://ingressos.example/evento/noite-exemplo",
+              "conferidoEm": "2026-11-25T10:30:00-03:00",
+              "principal": true,
+              "origens": [
+                {
+                  "fonte": "paginas",
+                  "origem": "https://ingressos.example/evento/noite-exemplo",
+                  "credito": "Divulgação · Ingressos Exemplo"
+                },
+                {
+                  "fonte": "indicacao",
+                  "origem": "https://ingressos.example/evento/noite-exemplo",
+                  "credito": "Cartaz indicado · Coletivo Exemplo"
+                }
+              ]
+            }
+          ],
+          "cartaz": {
+            "id": "0123456789abcdef",
+            "arquivo": "/imagens/0123456789abcdef-1080.webp",
+            "miniatura": "/imagens/0123456789abcdef-480.webp",
+            "largura": 1080,
+            "altura": 1350,
+            "papel": "pagina-ingresso",
+            "fonte": "paginas",
+            "credito": "Divulgação · Ingressos Exemplo",
+            "origem": "https://ingressos.example/evento/noite-exemplo",
+            "conferidoEm": "2026-11-25T10:30:00-03:00",
+            "principal": true,
+            "origens": [
+              {
+                "fonte": "paginas",
+                "origem": "https://ingressos.example/evento/noite-exemplo",
+                "credito": "Divulgação · Ingressos Exemplo"
+              },
+              {
+                "fonte": "indicacao",
+                "origem": "https://ingressos.example/evento/noite-exemplo",
+                "credito": "Cartaz indicado · Coletivo Exemplo"
+              }
+            ]
+          },
+          "cartazExterno": null,
+          "lineup": [
+            "DJ Exemplo",
+            "Outra Exemplo"
+          ],
+          "idadeMinima": null,
+          "regras": {},
+          "fontes": [
+            {
+              "id": "paginas",
+              "nome": "Página lida no navegador",
+              "url": "https://ingressos.example/evento/noite-exemplo",
+              "conferidoEm": "2026-11-25T10:30:00-03:00",
+              "vinculo": {
+                "regra": "escore",
+                "escore": 9,
+                "sinais": [
+                  {
+                    "sinal": "link",
+                    "peso": 4,
+                    "detalhe": "mesmo link de compra"
+                  },
+                  {
+                    "sinal": "nome",
+                    "peso": 3,
+                    "detalhe": "nome igual sem datas"
+                  },
+                  {
+                    "sinal": "imagem",
+                    "peso": 1.5,
+                    "detalhe": "pHash a 10 do flyer"
+                  },
+                  {
+                    "sinal": "lugar",
+                    "peso": 2,
+                    "detalhe": "mesmo lugar do cadastro (casa-exemplo)"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "indicacao",
+              "nome": "Lido na página do ingresso",
+              "url": "https://ingressos.example/evento/noite-exemplo",
+              "conferidoEm": "2026-11-24T12:00:00-03:00",
+              "vinculo": {
+                "regra": "nova",
+                "escore": null,
+                "sinais": []
+              }
+            }
+          ],
+          "encontradaEm": [
+            "paginas",
+            "indicacao"
+          ],
+          "paginas": [
+            {
+              "tipo": "ingresso",
+              "nome": "Ingressos Exemplo",
+              "url": "https://ingressos.example/evento/noite-exemplo",
+              "lidoEm": "2026-11-24T12:00:00-03:00",
+              "campos": [
+                "nome",
+                "lotes"
+              ]
+            }
+          ],
+          "divergencias": [
+            {
+              "campo": "precoAPartirDe",
+              "valores": [
+                {
+                  "fonte": "paginas",
+                  "valor": 40,
+                  "conferidoEm": "2026-11-25T10:30:00-03:00"
+                },
+                {
+                  "fonte": "indicacao",
+                  "valor": 45,
+                  "conferidoEm": "2026-11-24T12:00:00-03:00"
+                }
+              ]
+            }
+          ],
+          "idsAntigos": [
+            "noite-exemplo-20261205-c3d4"
+          ],
+          "campos": {
+            "nome": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "produtora": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "casa": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "endereco": {
+              "fonte": "indicacao",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "data": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "inicio": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "fim": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "lotes": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "linkCompra": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "lineup": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "estilos": {
+              "fonte": "claude",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "mediaIdade": {
+              "fonte": "avaliacoes",
+              "conferidoEm": "2026-11-26T09:00:00-03:00"
+            },
+            "ehFesta": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "tipo": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "geo": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            }
+          },
+          "coletadoEm": "2026-11-25T10:30:00-03:00",
+          "atualizadoEm": "2026-11-26T09:05:00-03:00",
+          "exemplo": false,
+          "real": true
+        },
+        "patrocinada": false,
+        "atende": true,
+        "fora": [],
+        "incertos": [],
+        "linha": "Sáb · 23h00 · Pinheiros · média 31 anos",
+        "hora": "23h00",
+        "dia": "Sáb",
+        "bairro": "Pinheiros",
+        "horario": "Começa às 23h e acaba às 5h.",
+        "preco": "R$ 40",
+        "origem": {
+          "curta": "5 avaliações",
+          "longa": "a partir de 5 avaliações de quem foi"
+        },
+        "aviso": null,
+        "motivos": [
+          "bem abaixo do seu teto",
+          "vai até as 5h; dá pra sair antes"
+        ],
+        "casaComEstilo": null,
+        "distancia": null,
+        "bloco": "pedido",
+        "cara": {
+          "pct": 100,
+          "partes": [
+            {
+              "criterio": "horario",
+              "cabe": true,
+              "texto": "começa às 23h, no seu horário"
+            },
+            {
+              "criterio": "idade",
+              "cabe": true,
+              "texto": "média dentro da sua faixa"
+            },
+            {
+              "criterio": "preco",
+              "cabe": true,
+              "texto": "R$ 40, abaixo do seu teto"
+            }
+          ]
+        },
+        "exemplo": false,
+        "data": "2026-12-05",
+        "pct": 100,
+        "distanciaKm": 1.2,
+        "porque": {
+          "cabe": [
+            {
+              "criterio": "horario",
+              "valor": "23h"
+            },
+            {
+              "criterio": "idade",
+              "valor": "4 de 5 da idade"
+            }
+          ],
+          "falta": [
+            {
+              "criterio": "som",
+              "valor": null
+            }
+          ]
+        }
+      }
+    ],
+    "maisDoDia": [
+      {
+        "festa": {
+          "id": "outra-noite-exemplo-20261205-e5f6",
+          "nome": "Outra Noite Exemplo",
+          "produtora": "Coletivo Exemplo",
+          "casa": "Casa Exemplo",
+          "bairro": "pinheiros",
+          "bairroNome": "Pinheiros",
+          "regiao": "oeste",
+          "dia": "sab",
+          "diaDaSemana": "sab",
+          "data": "2026-12-05",
+          "dataDaNoite": "2026-12-05",
+          "inicio": 23,
+          "horarioIncerto": false,
+          "esquenta": null,
+          "fim": 29,
+          "mediaIdade": 31,
+          "origemIdade": "a partir de 5 avaliações de quem foi",
+          "origemIdadeCurta": "5 avaliações",
+          "origemDetalhe": null,
+          "avaliacaoIdade": {
+            "avaliacoes": 5,
+            "naMedida": 0.8,
+            "faixa": [
+              29,
+              34
+            ],
+            "convites": 2
+          },
+          "faixas": [],
+          "preco": 40,
+          "precoConferidoEm": "2026-11-25T10:30:00-03:00",
+          "esgotado": true,
+          "estilos": [
+            "house-disco"
+          ],
+          "estilosInferidos": true,
+          "frase": null,
+          "selo": "editorial",
+          "distanciaMin": null,
+          "endereco": {
+            "texto": "Rua Exemplo, 100 - Pinheiros, São Paulo - SP",
+            "bairro": "pinheiros",
+            "regiao": "oeste",
+            "cidade": "São Paulo",
+            "cidadeOrigem": "fonte",
+            "cep": "05400-000",
+            "lugar": "casa-exemplo"
+          },
+          "local": {
+            "lat": -23.56671,
+            "lng": -46.69341,
+            "precisao": "rua",
+            "origemGeo": "pagina",
+            "lugar": "casa-exemplo",
+            "atribuicaoOsm": false
+          },
+          "lotes": [
+            {
+              "nome": "1º lote",
+              "preco": 40,
+              "disponivel": true,
+              "taxa": 4
+            },
+            {
+              "nome": "2º lote",
+              "preco": 60,
+              "disponivel": null
+            }
+          ],
+          "entradaNaPorta": null,
+          "linkCompra": "https://ingressos.example/evento/noite-exemplo",
+          "linkEvento": null,
+          "instagram": null,
+          "imagens": [
+            {
+              "id": "0123456789abcdef",
+              "arquivo": "/imagens/0123456789abcdef-1080.webp",
+              "miniatura": "/imagens/0123456789abcdef-480.webp",
+              "largura": 1080,
+              "altura": 1350,
+              "papel": "pagina-ingresso",
+              "fonte": "paginas",
+              "credito": "Divulgação · Ingressos Exemplo",
+              "origem": "https://ingressos.example/evento/noite-exemplo",
+              "conferidoEm": "2026-11-25T10:30:00-03:00",
+              "principal": true,
+              "origens": [
+                {
+                  "fonte": "paginas",
+                  "origem": "https://ingressos.example/evento/noite-exemplo",
+                  "credito": "Divulgação · Ingressos Exemplo"
+                },
+                {
+                  "fonte": "indicacao",
+                  "origem": "https://ingressos.example/evento/noite-exemplo",
+                  "credito": "Cartaz indicado · Coletivo Exemplo"
+                }
+              ]
+            }
+          ],
+          "cartaz": {
+            "id": "0123456789abcdef",
+            "arquivo": "/imagens/0123456789abcdef-1080.webp",
+            "miniatura": "/imagens/0123456789abcdef-480.webp",
+            "largura": 1080,
+            "altura": 1350,
+            "papel": "pagina-ingresso",
+            "fonte": "paginas",
+            "credito": "Divulgação · Ingressos Exemplo",
+            "origem": "https://ingressos.example/evento/noite-exemplo",
+            "conferidoEm": "2026-11-25T10:30:00-03:00",
+            "principal": true,
+            "origens": [
+              {
+                "fonte": "paginas",
+                "origem": "https://ingressos.example/evento/noite-exemplo",
+                "credito": "Divulgação · Ingressos Exemplo"
+              },
+              {
+                "fonte": "indicacao",
+                "origem": "https://ingressos.example/evento/noite-exemplo",
+                "credito": "Cartaz indicado · Coletivo Exemplo"
+              }
+            ]
+          },
+          "cartazExterno": null,
+          "lineup": [
+            "DJ Exemplo",
+            "Outra Exemplo"
+          ],
+          "idadeMinima": null,
+          "regras": {},
+          "fontes": [
+            {
+              "id": "paginas",
+              "nome": "Página lida no navegador",
+              "url": "https://ingressos.example/evento/noite-exemplo",
+              "conferidoEm": "2026-11-25T10:30:00-03:00",
+              "vinculo": {
+                "regra": "escore",
+                "escore": 9,
+                "sinais": [
+                  {
+                    "sinal": "link",
+                    "peso": 4,
+                    "detalhe": "mesmo link de compra"
+                  },
+                  {
+                    "sinal": "nome",
+                    "peso": 3,
+                    "detalhe": "nome igual sem datas"
+                  },
+                  {
+                    "sinal": "imagem",
+                    "peso": 1.5,
+                    "detalhe": "pHash a 10 do flyer"
+                  },
+                  {
+                    "sinal": "lugar",
+                    "peso": 2,
+                    "detalhe": "mesmo lugar do cadastro (casa-exemplo)"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "indicacao",
+              "nome": "Lido na página do ingresso",
+              "url": "https://ingressos.example/evento/noite-exemplo",
+              "conferidoEm": "2026-11-24T12:00:00-03:00",
+              "vinculo": {
+                "regra": "nova",
+                "escore": null,
+                "sinais": []
+              }
+            }
+          ],
+          "encontradaEm": [
+            "paginas",
+            "indicacao"
+          ],
+          "paginas": [
+            {
+              "tipo": "ingresso",
+              "nome": "Ingressos Exemplo",
+              "url": "https://ingressos.example/evento/noite-exemplo",
+              "lidoEm": "2026-11-24T12:00:00-03:00",
+              "campos": [
+                "nome",
+                "lotes"
+              ]
+            }
+          ],
+          "divergencias": [
+            {
+              "campo": "precoAPartirDe",
+              "valores": [
+                {
+                  "fonte": "paginas",
+                  "valor": 40,
+                  "conferidoEm": "2026-11-25T10:30:00-03:00"
+                },
+                {
+                  "fonte": "indicacao",
+                  "valor": 45,
+                  "conferidoEm": "2026-11-24T12:00:00-03:00"
+                }
+              ]
+            }
+          ],
+          "idsAntigos": [
+            "noite-exemplo-20261205-c3d4"
+          ],
+          "campos": {
+            "nome": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "produtora": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "casa": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "endereco": {
+              "fonte": "indicacao",
+              "conferidoEm": "2026-11-24T12:00:00-03:00"
+            },
+            "data": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "inicio": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "fim": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "lotes": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "linkCompra": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "lineup": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "estilos": {
+              "fonte": "claude",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "mediaIdade": {
+              "fonte": "avaliacoes",
+              "conferidoEm": "2026-11-26T09:00:00-03:00"
+            },
+            "ehFesta": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "tipo": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            },
+            "geo": {
+              "fonte": "paginas",
+              "conferidoEm": "2026-11-25T10:30:00-03:00"
+            }
+          },
+          "coletadoEm": "2026-11-25T10:30:00-03:00",
+          "atualizadoEm": "2026-11-26T09:05:00-03:00",
+          "exemplo": false,
+          "real": true
+        },
+        "patrocinada": false,
+        "atende": true,
+        "fora": [],
+        "incertos": [],
+        "linha": "Sáb · 23h00 · Pinheiros · média 31 anos",
+        "hora": "23h00",
+        "dia": "Sáb",
+        "bairro": "Pinheiros",
+        "horario": "Começa às 23h e acaba às 5h.",
+        "preco": "R$ 40",
+        "origem": {
+          "curta": "5 avaliações",
+          "longa": "a partir de 5 avaliações de quem foi"
+        },
+        "aviso": null,
+        "motivos": [
+          "bem abaixo do seu teto",
+          "vai até as 5h; dá pra sair antes"
+        ],
+        "casaComEstilo": null,
+        "distancia": null,
+        "bloco": "pedido",
+        "cara": {
+          "pct": 100,
+          "partes": [
+            {
+              "criterio": "horario",
+              "cabe": true,
+              "texto": "começa às 23h, no seu horário"
+            },
+            {
+              "criterio": "idade",
+              "cabe": true,
+              "texto": "média dentro da sua faixa"
+            },
+            {
+              "criterio": "preco",
+              "cabe": true,
+              "texto": "R$ 40, abaixo do seu teto"
+            }
+          ]
+        },
+        "exemplo": false,
+        "data": "2026-12-05",
+        "pct": 61,
+        "distanciaKm": null,
+        "porque": {
+          "cabe": [
+            {
+              "criterio": "horario",
+              "valor": "23h"
+            },
+            {
+              "criterio": "idade",
+              "valor": "4 de 5 da idade"
+            }
+          ],
+          "falta": [
+            {
+              "criterio": "som",
+              "valor": null
+            }
+          ]
+        }
+      }
+    ],
+    "outrosDias": [
+      {
+        "dia": "qui",
+        "data": "2026-12-03",
+        "reais": 0
+      },
+      {
+        "dia": "sex",
+        "data": "2026-12-04",
+        "reais": 1
+      },
+      {
+        "dia": "dom",
+        "data": "2026-12-06",
+        "reais": 0
+      }
+    ],
+    "exemplos": [],
+    "aviso": null,
+    "nota": null,
+    "base": {
+      "atualizadoEm": "2026-11-26T09:05:00-03:00",
+      "total": 41,
+      "perfis": 50,
+      "sites": 3
+    },
+    "semMedia": false
+  },
+  "semReais": {
+    "criterios": {
+      "dia": "sab",
+      "janela": "noite",
+      "faixa": "30-35",
+      "teto": 150,
+      "bairros": [],
+      "estilos": [],
+      "evitarEstilos": [],
+      "evitarBairros": [],
+      "evitarCasas": [],
+      "perto": null,
+      "voltaMax": null,
+      "evitar": [],
+      "firmes": [],
+      "inicioMin": 22,
+      "fimMax": 27,
+      "idade": {
+        "min": 28,
+        "max": 35
+      }
+    },
+    "pedido": "Sáb · 22h às 3h · 28 a 35 · até R$ 150",
+    "pedidoPartes": [
+      {
+        "chave": "dia",
+        "texto": "Sábado"
+      },
+      {
+        "chave": "janela",
+        "texto": "das 22h às 3h"
+      },
+      {
+        "chave": "bairros",
+        "texto": "em toda a cidade"
+      },
+      {
+        "chave": "idade",
+        "texto": "gente de 28 a 35"
+      },
+      {
+        "chave": "teto",
+        "texto": "até R$ 150"
+      }
+    ],
+    "resposta": "Uma festa real cabe nesse pedido; completei com exemplos.",
+    "opcoes": [],
+    "maisDoDia": [],
+    "outrosDias": [
+      {
+        "dia": "qui",
+        "data": "2026-12-03",
+        "reais": 0
+      },
+      {
+        "dia": "sex",
+        "data": "2026-12-04",
+        "reais": 1
+      },
+      {
+        "dia": "sab",
+        "data": "2026-12-05",
+        "reais": 2
+      }
+    ],
+    "exemplos": [
+      {
+        "festa": {
+          "id": "sabado-groove",
+          "nome": "Sábado Groove",
+          "produtora": "Coletivo Meia-Luz",
+          "casa": "terraço em Pinheiros",
+          "bairro": "pinheiros",
+          "regiao": "oeste",
+          "dia": "sab",
+          "inicio": 19,
+          "esquenta": 21,
+          "fim": 25,
+          "mediaIdade": 31,
+          "faixas": [
+            "30-35"
+          ],
+          "preco": 60,
+          "estilos": [
+            "house-disco"
+          ],
+          "frase": "House no terraço, pista cheia às 21h e a volta ainda com metrô.",
+          "selo": "editorial",
+          "distanciaMin": 3,
+          "origemIdade": "informada pela produtora",
+          "origemIdadeCurta": "pela produtora",
+          "endereco": {
+            "texto": "Rua Clarice Vasconcelos Prado, 601",
+            "bairro": "pinheiros",
+            "regiao": "oeste",
+            "cidade": "São Paulo"
+          },
+          "lotes": [
+            {
+              "nome": "1º lote",
+              "preco": 60,
+              "disponivel": true
+            },
+            {
+              "nome": "2º lote",
+              "preco": 75,
+              "disponivel": true
+            }
+          ],
+          "entradaNaPorta": null,
+          "linkCompra": "https://shotgun.live/pt-br/events/sabado-groove",
+          "linkEvento": "https://ra.co/events/2175859",
+          "instagram": "https://www.instagram.com/coletivomeialuz/",
+          "cartaz": "/cartazes/sabado-groove.webp",
+          "lineup": [
+            "Tati Varanda",
+            "Caio Lume b2b Nina Teixo"
+          ],
+          "idadeMinima": 18,
+          "regras": {
+            "documento": "Documento com foto, original ou digital"
+          },
+          "fontes": [
+            {
+              "id": "envio",
+              "nome": "Enviado pela produtora",
+              "url": null,
+              "conferidoEm": "2026-12-01T08:00:00-03:00"
+            },
+            {
+              "id": "ical",
+              "nome": "Agenda da produtora",
+              "url": "https://coletivomeialuz.com.br/agenda.ics",
+              "conferidoEm": "2026-12-01T11:00:00-03:00"
+            }
+          ],
+          "campos": {
+            "nome": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "produtora": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "casa": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "endereco": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "inicio": {
+              "fonte": "ical",
+              "conferidoEm": "2026-12-01T11:00:00-03:00"
+            },
+            "pistaCheia": {
+              "fonte": "ical",
+              "conferidoEm": "2026-12-01T11:00:00-03:00"
+            },
+            "fim": {
+              "fonte": "ical",
+              "conferidoEm": "2026-12-01T11:00:00-03:00"
+            },
+            "lotes": {
+              "fonte": "envio",
+              "conferidoEm": "2026-12-01T08:00:00-03:00"
+            },
+            "linkCompra": {
+              "fonte": "envio",
+              "conferidoEm": "2026-12-01T08:00:00-03:00"
+            },
+            "linkEvento": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "instagram": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "cartaz": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "lineup": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "estilos": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "idadeMinima": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "regras": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-30T13:00:00-03:00"
+            },
+            "mediaIdade": {
+              "fonte": "envio",
+              "conferidoEm": "2026-11-23T12:00:00-03:00"
+            }
+          },
+          "coletadoEm": "2026-12-01T11:00:00-03:00",
+          "exemplo": true
+        },
+        "patrocinada": false,
+        "atende": true,
+        "fora": [],
+        "incertos": [],
+        "linha": "Sáb · 19h00 · Pinheiros · média 31 anos",
+        "hora": "19h00",
+        "dia": "Sáb",
+        "bairro": "Pinheiros",
+        "horario": "Começa às 19h, a pista enche às 21h e acaba à 1h.",
+        "preco": "R$ 60",
+        "origem": {
+          "curta": "pela produtora",
+          "longa": "informada pela produtora"
+        },
+        "aviso": null,
+        "motivos": [
+          "bem abaixo do seu teto",
+          "acaba à 1h, dá pra voltar cedo"
+        ],
+        "casaComEstilo": null,
+        "distancia": null,
+        "bloco": "pedido",
+        "exemplo": true,
+        "data": "2026-12-05",
+        "distanciaKm": null,
+        "porque": {
+          "cabe": [
+            {
+              "criterio": "horario",
+              "valor": "19h00"
+            }
+          ],
+          "falta": []
+        }
+      }
+    ],
+    "aviso": null,
+    "nota": "Ainda não tenho festa real no domingo. Seguem exemplos, festas fictícias.",
+    "base": {
+      "atualizadoEm": "2026-11-26T09:05:00-03:00",
+      "total": 41,
+      "perfis": 50,
+      "sites": 3
+    },
+    "semMedia": true
+  }
+}

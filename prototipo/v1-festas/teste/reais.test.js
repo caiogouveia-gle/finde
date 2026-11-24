@@ -73,15 +73,30 @@ test('conversor: o que o motor não trouxe fica null ou vazio, nunca um padrão 
   assert.ok(Object.isFrozen(f) && Object.isFrozen(f.fontes[0]));
 });
 
-test('conversor: bairro e região só com id do catálogo; endereço só quando diz mais que a cidade', () => {
-  const fora = R.converterRegistro(r14({ endereco: { texto: 'Autódromo, Interlagos', bairro: 'interlagos', regiao: 'sul', cidade: 'São Paulo' } })).festa;
-  assert.equal(fora.bairro, null);
-  assert.equal(fora.regiao, null);
-  assert.equal(fora.endereco.texto, 'Autódromo, Interlagos');
+test('conversor: os 14 bairros do motor com o nome real e a região; endereço só quando diz mais que a cidade', () => {
+  const sul = R.converterRegistro(r14({ endereco: { texto: 'Autódromo, Interlagos', bairro: 'interlagos', regiao: 'sul', cidade: 'São Paulo' } })).festa;
+  assert.equal(sul.bairro, 'interlagos');
+  assert.equal(sul.bairroNome, 'Interlagos');
+  assert.equal(sul.regiao, 'sul');
+  assert.equal(sul.endereco.texto, 'Autódromo, Interlagos');
+  // O nome que o motor leu fica (Vila Leopoldina aponta para lapa).
+  const leo = R.converterRegistro(r14({ endereco: { texto: 'Rua Mergenthaler, 1177', bairro: 'lapa', bairroNome: 'Vila Leopoldina', cidade: 'São Paulo' } })).festa;
+  assert.deepEqual([leo.bairro, leo.bairroNome, leo.regiao], ['lapa', 'Vila Leopoldina', 'oeste']);
   const dentro = R.converterRegistro(r14({ endereco: { texto: 'Rua X, 10', bairro: 'pinheiros', regiao: 'oeste', cidade: 'São Paulo' } })).festa;
   assert.equal(dentro.bairro, 'pinheiros');
   assert.equal(dentro.regiao, 'oeste');
+  const inventado = R.converterRegistro(r14({ endereco: { texto: 'Rua X, 10', bairro: 'atlantida', cidade: 'São Paulo' } })).festa;
+  assert.deepEqual([inventado.bairro, inventado.bairroNome, inventado.regiao], [null, null, null]);
   assert.equal(R.converterRegistro(r14({ endereco: { texto: 'sao paulo', bairro: null, regiao: null, cidade: 'São Paulo' } })).festa.endereco, null);
+});
+
+test('conversor: casa que é a cidade vira null; produtora igual à casa não se repete', () => {
+  const f = R.converterRegistro(r14({ casa: 'São Paulo', produtora: 'Coletivo X' })).festa;
+  assert.equal(f.casa, null);
+  assert.equal(f.produtora, 'Coletivo X');
+  const g = R.converterRegistro(r14({ casa: 'Casa Teste', produtora: { nome: 'casa teste' } })).festa;
+  assert.equal(g.casa, 'Casa Teste');
+  assert.equal(g.produtora, null);
 });
 
 test('conversor: média só com origem; o preço sai dos lotes (a conta do motor); o cartaz de fora não vira imagem', () => {
@@ -101,17 +116,39 @@ test('conversor: média só com origem; o preço sai dos lotes (a conta do motor
   assert.equal(c.cartazExterno, 'https://cdn.exemplo.com/c.jpg');
 });
 
-test('conversor: fica fora o que não é festa, o exemplo do motor, sem data, sem início, esgotada e dia de semana', () => {
+test('conversor: fica fora o que não é festa, o exemplo do motor, a oculta e a sem data', () => {
   const motivo = (extra) => R.converterRegistro(r14(extra)).motivo;
   assert.equal(motivo({ ehFesta: false }), 'não é festa');
   assert.equal(motivo({ exemplo: true }), 'exemplo do motor');
+  assert.equal(motivo({ oculta: { motivo: 'não é festa' } }), 'oculta pela curadoria');
   assert.equal(motivo({ data: null }), 'sem data');
-  assert.equal(motivo({ inicio: null }), 'sem início');
-  assert.equal(motivo({ esgotado: true }), 'esgotada');
-  assert.equal(motivo({ data: '2026-11-19', inicio: '2026-11-19T20:00:00-03:00' }), 'dia fora do fim de semana');
-  const r = R.converterExport({ contrato: 'finde-r14/2', festas: [r14(), r14(), r14({ id: 'outra-1', inicio: null })] });
+  const r = R.converterExport({ contrato: 'finde-r14/2', festas: [r14(), r14(), r14({ id: 'outra-1', ehFesta: false })] });
   assert.equal(r.festas.length, 1);
-  assert.deepEqual(r.fora, [{ id: 'teste-20261120-aaaa', motivo: 'id repetido' }, { id: 'outra-1', motivo: 'sem início' }]);
+  assert.deepEqual(r.fora, [{ id: 'teste-20261120-aaaa', motivo: 'id repetido' }, { id: 'outra-1', motivo: 'não é festa' }]);
+});
+
+test('conversor (U23): sem início entra marcada, esgotada entra marcada, e qualquer dia entra pelo dia da noite', () => {
+  const semInicio = R.converterRegistro(r14({ inicio: null, fim: '2026-11-21T04:00:00-03:00' })).festa;
+  assert.equal(semInicio.inicio, null);
+  assert.equal(semInicio.horarioIncerto, true);
+  assert.equal(semInicio.fim, 28);
+  assert.equal(semInicio.esquenta, null);
+  assert.equal(R.converterRegistro(r14()).festa.horarioIncerto, false);
+  const esgotada = R.converterRegistro(r14({ esgotado: true })).festa;
+  assert.equal(esgotada.esgotado, true);
+  assert.equal(R.converterRegistro(r14()).festa.esgotado, false);
+  const quinta = R.converterRegistro(r14({ data: '2026-11-19', inicio: '2026-11-19T20:00:00-03:00' })).festa;
+  assert.deepEqual([quinta.dia, quinta.diaDaSemana, quinta.data], ['qui', 'qui', '2026-11-19']);
+  // Uma festa de segunda entra para o "hoje" e não derruba o que lê C.DIAS[f.dia].
+  const segunda = R.converterRegistro(r14({ data: '2026-11-23', inicio: '2026-11-23T21:00:00-03:00' })).festa;
+  assert.equal(segunda.dia, 'seg');
+  assert.equal(require('../nucleo/catalogo').linhaDaFesta(segunda), 'Seg · 21h00');
+  // No /2, a 0h30 também é da noite anterior (a conta do motor).
+  const madrugada = R.converterRegistro(r14({ data: '2026-11-21', inicio: '2026-11-21T00:30:00-03:00' })).festa;
+  assert.deepEqual([madrugada.dia, madrugada.data, madrugada.inicio], ['sex', '2026-11-20', 24.5]);
+  // Início às 7h da manhã continua fora do dia da noite.
+  assert.equal(R.converterRegistro(r14({ inicio: '2026-11-20T07:00:00-03:00' })).festa.inicio, 7);
+  assert.equal(R.converterRegistro(r14({ inicio: '2026-11-21T07:00:00-03:00' })).motivo, 'início fora do dia');
 });
 
 // ---------------------------------------------------------------- relógio
@@ -182,7 +219,8 @@ test('motor com festa real sem dados: nada do que falta conta contra nem a favor
   // Sem bairro, sem som, sem preço: com o pedido perguntando, vai para "quase" e diz.
   const c = completo({ ...PEDIDO, bairros: ['pinheiros'], estilos: ['house-disco'] });
   const o = motor.escolher(c, [f]).opcoes[0];
-  assert.equal(o.bloco, 'quase');
+  // Sem bairro, a festa fica abaixo das que cabem ("quase" ou, desde a U27, "Local a confirmar").
+  assert.ok(['quase', 'local'].includes(o.bloco), o.bloco);
   assert.equal(o.atende, false);
   assert.deepEqual(o.fora, []);
   assert.deepEqual(o.incertos, ['bairro não informado', 'som não informado']);
@@ -268,7 +306,7 @@ test('servidor sem o arquivo das reais: só fictícias, como antes, sem marca de
   assert.equal(r.corpo.misto, undefined);
 });
 
-test('servidor com reais: real primeiro, exemplos marcados, data real, e a de ontem fora', async () => {
+test('servidor com reais (D11, KTD15): reais em cima; fictícias só no dia sem real, à parte e sem %; a de ontem fora', async () => {
   const arquivo = gravarReais('reais.json', [
     r14(),
     r14({ id: 'passada-1', data: '2026-11-14', inicio: '2026-11-14T22:00:00-03:00' }),
@@ -280,17 +318,25 @@ test('servidor com reais: real primeiro, exemplos marcados, data real, e a de on
   assert.equal(f.corpo.misto, true);
   assert.equal(f.corpo.reais, 2);
   const r = await chamar('POST', '/api/festas', { criterios: PEDIDO });
-  const [primeira, ...resto] = r.corpo.opcoes;
-  assert.equal(primeira.festa.id, 'teste-20261120-aaaa');
+  for (const k of ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base', 'semMedia']) assert.ok(k in r.corpo, k);
+  assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), ['teste-20261120-aaaa']);
+  const [primeira] = r.corpo.opcoes;
   assert.equal(primeira.exemplo, false);
   assert.equal(primeira.data, '2026-11-20');
-  assert.ok(resto.length && resto.every((o) => o.exemplo === true));
-  assert.match(r.corpo.resposta, /completei com exemplos/);
-  // Sábado: a real é da semana seguinte, e a resposta diz a data.
+  // O dia tem real: nenhuma fictícia na tela.
+  assert.deepEqual(r.corpo.exemplos, []);
+  assert.ok(r.corpo.outrosDias.some((d) => d.dia === 'sab' && d.data === '2026-11-21' && d.reais === 0));
+  assert.deepEqual(Object.keys(r.corpo.base).sort(), ['atualizadoEm', 'perfis', 'sites', 'total']);
+  // Sábado desta semana não tem real: só exemplos, marcados e sem %.
   const s = await chamar('POST', '/api/festas', { criterios: { ...PEDIDO, dia: 'sab', janela: 'noite', teto: 'sem-limite' } });
-  assert.equal(s.corpo.opcoes[0].festa.id, 'sab-28');
-  assert.equal(s.corpo.opcoes[0].dataDistante, true);
-  assert.match(s.corpo.resposta, /são de 28 nov|é de 28 nov/);
+  assert.deepEqual(s.corpo.opcoes, []);
+  assert.ok(s.corpo.exemplos.length > 0);
+  assert.ok(s.corpo.exemplos.every((o) => o.exemplo === true && !('pct' in o) && typeof o.data === 'string'));
+  // O sábado da semana que vem tem a real.
+  const p2 = await chamar('POST', '/api/festas', { criterios: { ...PEDIDO, dia: 'sab', janela: 'noite', teto: 'sem-limite' }, semana: 'proxima' });
+  assert.deepEqual(p2.corpo.opcoes.map((o) => o.festa.id), ['sab-28']);
+  assert.equal(p2.corpo.criterios.semana, 'proxima');
+  assert.deepEqual(p2.corpo.exemplos, []);
   // A passada não abre por link: diz que passou.
   const p = await chamar('GET', '/api/festa/passada-1');
   assert.equal(p.status, 404);
@@ -301,7 +347,10 @@ test('servidor com reais: real primeiro, exemplos marcados, data real, e a de on
   assert.equal(a.corpo.opcao.data, '2026-11-20');
   assert.equal(a.corpo.opcao.exemplo, false);
   assert.equal((await chamar('GET', '/api/festa/sexta-sem-pressa')).corpo.opcao.exemplo, true);
-  // A conversa continua funcionando com a mistura.
+  // A conversa continua funcionando com a lista nova, e a semana segue.
+  const c2 = await chamar('POST', '/api/conversa', { criterios: p2.corpo.criterios, texto: 'mais barato', atuais: p2.corpo.opcoes.map((o) => o.festa.id) });
+  assert.equal(c2.status, 200);
+  assert.equal(c2.corpo.criterios.semana, 'proxima');
   const c = await chamar('POST', '/api/conversa', { criterios: r.corpo.criterios, texto: 'mais barato', atuais: r.corpo.opcoes.map((o) => o.festa.id) });
   assert.equal(c.status, 200);
   // Convite de real: grava a data dela; depois que ela passa, abre dizendo que passou.
@@ -459,4 +508,43 @@ test('servidor: a prévia do convite de fictícia diz que é exemplo; a de real,
   const landing = (await chamar('GET', '/')).corpo;
   assert.match(landing, /Protótipo · as festas desta página são fictícias; o app já tem festas reais/);
   assert.doesNotMatch(landing, /__NOTA_PROTOTIPO__/);
+});
+
+// ---------------------------------------------------------------- ferramentas/reais.js
+
+test('ferramentas/reais.js: aceita /2 e /3, recusa /1, grava só as aceitas e copia as imagens delas', () => {
+  const { principal } = require('../ferramentas/reais');
+  const MOTOR = path.join(__dirname, '..', '..', '..', 'motor');
+  const fixture = JSON.parse(fs.readFileSync(path.join(MOTOR, 'teste', 'dados', 'registro-r14-3.json'), 'utf8'));
+  const dir = fs.mkdtempSync(path.join(pasta, 'ferramenta-'));
+  const imgMotor = path.join(dir, 'motor-imagens');
+  fs.mkdirSync(imgMotor);
+  for (const nome of ['0123456789abcdef-480.webp', '0123456789abcdef-1080.webp']) fs.writeFileSync(path.join(imgMotor, nome), 'RIFF....WEBP');
+  const linhas = [];
+  const log = { log: (t) => linhas.push(t), warn: (t) => linhas.push(t), error: (t) => linhas.push(t) };
+  const exportar = (nome, conteudo) => {
+    const c = path.join(dir, nome);
+    fs.writeFileSync(c, JSON.stringify(conteudo));
+    return c;
+  };
+  const destino = path.join(dir, 'app', 'reais.json');
+  const varDir = path.join(dir, 'var');
+  // /3 com uma não festa: entram as três da fixture.
+  const tres = exportar('tres.json', { ...fixture, festas: [...fixture.festas, { ...fixture.festas[1], id: 'nao-festa-1', ehFesta: false }] });
+  assert.equal(principal([tres, destino, '--imagens', imgMotor], { agora: Date.parse('2026-11-26T12:00:00-03:00'), log, varDir }), 0);
+  const gravado = JSON.parse(fs.readFileSync(destino, 'utf8'));
+  assert.equal(gravado.contrato, 'finde-r14/3');
+  assert.deepEqual(gravado.festas.map((f) => f.id), fixture.festas.map((f) => f.id));
+  assert.ok(linhas.some((l) => /funil: 4 no export, 3 entram; fora: 1 não é festa/.test(l)), linhas.join('\n'));
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'app', 'imagens')).sort(), ['0123456789abcdef-1080.webp', '0123456789abcdef-480.webp']);
+  // Sem a festa da imagem, a imagem sai de dados/imagens/.
+  const semImagem = exportar('sem.json', { ...fixture, festas: fixture.festas.slice(1) });
+  assert.equal(principal([semImagem, destino, '--imagens', imgMotor], { log, varDir }), 0);
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'app', 'imagens')), []);
+  // O /2 entra; o /1 não.
+  const dois = exportar('dois.json', { contrato: 'finde-r14/2', festas: [r14()] });
+  assert.equal(principal([dois, destino, '--imagens', imgMotor], { log, varDir }), 0);
+  assert.equal(JSON.parse(fs.readFileSync(destino, 'utf8')).contrato, 'finde-r14/2');
+  const um = exportar('um.json', { contrato: 'finde-r14/1', festas: [r14()] });
+  assert.equal(principal([um, destino, '--imagens', imgMotor], { log, varDir }), 1);
 });

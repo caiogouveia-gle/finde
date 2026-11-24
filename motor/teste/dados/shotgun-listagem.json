@@ -1,0 +1,16 @@
+{
+ "url": "https://shotgun.live/pt-br/cities/sao-paulo",
+ "final": "https://shotgun.live/pt-br/cities/sao-paulo",
+ "status": 200,
+ "titulo": "São Paulo",
+ "texto": "",
+ "jsonld": [],
+ "links": [
+  "https://shotgun.live/pt-br/events/festa-exemplo",
+  "https://shotgun.live/pt-br/events/festa-exemplo-a-25-11",
+  "https://shotgun.live/pt-br/events/festa-exemplo-b-5",
+  "https://shotgun.live/pt-br/events/festa-exemplo-c-santos",
+  "https://shotgun.live/pt-br/venues/produtora-exemplo",
+  "https://shotgun.live/pt-br/cities/rio-de-janeiro"
+ ]
+}
