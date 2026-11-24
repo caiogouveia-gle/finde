@@ -184,6 +184,7 @@
     return el('footer', { class: 'rodape' },
       el('div', { class: 'rodape-linha' },
         el('p', { class: nota.length > 32 ? 'nota nota--longa' : 'nota', texto: nota }),
+        document.body && document.body.dataset.tela === 'opiniao' ? null : el('a', { class: 'rodape-opiniao', href: '/opiniao', texto: 'dar opinião' }),
         botaoTema()));
   }
 

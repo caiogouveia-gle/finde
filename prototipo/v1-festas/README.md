@@ -107,6 +107,18 @@ Em `/app` (no ar, na raiz de finde-app.fly.dev). A boas-vindas saiu: quem chega 
 
 **Por que confirmação e não votação.** No v0 o grupo votava entre três opções. No v1 a comparação já acontece no app, com o filtro e a conversa; o que o grupo faz no vídeo é topar ou não ("Achei essa, bora?", "Tô dentro."). Por isso o convite leva uma festa só e pede confirmação. Quem manda pode deixar o nome e já entra como "tô dentro".
 
+## Os números da validação
+
+Cada site (a landing e o app) guarda os seus no próprio volume: `validacao-uso.jsonl`, `validacao-opinioes.json`, `validacao-lista.json` e o sal, todos 0600. O painel junta os dois e o motor:
+
+```bash
+set -a; . ~/.config/finde/segredos.env; set +a
+node ferramentas/numeros.js
+node ferramentas/numeros.js --lista ~/Documents/ChatGPT/Finde/lista.csv
+```
+
+Os dois sites precisam do mesmo `FINDE_ADMIN_TOKEN` nos segredos do Fly. A lista em CSV só grava fora do repositório.
+
 ## O motor
 
 `nucleo/motor.js` é puro e determinístico. Filtros duros: dia, janela de horário, hora de voltar (quando a pessoa diz "volto até as 23h"), teto de preço, estilos recusados e bairro longe dos marcados. A faixa de idade do formulário (`idade: { min, max }`) não tira festa: ordena, e quem fica fora vai para o bloco da faixa. Os bairros (`bairros`, vazio é São Paulo inteira) entram em camadas: os marcados primeiro, depois os vizinhos (mesma região ou até 12 min de carro). Cada opção sai com `bloco` (`pedido`, `perto`, `quase` ou `faixa`), nessa ordem. Sem `idade`, vale a faixa fixa de antes (`faixa`), que a conversa ainda usa; "mais velha" troca o intervalo pela faixa seguinte. A janela tem tolerância declarada: o esquenta da festa pode cair até 1 h antes do início da janela e até 1 h antes do fim, e a festa precisa durar 2 h depois que a pessoa chega.
@@ -167,6 +179,11 @@ Da landing desenhada: a seção de depoimentos (até haver falas reais aprovadas
 - `GET /api/festa/<id>/agenda.ics` e `GET /p/<id>/agenda.ics` → "Pôr na agenda" (`text/calendar; charset=utf-8`, como anexo); o do convite leva o link dele. Festa sem fim acaba às 6h; sem início, vira o dia inteiro.
 - `POST /api/planos/:id/avaliacao` `{ nome, aparelho, resposta: "mais-novo" | "na-medida" | "mais-velho", idade }` → 201 `{ conta: true, avaliacoes: { total, convites } }`; 409 antes da festa ou repetida; 403 para quem não disse "tô dentro"; 400 sem idade.
 - `GET /api/reais/estado` (Bearer `FINDE_ADMIN_TOKEN`) → de onde vem a base viva.
+- `POST /api/uso` `{ evento, aparelho }` → 204. A contagem sem nome (`nucleo/validacao.js`, `publico/medir.js`): a página aberta (`abriu-landing`, `abriu-app`, `abriu-convite`, `abriu-opiniao`) e os passos (`lista`, `detalhe`, `ingresso`, `link-fora`, `mandar`, `convite`, `whatsapp`, `convite-resposta`, `landing-app`). Guarda o evento e um HMAC do id do navegador; nada de IP, nome ou cookie.
+- `POST /api/opiniao` `{ nota: 0..10, texto?, aparelho, de }` → `{ ok }`. Vale a última nota de cada aparelho. A página é `/opiniao` (no app; na landing, 302 para lá).
+- `POST /api/lista` `{ email, de, site, sair? }` → `{ ok, ja }` ou `{ ok, saiu }`. `site` é a isca: preenchido, some calado. A lista não guarda o aparelho, para o e-mail não se ligar à nota nem ao uso. Sem JavaScript, o formulário da landing posta como formulário comum e volta para `/?lista=ok|saiu|erro|espera#lista`.
+- Os três POSTs recusam pedido de outro site (`Sec-Fetch-Site: cross-site` ou `Origin` de fora: 403) e corpo que não é JSON (415; o formulário sem JavaScript é a exceção). Limites: 600 eventos de uso por minuto por IP; opinião e lista, 60 por IP e 6 por pessoa (IP mais aparelho ou e-mail) a cada dez minutos. Corte vai para o log. Tudo isso sai no expurgo do D15 (`ferramentas/expurgar.js`, nos dois apps).
+- `GET /api/numeros` e `GET /api/numeros/lista.csv` (Bearer `FINDE_ADMIN_TOKEN`) → o resumo do site (pessoas, passos, por dia, a nota e os comentários, o tamanho da lista) e os e-mails.
 - `GET /imagens/<sha16>-(480|1080).webp` → o flyer (ver "Imagens e buscador").
 - `GET /robots.txt` (só o app).
 - `POST /api/conversa` `{ criterios, texto, atuais: [ids] }` → o mesmo, mais `entendeu`, `entraram`, `sairam`.

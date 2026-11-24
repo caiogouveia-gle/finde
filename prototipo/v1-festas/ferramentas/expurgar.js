@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 'use strict';
-// O expurgo do lado do app (D15, 31/12/2026): apaga do volume as avaliações e
-// o sal delas, o cache das imagens das festas reais e o cache da lista real.
+// O expurgo do lado do app e da landing (D15, 31/12/2026): apaga do volume as
+// avaliações e o sal delas, os dados de validação (uso, opiniões, lista de
+// e-mails e o sal), o cache das imagens das festas reais e o da lista real.
+// Rode nos dois apps do Fly (finde-app e finde).
 // Com --reserva, apaga também a reserva que o servidor lê quando o motor está
 // fora (dados/reais.json e dados/imagens/), que mora fora do git no Mac.
 //
@@ -22,9 +24,10 @@ const path = require('node:path');
 
 const RAIZ = path.join(__dirname, '..');
 // O que mora no volume do app (FINDE_VAR) e sai no expurgo.
-const DO_VOLUME = ['avaliacoes.json', 'avaliacoes-sal', 'imagens', 'reais-cache.json'];
+// Também os dados de validação (nucleo/validacao.js), no app e na landing.
+const DO_VOLUME = ['avaliacoes.json', 'avaliacoes-sal', 'imagens', 'reais-cache.json', ...require('../nucleo/validacao').ARQUIVOS];
 // Restos de gravação (tmp e rename) dos mesmos arquivos.
-const RESTO = /^(avaliacoes\.json|reais-cache\.json)\..+\.tmp$/;
+const RESTO = /^(avaliacoes\.json|reais-cache\.json|validacao-[a-z]+\.json|validacao-sal)\..+\.tmp$/;
 
 // expurgar({ varDir, reserva, raiz, simular }) -> { apagados: [caminho], simulado }
 function expurgar({ varDir, reserva = false, raiz = RAIZ, simular = false } = {}) {

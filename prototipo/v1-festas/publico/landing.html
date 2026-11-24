@@ -21,6 +21,7 @@
   <link rel="preload" href="/uso-sofa.jpg" as="image">
   <link rel="stylesheet" href="/landing.css">
   <script src="/landing.js"></script>
+  <script src="/medir.js" data-pagina="landing" defer></script>
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
@@ -34,7 +35,7 @@
       <nav class="menu-nav" aria-label="Seções">
         <a class="menu-item" href="#demo">Demo</a>
         <a class="menu-item" href="#como">Como funciona</a>
-        <a class="menu-item" href="#instagram">Instagram</a>
+        <a class="menu-item" href="#instagram">Novidades</a>
         <a class="botao botao--topo" href="__URL_APP__">Abrir o app <span class="avanco" aria-hidden="true">››</span></a>
         <button class="menu-botao" id="menu-botao" type="button" aria-expanded="false" aria-controls="menu-movel" aria-label="Abrir o menu"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" focusable="false"><path d="M3 7h16M3 15h16"/></svg></button>
       </nav>
@@ -42,7 +43,7 @@
     <nav class="menu-movel" id="menu-movel" aria-label="Seções" hidden>
       <a href="#demo">Demo</a>
       <a href="#como">Como funciona</a>
-      <a href="#instagram">Instagram</a>
+      <a href="#instagram">Novidades</a>
     </nav>
   </header>
 
@@ -55,7 +56,7 @@
           <p class="hero-lead">Antes de sair de casa, você vê a que horas cada festa começa e, quando a produtora divulga, a que horas enche e acaba e a idade média de quem vai. Achou a sua, manda pro grupo.</p>
           <div class="hero-acoes">
             <a class="botao" href="__URL_APP__">Achar a minha festa <span class="avanco" aria-hidden="true">››</span></a>
-            <a class="link-fio" href="#instagram">ou siga @heyfinde <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+            <a class="link-fio" href="#rede">ou siga @heyfinde <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
           </div>
         </div>
       </div>
@@ -108,18 +109,30 @@
     </section>
 
     <section class="final" id="instagram" aria-labelledby="instagram-titulo">
-      <div class="faixa final-corrida"><div class="corrida corrida--clara"><span>Manifesto · Instagram</span><span>p. 4</span></div></div>
+      <div class="faixa final-corrida"><div class="corrida corrida--clara"><span>Manifesto · Novidades</span><span>p. 4</span></div></div>
       <div class="faixa final-dentro">
         <div class="manifesto">
           <p class="manifesto-assinatura" lang="en">still going out.<br><span>just differently.</span></p>
           <p class="manifesto-texto">Sair continua no plano. Virar a noite, nem tanto.</p>
         </div>
         <div class="insta">
-          <p class="rotulo">Instagram</p>
-          <h2 id="instagram-titulo">Nos siga e fique ligado nos próximos passos</h2>
-          <a class="insta-arroba" href="https://www.instagram.com/heyfinde/" target="_blank" rel="noopener">@heyfinde</a>
-          <p class="insta-texto">Lançamento, primeiras festas e os bastidores do app.</p>
-          <a class="botao botao--noite" href="https://www.instagram.com/heyfinde/" target="_blank" rel="noopener">Seguir @heyfinde <span class="avanco" aria-hidden="true">››</span></a>
+          <p class="rotulo">Lista</p>
+          <h2 id="instagram-titulo">Quer ficar por dentro?</h2>
+          <p class="insta-texto">Deixe o e-mail e receba as novidades do finde antes de todo mundo.</p>
+          <form class="lista" id="lista" action="/api/lista" method="post" novalidate>
+            <label class="rotulo lista-rotulo" for="lista-email">Seu e-mail</label>
+            <input class="lista-campo" id="lista-email" type="email" name="email" placeholder="seu@email.com" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="lista-finalidade">
+            <input class="isca" type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <input type="hidden" name="sair" value="0">
+            <p class="lista-status" id="lista-status" role="status" aria-live="polite"></p>
+            <button class="botao botao--noite" type="submit"><span class="lista-acao">Quero receber</span> <span class="avanco" aria-hidden="true">››</span></button>
+            <p class="lista-finalidade" id="lista-finalidade">Só para mandar as novidades do finde. Fica guardado até 31/12/2026, e você sai quando quiser. <button class="lista-sair" type="button">Sair da lista</button></p>
+          </form>
+          <div class="insta-rede" id="rede">
+            <p class="rotulo">Instagram</p>
+            <a class="insta-arroba" href="https://www.instagram.com/heyfinde/" target="_blank" rel="noopener">@heyfinde</a>
+            <a class="link-fio link-fio--noite" href="https://www.instagram.com/heyfinde/" target="_blank" rel="noopener">Seguir e ver os bastidores <svg class="seta" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true" focusable="false"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+          </div>
         </div>
       </div>
     </section>
@@ -131,7 +144,7 @@
       <nav class="rodape-nav" aria-label="Rodapé">
         <a href="#demo">Demo</a>
         <a href="#como">Como funciona</a>
-        <a href="#instagram">Instagram</a>
+        <a href="#instagram">Novidades</a>
         <a class="rodape-app" href="__URL_APP__">Abrir o app</a>
       </nav>
       <p class="rodape-nota">__NOTA_PROTOTIPO__</p>

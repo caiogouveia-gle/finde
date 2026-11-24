@@ -12,6 +12,7 @@
     el, titulo, chamar, site, marca, rodape, definirNota, marcaExemplo, reduzir, hora, anunciar, manterVisivel,
     linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, avanco, acaoC, painelConvite, mov: M,
   } = window.Finde;
+  const contar = (evento) => { if (window.FindeMedir) window.FindeMedir.contar(evento); };
   const FT = window.FindeTexto;
   const $tela = document.getElementById('tela');
 
@@ -1047,6 +1048,7 @@
       history.back();
       return;
     }
+    contar('lista');
     ir('resultado', { substituir });
   }
 
@@ -1693,6 +1695,13 @@
     const aviso = avisoCru && todas.length > deCima && deCima > 1 && /^(Uma cabe|Duas cabem) no pedido;/.test(avisoCru)
       ? `Das ${NUMERAL[deCima].toLocaleLowerCase('pt-BR')} de cima, ${avisoCru[0].toLocaleLowerCase('pt-BR')}${avisoCru.slice(1)}` : avisoCru;
 
+    // A pergunta de opinião no fim; com ela à vista, o rodapé não repete a porta.
+    const oferta2 = ofertaDeOpiniao();
+    const fim = rodape();
+    if (oferta2) {
+      const porta = fim.querySelector('.rodape-opiniao');
+      if (porta) porta.remove();
+    }
     return el('div', { class: 'tela-resultado tela-guia', id: 'tela-resultado' },
       el('header', { class: 'guia-cabeca', id: 'guia-cabeca' },
         topo(irAjuste),
@@ -1713,7 +1722,20 @@
         form,
         el('p', { class: 'aviso-erro', id: 'erro', role: 'alert' }),
         el('div', { class: 'acoes' }, botaoRecomecar())),
-      rodape());
+      oferta2,
+      fim);
+  }
+
+  // Depois de abrir ao menos uma festa, uma pergunta no fim da lista: a nota
+  // de 0 a 10 (opiniao.js). Some depois de respondida ou de "Agora não".
+  function ofertaDeOpiniao() {
+    const O = window.FindeOpiniao;
+    let explorou = false;
+    try {
+      explorou = localStorage.getItem('finde.explorou') === '1';
+    } catch { /* tudo bem */ }
+    if (!O || !explorou || !O.deveOferecer()) return null;
+    return el('section', { class: 'opiniao-oferta' }, O.formulario({ de: 'app', compacto: true }));
   }
 
   function atalhos() {
@@ -2002,6 +2024,10 @@
   }
 
   function abrirFesta(o, de = 'linha') {
+    contar('detalhe');
+    try {
+      localStorage.setItem('finde.explorou', '1');
+    } catch { /* tudo bem */ }
     estado.festa = o;
     estado.abertaDe = de;
     ir('festa');
@@ -2340,6 +2366,7 @@
     const velho = FT.precoVelho(f);
     const mandar = el('button', { type: 'button', class: 'botao barra-mandar' }, 'Mandar pro grupo', avanco());
     mandar.addEventListener('click', () => {
+      contar('mandar');
       estado.mandar = o;
       ir('mandar');
     });
@@ -2463,6 +2490,7 @@
         return;
       }
       guardar(autor, r.dados.id);
+      contar('convite');
       estado.convites[o.festa.id] = { id: r.dados.id, url: new URL(r.dados.url, window.location.origin).href, autor, data: r.dados.data };
       // Voltou no meio: o convite fica guardado (o mesmo link reabre), mas a
       // tela em que a pessoa está não muda.
@@ -2626,6 +2654,11 @@
   // O detalhe de uma festa, sem pedido (contrato: GET /api/festa/<id>).
   // "Voltar" leva à landing; "Mandar pro grupo" continua valendo.
   async function abrirAvulsa(id) {
+    // Link direto (a demo da landing, um link copiado) também é detalhe aberto.
+    contar('detalhe');
+    try {
+      localStorage.setItem('finde.explorou', '1');
+    } catch { /* tudo bem */ }
     estado.tela = 'carregando-festa';
     $tela.replaceChildren(el('div', { class: 'tela-pergunta tela-carregando' },
       topo(null), el('p', { class: 'carregando', role: 'status', texto: 'Abrindo a festa…' }), rodape()));

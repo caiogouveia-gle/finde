@@ -411,6 +411,7 @@
     let r;
     try {
       r = await chamar(`/api/planos/${encodeURIComponent(id)}/respostas`, { nome, resposta, confirmar: confirmar || Boolean(jaEra) });
+      if (r && r.ok && window.FindeMedir) window.FindeMedir.contar('convite-resposta');
     } catch {
       r = null;
     }

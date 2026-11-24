@@ -15,6 +15,80 @@
   const semMovimento = () => typeof window === 'undefined' || typeof window.matchMedia !== 'function'
     || !window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
+  // ---------------------------------------------------------------- lista
+
+  // "Quer ficar por dentro?": o e-mail vai para /api/lista (nucleo/validacao.js).
+  // Sem JavaScript, o formulário posta direto e o servidor volta para cá.
+  function ligarLista() {
+    const form = document.getElementById('lista');
+    if (!form || form.dataset.ligado) return;
+    form.dataset.ligado = '1';
+    const status = document.getElementById('lista-status');
+    const campo = form.querySelector('input[name="email"]');
+    const isca = form.querySelector('input[name="site"]');
+    const sair = form.querySelector('input[name="sair"]');
+    const botao = form.querySelector('button[type="submit"]');
+    const acao = form.querySelector('.lista-acao');
+    const trocaSair = form.querySelector('.lista-sair');
+    const FRASES = {
+      ok: 'Pronto. Você recebe as novidades antes de todo mundo.',
+      ja: 'Esse e-mail já estava na lista.',
+      saiu: 'Pronto, esse e-mail saiu da lista.',
+      erro: 'Esse e-mail não parece certo. Confere?',
+      espera: 'Muitos pedidos daqui. Tente daqui a pouco.',
+    };
+    const dizer = (texto, { errado = false } = {}) => {
+      status.textContent = texto;
+      status.setAttribute('role', errado ? 'alert' : 'status');
+      if (errado) campo.setAttribute('aria-invalid', 'true');
+      else campo.removeAttribute('aria-invalid');
+    };
+    if (trocaSair) {
+      trocaSair.addEventListener('click', () => {
+        const saindo = sair.value !== '1';
+        sair.value = saindo ? '1' : '0';
+        acao.textContent = saindo ? 'Tirar meu e-mail' : 'Quero receber';
+        trocaSair.textContent = saindo ? 'Voltar' : 'Sair da lista';
+        campo.focus();
+      });
+    }
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = campo.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        dizer(FRASES.erro, { errado: true });
+        campo.focus();
+        return;
+      }
+      botao.disabled = true;
+      dizer('');
+      let r = null;
+      try {
+        const resp = await fetch('/api/lista', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, de: 'landing', site: isca ? isca.value : '', sair: sair.value === '1' }) });
+        r = { ok: resp.ok, status: resp.status, dados: await resp.json().catch(() => null) };
+      } catch {
+        r = null;
+      }
+      botao.disabled = false;
+      if (!r || !r.ok) {
+        dizer(r && r.status === 429 ? FRASES.espera : (r && r.dados && r.dados.erro) || 'A internet sumiu no meio. Tente de novo.', { errado: true });
+        return;
+      }
+      form.classList.add('feita');
+      dizer(r.dados && r.dados.saiu ? FRASES.saiu : r.dados && r.dados.ja ? FRASES.ja : FRASES.ok);
+    });
+    // Sem JavaScript, o servidor volta para cá com o resultado no endereço.
+    const volta = new URLSearchParams(window.location.search).get('lista');
+    if (volta && FRASES[volta]) {
+      if (volta === 'ok' || volta === 'saiu') form.classList.add('feita');
+      dizer(FRASES[volta], { errado: volta === 'erro' || volta === 'espera' });
+    }
+  }
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligarLista);
+    else ligarLista();
+  }
+
   // ---------------------------------------------------------------- demo
 
   // Três telas num trilho: a lista, a festa e o convite no grupo. Os passos à

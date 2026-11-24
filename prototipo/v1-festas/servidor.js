@@ -15,6 +15,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const zlib = require('node:zlib');
+const crypto = require('node:crypto');
 
 const C = require('./nucleo/catalogo');
 const motor = require('./nucleo/motor');
@@ -29,6 +30,7 @@ const FT = require('./publico/festa-texto');
 // plano de 24/11/2026) moram em nucleo/; aqui, só a ligação.
 const { criarFonteMotor } = require('./nucleo/fonte-motor');
 const { criarAvaliacoes } = require('./nucleo/avaliacoes');
+const { criarValidacao, criarLimite } = require('./nucleo/validacao');
 const A = require('./nucleo/rotas-app');
 const { cara: caraDe } = require('./nucleo/cara');
 
@@ -1114,6 +1116,107 @@ function montarServidor({
     json(res, status, resposta);
   }
 
+  // Os dados de validação (nucleo/validacao.js): cada site no próprio volume.
+  const validacao = criarValidacao({ dir: path.resolve(varDir), site: temApp ? 'app' : 'landing', agora: agoraIso, log });
+  // Limites por IP, largos (uma turma inteira atrás do mesmo Wi-Fi passa), e
+  // por pessoa (IP + aparelho ou e-mail), estreitos. Corte vai para o log.
+  const DEZ_MIN = 10 * 60 * 1000;
+  const limites = {
+    uso: criarLimite({ max: 600, janelaMs: 60 * 1000, agoraMs: relogio }),
+    ip: criarLimite({ max: 60, janelaMs: DEZ_MIN, agoraMs: relogio }),
+    pessoa: criarLimite({ max: 6, janelaMs: DEZ_MIN, agoraMs: relogio }),
+  };
+  let ultimoAvisoDeLimite = 0;
+  const cortou = (qual) => {
+    if (relogio() - ultimoAvisoDeLimite > 60 * 1000) log.warn(`[finde] validação: limite de ${qual} cortou pedidos`);
+    ultimoAvisoDeLimite = relogio();
+    return false;
+  };
+  const ipDe = (req) => String(req.headers['fly-client-ip'] || req.socket.remoteAddress || '');
+  const passa = (req, quem) => (limites.ip(ipDe(req)) || cortou('IP')) && (limites.pessoa(`${ipDe(req)}|${quem}`) || cortou('pessoa'));
+  // Só a própria página posta aqui: pedido de outro site (Sec-Fetch-Site ou
+  // Origin de fora) não entra, para ninguém inscrever e-mail alheio de longe.
+  const deOutroSite = (req) => {
+    if (req.headers['sec-fetch-site'] === 'cross-site') return true;
+    const o = req.headers.origin;
+    if (!o || o === 'null') return Boolean(o);
+    try {
+      return new URL(o).host !== req.headers.host;
+    } catch {
+      return true;
+    }
+  };
+  const ehJson = (req) => /^application\/json\b/i.test(String(req.headers['content-type'] || ''));
+  const adminConfere = (req) => {
+    const m = String(req.headers.authorization || '').match(/^Bearer\s+(\S+)$/);
+    if (!m || typeof adminToken !== 'string' || !adminToken) return false;
+    const x = crypto.createHash('sha256').update(m[1]).digest();
+    const y = crypto.createHash('sha256').update(adminToken).digest();
+    return crypto.timingSafeEqual(x, y);
+  };
+  // O corpo do formulário comum (sem JavaScript), até 4 KB.
+  const lerFormulario = (req) => new Promise((ok, falha) => {
+    let t = '';
+    req.setEncoding('utf8');
+    req.on('data', (p) => {
+      t += p;
+      if (t.length > 4096) {
+        req.removeAllListeners('data');
+        req.resume();
+        falha(new ErroPlano(413, 'O pedido veio grande demais.'));
+      }
+    });
+    req.on('end', () => ok(t));
+    req.on('error', falha);
+  });
+  async function rotaDaValidacao(req, res, pathname) {
+    const rota = `${req.method} ${pathname}`;
+    const posta = ['POST /api/uso', 'POST /api/opiniao', 'POST /api/lista'].includes(rota);
+    if (posta && deOutroSite(req)) return erro(res, 403, 'Pedido de outro site.'), true;
+    const formulario = rota === 'POST /api/lista' && /^application\/x-www-form-urlencoded\b/i.test(String(req.headers['content-type'] || ''));
+    if (posta && !formulario && !ehJson(req)) return erro(res, 415, 'O corpo precisa ser JSON.'), true;
+    if (rota === 'POST /api/uso') {
+      const corpo = await lerCorpo(req);
+      if (limites.uso(ipDe(req)) || cortou('uso')) validacao.evento(corpo);
+      res.writeHead(204, { ...cabecalhosDe(res), 'Cache-Control': 'no-store' });
+      res.end();
+      return true;
+    }
+    if (rota === 'POST /api/opiniao') {
+      const corpo = await lerCorpo(req);
+      if (!passa(req, `a:${corpo.aparelho}`)) return erro(res, 429, 'Muitas respostas daqui. Tente daqui a pouco.'), true;
+      const r = validacao.opiniao(corpo);
+      return (r.ok ? json(res, 200, { ok: true }) : erro(res, 400, r.erro)), true;
+    }
+    if (rota === 'POST /api/lista') {
+      // Sem JavaScript, o formulário da landing posta como formulário comum:
+      // grava e volta para a seção, com o resultado no endereço.
+      if (formulario) {
+        const campos = Object.fromEntries(new URLSearchParams(await lerFormulario(req)));
+        const sair = campos.sair === '1';
+        if (!passa(req, `e:${String(campos.email || '').trim().toLowerCase()}`)) return redirecionar(res, 303, '/?lista=espera#lista'), true;
+        const r = validacao.inscrever({ email: campos.email, site: campos.site, sair, de: temApp ? 'app' : 'landing' });
+        return redirecionar(res, 303, `/?lista=${r.ok ? (sair ? 'saiu' : 'ok') : 'erro'}#lista`), true;
+      }
+      const corpo = await lerCorpo(req);
+      if (!passa(req, `e:${String(corpo.email || '').trim().toLowerCase()}`)) return erro(res, 429, 'Muitos pedidos daqui. Tente daqui a pouco.'), true;
+      const r = validacao.inscrever(corpo);
+      return (r.ok ? json(res, 200, r.saiu ? { ok: true, saiu: true } : { ok: true, ja: r.ja }) : erro(res, 400, r.erro)), true;
+    }
+    if (rota === 'GET /api/numeros' || rota === 'GET /api/numeros/lista.csv') {
+      if (!adminConfere(req)) return erro(res, 401, 'Precisa do token de admin.'), true;
+      if (pathname.endsWith('.csv')) {
+        enviarCorpo(req, res, 200, { 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'no-store' }, Buffer.from(validacao.listaCsv(), 'utf8'));
+        return true;
+      }
+      return json(res, 200, validacao.numeros()), true;
+    }
+    if (['/api/uso', '/api/opiniao', '/api/lista', '/api/numeros', '/api/numeros/lista.csv'].includes(pathname)) {
+      return erro(res, 405, 'Esse caminho não aceita esse método.'), true;
+    }
+    return false;
+  }
+
   // As rotas novas do app (nucleo/rotas-app.js): estado da base, agenda,
   // avaliação e imagens.
   const rotaDoApp = temApp ? A.ligarRotasApp({
@@ -1153,6 +1256,7 @@ function montarServidor({
         await fonteMotor.pronta();
         fonteMotor.atualizar().catch(() => {});
       }
+      if (pathname.startsWith('/api/') && await rotaDaValidacao(req, res, pathname)) return undefined;
       if (rotaDoApp && rotaDoApp(req, res, endereco)) return undefined;
       if (pathname.startsWith('/api/')) {
         // A landing sozinha não tem API: festas, conversa e convites moram no app.
@@ -1178,6 +1282,11 @@ function montarServidor({
         return redirecionar(res, 301, `${new URL(sites.urlApp).origin}/p/${recodificar(convite[1])}${search}`);
       }
       if (pathname === '/fora.html' && temApp) return pagina(req, res, 'fora.html');
+      // A opinião mora no app; na landing sozinha, o link leva para lá.
+      if (pathname === '/opiniao' || pathname === '/opiniao/') {
+        if (temApp) return pagina(req, res, 'opiniao.html', { titulo: 'Sua opinião · finde.' });
+        return redirecionar(res, 302, `${new URL(sites.urlApp).origin}/opiniao${search}`);
+      }
       if (temLanding && ehCaminhoDePagina(pathname)) return naoAchei(req, res);
       return estatico(req, res, pathname, podeServir);
     } catch (e) {

@@ -547,8 +547,9 @@ test('rodapé: a nota do protótipo e um seletor de tema que diz que é tema', (
   assert.match(r.textContent, /^Protótipo · festas fictícias/);
   // De dia, "noite às 18h" sozinho, no detalhe de uma festa que começa às 18h,
   // se lia como o horário dela.
-  assert.equal(r.textContent, 'Protótipo · festas fictícias' + 'modo noite às 18h · ver agora');
-  const rotulo = (tema, pelaHora) => comumComDom({ tema, pelaHora }).rodape().filhos[0].filhos[1].textContent;
+  // No meio, o link da opinião sobre o protótipo (24/11/2026).
+  assert.equal(r.textContent, 'Protótipo · festas fictícias' + 'dar opinião' + 'modo noite às 18h · ver agora');
+  const rotulo = (tema, pelaHora) => comumComDom({ tema, pelaHora }).rodape().filhos[0].filhos[2].textContent;
   assert.equal(rotulo('dia', 'dia'), 'modo noite às 18h · ver agora');
   assert.equal(rotulo('noite', 'noite'), 'ver de dia');
   assert.equal(rotulo('noite', 'dia'), 'voltar pro dia');

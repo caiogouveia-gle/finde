@@ -561,7 +561,7 @@ a.marca:hover { color: var(--bordo); }
 .final-corrida { padding-top: 40px; }
 .final-dentro {
   display: grid; grid-template-columns: minmax(0, 1fr);
-  gap: 64px; align-items: end;
+  gap: 64px; align-items: start;
   padding-top: 96px; padding-bottom: 96px;
 }
 .manifesto-assinatura { font-family: var(--serifa); font-size: clamp(44px, 5.4vw, 76px); line-height: 1; }
@@ -574,6 +574,32 @@ a.marca:hover { color: var(--bordo); }
 .insta-arroba { font-family: var(--serifa); font-size: clamp(44px, 5vw, 72px); line-height: 1; color: var(--nude); text-decoration: none; }
 .insta-arroba:hover { color: var(--sobre-bordo); }
 .insta-texto { font-size: 18px; line-height: 1.6; color: var(--sobre-bordo); }
+/* A lista de e-mails: o campo com fio sobre o bordô e o D do modo noite. */
+.lista { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 20px; width: 100%; max-width: 560px; }
+.lista-campo {
+  flex: 1 1 240px; min-width: 0; height: 52px; padding: 0;
+  border: 0; border-bottom: .5px solid var(--rose); border-radius: 0;
+  background: transparent; color: var(--nude);
+  font-family: var(--sans); font-size: 18px;
+}
+.lista-campo::placeholder { color: var(--rose); opacity: 1; }
+.lista-campo:focus { outline: none; border-bottom: 1.5px solid var(--nude); }
+.lista .botao { flex: none; }
+.lista-finalidade { flex-basis: 100%; font-size: 14px; line-height: 1.5; color: var(--sobre-bordo); }
+.lista-rotulo { flex-basis: 100%; margin-bottom: -12px; color: var(--rose); }
+.lista-campo[aria-invalid="true"] { border-bottom: 1.5px solid var(--nude); }
+.lista-status { flex-basis: 100%; font-size: 16px; line-height: 1.5; color: var(--nude); }
+.lista .botao:disabled { background: transparent; color: var(--sobre-bordo); outline: .5px solid var(--rose); outline-offset: -.5px; cursor: progress; }
+.lista-sair { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 4px; text-decoration-color: var(--rose); }
+.lista-sair:hover { color: var(--nude); }
+.lista-status:empty { display: none; }
+.lista.feita .lista-campo, .lista.feita .botao, .lista.feita .lista-finalidade, .lista.feita .lista-rotulo { display: none; }
+.isca { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.insta-rede { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; margin-top: 20px; padding-top: 28px; border-top: .5px solid var(--rose); }
+.insta-rede .insta-arroba { font-size: 32px; }
+.link-fio--noite { color: var(--nude); border-bottom-color: var(--rose); }
+.link-fio--noite:hover { color: var(--sobre-bordo); }
+@media (max-width: 560px) { .lista .botao { width: 100%; } }
 
 /* ------------------------------------------------------------ rodapé */
 

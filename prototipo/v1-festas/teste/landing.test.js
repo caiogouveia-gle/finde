@@ -79,7 +79,7 @@ test('GET / serve a landing do desenho de 23/11: menu, herói com foto, demo, co
   assert.ok(pos.every((p, i) => p > 0 && (i === 0 || p > pos[i - 1])), pos.join(' '));
   // O D do herói é a saída para o protótipo (decisão de 17/11); o C leva ao Instagram.
   assert.match(r.corpo, /<a class="botao" href="\/app">Achar a minha festa <span class="avanco" aria-hidden="true">››<\/span><\/a>/);
-  assert.match(r.corpo, /<a class="link-fio" href="#instagram">ou siga @heyfinde/);
+  assert.match(r.corpo, /<a class="link-fio" href="#rede">ou siga @heyfinde/);
   const hero = trecho(r.corpo, '<section class="hero', '</section>');
   assert.ok(hero.indexOf('class="botao"') < hero.indexOf('class="link-fio"'));
   // A foto de uso sai de publico/, com texto alternativo.
@@ -118,17 +118,32 @@ test('o protótipo tem porta no menu, no herói, no fim da demo e no rodapé; ne
     assert.match(corpo, new RegExp(`<a class="menu-item" href="#${id}">`));
     assert.match(corpo, new RegExp(`<section class="[^"]+" id="${id}"`));
   }
-  // Instagram: o arroba e o D do modo noite, em aba nova.
+  // Instagram: o arroba e o C com fio, em aba nova, abaixo da lista.
   const insta = links(corpo).filter((l) => /instagram\.com/.test(l[1]));
-  assert.deepEqual(insta.map((l) => l[2]), ['@heyfinde', 'Seguir @heyfinde ››']);
+  assert.equal(insta.length, 2);
+  assert.equal(insta[0][2], '@heyfinde');
   assert.ok(insta.every((l) => l[1] === 'https://www.instagram.com/heyfinde/'));
-  assert.match(corpo, /<a class="botao botao--noite" href="https:\/\/www\.instagram\.com\/heyfinde\/" target="_blank" rel="noopener">/);
 });
 
-test('o formulário de e-mail saiu com o desenho novo: nada na página coleta dado', async () => {
+// 24/11/2026: o Caio pediu a lista de e-mails de volta ("quer ficar por
+// dentro?"). Um campo só, com a finalidade escrita ao lado, a isca para robô
+// e o D do modo noite. O e-mail vai a /api/lista e nada mais sai da página.
+test('a lista de e-mails: um campo, a finalidade ao lado, e só /api/lista recebe', async () => {
   const { corpo } = await pagina('/');
-  assert.doesNotMatch(corpo, /<form|<input|<textarea|e-mail/i);
-  assert.doesNotMatch(JS, /fetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|\.submit\(\)/);
+  const form = trecho(corpo, '<form class="lista"', '</form>');
+  assert.ok(form, 'falta o formulário da lista');
+  assert.match(form, /action="\/api\/lista" method="post"/);
+  assert.equal((form.match(/<input /g) || []).length, 3, 'o e-mail, a isca e o "sair"');
+  assert.match(form, /<label class="rotulo lista-rotulo" for="lista-email">Seu e-mail<\/label>/);
+  assert.match(form, /type="email" name="email"/);
+  assert.match(form, /class="isca"[^>]*tabindex="-1"[^>]*aria-hidden="true"/);
+  assert.match(form, /Só para mandar as novidades do finde\. Fica guardado até 31\/12\/2026/);
+  assert.match(form, /<button class="lista-sair" type="button">Sair da lista<\/button>/);
+  assert.match(corpo, /<h2 id="instagram-titulo">Quer ficar por dentro\?<\/h2>/);
+  assert.doesNotMatch(corpo, /<textarea/);
+  const destinos = [...JS.matchAll(/fetch\('([^']+)'/g)].map((m) => m[1]);
+  assert.deepEqual(destinos, ['/api/lista']);
+  assert.doesNotMatch(JS, /XMLHttpRequest|sessionStorage|\.submit\(\)/);
 });
 
 test('o cartão do herói sai do registro de Sexta Sem Pressa: hora primeiro, média com a origem, marcado como exemplo', async () => {

@@ -33,8 +33,10 @@ primary_region = "gru"
   size = "shared-cpu-1x"
   memory = "256mb"
 
-# A máquina já nasceu com este volume e continua com ele. Os convites agora
-# moram no volume do finde-app; a landing não lê nem grava aqui.
+# A máquina já nasceu com este volume e continua com ele. Os convites moram
+# no volume do finde-app; aqui ficam só os dados de validação da landing
+# (nucleo/validacao.js: visitas sem nome e a lista de e-mails). O resumo pede
+# o segredo FINDE_ADMIN_TOKEN, o mesmo do finde-app.
 [mounts]
   source = "finde_convites"
   destination = "/data"
