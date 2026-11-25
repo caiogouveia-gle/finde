@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Painel · finde.</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#EADCD2">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fontes/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/admin.css">
+  <script src="/admin.js" defer></script>
+</head>
+<body>
+  <header class="topo">
+    <p class="marca">finde<span class="ponto">.</span> <span class="marca-sub">painel</span></p>
+    <p class="vivo" id="vivo" hidden><span class="pulso" aria-hidden="true"></span><span id="vivo-texto">ao vivo</span></p>
+    <button class="sair" id="sair" type="button" hidden>Sair</button>
+  </header>
+
+  <main id="conteudo">
+    <form class="entrada" id="entrada" autocomplete="off">
+      <h1>Números do protótipo</h1>
+      <p class="apoio">Entre com o token de admin (o <code>FINDE_ADMIN_TOKEN</code> do cofre). Este aparelho passa a contar como equipe e sai dos números.</p>
+      <label class="rotulo" for="token">Token</label>
+      <input id="token" name="token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+      <label class="lembrar"><input id="lembrar" type="checkbox"> Lembrar neste aparelho</label>
+      <p class="erro" id="erro" role="alert"></p>
+      <button class="botao" type="submit">Entrar</button>
+    </form>
+
+    <div class="painel" id="painel" hidden aria-live="off"></div>
+  </main>
+</body>
+</html>

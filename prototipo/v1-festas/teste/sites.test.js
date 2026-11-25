@@ -485,8 +485,8 @@ test('o cartão do herói e a demo saem da base fictícia e dizem que são exemp
   assert.match(d, /<span class="destaque-nome">Sexta Sem Pressa<\/span>/);
   assert.match(d, /sex, 20 nov · Pinheiros/);
   assert.match(d, /Exemplo · festa fictícia/);
-  // O único link do cartão desce à demo, na mesma página.
-  assert.deepEqual([...d.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), ['#demo']);
+  // O cartão é ilustração: nenhum link (25/11, menos CTAs).
+  assert.deepEqual([...d.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), []);
   assert.match(corpo, /Demo · festas fictícias/);
   assert.match(corpo, /role="group" aria-label="Demonstração do app finde, com festas fictícias"/);
 });

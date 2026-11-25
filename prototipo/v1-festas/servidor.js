@@ -31,6 +31,7 @@ const FT = require('./publico/festa-texto');
 const { criarFonteMotor } = require('./nucleo/fonte-motor');
 const { criarAvaliacoes } = require('./nucleo/avaliacoes');
 const { criarValidacao, criarLimite } = require('./nucleo/validacao');
+const { criarPainel } = require('./nucleo/painel');
 const A = require('./nucleo/rotas-app');
 const { cara: caraDe } = require('./nucleo/cara');
 
@@ -600,8 +601,8 @@ const bairroDe = (f) => (C.BAIRROS[f.bairro] ? C.BAIRROS[f.bairro].nome : '');
 const curtaDe = (f) => f.origemIdadeCurta || '';
 
 // O cartão sobre a foto do herói: a festa do desenho (Sexta Sem Pressa), com
-// a hora primeiro, a média com a origem e a marca de exemplo. "Tô dentro"
-// desce até a demo, onde a mesma festa abre.
+// a hora primeiro, a média com a origem e a marca de exemplo. É ilustração:
+// o único convite para agir no herói é o botão do app (25/11, menos CTAs).
 function htmlDoDestaque(f, agora) {
   if (!f) return '';
   const onde = [rotuloDaData(f, agora), bairroDe(f)].filter(Boolean).join(' · ');
@@ -611,7 +612,6 @@ function htmlDoDestaque(f, agora) {
         <span class="destaque-nome">${escapar(f.nome)}</span>
         <div class="destaque-pe">
           <span class="destaque-media">Média de ${escapar(f.mediaIdade)} anos<small>${escapar(f.origemIdade)}</small></span>
-          <a class="destaque-ir" href="#demo" data-ir-passo="1">Tô dentro</a>
         </div>
         <span class="destaque-exemplo">Exemplo · festa fictícia</span>
       </div>`;
@@ -674,7 +674,6 @@ function htmlDaDemo(base, agora, urlApp) {
             </ul>
             <span class="t-placar" id="placar">3 de 4 dentro</span>
             <span class="t-vao"></span>
-            <a class="t-botao" href="${escapar(urlApp)}">Abrir o app</a>
           </div>
         </div>
       </div>
@@ -1141,6 +1140,22 @@ function montarServidor({
     return false;
   };
   const ipDe = (req) => String(req.headers['fly-client-ip'] || req.socket.remoteAddress || '');
+  // O painel ao vivo (/admin) mora no app: lê os números daqui direto e os da
+  // landing e do motor pela rede, com o mesmo token de admin. Um teto por IP
+  // para token errado, em todas as rotas de admin, segura quem tenta adivinhar;
+  // token certo nunca esbarra nele (a equipe inteira no mesmo Wi-Fi do pitch).
+  limites.admin = criarLimite({ max: 30, janelaMs: 60 * 1000, agoraMs: relogio });
+  const semBarra = (u) => String(u || '').replace(/\/+$/, '');
+  const painel = temApp ? criarPainel({
+    local: () => validacao.numeros(),
+    listaLocal: () => validacao.listaCsv(),
+    // Com tudo junto (desenvolvimento), a landing é este mesmo servidor.
+    urlLanding: temLanding ? null : semBarra(sites.urlSite),
+    urlMotor: motorUrl ? semBarra(motorUrl) : null,
+    token: adminToken,
+    agoraMs: relogio,
+    buscar,
+  }) : null;
   const passa = (req, quem) => (limites.ip(ipDe(req)) || cortou('IP')) && (limites.pessoa(`${ipDe(req)}|${quem}`) || cortou('pessoa'));
   // Só a própria página posta aqui: pedido de outro site (Sec-Fetch-Site ou
   // Origin de fora) não entra, para ninguém inscrever e-mail alheio de longe.
@@ -1211,15 +1226,20 @@ function montarServidor({
       const r = validacao.inscrever(corpo);
       return (r.ok ? json(res, 200, r.saiu ? { ok: true, saiu: true } : { ok: true, ja: r.ja }) : erro(res, 400, r.erro)), true;
     }
+    const deAdmin = (rota === 'GET /api/painel' && painel) || rota === 'GET /api/numeros' || rota === 'GET /api/numeros/lista.csv';
+    if (deAdmin && !adminConfere(req)) {
+      if (!limites.admin(ipDe(req))) return erro(res, 429, 'Muitas tentativas daqui. Espere um minuto.'), true;
+      return erro(res, 401, 'Precisa do token de admin.'), true;
+    }
+    if (rota === 'GET /api/painel' && painel) return json(res, 200, await painel()), true;
     if (rota === 'GET /api/numeros' || rota === 'GET /api/numeros/lista.csv') {
-      if (!adminConfere(req)) return erro(res, 401, 'Precisa do token de admin.'), true;
       if (pathname.endsWith('.csv')) {
         enviarCorpo(req, res, 200, { 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'no-store' }, Buffer.from(validacao.listaCsv(), 'utf8'));
         return true;
       }
       return json(res, 200, validacao.numeros()), true;
     }
-    if (['/api/uso', '/api/opiniao', '/api/lista', '/api/numeros', '/api/numeros/lista.csv'].includes(pathname)) {
+    if (['/api/uso', '/api/opiniao', '/api/lista', '/api/numeros', '/api/numeros/lista.csv', ...(painel ? ['/api/painel'] : [])].includes(pathname)) {
       return erro(res, 405, 'Esse caminho não aceita esse método.'), true;
     }
     return false;
@@ -1290,6 +1310,9 @@ function montarServidor({
         return redirecionar(res, 301, `${new URL(sites.urlApp).origin}/p/${recodificar(convite[1])}${search}`);
       }
       if (pathname === '/fora.html' && temApp) return pagina(req, res, 'fora.html');
+      // O painel ao vivo dos números: a página é pública e vazia; os números
+      // só vêm com o token de admin (GET /api/painel).
+      if ((pathname === '/admin' || pathname === '/admin/') && temApp) return pagina(req, res, 'admin.html', { cabecalhos: { 'X-Robots-Tag': 'noindex, nofollow' } });
       // A opinião mora no app; na landing sozinha, o link leva para lá.
       if (pathname === '/opiniao' || pathname === '/opiniao/') {
         if (temApp) return pagina(req, res, 'opiniao.html', { titulo: 'Sua opinião · finde.' });

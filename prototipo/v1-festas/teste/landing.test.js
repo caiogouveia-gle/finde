@@ -77,11 +77,11 @@ test('GET / serve a landing do desenho de 23/11: menu, herói com foto, demo, co
   const ordem = ['<header class="menu"', '<section class="hero', '<section class="demo', '<section class="como', '<section class="final', '<footer class="rodape"'];
   const pos = ordem.map((s) => r.corpo.indexOf(s));
   assert.ok(pos.every((p, i) => p > 0 && (i === 0 || p > pos[i - 1])), pos.join(' '));
-  // O D do herói é a saída para o protótipo (decisão de 17/11); o C leva ao Instagram.
+  // O D do herói é a saída para o protótipo (decisão de 17/11) e o único
+  // convite para agir ali (25/11: menos CTAs; o Instagram fica no fim).
   assert.match(r.corpo, /<a class="botao" href="\/app">Achar a minha festa <span class="avanco" aria-hidden="true">››<\/span><\/a>/);
-  assert.match(r.corpo, /<a class="link-fio" href="#rede">ou siga @heyfinde/);
   const hero = trecho(r.corpo, '<section class="hero', '</section>');
-  assert.ok(hero.indexOf('class="botao"') < hero.indexOf('class="link-fio"'));
+  assert.deepEqual(links(hero).map((l) => l[0]), ['botao']);
   // A foto de uso sai de publico/, com texto alternativo.
   assert.match(hero, /<img src="\/uso-sofa\.jpg" width="1440" height="1800" alt="[^"]+">/);
   // A assinatura em inglês leva lang="en": o leitor de tela pronuncia certo.
@@ -103,24 +103,21 @@ test('GET / serve a landing do desenho de 23/11: menu, herói com foto, demo, co
 const links = (html) => [...html.matchAll(/<a(?: class="([^"]+)")? href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)]
   .map((m) => [m[1] || '', m[2], m[3].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()]);
 
-test('o protótipo tem porta no menu, no herói, no fim da demo e no rodapé; nenhuma abre uma festa', async () => {
+test('o protótipo tem duas portas, no menu fixo e no herói; nenhuma abre uma festa', async () => {
   const { corpo } = await pagina('/');
   const doApp = links(corpo).filter((l) => l[1] === '/app');
   assert.deepEqual(doApp, [
     ['botao botao--topo', '/app', 'Abrir o app ››'],
     ['botao', '/app', 'Achar a minha festa ››'],
-    ['t-botao', '/app', 'Abrir o app'],
-    ['rodape-app', '/app', 'Abrir o app'],
   ]);
   assert.doesNotMatch(corpo, /\?festa=|\/p\//);
-  // O menu leva às três seções, e elas existem.
-  for (const id of ['demo', 'como', 'instagram']) {
-    assert.match(corpo, new RegExp(`<a class="menu-item" href="#${id}">`));
-    assert.match(corpo, new RegExp(`<section class="[^"]+" id="${id}"`));
-  }
-  // Instagram: o arroba e o C com fio, em aba nova, abaixo da lista.
+  // Menos CTAs (25/11): sem menu de seções, sem navegação repetida no rodapé.
+  assert.doesNotMatch(corpo, /menu-item|menu-botao|menu-movel|rodape-nav|destaque-ir/);
+  // Todos os links da página: a marca, as duas portas, o pular e o Instagram.
+  assert.deepEqual(links(corpo).map((l) => l[0]), ['pular', 'marca', 'botao botao--topo', 'botao', 'insta-arroba']);
+  // Instagram: só o arroba, em aba nova, abaixo da lista.
   const insta = links(corpo).filter((l) => /instagram\.com/.test(l[1]));
-  assert.equal(insta.length, 2);
+  assert.equal(insta.length, 1);
   assert.equal(insta[0][2], '@heyfinde');
   assert.ok(insta.every((l) => l[1] === 'https://www.instagram.com/heyfinde/'));
 });
@@ -154,7 +151,8 @@ test('o cartão do herói sai do registro de Sexta Sem Pressa: hora primeiro, m�
   assert.match(d, /<span class="destaque-hora">18h00<\/span>/);
   assert.match(d, /<span class="destaque-nome">Sexta Sem Pressa<\/span>/);
   assert.match(d, /Média de 32 anos<small>informada pela produtora<\/small>/);
-  assert.match(d, /<a class="destaque-ir" href="#demo" data-ir-passo="1">Tô dentro<\/a>/);
+  // É ilustração: nenhum link no cartão (25/11, menos CTAs).
+  assert.doesNotMatch(d, /<a\s/);
   assert.ok(d.indexOf('destaque-hora') < d.indexOf('destaque-nome'), 'a hora vem antes do nome');
 });
 
@@ -194,9 +192,9 @@ test('no endereço só da landing, as portas levam ao endereço do app e a pági
   const site = await subir({ dados: DADOS, site: 'landing', urlApp: 'https://finde-app.fly.dev/?de=landing&x=1' });
   const r = await pagina('/', site);
   assert.equal(r.status, 200);
-  // O endereço entra escapado para HTML, nas quatro portas, inclusive a da demo.
+  // O endereço entra escapado para HTML, nas duas portas: o menu fixo e o herói.
   const app = 'https://finde-app.fly.dev/?de=landing&amp;x=1';
-  assert.deepEqual(links(r.corpo).filter((l) => l[1] === app).map((l) => l[0]), ['botao botao--topo', 'botao', 't-botao', 'rodape-app']);
+  assert.deepEqual(links(r.corpo).filter((l) => l[1] === app).map((l) => l[0]), ['botao botao--topo', 'botao']);
   assert.doesNotMatch(r.corpo, /__[A-Z_]+__/);
   assert.match(destaqueDe(r.corpo), /Sexta Sem Pressa/);
   // Tudo o que a página e o estilo pedem a este servidor sai daqui, fotos inclusive.

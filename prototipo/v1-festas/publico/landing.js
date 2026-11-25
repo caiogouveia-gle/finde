@@ -1,10 +1,10 @@
 'use strict';
-// A landing: a demo em três toques, o menu e o movimento da página. O resto é
+// A landing: a demo em três toques e o movimento da página. O resto é
 // HTML pronto; os botões do app são links comuns.
 //
 // O script carrega no <head>, sem defer: ele põe .js e .mov na raiz antes da
 // primeira pintura. Com .js, a demo troca de tela pelos passos (sem ele, as
-// telas correm de lado com o dedo) e o menu do celular abre. Só com .mov o
+// telas correm de lado com o dedo). Só com .mov o
 // CSS esconde o que vai entrar. Sem JavaScript, com movimento reduzido ou sem
 // IntersectionObserver, .mov não entra e a página aparece pronta. Se algo
 // falhar no meio, a classe sai.
@@ -135,8 +135,7 @@
   // ---------------------------------------------------------------- demo
 
   // Três telas num trilho: a lista, a festa e o convite no grupo. Os passos à
-  // esquerda, os toques dentro do celular e o "Tô dentro" do cartão do herói
-  // levam à tela de cada um. Na terceira, as respostas chegam uma a uma.
+  // esquerda e os toques dentro do celular levam à tela de cada um. Na terceira, as respostas chegam uma a uma.
   function iniciarDemo() {
     const telas = document.getElementById('telas');
     const demo = document.getElementById('demo');
@@ -189,15 +188,6 @@
     });
     const reinicia = document.getElementById('demo-reinicia');
     if (reinicia) reinicia.addEventListener('click', () => irPara(0));
-    // Do cartão do herói, vai direto ao celular (numa coluna só, ele fica
-    // embaixo dos passos).
-    const aparelho = demo.querySelector('.aparelho');
-    document.querySelectorAll('[data-ir-passo]').forEach((a) => a.addEventListener('click', (e) => {
-      irPara(Number(a.dataset.irPasso));
-      if (!aparelho) return;
-      e.preventDefault();
-      aparelho.scrollIntoView({ block: 'center', behavior: semMovimento() ? 'auto' : 'smooth' });
-    }));
     irPara(0, { anunciar: false });
 
     // O toque que pede o dedo só pulsa quando a demo chega à tela.
@@ -212,43 +202,6 @@
       }, { rootMargin: '0px 0px -20% 0px' });
       io.observe(telas);
     } else acender();
-  }
-
-  // ---------------------------------------------------------------- menu
-
-  // No celular, as seções ficam atrás de um botão. Em toda largura, o item da
-  // seção que está na tela fica marcado.
-  function iniciarMenu() {
-    const botao = document.getElementById('menu-botao');
-    const movel = document.getElementById('menu-movel');
-    if (!botao || !movel) return;
-    const fechar = () => { movel.hidden = true; botao.setAttribute('aria-expanded', 'false'); botao.setAttribute('aria-label', 'Abrir o menu'); };
-    botao.addEventListener('click', () => {
-      const abrir = movel.hidden;
-      movel.hidden = !abrir;
-      botao.setAttribute('aria-expanded', String(abrir));
-      botao.setAttribute('aria-label', abrir ? 'Fechar o menu' : 'Abrir o menu');
-    });
-    movel.addEventListener('click', (e) => { if (e.target.closest('a')) fechar(); });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !movel.hidden) { fechar(); botao.focus(); }
-    });
-
-    if (typeof window.IntersectionObserver !== 'function') return;
-    const itens = [...document.querySelectorAll('.menu-item')];
-    const secoes = itens.map((a) => document.querySelector(a.getAttribute('href'))).filter(Boolean);
-    const io = new IntersectionObserver((es) => {
-      es.forEach((e) => {
-        if (!e.isIntersecting) return;
-        itens.forEach((a) => {
-          const aqui = a.getAttribute('href') === `#${e.target.id}`;
-          a.classList.toggle('ativo', aqui);
-          if (aqui) a.setAttribute('aria-current', 'true');
-          else a.removeAttribute('aria-current');
-        });
-      });
-    }, { rootMargin: '-45% 0px -50% 0px' });
-    secoes.forEach((s) => io.observe(s));
   }
 
   // ---------------------------------------------------------------- movimento
@@ -558,7 +511,6 @@
   const movimento = prepararMovimento();
   const quandoPronto = () => {
     try { iniciarDemo(); } catch (e) { /* a demo fica na primeira tela */ }
-    try { iniciarMenu(); } catch (e) { /* o menu do celular fica fechado */ }
     if (movimento && !movimento.desistiu) {
       try { iniciarMovimento(movimento); } catch (e) { movimento.desistir(); }
     }

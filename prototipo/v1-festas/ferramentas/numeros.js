@@ -12,6 +12,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { emailsUnicos, juntarNps, montarResumo } = require('../nucleo/painel');
 
 const LANDING = process.env.FINDE_URL_LANDING || 'https://finde.fly.dev';
 const APP = process.env.FINDE_URL_APP_PUBLICO || 'https://finde-app.fly.dev';
@@ -96,14 +97,6 @@ function linhaDoNps(o) {
   return `n=${o.respostas}: NPS ${o.nps} · média ${virgula(o.media)} · ${o.promotores} promotores, ${o.neutros} neutros, ${o.detratores} detratores${amostra(o.respostas)}`;
 }
 
-function juntarNps(a, b) {
-  const soma = (k) => (a?.[k] || 0) + (b?.[k] || 0);
-  const n = soma('respostas');
-  if (!n) return null;
-  const media = ((a?.media || 0) * (a?.respostas || 0) + (b?.media || 0) * (b?.respostas || 0)) / n;
-  return { respostas: n, promotores: soma('promotores'), neutros: soma('neutros'), detratores: soma('detratores'), nps: Math.round(((soma('promotores') - soma('detratores')) / n) * 100), media: Math.round(media * 10) / 10 };
-}
-
 async function principal() {
   if (!TOKEN) {
     console.error('Falta o FINDE_ADMIN_TOKEN no ambiente. Rode antes: set -a; . ~/.config/finde/segredos.env; set +a');
@@ -149,31 +142,6 @@ async function principal() {
     return;
   }
   console.log(textoDoPainel(resumo, { festas, agora: new Date() }));
-}
-
-// Os e-mails distintos de vários CSVs (a primeira coluna); null se algum falhou.
-function emailsUnicos(csvs) {
-  if (!csvs.length || csvs.some((c) => typeof c !== 'string')) return null;
-  return new Set(csvs.flatMap((c) => c.trim().split('\n').slice(1).map((l) => l.split(',')[0]).filter(Boolean))).size;
-}
-
-function montarResumo({ landing, app, motor, csvs = [] }) {
-  const festas = Array.isArray(motor?.festas) ? motor.festas : null;
-  return {
-    geradoEm: new Date().toISOString(),
-    motor: festas ? {
-      festas: festas.length,
-      produtoras: new Set(festas.map((f) => f.produtora?.nome || f.produtora).filter(Boolean)).size,
-      comMediaDeIdade: festas.filter((f) => Number.isInteger(f.mediaIdade)).length,
-      atualizadoEm: motor.geradoEm,
-    } : motor,
-    landing,
-    app,
-    nps: juntarNps(landing?.opiniao, app?.opiniao),
-    lista: (landing?.lista?.inscritos || 0) + (app?.lista?.inscritos || 0),
-    listaUnicos: emailsUnicos(csvs),
-    equipeFora: (landing?.equipeFora || 0) + (app?.equipeFora || 0),
-  };
 }
 
 // Uma categoria contada por valor ({ zap: { vezes, pessoas } }) numa linha.
@@ -226,7 +194,8 @@ function secoesDoApp(s, festasDoMotor) {
     p.push(`  Convite: n=${c.criados} criados${amostra(c.criados)}`);
     p.push(`    abertos por quem recebeu: ${c.aberturas} vezes, por ${c.pessoasQueAbriram} pessoas`);
     p.push(`    respostas: ${c.respostas}, de ${c.pessoasQueResponderam} pessoas`);
-    p.push(`    chegaram ao finde pelo convite: ${c.novos} pessoas novas; ${deN(c.novosQueAbriramOApp, c.novos)} abriram o app depois`);
+    p.push(`    chegaram ao finde pelo convite: ${c.novos} pessoas novas`);
+    p.push(`    dessas, abriram o app depois: ${deN(c.novosQueAbriramOApp, c.novos)}`);
   }
   const base = n('lista') || s.pessoas || 0;
   const explora = [['todas', 'viram todas'], ['mapa', 'abriram o mapa'], ['dia', 'trocaram o dia'], ['ajuste', 'pediram ajuste'], ['filtro', 'usaram filtro'], ['agenda', 'puseram na agenda']]

@@ -1,0 +1,141 @@
+/* O painel ao vivo dos números (/admin). Mesma paleta do app, sem enfeite:
+   número grande, rótulo curto, o n sempre ao lado. */
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fontes/dm-sans.woff2') format('woff2');
+  font-style: normal; font-weight: 100 1000; font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fontes/fraunces-italico-300.woff2') format('woff2');
+  font-style: italic; font-weight: 300; font-display: block;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fontes/instrument-serif.woff2') format('woff2');
+  font-style: normal; font-weight: 400; font-display: swap;
+}
+
+:root {
+  --bordo: #4E1222;
+  --rose: #C98F8A;
+  --nude: #EADCD2;
+  --nude-claro: #F3EBE3;
+  --grafite: #2A2426;
+  --rotulo: #8A4A4F;
+  --corrido: #6B3A3F;
+  --fio: #D7BFB4;
+  --barra: #8A4A4F;
+  --verde: #2F6B4F;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--nude);
+  color: var(--grafite);
+  font: 400 15px/1.45 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+[hidden] { display: none !important; }
+code { font-size: .92em; }
+
+.topo {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px max(16px, env(safe-area-inset-left)) 12px;
+  background: var(--nude);
+  border-bottom: 1px solid var(--fio);
+}
+/* A marca é a da landing: Fraunces itálico leve. */
+.marca { margin: 0; font: italic 300 28px/1 'Fraunces', Georgia, serif; font-variation-settings: 'SOFT' 100, 'WONK' 1; color: var(--bordo); }
+.marca .ponto { color: var(--rose); }
+.marca-sub { font: 500 12px/1 'DM Sans', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); margin-left: 6px; }
+.vivo { margin: 0 0 0 auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--corrido); }
+.vivo.parado .pulso { background: var(--fio); animation: none; }
+.vivo.falhou { color: var(--bordo); }
+.pulso { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); animation: pulso 2s ease-in-out infinite; }
+@keyframes pulso { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .pulso { animation: none; } }
+.sair {
+  font: inherit; font-size: 13px; color: var(--bordo);
+  background: none; border: 1px solid var(--fio); padding: 6px 12px; min-height: 36px; cursor: pointer;
+}
+.sair:hover { border-color: var(--bordo); }
+
+main { padding: 20px 16px 64px; max-width: 1120px; margin: 0 auto; }
+
+/* a entrada */
+.entrada { max-width: 420px; margin: 8vh auto 0; display: grid; gap: 10px; }
+.entrada h1 { margin: 0 0 4px; font: 400 36px/1.05 'Instrument Serif', Georgia, serif; color: var(--bordo); }
+.apoio { margin: 0 0 8px; color: var(--corrido); }
+.rotulo { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
+.entrada input[type="password"] {
+  font: inherit; font-size: 16px; padding: 12px; min-height: 48px;
+  border: 1px solid var(--corrido); background: var(--nude-claro); color: var(--grafite);
+}
+.lembrar { display: flex; gap: 8px; align-items: center; color: var(--corrido); font-size: 14px; }
+.erro { margin: 0; min-height: 1.4em; color: var(--bordo); font-size: 14px; }
+.botao {
+  font: 500 15px/1 'DM Sans', sans-serif; min-height: 48px;
+  background: var(--bordo); color: var(--nude-claro); border: 0; cursor: pointer;
+}
+.botao:hover { background: #3b0d19; }
+:focus-visible { outline: 2px solid var(--bordo); outline-offset: 2px; }
+
+/* o painel */
+.painel { display: grid; gap: 28px; }
+/* Fio em cada cartão, sem fundo na grade: célula vazia na última linha some. */
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.kpi { background: var(--nude-claro); padding: 14px 16px 16px; display: grid; grid-template-rows: auto auto 1fr; gap: 4px; align-content: start; box-shadow: 0 0 0 .5px var(--fio); }
+.kpi-rot { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi-rot { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--rotulo); }
+.kpi-num { font: 400 40px/1 'Instrument Serif', Georgia, serif; color: var(--bordo); transition: color .6s; }
+.kpi-num.subiu { color: var(--verde); }
+.kpi-pe { font-size: 13px; color: var(--corrido); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.kpi-pe .pequena { margin-left: 0; }
+
+.secoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 28px 32px; }
+.secao h2 { margin: 0 0 10px; font: 500 12px/1.2 'DM Sans', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); padding-bottom: 8px; border-bottom: 1px solid var(--fio); }
+.secao .vazio { color: var(--corrido); margin: 0; }
+.nota-n { font-size: 12px; color: var(--corrido); }
+.pequena { font-size: 11px; letter-spacing: .04em; color: var(--rotulo); border: 1px solid var(--fio); padding: 1px 6px; margin-left: 6px; white-space: nowrap; }
+
+/* barras: o funil, a origem, o uso */
+.barras { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.barra { display: grid; gap: 4px; }
+.barra-linha { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.barra-valor { white-space: nowrap; color: var(--bordo); font-weight: 500; }
+.barra-trilho { height: 6px; background: var(--nude-claro); box-shadow: inset 0 0 0 1px var(--fio); }
+.barra-cheio { height: 100%; background: var(--barra); transition: width .5s ease; }
+
+/* tabela das festas */
+.tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabela th { text-align: left; font-weight: 500; font-size: 12px; color: var(--rotulo); padding: 0 0 6px; }
+.tabela th.n, .tabela td.n { text-align: right; padding-left: 10px; white-space: nowrap; }
+.tabela td { padding: 7px 0; border-top: 1px solid var(--fio); vertical-align: top; }
+.tabela td small { display: block; color: var(--corrido); font-size: 12px; }
+
+.pares { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; font-size: 14px; }
+.pares dt { color: var(--grafite); }
+.pares dd { margin: 0; text-align: right; color: var(--bordo); font-weight: 500; white-space: nowrap; }
+
+.comentarios { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.comentarios li { display: grid; grid-template-columns: 32px 1fr; gap: 8px; font-size: 14px; }
+.comentarios .c-nota { font: 400 22px/1 'Instrument Serif', Georgia, serif; color: var(--bordo); }
+.comentarios small { display: block; color: var(--corrido); font-size: 12px; }
+
+.rodape-painel { font-size: 13px; color: var(--corrido); margin: 0; }
+
+/* No celular, o estado ao vivo desce para a própria linha: a marca e o Sair
+   ficam no alto, sem quebrar. */
+.marca { white-space: nowrap; }
+@media (max-width: 560px) {
+  .topo { flex-wrap: wrap; row-gap: 6px; }
+  .sair { margin-left: auto; }
+  .vivo { order: 3; flex-basis: 100%; margin: 0; font-size: 12px; }
+  .kpi-num { font-size: 34px; }
+}
