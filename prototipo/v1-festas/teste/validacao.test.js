@@ -133,14 +133,23 @@ test('landing: a lista guarda uma vez, a isca some calada, e o formulário sem J
   assert.equal((await numeros(landing)).corpo.pessoas, 1);
 });
 
-test('limites: a mesma pessoa espera no sétimo pedido; uma turma no mesmo Wi-Fi passa', async () => {
+test('limites: a mesma pessoa espera no sétimo pedido; a sala do pitch no mesmo Wi-Fi passa; o IP para no 601º', async () => {
   const origem = await subir({ varDir: path.join(pasta, 'limite'), site: 'landing', urlApp: 'https://finde-app.fly.dev/' });
   const mesma = [];
   for (let i = 0; i < 7; i += 1) mesma.push((await post(origem, '/api/lista', { email: 'repete@exemplo.com' })).status);
   assert.deepEqual(mesma, [200, 200, 200, 200, 200, 200, 429]);
-  const turma = [];
-  for (let i = 0; i < 30; i += 1) turma.push((await post(origem, '/api/lista', { email: `aluno${i}@exemplo.com` })).status);
-  assert.ok(turma.every((s) => s === 200), turma.join(','));
+  // Uma sala de 120 pessoas, cada uma com e-mail e nota: 240 pedidos do mesmo IP.
+  const sala = [];
+  for (let i = 0; i < 120; i += 1) {
+    sala.push((await post(origem, '/api/lista', { email: `aluno${i}@exemplo.com` })).status);
+    sala.push((await post(origem, '/api/opiniao', { nota: i % 11, aparelho: `aparelho-da-sala-${i}` })).status);
+  }
+  assert.ok(sala.every((s) => s === 200), sala.join(','));
+  // 7 + 240 já contaram; até 600 passa, e o seguinte espera.
+  const resto = [];
+  for (let i = 0; i < 600 - 247 + 1; i += 1) resto.push((await post(origem, '/api/lista', { email: `resto${i}@exemplo.com` })).status);
+  assert.ok(resto.slice(0, -1).every((s) => s === 200));
+  assert.equal(resto.at(-1), 429);
 });
 
 test('só a própria página posta: outro site leva 403, e corpo que não é JSON leva 415', async () => {

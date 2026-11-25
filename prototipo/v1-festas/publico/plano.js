@@ -16,7 +16,8 @@
   // festas" leva ao app, que reabre a lista de quem já montou uma nesta aba
   // (sem lista, começa o pedido). /app serve o app nos dois jeitos de rodar.
   const LANDING = site();
-  const APP = '/app?ver=lista';
+  // O ?de=convite diz ao medir.js do app de onde a pessoa chegou.
+  const APP = '/app?ver=lista&de=convite';
   const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const SEM_REDE = 'Sem conexão agora. Tento de novo em instantes.';
 
@@ -104,7 +105,19 @@
     }
     assinatura = r.texto;
     plano = r.dados;
+    avisarAberto();
     desenhar();
+  }
+
+  // O convite existe: o medir.js conta a abertura (se quem abre não é quem
+  // criou) e passa a saber a festa, para o ingresso clicado aqui. Uma vez só.
+  let avisou = false;
+  function avisarAberto() {
+    if (avisou) return;
+    avisou = true;
+    const f = plano && plano.festa && plano.festa.festa;
+    const real = f && (f.real === true || f.exemplo === false) && f.id ? String(f.id) : '';
+    document.dispatchEvent(new CustomEvent('finde:convite', { detail: { festa: real } }));
   }
 
   function agendar() {

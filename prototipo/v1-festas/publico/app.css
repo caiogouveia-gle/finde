@@ -1426,6 +1426,14 @@ p.carregando::after, .conversa[aria-busy="true"] .fala-finde::after {
 .opiniao-fechada { padding-top: var(--e4); }
 .opiniao-dizer { align-self: flex-start; }
 .opiniao-dizer[hidden], .opiniao-depois[hidden] { display: none; }
+/* O e-mail da lista, depois da nota: o campo de fio e o C "Quero receber".
+   O erro fica logo abaixo do campo, antes da finalidade. */
+.opiniao-lista { display: flex; flex-direction: column; gap: var(--e3); }
+.opiniao-lista[hidden] { display: none; }
+.opiniao-entrar { align-self: flex-start; }
+.opiniao-campo .aviso-erro { padding-top: var(--e1); }
+.campo[aria-invalid="true"] { border-bottom: 1.5px solid var(--tinta); }
+.opiniao-fechada .rodape-opiniao { display: inline; min-height: 0; color: inherit; }
 /* No rodapé, ao lado do seletor de tema e com o mesmo traço dele. */
 .rodape-opiniao { display: inline-flex; align-items: center; min-height: 44px; color: var(--rotulo); font-size: 13px; white-space: nowrap; text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 4px; text-decoration-color: var(--fio-off); }
 @media (hover: hover) and (pointer: fine) { .rodape-opiniao:hover { color: var(--tinta); text-decoration-color: var(--tinta); } }

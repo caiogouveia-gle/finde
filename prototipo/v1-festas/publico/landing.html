@@ -121,12 +121,13 @@
           <p class="insta-texto">Deixe o e-mail e receba as novidades do finde antes de todo mundo.</p>
           <form class="lista" id="lista" action="/api/lista" method="post" novalidate>
             <label class="rotulo lista-rotulo" for="lista-email">Seu e-mail</label>
-            <input class="lista-campo" id="lista-email" type="email" name="email" placeholder="seu@email.com" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="lista-finalidade">
+            <input class="lista-campo" id="lista-email" type="email" name="email" placeholder="seu@email.com" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="lista-status lista-finalidade">
             <input class="isca" type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true">
             <input type="hidden" name="sair" value="0">
             <p class="lista-status" id="lista-status" role="status" aria-live="polite"></p>
+            <button class="lista-outro" type="button">Usar outro e-mail</button>
             <button class="botao botao--noite" type="submit"><span class="lista-acao">Quero receber</span> <span class="avanco" aria-hidden="true">››</span></button>
-            <p class="lista-finalidade" id="lista-finalidade">Só para mandar as novidades do finde. Fica guardado até 31/12/2026, e você sai quando quiser. <button class="lista-sair" type="button">Sair da lista</button></p>
+            <p class="lista-finalidade"><span id="lista-finalidade">Só para mandar as novidades do finde. Fica guardado até 31/12/2026, e você sai quando quiser.</span> <button class="lista-sair" type="button">Sair da lista</button></p>
           </form>
           <div class="insta-rede" id="rede">
             <p class="rotulo">Instagram</p>
