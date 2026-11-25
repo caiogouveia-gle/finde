@@ -1051,8 +1051,16 @@ function montarServidor({
   });
 
   // A landing vem montada: o destaque do herói e as telas da demo saem daqui.
-  const landing = (req, res) => pagina(req, res, 'landing.html', {
+  const landing = (req, res) => {
+    // /?lista=sair, o link de cada e-mail: a página já vem no modo de
+    // remover, com ou sem JavaScript (o formulário posta sair=1).
+    const sair = new URL(req.url, 'http://x').searchParams.get('lista') === 'sair';
+    return pagina(req, res, 'landing.html', {
     trocas: {
+      __LISTA_TITULO__: sair ? 'Sair da lista' : 'Quer ficar por dentro?',
+      __LISTA_TEXTO__: sair ? ' hidden' : '',
+      __LISTA_SAIR__: sair ? '1' : '0',
+      __LISTA_ACAO__: sair ? 'Remover e-mail' : 'Quero receber',
       __DESTAQUE__: htmlDoDestaque(festaDoConvite(fonte.base()), new Date(relogio())),
       __DEMO__: htmlDaDemo(fonte.base(), new Date(relogio()), sites.urlApp),
       // As festas da landing são sempre fictícias; o app pode já ter festas reais.
@@ -1060,6 +1068,7 @@ function montarServidor({
     },
     cabecalhos: REFERRER_DA_LANDING,
   });
+  };
 
   const naoAchei = (req, res) => enviarCorpo(req, res, 404, {
     'Content-Type': 'text/html; charset=utf-8',
