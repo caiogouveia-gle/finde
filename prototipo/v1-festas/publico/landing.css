@@ -432,15 +432,14 @@ a.marca:hover { color: var(--bordo); }
   cursor: pointer;
 }
 .t-linha.alvo .t-info { color: var(--corrido); }
-.t-linha.alvo :is(.t-mini, .t-origem) { color: var(--rotulo); }
+.t-linha.alvo .t-mini { color: var(--rotulo); }
 .t-linha.alvo + .t-linha { border-top-color: transparent; }
 .t-quando { display: flex; flex-direction: column; gap: 2px; }
 .t-hora { font-family: var(--serifa); font-size: 32px; line-height: 1; }
 .t-meio { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .t-nome { font-family: var(--serifa); font-size: 22px; line-height: 1.05; }
-.t-idade { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.t-preco { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
 .t-num { font-family: var(--serifa); font-size: 24px; line-height: 1; }
-.t-origem { font-size: 10px; line-height: 1.25; color: var(--sobre-bordo); white-space: nowrap; }
 .t-dica { margin-top: auto; text-align: center; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--rose); }
 .toque {
   position: absolute; right: 22%; top: 50%;
@@ -466,10 +465,6 @@ a.marca:hover { color: var(--bordo); }
 .t-tempo > div { display: flex; flex-direction: column; gap: 4px; padding: 14px 0; }
 .t-tempo > div + div { padding-left: 12px; border-left: .5px solid var(--rotulo); }
 .t-tempo-hora { font-family: var(--serifa); font-size: 34px; line-height: 1; }
-.t-media { display: flex; align-items: center; gap: 14px; padding-top: 6px; }
-.t-media-num { font-family: var(--serifa); font-size: 52px; line-height: 1; }
-.t-media strong { display: block; font-weight: 500; font-size: 16px; }
-.t-media small { display: block; font-size: 14px; color: var(--rose); }
 .t-vao { flex: 1; }
 .t-botao {
   position: relative;

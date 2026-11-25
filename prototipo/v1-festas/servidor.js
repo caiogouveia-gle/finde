@@ -598,10 +598,16 @@ function rotuloDaData(f, agora) {
 }
 
 const bairroDe = (f) => (C.BAIRROS[f.bairro] ? C.BAIRROS[f.bairro].nome : '');
-const curtaDe = (f) => f.origemIdadeCurta || '';
+// O preço na coluna da demo: "R$ 40", "grátis" ou um traço.
+const precoCurto = (f) => {
+  const p = FT.preco(f);
+  if (p.tipo === 'gratis') return 'grátis';
+  return Number.isFinite(p.valor) ? `R$ ${Math.round(p.valor)}` : '—';
+};
 
 // O cartão sobre a foto do herói: a festa do desenho (Sexta Sem Pressa), com
-// a hora primeiro, a média com a origem e a marca de exemplo. É ilustração:
+// a hora primeiro, o preço e a marca de exemplo. A média de idade saiu em
+// 25/11/2026, até a idade do público ser validada. É ilustração:
 // o único convite para agir no herói é o botão do app (25/11, menos CTAs).
 function htmlDoDestaque(f, agora) {
   if (!f) return '';
@@ -611,7 +617,7 @@ function htmlDoDestaque(f, agora) {
         <span class="destaque-hora">${escapar(C.horaCheia(f.inicio))}</span>
         <span class="destaque-nome">${escapar(f.nome)}</span>
         <div class="destaque-pe">
-          <span class="destaque-media">Média de ${escapar(f.mediaIdade)} anos<small>${escapar(f.origemIdade)}</small></span>
+          <span class="destaque-media">${escapar(FT.precoNaLista(f) || '')}</span>
         </div>
         <span class="destaque-exemplo">Exemplo · festa fictícia</span>
       </div>`;
@@ -629,7 +635,7 @@ function htmlDaDemo(base, agora, urlApp) {
   const linha = (x) => {
     const miolo = `<span class="t-quando"><span class="t-hora">${escapar(C.hora(x.inicio))}</span><span class="t-mini">${escapar(C.DIAS[x.dia].curto)}</span></span>
               <span class="t-meio"><span class="t-nome">${escapar(x.nome)}</span><span class="t-info">${escapar(bairroDe(x))}</span></span>
-              <span class="t-idade"><span class="t-num">${escapar(x.mediaIdade)}</span><span class="t-mini">Média</span><span class="t-origem">${escapar(curtaDe(x))}</span></span>`;
+              <span class="t-preco"><span class="t-num">${escapar(precoCurto(x))}</span><span class="t-mini">Entrada</span></span>`;
     return x === f
       ? `<button type="button" class="t-linha alvo" data-passo="1">${miolo}<span class="toque" aria-hidden="true"></span></button>`
       : `<div class="t-linha off">${miolo}</div>`;
@@ -657,7 +663,6 @@ function htmlDaDemo(base, agora, urlApp) {
             <span class="t-titulo">${escapar(f.nome)}</span>
             <span class="t-info">${escapar([f.casa, f.produtora].filter(Boolean).join(' · '))}</span>
             <div class="t-tempo">${tempo}</div>
-            <div class="t-media"><span class="t-media-num">${escapar(f.mediaIdade)}</span><span><strong>anos, em média</strong><small>${escapar(f.origemIdade)}</small></span></div>
             <span class="t-vao"></span>
             <button type="button" class="t-botao" data-passo="2">Chamar o grupo<span class="toque" aria-hidden="true"></span></button>
           </div>

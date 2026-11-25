@@ -252,13 +252,17 @@ function completar(c) {
   return r;
 }
 
+// A faixa inteira (18 a 50+) é "sem preferência de idade": desde 25/11/2026
+// o app não pergunta a idade, e o pedido não fala dela.
+const idadeAberta = (c) => Boolean(c.idade) && c.idade.min <= IDADE_MIN && c.idade.max >= IDADE_MAX;
+
 // O pedido como frase, em partes; as que vêm do formulário reabrem a pergunta.
 function pedidoEmPartes(c) {
   const j = janelaPorId(c.janela);
   const partes = [
     { chave: 'dia', texto: `${C.DIAS[c.dia].nome}${c.semana === 'proxima' ? ' da semana que vem' : ''}` },
     { chave: 'janela', texto: `das ${j.rotulo}` },
-    c.idade ? { chave: 'idade', texto: `gente de ${nomeIdade(c.idade)}` } : { chave: 'faixa', texto: `gente de ${C.nomeFaixa(c.faixa)}` },
+    idadeAberta(c) ? null : c.idade ? { chave: 'idade', texto: `gente de ${nomeIdade(c.idade)}` } : { chave: 'faixa', texto: `gente de ${C.nomeFaixa(c.faixa)}` },
     { chave: 'teto', texto: c.teto === 'sem-limite' ? 'sem teto de preço' : c.teto === 0 ? 'só de graça' : `até R$ ${c.teto}` },
   ];
   // Onde: os bairros com a preposição de cada um; sem bairro, a cidade toda
@@ -273,13 +277,13 @@ function pedidoEmPartes(c) {
   if (c.evitarBairros && c.evitarBairros.length) partes.push({ chave: null, texto: `longe ${juntar(c.evitarBairros.map((b) => C.BAIRROS[b].de))}` });
   if (c.voltaMax) partes.push({ chave: null, texto: `voltando ${C.ateAs(c.voltaMax)}` });
   if (c.perto) partes.push({ chave: null, texto: `perto ${C.REFERENCIAS[c.perto].de}` });
-  return partes;
+  return partes.filter(Boolean);
 }
 
 // "Sáb · 19h à 1h · 30 a 35 · até R$ 80 · house"
 function resumoDoPedido(c) {
-  const idade = c.idade ? `${c.idade.min} a ${c.idade.max}${c.idade.max >= IDADE_MAX ? '+' : ''}` : C.nomeFaixa(c.faixa);
-  const partes = [`${C.DIAS[c.dia].curto}${c.semana === 'proxima' ? ' que vem' : ''}`, janelaPorId(c.janela).rotulo, idade, C.rotuloTeto(c.teto)];
+  const idade = idadeAberta(c) ? null : c.idade ? `${c.idade.min} a ${c.idade.max}${c.idade.max >= IDADE_MAX ? '+' : ''}` : C.nomeFaixa(c.faixa);
+  const partes = [`${C.DIAS[c.dia].curto}${c.semana === 'proxima' ? ' que vem' : ''}`, janelaPorId(c.janela).rotulo, idade, C.rotuloTeto(c.teto)].filter(Boolean);
   if (c.bairros && c.bairros.length) partes.splice(2, 0, c.bairros.map((b) => C.BAIRROS[b].nome).join(', '));
   if (c.estilos && c.estilos.length > 2) partes.push('vários sons');
   else if (c.estilos && c.estilos.length) partes.push(C.listaDeEstilos(c.estilos));

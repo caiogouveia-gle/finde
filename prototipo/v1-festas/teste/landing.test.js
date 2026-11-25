@@ -69,10 +69,12 @@ test('GET / serve a landing do desenho de 23/11: menu, herói com foto, demo, co
   const r = await pagina('/');
   assert.equal(r.status, 200);
   assert.match(r.tipo, /text\/html/);
-  assert.match(r.corpo, /<title>finde\. festas no seu horário<\/title>/);
-  assert.match(r.corpo, /<meta property="og:title" content="finde\. festas no seu horário">/);
+  assert.match(r.corpo, /<title>finde\. seu guia inteligente de festas em São Paulo<\/title>/);
+  assert.match(r.corpo, /<meta property="og:title" content="finde\. seu guia inteligente de festas em São Paulo">/);
   const h1 = r.corpo.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1];
-  assert.equal(h1.replace(/<[^>]+>/g, ''), 'Festas que começam no seu horário, com gente da sua idade');
+  assert.equal(h1.replace(/<[^>]+>/g, ''), 'Seu guia inteligente e personalizado de festas em São Paulo');
+  // A idade do público saiu da landing em 25/11/2026, até ser validada.
+  assert.doesNotMatch(r.corpo, /\bidade|anos, em média|Média de \d+ anos/i);
   // A ordem das seções do desenho.
   const ordem = ['<header class="menu"', '<section class="hero', '<section class="demo', '<section class="como', '<section class="final', '<footer class="rodape"'];
   const pos = ordem.map((s) => r.corpo.indexOf(s));
@@ -144,20 +146,21 @@ test('a lista de e-mails: um campo e um botão, sem texto de saída no formulár
   assert.doesNotMatch(JS, /XMLHttpRequest|sessionStorage|\.submit\(\)/);
 });
 
-test('o cartão do herói sai do registro de Sexta Sem Pressa: hora primeiro, média com a origem, marcado como exemplo', async () => {
+test('o cartão do herói sai do registro de Sexta Sem Pressa: hora primeiro, o preço, marcado como exemplo', async () => {
   const d = destaqueDe((await pagina('/')).corpo);
   assert.ok(d, 'o cartão está na página');
   assert.match(d, /role="group" aria-label="Exemplo de festa no finde, fictícia"/);
   assert.match(d, /<span class="destaque-mini">sex, 20 nov · Pinheiros<\/span>/);
   assert.match(d, /<span class="destaque-hora">18h00<\/span>/);
   assert.match(d, /<span class="destaque-nome">Sexta Sem Pressa<\/span>/);
-  assert.match(d, /Média de 32 anos<small>informada pela produtora<\/small>/);
+  assert.match(d, /<span class="destaque-media">a partir de R\$ 60<\/span>/);
+  assert.doesNotMatch(d, /anos/);
   // É ilustração: nenhum link no cartão (25/11, menos CTAs).
   assert.doesNotMatch(d, /<a\s/);
   assert.ok(d.indexOf('destaque-hora') < d.indexOf('destaque-nome'), 'a hora vem antes do nome');
 });
 
-test('a demo: três telas com as festas da base, cada média com a origem, e a saída para o app', async () => {
+test('a demo: três telas com as festas da base, cada uma com o preço, e a saída para o app', async () => {
   const a = aparelhoDe((await pagina('/')).corpo);
   assert.ok(a, 'a demo está na página');
   assert.equal((a.match(/<div class="tela-demo"/g) || []).length, 3);
@@ -165,12 +168,12 @@ test('a demo: três telas com as festas da base, cada média com a origem, e a s
   const nomes = [...a.matchAll(/<span class="t-nome">([^<]+)<\/span>/g)].map((m) => m[1]);
   assert.deepEqual(nomes, ['Roda de Sexta', 'Sexta Sem Pressa', 'Vinil e Vinho', 'Domingo no Terraço']);
   assert.equal((a.match(/class="t-linha alvo" data-passo="1"/g) || []).length, 1);
-  const origens = [...a.matchAll(/<span class="t-mini">Média<\/span><span class="t-origem">([^<]*)<\/span>/g)].map((m) => m[1]);
-  assert.deepEqual(origens, ['42 avaliações', 'pela produtora', 'pela produtora', 'pela produtora']);
-  // A festa: a hora que começa, enche e acaba, e a média com a origem longa.
+  const precos = [...a.matchAll(/<span class="t-num">([^<]*)<\/span><span class="t-mini">Entrada<\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(precos, ['R$ 30', 'R$ 60', 'R$ 110', 'R$ 50']);
+  // A festa: a hora que começa, enche e acaba; a média de idade saiu (25/11/2026).
   assert.match(a, /sex, 20 nov · Pinheiros · a partir de R\$ 60/);
   assert.deepEqual([...a.matchAll(/<span class="t-tempo-hora">([^<]+)<\/span><span class="t-mini">([^<]+)<\/span>/g)].map((m) => `${m[2]} ${m[1]}`), ['Começa 18h', 'Enche 20h', 'Acaba 23h']);
-  assert.match(a, /<strong>anos, em média<\/strong><small>informada pela produtora<\/small>/);
+  assert.doesNotMatch(a, /anos, em média|t-media/);
   // O convite no grupo e a saída.
   assert.match(a, /Bora na <i>sexta\?<\/i>/);
   assert.match(a, /<span class="t-placar" id="placar">3 de 4 dentro<\/span>/);
@@ -183,7 +186,7 @@ test('landing com a base vazia: sem cartão nem demo, o resto da página no luga
   const r = await pagina('/', raizVazia);
   assert.equal(r.status, 200);
   assert.doesNotMatch(r.corpo, /class="destaque"|class="aparelho"/);
-  assert.match(r.corpo, /<h1[^>]*>Festas que começam/);
+  assert.match(r.corpo, /<h1[^>]*>Seu guia inteligente/);
   assert.match(r.corpo, /<a class="botao" href="\/app">Achar a minha festa/);
   assert.match(r.corpo, /<section class="final" id="instagram"/);
   assert.doesNotMatch(r.corpo, /__[A-Z_]+__/);
@@ -292,9 +295,11 @@ test('landing.css: o botão D é retângulo em caixa alta, 52 px; só o do menu 
 
 test('o título do herói quebra pela frase e acompanha a coluna', async () => {
   const { corpo } = await pagina('/');
-  assert.match(corpo, /<h1 id="hero-titulo">Festas que começam <span class="inteiro">no seu horário,<\/span> <span class="inteiro">com gente<\/span> da sua idade<\/h1>/);
+  assert.match(corpo, /<h1 id="hero-titulo">Seu guia inteligente <span class="inteiro">e personalizado<\/span> de festas <span class="inteiro">em São Paulo<\/span><\/h1>/);
   assert.match(regras('.inteiro')[0], /white-space:\s*nowrap/);
-  // "com gente da sua idade" mede 7,72 vezes o corpo: cabe na coluna com folga.
+  // A régua vem do título antigo: "com gente da sua idade" media 7,72 vezes
+  // o corpo. Os pedaços que não quebram agora ("e personalizado", "em São
+  // Paulo") são mais curtos, então a conta continua do lado seguro.
   const m = regras('.hero h1').map((b) => b.match(/font-size:\s*clamp\((\d+)px,\s*([\d.]+)cqi,\s*(\d+)px\)/)).find(Boolean);
   assert.ok(m, 'o título acompanha a coluna pelo cqi');
   assert.ok((Number(m[2]) / 100) * 7.72 <= 0.95, `${m[2]}cqi`);

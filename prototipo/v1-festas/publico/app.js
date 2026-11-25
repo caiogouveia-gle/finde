@@ -24,7 +24,9 @@
     { chave: 'dia', tipo: 'um', titulo: ['Sair ', 'quando?'], lista: 'dias' },
     { chave: 'janela', tipo: 'um', titulo: ['A que horas chegar e ', 'voltar?'], lista: 'janelas' },
     { chave: 'bairros', tipo: 'bairros', titulo: ['Pra que lado da ', 'cidade?'], dica: 'Um ou vários.' },
-    { chave: 'idade', tipo: 'idade', titulo: ['Gente de que ', 'idade?'], dica: 'A faixa em que você se sente bem. Festa com média fora dela também aparece, depois, com aviso.' },
+    // A pergunta da idade saiu do fluxo em 25/11/2026, até a idade do
+    // público ser validada: o pedido vai com a faixa inteira (idadeDe), que
+    // não pesa na "% a sua cara" nem aparece na frase do pedido.
     { chave: 'teto', tipo: 'um', titulo: ['Até quanto você quer ', 'gastar?'], lista: 'tetos' },
     { chave: 'estilos', tipo: 'varios', titulo: ['E o ', 'som?'], lista: 'estilos', dica: 'Pode marcar mais de um. Ou nenhum.' },
   ];
@@ -810,11 +812,12 @@
     return form;
   }
 
-  // A faixa que vale: a respondida, ou o padrão do formulário (28 a 35).
+  // A faixa que vale: a respondida ou, sem a pergunta no fluxo, a faixa
+  // inteira do formulário (18 a 50+), que o motor lê como "sem preferência".
   function idadeDe(r) {
     if (r.idade && Number.isInteger(r.idade.min) && Number.isInteger(r.idade.max)) return r.idade;
-    const padrao = estado.form && estado.form.idade ? estado.form.idade.padrao : { min: 28, max: 35 };
-    return { ...padrao };
+    const lim = estado.form && estado.form.idade ? estado.form.idade : { min: 18, max: 50 };
+    return { min: lim.min, max: lim.max };
   }
 
   // Onde (R19): bairros em chips por zona, que se somam; "São Paulo inteira"
@@ -1018,8 +1021,9 @@
       dia: c.dia, semana: c.semana === 'proxima' ? 'proxima' : 'esta', janela: c.janela, teto: c.teto, estilos: [...(c.estilos || [])],
       bairros: [...(c.bairros || [])], idade: c.idade ? { ...c.idade } : null,
     };
-    // Convite e sessões antigos falam em "faixa": reabre a pergunta da idade.
-    if (chave === 'faixa') chave = 'idade';
+    // Convite e sessões antigos falam em "faixa" ou "idade": a pergunta saiu
+    // do fluxo, então não há o que reabrir.
+    if (!PERGUNTAS.some((p) => p.chave === chave)) return;
     estado.editando = chave;
     ir('pergunta', { passo: PERGUNTAS.findIndex((p) => p.chave === chave), deLista: true });
   }
@@ -1464,10 +1468,6 @@
     if (todas.some((o) => FT.preco(o.festa).compra)) precos.push({ id: 'preco:online', rotulo: 'Com ingresso online', cabe: (o) => FT.preco(o.festa).compra });
     const semPreco = todas.filter((o) => FT.preco(o.festa).tipo === 'sem-preco').length;
     if (precos.length) zonas.push({ nome: 'Preço', chips: precos, sem: semPreco ? conta(semPreco, 'preço', 'preço') : null });
-    // "Com média informada" só quando alguma tem.
-    if (todas.some((o) => Number.isInteger(o.festa.mediaIdade) || o.festa.avaliacaoIdade)) {
-      zonas.push({ nome: 'Idade', chips: [{ id: 'idade:media', rotulo: 'Com média informada', cabe: (o) => Number.isInteger(o.festa.mediaIdade) || Boolean(o.festa.avaliacaoIdade) }], sem: null });
-    }
     return zonas;
   }
 
@@ -1780,7 +1780,6 @@
       campo.scrollIntoView({ block: 'center', behavior: reduzir.matches ? 'auto' : 'smooth' });
       campo.focus({ preventScroll: true });
     });
-    const semMedia = r.semMedia === true && todas.length;
     const avisoCru = typeof r.aviso === 'string' && r.aviso.trim() && todas.length ? r.aviso.trim() : '';
     // O aviso do motor fala das recomendadas; com o título contando todas
     // ("Sete festas"), ele diz que são as de cima.
@@ -1802,7 +1801,6 @@
       el('section', { class: 'guia-titulo', id: 'cabeca-resultado' },
         tituloResultado(),
         frasePedido(r.pedidoPartes || []),
-        semMedia ? el('p', { class: 'sem-media', texto: todas.length === 1 ? 'Ela não divulgou a média de idade ainda.' : `Nenhuma das ${todas.length > 3 ? todas.length : NUMERAL[todas.length].toLocaleLowerCase('pt-BR')} divulgou a média de idade ainda.` }) : null,
         aviso ? el('p', { class: 'aviso-lista', texto: semQuebraNoPreco(aviso) }) : null,
         conversa),
       abas() || el('div', { id: 'abas', hidden: true }),
@@ -2212,21 +2210,6 @@
     ];
   }
 
-  // A idade do público: a frase da avaliação (o que a pergunta mede), ou a
-  // média com a origem. Sem dado, a seção some (o vazio fica no pé).
-  function blocoIdade(f) {
-    const avaliacao = FT.fraseDaAvaliacao(f);
-    if (avaliacao) {
-      const m = FT.media(f);
-      return [el('p', { class: 'idade-frase', texto: avaliacao }),
-        el('p', { class: 'apoio', texto: `Pela avaliação de quem foi pelo convite do finde${m.quando ? `, ${m.quando}` : ''}.` })];
-    }
-    const m = FT.media(f);
-    if (m.ausente) return [];
-    return [el('p', { class: 'idade-frase', texto: `Média de ${m.numero} anos.` }),
-      el('p', { class: 'apoio', texto: `${m.origem ? m.origem.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR')) : 'Origem não informada'}${m.quando ? `, ${m.quando}` : ''}.` })];
-  }
-
   // Onde (R28, R29, R32): a casa, o endereço e o bairro, a distância do
   // bairro pedido em linha reta, "Como chegar" (Google, Apple, Uber) e o
   // mini-mapa atrás de um toque.
@@ -2370,7 +2353,6 @@
       el('header', { class: 'topo topo--detalhe' }, botaoVoltar(), marca(LANDING)),
       capaDoDetalhe(o, ex),
       secao('secao--cara', '', blocoCara(o)),
-      secao('secao--idade', 'Idade do público', blocoIdade(f)),
       secao('secao--onde', 'Onde', blocoOndeDaFesta(o, ex)),
       secao('secao--ingresso', 'Ingresso', blocoIngresso(f, ex, { comprar: FT.precoVelho(f) }), acoesDaFesta(o, ex)),
       secao('secao--som', 'Som', blocoSom(f)),
