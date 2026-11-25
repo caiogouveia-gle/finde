@@ -81,22 +81,31 @@
     const landing = r.landing && !r.landing.erro ? r.landing : null;
     const evs = app?.eventos || {};
     const n = (ev) => evs[ev]?.pessoas || 0;
-    const funil = (app?.funil || []).map((f) => ({ rot: PASSOS[f.passo] || f.passo, n: f.pessoas }));
-    const abriram = funil[0]?.n ?? n('abriu-app');
+    // Contado por uso (25/11): um celular pode passar por várias mãos. Um uso
+    // começa a cada página aberta ou depois de 30 min parado (validacao.js).
+    // Servidor antigo, sem `usos`: cai na conta por aparelho.
+    const porUso = Boolean(app?.usos);
+    const funil = porUso
+      ? app.usos.funil.map((f) => ({ rot: PASSOS[f.passo] || f.passo, n: f.usos }))
+      : (app?.funil || []).map((f) => ({ rot: PASSOS[f.passo] || f.passo, n: f.pessoas }));
+    const abriram = (app?.funil || [])[0]?.pessoas ?? n('abriu-app');
+    const usosDe = (s, ev) => (s?.usos ? s.usos.comEvento?.[ev] || 0 : s?.eventos?.[ev]?.pessoas || 0);
+    const totalDe = (s) => (s?.usos ? s.usos.total : s?.pessoas || 0);
+    const hojeDe = (s) => (s?.usos ? s.usos.porDia?.[hoje] || 0 : s?.porDia?.[hoje] || 0);
     const hoje = hojeEmSP();
     const unicos = r.listaUnicos;
     return {
-      app, landing, n, funil, abriram,
+      app, landing, n, funil, abriram, porUso,
       // O funil já mostra quem abriu e quem chamou o grupo: os cartões
       // ficam com o que ele não mostra. Sem dado, a legenda é de leitor e o
       // erro técnico vai só para o title (nunca para a imagem).
       kpis: [
-        { k: 'landing', rot: 'Abriram a landing', v: landing ? landing.pessoas : null, pe: landing ? `${landing.eventos?.['landing-app']?.pessoas || 0} foram ao app · hoje ${landing.porDia?.[hoje] || 0}` : 'fora do ar agora', erro: r.landing?.erro },
-        { k: 'ingresso', rot: 'Foram ao ingresso', v: app ? n('ingresso') : null, pe: app ? (n('convite-ingresso') ? `mais ${n('convite-ingresso')} pelo convite` : 'pela página da festa') : 'fora do ar agora', erro: r.app?.erro },
+        { k: 'landing', rot: 'Usos da landing', v: landing ? totalDe(landing) : null, pe: landing ? `${usosDe(landing, 'landing-app')} foram ao app · hoje ${hojeDe(landing)}` : 'fora do ar agora', erro: r.landing?.erro },
+        { k: 'ingresso', rot: 'Foram ao ingresso', v: app ? usosDe(app, 'ingresso') : null, pe: app ? (usosDe(app, 'convite-ingresso') ? `mais ${usosDe(app, 'convite-ingresso')} pelo convite` : 'pela página da festa') : 'fora do ar agora', erro: r.app?.erro },
         { k: 'nps', rot: 'NPS', v: r.nps ? r.nps.nps : null, pe: r.nps ? `${plural(r.nps.respostas, 'nota', 'notas')} · média ${virgula(r.nps.media)}` : 'nenhuma nota ainda' },
         { k: 'lista', rot: 'E-mails na lista', v: unicos ?? r.lista ?? 0, pe: unicos === null || unicos === undefined ? 'conta incompleta agora' : 'de quem quer novidades' },
       ],
-      hojeApp: app ? app.porDia?.[hoje] || 0 : null,
+      hojeApp: app ? hojeDe(app) : null,
     };
   }
 
@@ -122,7 +131,8 @@
 
   function desenhar(r) {
     const P = principais(r);
-    const { app, landing, n, abriram } = P;
+    const { app, landing, n, abriram, porUso } = P;
+    const usosAbriram = P.funil[0]?.n || 0;
     const agora = new Date();
 
     const cabeca = el('div', { class: 'cabeca' },
@@ -133,10 +143,10 @@
 
     // O funil em escada: cada degrau mostra o número e quanto ficou do passo anterior.
     const funil = P.funil.length ? el('section', { class: 'funil' },
-      el('div', { class: 'funil-cabeca' }, el('h2', {}, 'Funil do app'), el('p', {}, `Desde ${data(app?.desde)} · hoje ${P.hojeApp ?? 0} ${P.hojeApp === 1 ? 'pessoa' : 'pessoas'} · cada passo conta só quem fez o anterior`)),
+      el('div', { class: 'funil-cabeca' }, el('h2', {}, 'Funil do app'), el('p', {}, `Desde ${data(app?.desde)} · hoje ${P.hojeApp ?? 0} ${P.hojeApp === 1 ? 'uso' : 'usos'} · cada passo conta só o uso que fez o anterior`)),
       el('ol', { class: 'escada' }, P.funil.map((f, i) => el('li', { class: 'degrau' },
         el('span', { class: 'degrau-num' }, String(f.n), i ? el('small', { title: 'do passo anterior' }, `${pct(f.n, P.funil[i - 1].n)}%`) : null),
-        el('div', { class: 'degrau-trilho', 'aria-hidden': 'true' }, el('div', { class: 'degrau-cheio', p: `${pct(f.n, abriram)}%` })),
+        el('div', { class: 'degrau-trilho', 'aria-hidden': 'true' }, el('div', { class: 'degrau-cheio', p: `${pct(f.n, usosAbriram)}%` })),
         el('span', { class: 'degrau-rot' }, f.rot))))) : null;
 
     const secoes = [];
@@ -168,7 +178,8 @@
     if (app?.retencao) {
       const t = app.retencao;
       const u = app.uso || {};
-      secoes.push(secao('Volta e uso', false, pares([
+      secoes.push(secao('Volta, por aparelho', false, pares([
+        app.usos ? ['Usos ao todo', `${app.usos.total} em ${plural(app.pessoas, 'aparelho', 'aparelhos')}`] : null,
         ['Voltaram no dia seguinte', t.d1.base ? `${t.d1.voltaram} de ${t.d1.base}` : 'a partir de amanhã'],
         ['Voltaram na semana seguinte', t.d7.base ? `${t.d7.voltaram} de ${t.d7.base}` : 'a partir de 01/12'],
         ['Voltaram em outro dia', `${t.outroDia} de ${app.pessoas}`],
@@ -190,9 +201,9 @@
 
     const chegada = categoria(app?.porCategoria?.chegou);
     const marcados = chegada.reduce((s, [, x]) => s + x, 0);
-    secoes.push(secao('De onde chegaram', false,
+    secoes.push(secao('De onde chegaram, por aparelho', false,
       barras([...chegada, ...(abriram > marcados ? [['Link direto', abriram - marcados]] : [])], abriram),
-      landing ? el('p', { class: 'nota' }, `Da landing para o app: ${landing.eventos?.['landing-app']?.pessoas || 0} de ${landing.pessoas}.`) : null));
+      landing ? el('p', { class: 'nota' }, `Da landing para o app: ${landing.eventos?.['landing-app']?.pessoas || 0} de ${landing.pessoas} aparelhos.`) : null));
 
     const baseLista = n('lista') || app?.pessoas || 0;
     const explora = [['Viram todas', 'todas'], ['Usaram filtro', 'filtro'], ['Abriram o mapa', 'mapa'], ['Trocaram o dia', 'dia'], ['Pediram ajuste', 'ajuste'], ['Puseram na agenda', 'agenda'], ['Compartilharam', 'compartilhou']]
@@ -207,7 +218,7 @@
       ['Com média de idade', String(m.comMediaDeIdade)],
     ]) : vazio(r.motor?.erro || 'Sem resposta do motor.')));
 
-    const rodape = el('p', { class: 'rodape-painel' }, 'Cada número conta pessoas distintas: um aparelho, uma pessoa.',
+    const rodape = el('p', { class: 'rodape-painel' }, porUso ? 'Funil, landing e ingresso contam usos: cada vez que alguém abre a página, ou volta depois de 30 min, é um uso novo, mesmo no mesmo celular. Volta, origem e convite contam aparelhos.' : 'Cada número conta aparelhos distintos.',
       r.equipeFora ? ` Fora da conta, marcados com ?equipe=1: ${r.equipeFora}.` : '');
 
     painel.replaceChildren(cabeca, kpis, funil, el('div', { class: 'secoes' }, secoes), rodape);
@@ -297,7 +308,7 @@
     texto('Funil do app', M + 40, fy + 60, '500 18px "DM Sans"', COR.sobre, { caixa: true, letras: 3 });
     const passos = P.funil;
     if (passos.length) {
-      texto(`desde ${data(P.app?.desde)} · hoje ${P.hojeApp ?? 0}`, W - M - 40, fy + 60, '400 20px "DM Sans"', COR.sobre, { alinhar: 'right' });
+      texto(`em usos · desde ${data(P.app?.desde)} · hoje ${P.hojeApp ?? 0}`, W - M - 40, fy + 60, '400 20px "DM Sans"', COR.sobre, { alinhar: 'right' });
       const base = passos[0].n || 1;
       const pw = (W - 2 * M - 80) / passos.length;
       const altura = 300;

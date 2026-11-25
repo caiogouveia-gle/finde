@@ -152,6 +152,32 @@ const somar = (m, chave, a) => {
   m[chave].pessoas.add(a);
 };
 
+// Um uso (25/11, pedido do Caio: um celular pode passar por várias mãos):
+// começa a cada página aberta (app, landing, convite, opinião) ou depois de
+// 30 min parado. Recarregar a página conta como outro uso.
+const ABRE_USO = new Set(['abriu-app', 'abriu-landing', 'abriu-convite', 'abriu-opiniao']);
+function usosDe(l) {
+  const usos = [];
+  for (let i = 0; i < l.length; i += 1) {
+    const novo = i === 0 || ABRE_USO.has(l[i].ev) || Date.parse(l[i].em) - Date.parse(l[i - 1].em) > MEIA_HORA;
+    if (novo) usos.push([]);
+    usos[usos.length - 1].push(l[i]);
+  }
+  return usos;
+}
+
+// O funil encadeado numa lista de eventos já em ordem: quantos passos ela fez.
+function passosDoFunil(l) {
+  let desde = null;
+  let i = 0;
+  for (; i < FUNIL.length; i += 1) {
+    const e = l.find((x) => FUNIL[i][1].includes(x.ev) && (desde === null || x.em >= desde));
+    if (!e) break;
+    desde = e.em;
+  }
+  return i;
+}
+
 function etapaDe(nomes) {
   if (!nomes) return 'sem-uso';
   if (nomes.has('mandar') || nomes.has('convite') || nomes.has('whatsapp')) return 'mandou';
@@ -193,13 +219,16 @@ function agregar(todos, todasOpinioes, agoraIso) {
   const sessoes = [];
   const diasAtivos = [];
   const nomesDe = new Map();
+  // Os mesmos números, contados por uso em vez de por aparelho.
+  const usos = { total: 0, porDia: {}, funil: FUNIL.map(() => 0), comEvento: {} };
   for (const [a, l] of porA) {
-    let desde = null;
-    for (let i = 0; i < FUNIL.length; i += 1) {
-      const e = l.find((x) => FUNIL[i][1].includes(x.ev) && (desde === null || x.em >= desde));
-      if (!e) break;
-      funil[i] += 1;
-      desde = e.em;
+    for (let i = 0; i < passosDoFunil(l); i += 1) funil[i] += 1;
+    for (const u of usosDe(l)) {
+      usos.total += 1;
+      const dia = diaEmSaoPaulo(u[0].em);
+      usos.porDia[dia] = (usos.porDia[dia] || 0) + 1;
+      for (let i = 0; i < passosDoFunil(u); i += 1) usos.funil[i] += 1;
+      for (const ev of new Set(u.map((e) => e.ev))) usos.comEvento[ev] = (usos.comEvento[ev] || 0) + 1;
     }
     // D1: voltou no dia seguinte ao primeiro; D7: voltou entre o 7º e o 9º
     // dia. A base é quem entrou há tempo bastante para ter voltado.
@@ -254,6 +283,12 @@ function agregar(todos, todasOpinioes, agoraIso) {
     eventos: contado(porEvento),
     porDia: Object.fromEntries(Object.entries(porDia).sort().map(([d, s]) => [d, s.size])),
     funil: FUNIL.map(([passo], i) => ({ passo, pessoas: funil[i] })),
+    usos: {
+      total: usos.total,
+      porDia: Object.fromEntries(Object.entries(usos.porDia).sort()),
+      funil: FUNIL.map(([passo], i) => ({ passo, usos: usos.funil[i] })),
+      comEvento: Object.fromEntries(Object.entries(usos.comEvento).sort()),
+    },
     retencao: ret,
     uso: {
       pessoas: porA.size,

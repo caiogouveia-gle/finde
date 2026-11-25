@@ -162,6 +162,11 @@ function secoesDoApp(s, festasDoMotor) {
     const base = s.funil[0].pessoas;
     for (const f of s.funil) p.push(`    ${PASSOS[f.passo] || f.passo}: ${deN(f.pessoas, base)}`);
   }
+  if (s.usos && s.usos.total) {
+    p.push(`  Usos (cada página aberta ou volta depois de 30 min): ${s.usos.total}, em ${s.pessoas} aparelhos`);
+    const base = s.usos.funil[0]?.usos || 0;
+    for (const f of s.usos.funil) p.push(`    ${PASSOS[f.passo] || f.passo}: ${f.usos}${pct(f.usos, base)}`);
+  }
   if (s.retencao) {
     const r = s.retencao;
     p.push('  Volta:');

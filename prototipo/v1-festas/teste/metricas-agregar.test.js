@@ -192,3 +192,23 @@ test('evento: grava o p da regra; o id do convite nunca é gravado; p fora da re
   assert.equal(r.convite.aberturas, 0);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('usos: cada página aberta ou 30 min parado começa um uso novo, com o funil por uso', () => {
+  const T = (m) => new Date(Date.parse('2026-11-25T20:00:00.000Z') + m * 60e3).toISOString();
+  const e = (a, ev, m) => ({ em: T(m), ev, a });
+  // Um celular passado de mão em mão: três aberturas do app; outro volta depois de 50 min.
+  const r = V.agregar([
+    e('x', 'abriu-app', 0), e('x', 'lista', 1), e('x', 'detalhe', 2), e('x', 'mandar', 3),
+    e('x', 'abriu-app', 5), e('x', 'lista', 6),
+    e('x', 'abriu-app', 10),
+    e('y', 'abriu-app', 0), e('y', 'lista', 50),
+    e('eq', 'abriu-app', 0), e('eq', 'equipe', 1),
+  ], [], T(60));
+  assert.equal(r.pessoas, 2);
+  assert.equal(r.usos.total, 5);
+  assert.deepEqual(r.usos.funil.map((f) => f.usos), [4, 2, 1, 1, 0]);
+  assert.equal(r.usos.comEvento.lista, 3);
+  assert.deepEqual(r.usos.porDia, { '2026-11-25': 5 });
+  // Por aparelho, o funil segue como antes.
+  assert.deepEqual(r.funil.map((f) => f.pessoas), [2, 2, 1, 1, 0]);
+});
