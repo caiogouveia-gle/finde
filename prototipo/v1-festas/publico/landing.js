@@ -43,7 +43,7 @@
     const FRASES = {
       ok: 'Pronto. Você recebe as novidades antes de todo mundo.',
       ja: 'Esse e-mail já estava na lista.',
-      saiu: 'Pronto, esse e-mail saiu da lista.',
+      saiu: 'E-mail removido.',
       erro: 'Esse e-mail não parece certo. Confere?',
       espera: 'Muitos pedidos daqui. O e-mail não entrou; tente daqui a pouco.',
     };
@@ -55,8 +55,8 @@
     };
     const modo = (saindo) => {
       sair.value = saindo ? '1' : '0';
-      acao.textContent = saindo ? 'Tirar meu e-mail' : 'Quero receber';
-      if (trocaSair) trocaSair.textContent = saindo ? 'Cancelar' : 'Sair da lista';
+      acao.textContent = saindo ? 'Remover e-mail' : 'Quero receber';
+      if (trocaSair) trocaSair.textContent = saindo ? 'Voltar' : 'Cancelar inscrição';
     };
     // Feito: o foco vai para a frase (o botão some), e o "Usar outro e-mail" fica ao lado.
     const feita = () => {
@@ -67,7 +67,7 @@
     if (trocaSair) {
       trocaSair.addEventListener('click', () => {
         modo(sair.value !== '1');
-        dizer(sair.value === '1' ? 'Escreva o e-mail que vai sair da lista.' : '');
+        dizer(sair.value === '1' ? 'Digite o e-mail que quer remover.' : '');
         campo.focus();
       });
     }

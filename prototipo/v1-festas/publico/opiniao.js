@@ -14,7 +14,7 @@
   const FEITA = 'finde.opiniao';
   const DISPENSADA = 'finde.opiniao-depois';
   const FINALIDADE_OPINIAO = 'A nota e o comentário vão sem nome, junto da contagem anônima do que você fez no app, e ficam guardados até 31/12/2026. Servem pra gente saber se o protótipo ajudou.';
-  const FINALIDADE_LISTA = 'Só para mandar as novidades do finde. Fica guardado até 31/12/2026, e você sai quando quiser.';
+  const FINALIDADE_LISTA = 'Só novidades do finde.';
   // A mesma regra do servidor (nucleo/validacao.js, EMAIL): o que passa aqui
   // passa lá. teste/opiniao-email.test.js confere que as duas são iguais.
   const EMAIL = /^[^\s@<>()",;:]{1,64}@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;
