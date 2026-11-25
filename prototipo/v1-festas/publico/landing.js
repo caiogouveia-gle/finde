@@ -41,7 +41,7 @@
     const trocaSair = form.querySelector('.lista-sair');
     const outro = form.querySelector('.lista-outro');
     const FRASES = {
-      ok: 'Pronto. Você recebe as novidades antes de todo mundo.',
+      ok: 'Pronto. Você recebe as novidades antes de todo mundo. Para sair, é só usar o link em qualquer e-mail.',
       ja: 'Esse e-mail já estava na lista.',
       saiu: 'E-mail removido.',
       erro: 'Esse e-mail não parece certo. Confere?',
@@ -64,6 +64,8 @@
       status.setAttribute('tabindex', '-1');
       status.focus({ preventScroll: true });
     };
+    const volta = new URLSearchParams(window.location.search).get('lista');
+    const paginaDeSair = volta === 'sair' || sair.value === '1';
     if (trocaSair) {
       trocaSair.addEventListener('click', () => {
         modo(sair.value !== '1');
@@ -75,8 +77,9 @@
       outro.addEventListener('click', () => {
         form.classList.remove('feita');
         status.removeAttribute('tabindex');
-        modo(false);
-        dizer('');
+        // Na página de sair, o outro e-mail também é para remover.
+        modo(paginaDeSair);
+        dizer(paginaDeSair ? 'Digite o e-mail que quer remover.' : '');
         campo.value = '';
         campo.focus();
       });
@@ -114,7 +117,16 @@
     });
     // Sem JavaScript, o servidor volta para cá com o resultado no endereço.
     // Lido, ele sai do endereço: recarregar ou copiar o link não repete a frase.
-    const volta = new URLSearchParams(window.location.search).get('lista');
+    // A saída da lista (LGPD): o link de cada e-mail leva a /?lista=sair, que
+    // abre o formulário no modo de remover. Na página, o formulário não fala
+    // em cancelar (25/11: afasta quem vai se cadastrar).
+    // O servidor já mandou a página no modo de remover (título, sair=1).
+    if (volta === 'sair') {
+      modo(true);
+      dizer('Digite o e-mail que quer remover.');
+      try { form.scrollIntoView({ block: 'center' }); } catch { /* tudo bem */ }
+      campo.focus({ preventScroll: true });
+    }
     if (volta && FRASES[volta]) {
       if (volta === 'ok' || volta === 'saiu') form.classList.add('feita');
       dizer(FRASES[volta], { errado: volta === 'erro' || volta === 'espera' });

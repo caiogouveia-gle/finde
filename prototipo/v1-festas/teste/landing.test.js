@@ -125,17 +125,18 @@ test('o protótipo tem duas portas, no menu fixo e no herói; nenhuma abre uma f
 // 24/11/2026: o Caio pediu a lista de e-mails de volta ("quer ficar por
 // dentro?"). Um campo só, com a finalidade escrita ao lado, a isca para robô
 // e o D do modo noite. O e-mail vai a /api/lista e nada mais sai da página.
-test('a lista de e-mails: um campo, a finalidade ao lado, e só /api/lista recebe', async () => {
+test('a lista de e-mails: um campo e um botão, sem texto de saída no formulário, e só /api/lista recebe', async () => {
   const { corpo } = await pagina('/');
   const form = trecho(corpo, '<form class="lista"', '</form>');
   assert.ok(form, 'falta o formulário da lista');
   assert.match(form, /action="\/api\/lista" method="post"/);
   assert.equal((form.match(/<input /g) || []).length, 3, 'o e-mail, a isca e o "sair"');
-  assert.match(form, /<label class="rotulo lista-rotulo" for="lista-email">Seu e-mail<\/label>/);
+  assert.match(form, /<label class="vh" for="lista-email">Seu e-mail<\/label>/);
   assert.match(form, /type="email" name="email"/);
   assert.match(form, /class="isca"[^>]*tabindex="-1"[^>]*aria-hidden="true"/);
-  assert.match(form, /Só novidades do finde\./);
-  assert.match(form, /<button class="lista-sair" type="button">Cancelar inscrição<\/button>/);
+  // Saída da lista fora do formulário (25/11): o link de cada e-mail leva a /?lista=sair.
+  assert.doesNotMatch(form, /lista-sair|lista-finalidade|[Cc]ancelar|[Ss]air da lista/);
+  assert.match(JS, /volta === 'sair'/);
   assert.match(corpo, /<h2 id="instagram-titulo">Quer ficar por dentro\?<\/h2>/);
   assert.doesNotMatch(corpo, /<textarea/);
   const destinos = [...JS.matchAll(/fetch\('([^']+)'/g)].map((m) => m[1]);
@@ -481,4 +482,19 @@ test('landing.css: o vocabulário que a landing divide com o app', () => {
   assert.match(CSS, /\.botao:active:not\(:disabled\) \{ transform: scale\(var\(--mov-toque-escala\)\); \}/);
   assert.match(JS, /ler\('linha-passo', 'passo'\)/);
   assert.match(JS, /ler\('italico-atraso', 'tarde'\)/);
+});
+
+test('/?lista=sair vem do servidor no modo de remover: funciona sem JavaScript (LGPD)', async () => {
+  const r = await pagina('/?lista=sair');
+  assert.equal(r.status, 200);
+  const form = trecho(r.corpo, '<form class="lista"', '</form>');
+  assert.match(form, /<input type="hidden" name="sair" value="1">/);
+  assert.match(form, /<span class="lista-acao">Remover e-mail<\/span>/);
+  assert.match(r.corpo, /<h2 id="instagram-titulo">Sair da lista<\/h2>/);
+  assert.match(r.corpo, /<p class="insta-texto" hidden>/);
+  // A página normal segue de inscrição.
+  const n = await pagina('/');
+  assert.match(n.corpo, /<input type="hidden" name="sair" value="0">/);
+  assert.match(n.corpo, /<h2 id="instagram-titulo">Quer ficar por dentro\?<\/h2>/);
+  assert.doesNotMatch(n.corpo, /__LISTA_[A-Z]+__/);
 });

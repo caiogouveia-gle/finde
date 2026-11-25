@@ -198,3 +198,7 @@ Da landing desenhada: a seção de depoimentos (até haver falas reais aprovadas
 - `POST /api/planos/:id/respostas` `{ nome, resposta: "dentro" | "fora", confirmar? }`. Nome repetido sem `confirmar` dá 409 com "Já tem Ju na lista. É você?".
 - `GET /p/:id` → página do convite.
 - `GET /` → a landing (tudo junto e só a landing) ou o app (só o app). `GET /app` → o app; com `?festa=<id>`, direto no detalhe da festa. Só a landing: 302 para o endereço do app.
+
+## Lista de e-mails: a saída
+
+A landing não fala em cancelar perto do campo: a saída mora no link de cada e-mail, como fazem Substack, Stripe Press e Meio. **Todo e-mail mandado para a lista tem que trazer no rodapé o link `https://finde.fly.dev/?lista=sair`** (texto sugerido: "Não quer mais receber? Sair da lista"). Essa página vem do servidor no modo de remover e funciona sem JavaScript.
