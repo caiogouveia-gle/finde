@@ -12,7 +12,11 @@
     el, titulo, chamar, site, marca, rodape, definirNota, marcaExemplo, reduzir, hora, anunciar, manterVisivel,
     linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, avanco, acaoC, painelConvite, mov: M,
   } = window.Finde;
-  const contar = (evento) => { if (window.FindeMedir) window.FindeMedir.contar(evento); };
+  // A contagem (medir.js). p: o detalhe curto do passo (o id da festa, a
+  // zona do filtro, o dia); nunca texto que a pessoa escreveu.
+  const contar = (evento, p) => { if (window.FindeMedir) window.FindeMedir.contar(evento, p); };
+  // O id só de festa real: a de exemplo não entra nos números por festa.
+  const idReal = (f) => (f && (f.real === true || f.exemplo === false) && f.id ? String(f.id) : undefined);
   const FT = window.FindeTexto;
   const $tela = document.getElementById('tela');
 
@@ -217,6 +221,10 @@
     $tela.replaceChildren(conteudo);
     ladoComCartaz(estado.tela === 'festa' && estado.festa ? estado.festa.festa : null);
     document.body.dataset.tela = estado.tela;
+    // A festa da tela, para o medir.js contar o ingresso e os links por festa.
+    const festaReal = estado.tela === 'festa' && estado.festa ? idReal(estado.festa.festa) : undefined;
+    if (festaReal) document.body.dataset.festa = festaReal;
+    else delete document.body.dataset.festa;
     if (entrar) window.scrollTo(0, rolagem);
     if (focar) {
       const alvo = $tela.querySelector('[data-foco]') || $tela.querySelector('h1');
@@ -1535,7 +1543,11 @@
             el('span', { texto: c.rotulo }), el('span', { class: 'chip-n', 'aria-hidden': 'true' }));
           b.addEventListener('click', () => {
             if (marcados.has(c.id)) marcados.delete(c.id);
-            else marcados.add(c.id);
+            else {
+              marcados.add(c.id);
+              // Só a zona (som, bairro, preço, idade), sem o valor escolhido.
+              contar('filtro', String(c.id).split(':')[0]);
+            }
             b.setAttribute('aria-pressed', String(marcados.has(c.id)));
             // Se a lista zeraria, sai o filtro marcado que ficou sem festa
             // (FT.podarFiltros), e o anúncio diz qual.
@@ -1639,6 +1651,8 @@
     todas.hidden = !abrir;
     estado.todasAbertas = abrir;
     if (botao) botao.setAttribute('aria-expanded', String(abrir));
+    // Só o toque conta: o restaurar abre sem animar.
+    if (abrir && anima) contar('todas');
     salvar();
     if (!abrir || !anima) return;
     M.subir([todas.querySelector('.todas-cabeca'), todas.querySelector('.filtros')], { y: 12 });
@@ -1659,6 +1673,7 @@
     if (!M2 || !lugar || !$t) return;
     const { todas } = partesDoResultado(estado.resultado);
     estado.mapaAberto = true;
+    contar('mapa');
     const lado = document.getElementById('lado-dir');
     if (largo() && lado) {
       ladoAntes = { hidden: lado.hidden, oculto: lado.classList.contains('oculto') };
@@ -2045,6 +2060,7 @@
       return;
     }
     Object.assign(estado, { criterios: r.dados.criterios, resultado: r.dados, fala: { voce: null, finde: r.dados.resposta }, novas: [], todasAbertas: false });
+    if (DIA[id]) contar('dia', id);
     trocarResultado({ dia: true, dir });
     anunciar(`${(DIA[estado.criterios.dia] || d).longo}: ${partesDoResultado(estado.resultado).todas.length} festas.`);
   }
@@ -2100,6 +2116,7 @@
     estado.resultado = d;
     estado.fala = { voce: exibido || texto, finde: d.resposta };
     estado.novas = d.entraram || [];
+    contar('ajuste', d.entendeu ? 'entendido' : 'nao-entendido');
     trocarResultado();
     anunciar(d.resposta);
     const campo = document.getElementById('campo');
@@ -2121,7 +2138,7 @@
   }
 
   function abrirFesta(o, de = 'linha') {
-    contar('detalhe');
+    contar('detalhe', idReal(o.festa));
     try {
       localStorage.setItem('finde.explorou', '1');
     } catch { /* tudo bem */ }
@@ -2270,6 +2287,8 @@
     const f = o.festa;
     const url = new URL(`/app?festa=${encodeURIComponent(f.id)}`, window.location.origin).href;
     const agenda = acaoC('a', { href: `/api/festa/${encodeURIComponent(f.id)}/agenda.ics`, download: `${f.id}.ics` }, 'Pôr na agenda');
+    // O .ics é do próprio site, que o medir.js não conta: conta aqui.
+    agenda.addEventListener('click', () => contar('agenda', idReal(f)));
     const status = el('p', { class: 'status-curto', role: 'status' });
     const texto = `${f.nome}${o.hora ? `, ${o.hora}` : ''}${f.casa ? `, ${f.casa}` : ''}${ex ? ' (exemplo: festa fictícia do protótipo do Finde)' : ''}`;
     const reserva = el('div', { class: 'destinos', id: 'compartilhar-reserva', hidden: true },
@@ -2280,6 +2299,7 @@
           try {
             await navigator.clipboard.writeText(url);
             status.textContent = 'Link copiado.';
+            contar('compartilhou', 'copiou');
           } catch {
             status.textContent = `Não consegui copiar daqui. O link é ${url}`;
           }
@@ -2291,6 +2311,7 @@
       if (typeof navigator.share === 'function') {
         try {
           await navigator.share({ title: f.nome, text: texto, url });
+          contar('compartilhou', 'nativo');
           return;
         } catch (e) {
           if (e && e.name === 'AbortError') return;
@@ -2463,7 +2484,7 @@
     const velho = FT.precoVelho(f);
     const mandar = el('button', { type: 'button', class: 'botao barra-mandar' }, 'Mandar pro grupo', avanco());
     mandar.addEventListener('click', () => {
-      contar('mandar');
+      contar('mandar', idReal(f));
       estado.mandar = o;
       ir('mandar');
     });
@@ -2517,7 +2538,9 @@
     try {
       if (nome) localStorage.setItem('finde.nome', nome);
       const meus = JSON.parse(localStorage.getItem('finde.meus') || '{}');
-      if (nome && id) meus[id] = nome;
+      // O id do convite criado fica sempre, com nome ou sem: é por ele que o
+      // medir.js sabe que quem abre o convite é quem o criou.
+      if (id) meus[id] = nome || meus[id] || '';
       localStorage.setItem('finde.meus', JSON.stringify(meus));
     } catch { /* tudo bem */ }
   }
@@ -2760,8 +2783,6 @@
   // O detalhe de uma festa, sem pedido (contrato: GET /api/festa/<id>).
   // "Voltar" leva à landing; "Mandar pro grupo" continua valendo.
   async function abrirAvulsa(id) {
-    // Link direto (a demo da landing, um link copiado) também é detalhe aberto.
-    contar('detalhe');
     try {
       localStorage.setItem('finde.explorou', '1');
     } catch { /* tudo bem */ }
@@ -2779,6 +2800,9 @@
       semFesta(Boolean(r && r.status === 404), Boolean(r && r.dados && r.dados.passou));
       return;
     }
+    // Link direto (a demo da landing, um link copiado) também é detalhe
+    // aberto; conta quando a festa chega, para levar o id dela.
+    contar('detalhe', idReal(o.festa));
     Object.assign(estado, { avulsa: true, festa: o, mandar: null, editando: null });
     // A altura (n) da entrada fica: voltando do convite para a entrada do
     // envio, o "Voltar" ainda sabe quantas telas há até a landing.

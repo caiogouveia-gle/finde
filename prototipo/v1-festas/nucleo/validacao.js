@@ -3,7 +3,7 @@
 // o que acharam e quem quer receber as novidades. Cada site (a landing e o
 // app) guarda os seus no próprio volume, e ferramentas/numeros.js junta.
 //
-//   POST /api/uso            { evento, aparelho }                 contagem sem nome
+//   POST /api/uso            { evento, aparelho, p? }             contagem sem nome
 //   POST /api/opiniao        { nota 0..10, texto?, aparelho, de } a nota de indicação
 //   POST /api/lista          { email, de, site?, sair? }           a lista de e-mails
 //   GET  /api/numeros        (token de admin)                      o resumo
@@ -16,6 +16,12 @@
 // ligue à nota ou ao uso; fica em 0600 no volume, fora do git, até o mesmo
 // prazo. `site` é o campo-isca: gente não vê, robô preenche, e a inscrição
 // some calada. `sair: true` tira o e-mail da lista.
+//
+// O `p` do evento é um texto curto e fechado (id de festa, zona de filtro,
+// origem, dia), nunca e-mail, nome ou texto livre. O id do convite é a chave
+// do /p/<id> (quem tem o id lê e responde o plano), então entra como HMAC.
+// O aparelho que abriu alguma página com ?equipe=1 manda 'equipe', e o
+// resumo tira dele tudo, inclusive o que veio antes da marca.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -28,7 +34,21 @@ const EVENTOS = new Set([
   'lista', 'detalhe', 'ingresso', 'link-fora', 'mandar', 'convite', 'whatsapp', 'convite-resposta',
   // da landing para o app; quem chegou pelo QR Code de divulgação
   'landing-app', 'chegou-qr',
+  // a marca da equipe; de onde a pessoa chegou (p = origem)
+  'equipe', 'chegou',
+  // a exploração da lista: ver todas, filtro (p = zona), mapa, troca de dia
+  // (p = dia), a conversa de ajuste (p = entendido|nao-entendido)
+  'todas', 'filtro', 'mapa', 'dia', 'ajuste',
+  // a festa: pôr na agenda, compartilhar (p = zap|nativo|copiou), o ingresso
+  // tocado no convite recebido
+  'agenda', 'compartilhou', 'convite-ingresso',
+  // a pergunta da opinião vista (p = app|opiniao) e o 'agora não'
+  'opiniao-viu', 'opiniao-agora-nao',
 ]);
+const PROP = /^[\p{L}\p{N}:._-]{1,80}$/u;
+// Eventos do convite: o `p` (id do convite) nunca é gravado. O planos.json
+// guarda nomes e respostas, e o id ligaria o convite ao uso anônimo do aparelho.
+const P_DE_CONVITE = new Set(['convite', 'abriu-convite', 'convite-resposta']);
 const DE_ONDE = new Set(['landing', 'app', 'opiniao', 'convite']);
 const APARELHO = /^[A-Za-z0-9_-]{8,64}$/;
 const EMAIL = /^[^\s@<>()",;:]{1,64}@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;
@@ -38,7 +58,7 @@ const MAX_EVENTOS = 200000;
 const MAX_POR_APARELHO_DIA = 300;
 // A frase que vai junto do campo de e-mail, e que fica gravada com ele.
 const FINALIDADE_LISTA = 'Só para mandar as novidades do finde. Fica guardado até 31/12/2026, e você sai quando quiser.';
-const FINALIDADE_OPINIAO = 'A nota e o comentário vão sem nome e ficam guardados até 31/12/2026. Servem pra gente saber se o protótipo ajudou.';
+const FINALIDADE_OPINIAO = 'A nota e o comentário vão sem nome, junto da contagem anônima do que você fez no app, e ficam guardados até 31/12/2026. Servem pra gente saber se o protótipo ajudou.';
 
 const hmac = (sal, texto) => crypto.createHmac('sha256', sal).update(texto, 'utf8').digest('hex').slice(0, 16);
 const diaEmSaoPaulo = (iso) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date(iso));
@@ -99,6 +119,167 @@ function criarLimite({ max, janelaMs, agoraMs = () => Date.now() }) {
   };
 }
 
+// As contas do resumo, sobre os eventos e as opiniões já lidos (agregar() é
+// pura: os testes passam dados fictícios e um "agora").
+const MEIA_HORA = 30 * 60 * 1000;
+// O funil encadeado: cada passo só conta quem fez o anterior, antes ou junto.
+const FUNIL = [
+  ['abriu-app', ['abriu-app']],
+  ['lista', ['lista']],
+  ['detalhe', ['detalhe']],
+  ['mandar-ou-convite', ['mandar', 'convite']],
+  ['whatsapp', ['whatsapp']],
+];
+// Eventos cujo `p` é uma categoria pequena e vale contar por valor.
+const CATEGORIAS = ['chegou', 'filtro', 'dia', 'ajuste', 'compartilhou', 'opiniao-viu'];
+// Eventos cujo `p` é o id de uma festa real.
+const DA_FESTA = ['detalhe', 'ingresso', 'mandar', 'convite-ingresso', 'link-fora'];
+// A etapa máxima de cada pessoa no uso, da mais rasa à mais funda.
+const ETAPAS = ['sem-uso', 'entrou', 'lista', 'detalhe', 'ingresso', 'mandou'];
+
+const diasEntre = (de, ate) => Math.round((Date.parse(`${ate}T12:00:00Z`) - Date.parse(`${de}T12:00:00Z`)) / 864e5);
+const mediana = (v) => {
+  if (!v.length) return null;
+  const s = [...v].sort((x, y) => x - y);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+const umaCasa = (x) => Math.round(x * 10) / 10;
+// { chave: { vezes, pessoas: Set } } -> { chave: { vezes, pessoas: n } }, por ordem de chave.
+const contado = (m) => Object.fromEntries(Object.entries(m).sort().map(([k, v]) => [k, { vezes: v.vezes, pessoas: v.pessoas.size }]));
+const somar = (m, chave, a) => {
+  (m[chave] ||= { vezes: 0, pessoas: new Set() }).vezes += 1;
+  m[chave].pessoas.add(a);
+};
+
+function etapaDe(nomes) {
+  if (!nomes) return 'sem-uso';
+  if (nomes.has('mandar') || nomes.has('convite') || nomes.has('whatsapp')) return 'mandou';
+  if (nomes.has('ingresso')) return 'ingresso';
+  if (nomes.has('detalhe')) return 'detalhe';
+  if (nomes.has('lista')) return 'lista';
+  return 'entrou';
+}
+
+function agregar(todos, todasOpinioes, agoraIso) {
+  // A equipe sai de tudo, inclusive do que fez antes de se marcar.
+  const equipe = new Set(todos.filter((e) => e.ev === 'equipe').map((e) => e.a));
+  const evs = todos.filter((e) => !equipe.has(e.a));
+  const opinioes = todasOpinioes.filter((o) => !equipe.has(o.a));
+
+  const porA = new Map();
+  for (const e of evs) {
+    if (!porA.has(e.a)) porA.set(e.a, []);
+    porA.get(e.a).push(e);
+  }
+  for (const l of porA.values()) l.sort((x, y) => x.em.localeCompare(y.em));
+
+  const porEvento = {};
+  const porDia = {};
+  const porCategoria = Object.fromEntries(CATEGORIAS.map((c) => [c, {}]));
+  const festas = {};
+  for (const e of evs) {
+    somar(porEvento, e.ev, e.a);
+    (porDia[diaEmSaoPaulo(e.em)] ||= new Set()).add(e.a);
+    if (!e.p) continue;
+    if (porCategoria[e.ev]) somar(porCategoria[e.ev], e.p, e.a);
+    if (DA_FESTA.includes(e.ev)) somar((festas[e.p] ||= {}), e.ev, e.a);
+  }
+
+  // Funil, retenção, sessões e etapa, aparelho por aparelho.
+  const funil = FUNIL.map(() => 0);
+  const hoje = diaEmSaoPaulo(agoraIso);
+  const ret = { d1: { base: 0, voltaram: 0 }, d7: { base: 0, voltaram: 0 }, outroDia: 0 };
+  const sessoes = [];
+  const diasAtivos = [];
+  const nomesDe = new Map();
+  for (const [a, l] of porA) {
+    let desde = null;
+    for (let i = 0; i < FUNIL.length; i += 1) {
+      const e = l.find((x) => FUNIL[i][1].includes(x.ev) && (desde === null || x.em >= desde));
+      if (!e) break;
+      funil[i] += 1;
+      desde = e.em;
+    }
+    // D1: voltou no dia seguinte ao primeiro; D7: voltou entre o 7º e o 9º
+    // dia. A base é quem entrou há tempo bastante para ter voltado.
+    const dias = new Set(l.map((e) => diaEmSaoPaulo(e.em)));
+    const d0 = diaEmSaoPaulo(l[0].em);
+    for (const [k, de, ate] of [['d1', 1, 1], ['d7', 7, 9]]) {
+      if (diasEntre(d0, hoje) < de) continue;
+      ret[k].base += 1;
+      if ([...dias].some((d) => diasEntre(d0, d) >= de && diasEntre(d0, d) <= ate)) ret[k].voltaram += 1;
+    }
+    if (dias.size > 1) ret.outroDia += 1;
+    diasAtivos.push(dias.size);
+    // Sessão: eventos com menos de 30 min entre um e outro.
+    let s = 1;
+    for (let i = 1; i < l.length; i += 1) if (Date.parse(l[i].em) - Date.parse(l[i - 1].em) > MEIA_HORA) s += 1;
+    sessoes.push(s);
+    nomesDe.set(a, new Set(l.map((e) => e.ev)));
+  }
+
+  // O convite: quantos foram criados, abertos e respondidos, e quem chegou ao
+  // finde pela primeira vez por ele. Os eventos do convite não levam o id dele
+  // (o planos.json guarda nomes; ligar os dois desfaria o anonimato do uso).
+  // Quem criou não conta 'abriu-convite' do próprio convite (medir.js).
+  const criacoes = evs.filter((e) => e.ev === 'convite');
+  const aberturas = evs.filter((e) => e.ev === 'abriu-convite');
+  const respostas = evs.filter((e) => e.ev === 'convite-resposta');
+  const criou = new Set(criacoes.map((e) => e.a));
+  const novos = [...porA].filter(([a, l]) => !criou.has(a) && (l[0].ev === 'abriu-convite' || (l[0].ev === 'chegou' && l[0].p === 'convite')));
+
+  // A opinião: a taxa de resposta entre quem viu a pergunta, por origem, e o
+  // NPS pela etapa mais funda a que a pessoa chegou.
+  const taxa = {};
+  for (const de of ['app', 'opiniao']) {
+    const viram = porCategoria['opiniao-viu'][de]?.pessoas || new Set();
+    const daqui = opinioes.filter((o) => o.de === de);
+    taxa[de] = { viram: viram.size, responderam: daqui.filter((o) => viram.has(o.a)).length, respostas: daqui.length };
+  }
+  const notasPorEtapa = {};
+  for (const o of opinioes) (notasPorEtapa[etapaDe(nomesDe.get(o.a))] ||= []).push(o.nota);
+
+  const topFestas = Object.entries(festas).map(([id, m]) => ({ id, ...contado(m) }))
+    .sort((x, y) => (y.detalhe?.pessoas || 0) - (x.detalhe?.pessoas || 0)
+      || (y.ingresso?.pessoas || 0) - (x.ingresso?.pessoas || 0)
+      || (y.mandar?.pessoas || 0) - (x.mandar?.pessoas || 0)
+      || x.id.localeCompare(y.id))
+    .slice(0, 15);
+
+  return {
+    equipeFora: equipe.size,
+    desde: evs.length ? evs.reduce((m, e) => (e.em < m ? e.em : m), evs[0].em) : null,
+    pessoas: porA.size,
+    eventos: contado(porEvento),
+    porDia: Object.fromEntries(Object.entries(porDia).sort().map(([d, s]) => [d, s.size])),
+    funil: FUNIL.map(([passo], i) => ({ passo, pessoas: funil[i] })),
+    retencao: ret,
+    uso: {
+      pessoas: porA.size,
+      sessoes: sessoes.reduce((x, y) => x + y, 0),
+      sessoesPorPessoa: sessoes.length ? umaCasa(sessoes.reduce((x, y) => x + y, 0) / sessoes.length) : null,
+      sessoesMediana: mediana(sessoes),
+      comMaisDeUmaSessao: sessoes.filter((s) => s > 1).length,
+      diasAtivosMedia: diasAtivos.length ? umaCasa(diasAtivos.reduce((x, y) => x + y, 0) / diasAtivos.length) : null,
+    },
+    porCategoria: Object.fromEntries(Object.entries(porCategoria).map(([k, m]) => [k, contado(m)])),
+    topFestas,
+    convite: {
+      criados: criacoes.length,
+      aberturas: aberturas.length,
+      pessoasQueAbriram: new Set(aberturas.map((e) => e.a)).size,
+      respostas: respostas.length,
+      pessoasQueResponderam: new Set(respostas.map((e) => e.a)).size,
+      novos: novos.length,
+      novosQueAbriramOApp: novos.filter(([, l]) => l.some((e) => e.ev === 'abriu-app')).length,
+    },
+    opinioes,
+    taxaDeResposta: taxa,
+    npsPorEtapa: Object.fromEntries(ETAPAS.filter((k) => notasPorEtapa[k]).map((k) => [k, nps(notasPorEtapa[k])])),
+  };
+}
+
 // criarValidacao({ dir, site, agora, log })
 //   -> { evento, opiniao, inscrever, numeros, listaCsv, expurgar }
 function criarValidacao({ dir, site = 'app', agora = () => new Date().toISOString(), log = console } = {}) {
@@ -143,12 +324,13 @@ function criarValidacao({ dir, site = 'app', agora = () => new Date().toISOStrin
   }
 
   // Um evento de uso. Devolve true se contou.
-  function evento({ evento: nome, aparelho } = {}) {
+  function evento({ evento: nome, aparelho, p } = {}) {
     if (typeof nome !== 'string' || !EVENTOS.has(nome)) return false;
     const a = chaveDo(aparelho);
     if (!a) return false;
     if (contagem === null) contagem = eventos().length;
-    if (contagem >= MAX_EVENTOS) {
+    // 'equipe' grava uma linha só e passa pelos tetos: sem ela, a equipe não sai da conta.
+    if (contagem >= MAX_EVENTOS && nome !== 'equipe') {
       if (!avisouTeto) log.warn(`[finde] validação: o uso bateu ${MAX_EVENTOS} eventos e parou de contar`);
       avisouTeto = true;
       return false;
@@ -156,11 +338,14 @@ function criarValidacao({ dir, site = 'app', agora = () => new Date().toISOStrin
     const em = agora();
     const chaveDia = `${diaEmSaoPaulo(em)}|${a}`;
     const vezes = porAparelhoDia.get(chaveDia) || 0;
-    if (vezes >= MAX_POR_APARELHO_DIA) return false;
+    if (vezes >= MAX_POR_APARELHO_DIA && nome !== 'equipe') return false;
     if (porAparelhoDia.size > 20000) porAparelhoDia.clear();
     porAparelhoDia.set(chaveDia, vezes + 1);
+    // O `p` fora da regra não derruba o evento: conta sem ele.
+    let prop = nome !== 'equipe' && typeof p === 'string' && PROP.test(p) ? p : null;
+    if (P_DE_CONVITE.has(nome)) prop = null;
     fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(arqUso, `${JSON.stringify({ em, ev: nome, a })}\n`, { mode: 0o600 });
+    fs.appendFileSync(arqUso, `${JSON.stringify({ em, ev: nome, a, ...(prop ? { p: prop } : {}) })}\n`, { mode: 0o600 });
     contagem += 1;
     return true;
   }
@@ -194,33 +379,22 @@ function criarValidacao({ dir, site = 'app', agora = () => new Date().toISOStrin
       return { ok: true, saiu: true };
     }
     if (dados.inscritos.some((i) => i.email === e)) return { ok: true, ja: true };
-    dados.inscritos.push({ em: agora(), email: e, de: DE_ONDE.has(de) ? de : site, finalidade: FINALIDADE_LISTA });
+    // Só o dia: a hora exata casaria o e-mail com a nota mandada junto.
+    dados.inscritos.push({ em: agora().slice(0, 10), email: e, de: DE_ONDE.has(de) ? de : site, finalidade: FINALIDADE_LISTA });
     fs.mkdirSync(dir, { recursive: true });
     gravar(arqLista, dados);
     return { ok: true, ja: false };
   }
 
-  // O resumo: pessoas (aparelhos) por evento, por dia, a nota e a lista.
+  // O resumo: pessoas (aparelhos) por evento e por dia, o funil, a volta, o
+  // convite, a nota e a lista, sem os aparelhos da equipe (agregar()).
   function numeros() {
-    const evs = eventos();
-    const pessoas = new Set(evs.map((e) => e.a));
-    const porEvento = {};
-    const porDia = {};
-    for (const e of evs) {
-      (porEvento[e.ev] ||= { vezes: 0, pessoas: new Set() }).vezes += 1;
-      porEvento[e.ev].pessoas.add(e.a);
-      const d = diaEmSaoPaulo(e.em);
-      (porDia[d] ||= new Set()).add(e.a);
-    }
-    const opinioes = lerJson(arqOpinioes, { opinioes: [] }).opinioes;
+    const { opinioes, ...r } = agregar(eventos(), lerJson(arqOpinioes, { opinioes: [] }).opinioes, agora());
     const lista = lerJson(arqLista, { inscritos: [] }).inscritos;
     return {
       site,
       geradoEm: agora(),
-      desde: evs.length ? evs[0].em : null,
-      pessoas: pessoas.size,
-      eventos: Object.fromEntries(Object.entries(porEvento).sort().map(([k, v]) => [k, { vezes: v.vezes, pessoas: v.pessoas.size }])),
-      porDia: Object.fromEntries(Object.entries(porDia).sort().map(([d, s]) => [d, s.size])),
+      ...r,
       opiniao: {
         ...nps(opinioes.map((o) => o.nota)),
         comentarios: opinioes.filter((o) => o.texto).map((o) => ({ em: o.em, nota: o.nota, texto: o.texto, de: o.de })),
@@ -259,4 +433,4 @@ function criarValidacao({ dir, site = 'app', agora = () => new Date().toISOStrin
 
 const ARQUIVOS = ['validacao-uso.jsonl', 'validacao-opinioes.json', 'validacao-lista.json', 'validacao-sal'];
 
-module.exports = { criarValidacao, criarLimite, emailValido, nps, EVENTOS, ARQUIVOS, FINALIDADE_LISTA, FINALIDADE_OPINIAO };
+module.exports = { criarValidacao, criarLimite, emailValido, nps, agregar, EVENTOS, PROP, ARQUIVOS, FINALIDADE_LISTA, FINALIDADE_OPINIAO };

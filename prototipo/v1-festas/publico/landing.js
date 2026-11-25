@@ -19,6 +19,15 @@
 
   // "Quer ficar por dentro?": o e-mail vai para /api/lista (nucleo/validacao.js).
   // Sem JavaScript, o formulário posta direto e o servidor volta para cá.
+  // A regra do e-mail é a mesma do servidor (EMAIL); teste/opiniao-email.test.js
+  // confere que as duas são iguais.
+  const EMAIL = /^[^\s@<>()",;:]{1,64}@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;
+  // Sem espaço nas pontas, em minúsculas e sem o ponto que escapa no fim.
+  const emailLimpo = (v) => {
+    const e = String(v || '').trim().toLowerCase().replace(/\.+$/, '');
+    return e.length <= 254 && EMAIL.test(e) ? e : null;
+  };
+
   function ligarLista() {
     const form = document.getElementById('lista');
     if (!form || form.dataset.ligado) return;
@@ -30,12 +39,13 @@
     const botao = form.querySelector('button[type="submit"]');
     const acao = form.querySelector('.lista-acao');
     const trocaSair = form.querySelector('.lista-sair');
+    const outro = form.querySelector('.lista-outro');
     const FRASES = {
       ok: 'Pronto. Você recebe as novidades antes de todo mundo.',
       ja: 'Esse e-mail já estava na lista.',
       saiu: 'Pronto, esse e-mail saiu da lista.',
       erro: 'Esse e-mail não parece certo. Confere?',
-      espera: 'Muitos pedidos daqui. Tente daqui a pouco.',
+      espera: 'Muitos pedidos daqui. O e-mail não entrou; tente daqui a pouco.',
     };
     const dizer = (texto, { errado = false } = {}) => {
       status.textContent = texto;
@@ -43,23 +53,46 @@
       if (errado) campo.setAttribute('aria-invalid', 'true');
       else campo.removeAttribute('aria-invalid');
     };
+    const modo = (saindo) => {
+      sair.value = saindo ? '1' : '0';
+      acao.textContent = saindo ? 'Tirar meu e-mail' : 'Quero receber';
+      if (trocaSair) trocaSair.textContent = saindo ? 'Cancelar' : 'Sair da lista';
+    };
+    // Feito: o foco vai para a frase (o botão some), e o "Usar outro e-mail" fica ao lado.
+    const feita = () => {
+      form.classList.add('feita');
+      status.setAttribute('tabindex', '-1');
+      status.focus({ preventScroll: true });
+    };
     if (trocaSair) {
       trocaSair.addEventListener('click', () => {
-        const saindo = sair.value !== '1';
-        sair.value = saindo ? '1' : '0';
-        acao.textContent = saindo ? 'Tirar meu e-mail' : 'Quero receber';
-        trocaSair.textContent = saindo ? 'Voltar' : 'Sair da lista';
+        modo(sair.value !== '1');
+        dizer(sair.value === '1' ? 'Escreva o e-mail que vai sair da lista.' : '');
         campo.focus();
       });
     }
+    if (outro) {
+      outro.addEventListener('click', () => {
+        form.classList.remove('feita');
+        status.removeAttribute('tabindex');
+        modo(false);
+        dizer('');
+        campo.value = '';
+        campo.focus();
+      });
+    }
+    let ocupado = false;
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = campo.value.trim();
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (ocupado) return;
+      const email = emailLimpo(campo.value);
+      if (!email) {
         dizer(FRASES.erro, { errado: true });
         campo.focus();
         return;
       }
+      campo.value = email;
+      ocupado = true;
       botao.disabled = true;
       dizer('');
       let r = null;
@@ -69,19 +102,29 @@
       } catch {
         r = null;
       }
+      ocupado = false;
       botao.disabled = false;
       if (!r || !r.ok) {
-        dizer(r && r.status === 429 ? FRASES.espera : (r && r.dados && r.dados.erro) || 'A internet sumiu no meio. Tente de novo.', { errado: true });
+        dizer(r && r.status === 429 ? FRASES.espera : (r && r.dados && r.dados.erro) || 'A internet sumiu no meio. O e-mail não entrou; tente de novo.', { errado: true });
+        campo.focus();
         return;
       }
-      form.classList.add('feita');
       dizer(r.dados && r.dados.saiu ? FRASES.saiu : r.dados && r.dados.ja ? FRASES.ja : FRASES.ok);
+      feita();
     });
     // Sem JavaScript, o servidor volta para cá com o resultado no endereço.
+    // Lido, ele sai do endereço: recarregar ou copiar o link não repete a frase.
     const volta = new URLSearchParams(window.location.search).get('lista');
     if (volta && FRASES[volta]) {
       if (volta === 'ok' || volta === 'saiu') form.classList.add('feita');
       dizer(FRASES[volta], { errado: volta === 'erro' || volta === 'espera' });
+    }
+    if (volta !== null) {
+      try {
+        const u = new URL(window.location.href);
+        u.searchParams.delete('lista');
+        window.history.replaceState(window.history.state, '', u.pathname + u.search + u.hash);
+      } catch { /* tudo bem */ }
     }
   }
   if (typeof document !== 'undefined') {

@@ -590,10 +590,14 @@ a.marca:hover { color: var(--bordo); }
 .lista-campo[aria-invalid="true"] { border-bottom: 1.5px solid var(--nude); }
 .lista-status { flex-basis: 100%; font-size: 16px; line-height: 1.5; color: var(--nude); }
 .lista .botao:disabled { background: transparent; color: var(--sobre-bordo); outline: .5px solid var(--rose); outline-offset: -.5px; cursor: progress; }
-.lista-sair { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 4px; text-decoration-color: var(--rose); }
-.lista-sair:hover { color: var(--nude); }
+.lista-sair, .lista-outro { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: underline; text-decoration-thickness: .5px; text-underline-offset: 4px; text-decoration-color: var(--rose); }
+.lista-sair:hover, .lista-outro:hover { color: var(--nude); }
 .lista-status:empty { display: none; }
 .lista.feita .lista-campo, .lista.feita .botao, .lista.feita .lista-finalidade, .lista.feita .lista-rotulo { display: none; }
+/* Depois do "Quero receber": a frase e o "Usar outro e-mail", que devolve o campo. */
+.lista-outro { display: none; }
+.lista.feita .lista-outro { display: inline-block; min-height: 44px; }
+.lista-status:focus { outline: none; }
 .isca { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .insta-rede { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: 100%; margin-top: 20px; padding-top: 28px; border-top: .5px solid var(--rose); }
 .insta-rede .insta-arroba { font-size: 32px; }

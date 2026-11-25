@@ -1124,12 +1124,14 @@ function montarServidor({
 
   // Os dados de validação (nucleo/validacao.js): cada site no próprio volume.
   const validacao = criarValidacao({ dir: path.resolve(varDir), site: temApp ? 'app' : 'landing', agora: agoraIso, log });
-  // Limites por IP, largos (uma turma inteira atrás do mesmo Wi-Fi passa), e
-  // por pessoa (IP + aparelho ou e-mail), estreitos. Corte vai para o log.
+  // Limites por IP, largos (a sala do pitch inteira atrás do mesmo Wi-Fi
+  // passa: opinião, e-mail e correção somam vários pedidos por pessoa), e por
+  // pessoa (IP + aparelho ou e-mail), estreitos. Corte vai para o log.
   const DEZ_MIN = 10 * 60 * 1000;
   const limites = {
-    uso: criarLimite({ max: 600, janelaMs: 60 * 1000, agoraMs: relogio }),
-    ip: criarLimite({ max: 60, janelaMs: DEZ_MIN, agoraMs: relogio }),
+    // A sala do pitch inteira atrás do mesmo Wi-Fi: o teto por aparelho e por dia segura o abuso.
+    uso: criarLimite({ max: 3000, janelaMs: 60 * 1000, agoraMs: relogio }),
+    ip: criarLimite({ max: 600, janelaMs: DEZ_MIN, agoraMs: relogio }),
     pessoa: criarLimite({ max: 6, janelaMs: DEZ_MIN, agoraMs: relogio }),
   };
   let ultimoAvisoDeLimite = 0;
