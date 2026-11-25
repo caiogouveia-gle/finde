@@ -8,14 +8,22 @@
   <meta name="theme-color" content="#EADCD2">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/fontes/dm-sans.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fontes/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/admin.css">
   <script src="/admin.js" defer></script>
 </head>
 <body>
   <header class="topo">
-    <p class="marca">finde<span class="ponto">.</span> <span class="marca-sub">painel</span></p>
-    <p class="vivo" id="vivo" hidden><span class="pulso" aria-hidden="true"></span><span id="vivo-texto">ao vivo</span></p>
-    <button class="sair" id="sair" type="button" hidden>Sair</button>
+    <div class="topo-dentro">
+      <p class="marca">finde<span class="ponto">.</span></p>
+      <p class="topo-titulo">Números do protótipo</p>
+      <p class="vivo" id="vivo" hidden><span class="pulso" aria-hidden="true"></span><span id="vivo-texto">ao vivo</span></p>
+      <div class="acoes" id="acoes" hidden>
+        <button class="acao" id="copiar" type="button">Copiar imagem</button>
+        <button class="acao" id="baixar" type="button">Baixar JPG</button>
+        <button class="acao acao--sair" id="sair" type="button">Sair</button>
+      </div>
+    </div>
   </header>
 
   <main id="conteudo">
@@ -29,6 +37,7 @@
     </form>
 
     <div class="painel" id="painel" hidden aria-live="off"></div>
+    <p class="aviso" id="aviso" role="status" aria-live="polite"></p>
   </main>
 </body>
 </html>
