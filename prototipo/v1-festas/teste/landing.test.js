@@ -134,8 +134,8 @@ test('a lista de e-mails: um campo, a finalidade ao lado, e só /api/lista receb
   assert.match(form, /<label class="rotulo lista-rotulo" for="lista-email">Seu e-mail<\/label>/);
   assert.match(form, /type="email" name="email"/);
   assert.match(form, /class="isca"[^>]*tabindex="-1"[^>]*aria-hidden="true"/);
-  assert.match(form, /Só para mandar as novidades do finde\. Fica guardado até 31\/12\/2026/);
-  assert.match(form, /<button class="lista-sair" type="button">Sair da lista<\/button>/);
+  assert.match(form, /Só novidades do finde\./);
+  assert.match(form, /<button class="lista-sair" type="button">Cancelar inscrição<\/button>/);
   assert.match(corpo, /<h2 id="instagram-titulo">Quer ficar por dentro\?<\/h2>/);
   assert.doesNotMatch(corpo, /<textarea/);
   const destinos = [...JS.matchAll(/fetch\('([^']+)'/g)].map((m) => m[1]);

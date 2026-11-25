@@ -57,7 +57,7 @@ const MAX_EVENTOS = 200000;
 // Por aparelho e por dia: mais que isso é robô ou laço, e para de contar.
 const MAX_POR_APARELHO_DIA = 300;
 // A frase que vai junto do campo de e-mail, e que fica gravada com ele.
-const FINALIDADE_LISTA = 'Só para mandar as novidades do finde. Fica guardado até 31/12/2026, e você sai quando quiser.';
+const FINALIDADE_LISTA = 'Novidades do finde por e-mail; guardado até 31/12/2026.';
 const FINALIDADE_OPINIAO = 'A nota e o comentário vão sem nome, junto da contagem anônima do que você fez no app, e ficam guardados até 31/12/2026. Servem pra gente saber se o protótipo ajudou.';
 
 const hmac = (sal, texto) => crypto.createHmac('sha256', sal).update(texto, 'utf8').digest('hex').slice(0, 16);
