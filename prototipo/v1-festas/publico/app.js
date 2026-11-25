@@ -782,7 +782,6 @@
         });
         return b;
       })) : null;
-    const base = ehDia && i === 0 ? baseVivaDoForm() : null;
 
     // O rodapé de todas as telas (a nota do protótipo e o tema) logo abaixo
     // do botão: a pergunta 1 é a primeira tela de quem abre o app direto.
@@ -797,8 +796,7 @@
       el('div', { class: 'cabeca-pergunta' },
         el('p', { class: 'rotulo', texto: editando ? 'Ajustar o pedido' : `${i + 1} de ${PERGUNTAS.length}` }),
         h1,
-        p.dica ? el('p', { class: 'dica', id: `${idTitulo}-dica`, texto: p.dica }) : null,
-        base),
+        p.dica ? el('p', { class: 'dica', id: `${idTitulo}-dica`, texto: p.dica }) : null),
       semanas,
       lista,
       el('div', { class: 'pe' }, continuar, el('p', { class: 'aviso-erro', id: 'erro', role: 'alert' })),
@@ -810,13 +808,6 @@
     });
     atualizarBotao();
     return form;
-  }
-
-  // A base viva na primeira pergunta: "Atualizado há 3h" e o que foi lido.
-  function baseVivaDoForm() {
-    const b = FT.baseViva(estado.form && estado.form.base);
-    if (!b) return null;
-    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }));
   }
 
   // A faixa que vale: a respondida, ou o padrão do formulário (28 a 35).
@@ -1260,13 +1251,6 @@
       el('span', { texto: estado.criterios.semana === 'proxima' ? 'Guia da próxima semana' : 'Guia da semana' }),
       quando ? el('span', { texto: quando }) : null,
       el('span', { texto: 'São Paulo' }));
-  }
-
-  // "Atualizado há 3h" / "41 festas lidas de 50 perfis e 3 sites de ingresso".
-  function baseViva(base) {
-    const b = FT.baseViva(base);
-    if (!b) return null;
-    return el('p', { class: 'base-viva' }, el('span', { class: 'ponto-vivo', 'aria-hidden': 'true' }), el('span', { texto: b.quando }));
   }
 
   function tituloResultado() {
@@ -1814,8 +1798,7 @@
     return el('div', { class: 'tela-resultado tela-guia', id: 'tela-resultado' },
       el('header', { class: 'guia-cabeca', id: 'guia-cabeca' },
         topo(irAjuste),
-        edicaoDaSemana(),
-        baseViva(r.base || (estado.form && estado.form.base))),
+        edicaoDaSemana()),
       el('section', { class: 'guia-titulo', id: 'cabeca-resultado' },
         tituloResultado(),
         frasePedido(r.pedidoPartes || []),

@@ -1,5 +1,6 @@
-/* O painel ao vivo dos números (/admin). Mesma paleta do app, sem enfeite:
-   número grande, rótulo curto, o n sempre ao lado. */
+/* O painel ao vivo dos números (/admin), no desenho do guia: papel nude,
+   tinta bordô, numerais em Instrument Serif, fios finos no lugar de caixas.
+   Nada de sombra nem gradiente; o único bloco cheio é a faixa do funil. */
 
 @font-face {
   font-family: 'DM Sans';
@@ -7,14 +8,19 @@
   font-style: normal; font-weight: 100 1000; font-display: swap;
 }
 @font-face {
-  font-family: 'Fraunces';
-  src: url('/fontes/fraunces-italico-300.woff2') format('woff2');
-  font-style: italic; font-weight: 300; font-display: block;
-}
-@font-face {
   font-family: 'Instrument Serif';
   src: url('/fontes/instrument-serif.woff2') format('woff2');
   font-style: normal; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fontes/instrument-serif-italico.woff2') format('woff2');
+  font-style: italic; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fontes/fraunces-italico-300.woff2') format('woff2');
+  font-style: italic; font-weight: 300; font-display: block;
 }
 
 :root {
@@ -26,8 +32,10 @@
   --rotulo: #8A4A4F;
   --corrido: #6B3A3F;
   --fio: #D7BFB4;
-  --barra: #8A4A4F;
+  --sobre-bordo: #D9C2BA;
   --verde: #2F6B4F;
+  --serifa: 'Instrument Serif', Georgia, serif;
+  --lateral: clamp(16px, 4vw, 48px);
   color-scheme: light;
 }
 
@@ -41,101 +49,133 @@ body {
   font-variant-numeric: tabular-nums;
 }
 [hidden] { display: none !important; }
-code { font-size: .92em; }
+:focus-visible { outline: 2px solid var(--bordo); outline-offset: 3px; }
 
-.topo {
-  position: sticky; top: 0; z-index: 2;
-  display: flex; align-items: center; gap: 16px;
-  padding: 14px max(16px, env(safe-area-inset-left)) 12px;
-  background: var(--nude);
-  border-bottom: 1px solid var(--fio);
+/* ------------------------------------------------------------ topo */
+.topo { position: sticky; top: 0; z-index: 2; background: var(--nude); border-bottom: .5px solid var(--rose); }
+.topo-dentro {
+  max-width: 1240px; margin: 0 auto; padding: 12px var(--lateral);
+  display: flex; align-items: center; gap: 8px 20px; flex-wrap: wrap;
 }
-/* A marca é a da landing: Fraunces itálico leve. */
-.marca { margin: 0; font: italic 300 28px/1 'Fraunces', Georgia, serif; font-variation-settings: 'SOFT' 100, 'WONK' 1; color: var(--bordo); }
+.marca { margin: 0; font: italic 300 30px/1 'Fraunces', Georgia, serif; font-variation-settings: 'SOFT' 100, 'WONK' 1; color: var(--bordo); white-space: nowrap; }
 .marca .ponto { color: var(--rose); }
-.marca-sub { font: 500 12px/1 'DM Sans', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); margin-left: 6px; }
-.vivo { margin: 0 0 0 auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--corrido); }
+.topo-titulo { margin: 0; padding-left: 20px; border-left: .5px solid var(--rose); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); white-space: nowrap; }
+.vivo { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--corrido); }
 .vivo.parado .pulso { background: var(--fio); animation: none; }
 .vivo.falhou { color: var(--bordo); }
-.pulso { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); animation: pulso 2s ease-in-out infinite; }
-@keyframes pulso { 50% { opacity: .35; } }
+.pulso { width: 7px; height: 7px; border-radius: 50%; background: var(--verde); animation: pulso 2s ease-in-out infinite; }
+@keyframes pulso { 50% { opacity: .3; } }
 @media (prefers-reduced-motion: reduce) { .pulso { animation: none; } }
-.sair {
-  font: inherit; font-size: 13px; color: var(--bordo);
-  background: none; border: 1px solid var(--fio); padding: 6px 12px; min-height: 36px; cursor: pointer;
+.acoes { margin-left: auto; display: flex; gap: 8px; }
+.acao {
+  font: 500 12px/1 'DM Sans', sans-serif; letter-spacing: .12em; text-transform: uppercase;
+  min-height: 40px; padding: 0 14px; cursor: pointer;
+  color: var(--bordo); background: transparent; border: 1px solid var(--bordo);
 }
-.sair:hover { border-color: var(--bordo); }
+.acao:hover { background: var(--bordo); color: var(--nude); }
+.acao:disabled { opacity: .5; cursor: progress; }
+.acao--sair { border-color: transparent; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: .5px; }
+.acao--sair:hover { background: transparent; color: var(--grafite); }
 
-main { padding: 20px 16px 64px; max-width: 1120px; margin: 0 auto; }
+main { max-width: 1240px; margin: 0 auto; padding: 0 var(--lateral) 72px; }
+.aviso { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); margin: 0; padding: 10px 16px; background: var(--grafite); color: var(--nude-claro); font-size: 14px; pointer-events: none; opacity: 0; transition: opacity .2s; }
+.aviso.visivel { opacity: 1; }
 
-/* a entrada */
-.entrada { max-width: 420px; margin: 8vh auto 0; display: grid; gap: 10px; }
-.entrada h1 { margin: 0 0 4px; font: 400 36px/1.05 'Instrument Serif', Georgia, serif; color: var(--bordo); }
-.apoio { margin: 0 0 8px; color: var(--corrido); }
+/* ------------------------------------------------------------ entrada */
+.entrada { max-width: 400px; margin: 12vh auto 0; display: grid; gap: 10px; }
+.entrada h1 { margin: 0 0 12px; font: 400 44px/1 var(--serifa); color: var(--bordo); }
 .rotulo { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
-.entrada input[type="password"] {
-  font: inherit; font-size: 16px; padding: 12px; min-height: 48px;
-  border: 1px solid var(--corrido); background: var(--nude-claro); color: var(--grafite);
-}
+.entrada input[type="password"] { font: inherit; font-size: 16px; padding: 12px; min-height: 48px; border: 0; border-bottom: 1px solid var(--bordo); background: var(--nude-claro); color: var(--grafite); }
 .lembrar { display: flex; gap: 8px; align-items: center; color: var(--corrido); font-size: 14px; }
 .erro { margin: 0; min-height: 1.4em; color: var(--bordo); font-size: 14px; }
-.botao {
-  font: 500 15px/1 'DM Sans', sans-serif; min-height: 48px;
-  background: var(--bordo); color: var(--nude-claro); border: 0; cursor: pointer;
-}
-.botao:hover { background: #3b0d19; }
-:focus-visible { outline: 2px solid var(--bordo); outline-offset: 2px; }
+.botao { font: 500 13px/1 'DM Sans', sans-serif; letter-spacing: .14em; text-transform: uppercase; min-height: 52px; background: var(--bordo); color: var(--nude); border: 0; cursor: pointer; }
+.botao:hover { background: var(--grafite); }
 
-/* o painel */
-.painel { display: grid; gap: 28px; }
-/* Fio em cada cartão, sem fundo na grade: célula vazia na última linha some. */
-.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-.kpi { background: var(--nude-claro); padding: 14px 16px 16px; display: grid; grid-template-rows: auto auto 1fr; gap: 4px; align-content: start; box-shadow: 0 0 0 .5px var(--fio); }
-.kpi-rot { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kpi-rot { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--rotulo); }
-.kpi-num { font: 400 40px/1 'Instrument Serif', Georgia, serif; color: var(--bordo); transition: color .6s; }
+/* ------------------------------------------------------------ painel */
+.painel { display: grid; gap: 48px; padding-top: 28px; }
+.cabeca { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.cabeca h1 { margin: 0; font: 400 clamp(34px, 4.4vw, 52px)/1 var(--serifa); color: var(--bordo); }
+.cabeca h1 i { color: var(--rotulo); }
+.cabeca p { margin: 0; font-size: 13px; color: var(--corrido); }
+
+/* os seis números: fios entre eles, sem caixa */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--bordo); border-bottom: .5px solid var(--rose); }
+.kpi { padding: 16px 16px 18px; display: grid; gap: 6px; align-content: start; border-left: .5px solid var(--rose); min-width: 0; }
+.kpi:first-child { border-left: 0; padding-left: 0; }
+.kpi-rot { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
+.kpi-num { font: 400 clamp(48px, 5vw, 68px)/.9 var(--serifa); color: var(--bordo); transition: color .6s; }
 .kpi-num.subiu { color: var(--verde); }
-.kpi-pe { font-size: 13px; color: var(--corrido); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
-.kpi-pe .pequena { margin-left: 0; }
+.kpi-pe { font-size: 13px; line-height: 1.35; color: var(--corrido); }
 
-.secoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 28px 32px; }
-.secao h2 { margin: 0 0 10px; font: 500 12px/1.2 'DM Sans', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); padding-bottom: 8px; border-bottom: 1px solid var(--fio); }
-.secao .vazio { color: var(--corrido); margin: 0; }
-.nota-n { font-size: 12px; color: var(--corrido); }
-.pequena { font-size: 11px; letter-spacing: .04em; color: var(--rotulo); border: 1px solid var(--fio); padding: 1px 6px; margin-left: 6px; white-space: nowrap; }
+/* o funil: uma faixa bordô, a escada de colunas */
+.funil { background: var(--bordo); color: var(--nude); padding: 24px clamp(16px, 3vw, 32px) 28px; }
+.funil-cabeca { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.funil h2 { margin: 0; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--sobre-bordo); font-weight: 500; }
+.funil-cabeca p { margin: 0; font-size: 13px; color: var(--sobre-bordo); }
+.escada { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; align-items: end; }
+.degrau { display: grid; grid-template-rows: auto 120px auto; gap: 10px; min-width: 0; }
+.degrau-num { font: 400 40px/1 var(--serifa); color: var(--nude-claro); }
+.degrau-num small { font: 400 13px/1 'DM Sans', sans-serif; color: var(--sobre-bordo); margin-left: 6px; }
+.degrau-trilho { position: relative; border-bottom: 1px solid var(--rose); }
+.degrau-cheio { position: absolute; left: 0; right: 0; bottom: 0; height: var(--p, 0%); background: var(--rose); transition: height .5s ease; }
+.degrau-rot { font-size: 13px; line-height: 1.3; color: var(--sobre-bordo); }
 
-/* barras: o funil, a origem, o uso */
-.barras { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.barra { display: grid; gap: 4px; }
-.barra-linha { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+/* as seções */
+.secoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px 40px; }
+.secao { min-width: 0; }
+.secao--larga { grid-column: span 2; }
+.secao h2 { margin: 0 0 14px; padding-top: 10px; border-top: 1px solid var(--bordo); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); font-weight: 500; }
+.vazio { margin: 0; color: var(--corrido); }
+.nota { margin: 10px 0 0; font-size: 13px; color: var(--corrido); }
+
+.pares { margin: 0; display: grid; grid-template-columns: 1fr auto; font-size: 15px; }
+.pares dt, .pares dd { padding: 8px 0; border-bottom: .5px solid var(--fio); }
+.pares dd { margin: 0; text-align: right; color: var(--bordo); font-weight: 500; white-space: nowrap; padding-left: 16px; }
+
+.barras { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.barra { display: grid; gap: 5px; }
+.barra-linha { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
 .barra-valor { white-space: nowrap; color: var(--bordo); font-weight: 500; }
-.barra-trilho { height: 6px; background: var(--nude-claro); box-shadow: inset 0 0 0 1px var(--fio); }
-.barra-cheio { height: 100%; background: var(--barra); transition: width .5s ease; }
+.barra-trilho { height: 4px; background: var(--fio); }
+.barra-cheio { height: 100%; width: var(--p, 0%); background: var(--bordo); transition: width .5s ease; }
 
-/* tabela das festas */
-.tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
-.tabela th { text-align: left; font-weight: 500; font-size: 12px; color: var(--rotulo); padding: 0 0 6px; }
-.tabela th.n, .tabela td.n { text-align: right; padding-left: 10px; white-space: nowrap; }
-.tabela td { padding: 7px 0; border-top: 1px solid var(--fio); vertical-align: top; }
-.tabela td small { display: block; color: var(--corrido); font-size: 12px; }
+.tabela { width: 100%; border-collapse: collapse; font-size: 15px; }
+.tabela th { text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--rotulo); padding: 0 0 8px; }
+.tabela th.n, .tabela td.n { text-align: right; padding-left: 16px; white-space: nowrap; width: 1%; }
+.tabela td { padding: 10px 0; border-top: .5px solid var(--fio); vertical-align: top; }
+.tabela td.n { font: 400 24px/1 var(--serifa); color: var(--bordo); }
+.tabela td small { display: block; color: var(--corrido); font-size: 13px; margin-top: 2px; }
 
-.pares { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; font-size: 14px; }
-.pares dt { color: var(--grafite); }
-.pares dd { margin: 0; text-align: right; color: var(--bordo); font-weight: 500; white-space: nowrap; }
+.nps-linha { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+.nps-num { font: 400 64px/.9 var(--serifa); color: var(--bordo); }
+.nps-pe { font-size: 13px; color: var(--corrido); }
+.comentarios { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 14px; }
+.comentarios li { display: grid; grid-template-columns: 36px 1fr; gap: 10px; }
+.comentarios .c-nota { font: 400 28px/1 var(--serifa); color: var(--bordo); }
+.comentarios q { font: italic 400 19px/1.3 var(--serifa); color: var(--grafite); quotes: '“' '”'; }
+.comentarios small { display: block; margin-top: 2px; color: var(--corrido); font-size: 12px; }
 
-.comentarios { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
-.comentarios li { display: grid; grid-template-columns: 32px 1fr; gap: 8px; font-size: 14px; }
-.comentarios .c-nota { font: 400 22px/1 'Instrument Serif', Georgia, serif; color: var(--bordo); }
-.comentarios small { display: block; color: var(--corrido); font-size: 12px; }
+.rodape-painel { margin: 0; padding-top: 16px; border-top: .5px solid var(--rose); font-size: 13px; color: var(--corrido); }
 
-.rodape-painel { font-size: 13px; color: var(--corrido); margin: 0; }
-
-/* No celular, o estado ao vivo desce para a própria linha: a marca e o Sair
-   ficam no alto, sem quebrar. */
-.marca { white-space: nowrap; }
-@media (max-width: 560px) {
-  .topo { flex-wrap: wrap; row-gap: 6px; }
-  .sair { margin-left: auto; }
-  .vivo { order: 3; flex-basis: 100%; margin: 0; font-size: 12px; }
-  .kpi-num { font-size: 34px; }
+@media (max-width: 1000px) {
+  .secoes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .topo-titulo { display: none; }
+  .acoes { width: 100%; margin-left: 0; }
+  .acao { flex: 1; padding: 0 8px; letter-spacing: .08em; }
+  .acao--sair { flex: 0 0 auto; }
+  .vivo { margin-left: auto; font-size: 12px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .kpi:nth-child(n+3) { border-top: .5px solid var(--rose); }
+  .escada { grid-template-columns: 1fr; gap: 14px; }
+  .degrau { grid-template-columns: 72px 1fr; grid-template-rows: auto auto; align-items: center; gap: 6px 12px; }
+  .degrau-num { grid-row: span 2; font-size: 32px; }
+  .degrau-num small { display: block; margin: 4px 0 0; }
+  .degrau-rot { grid-column: 2; grid-row: 1; }
+  .degrau-trilho { grid-column: 2; grid-row: 2; height: 6px; border: 0; background: rgb(201 143 138 / .3); }
+  .degrau-cheio { top: 0; height: auto; right: auto; width: var(--p, 0%); }
+  .secoes { grid-template-columns: 1fr; }
+  .secao--larga { grid-column: auto; }
 }
