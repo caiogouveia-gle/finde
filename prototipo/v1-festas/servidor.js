@@ -820,9 +820,21 @@ function montarServidor({
   // (montarResultado): até 3 reais recomendadas, as demais do dia em
   // maisDoDia, a contagem dos outros dias da semana e as fictícias só quando
   // o dia não tem real, em `exemplos`, sem %. O servidor só junta.
-  function resultado(criterios) {
+  // Pedido sem dia (sessão antiga do navegador, formulário pulado): em vez
+  // de quebrar, vale o primeiro dia com festa (hoje, depois quinta a
+  // domingo), e sexta se nenhum tiver. Conserto de 25/11: dava 500.
+  function comDia(criterios) {
+    if (C.ORDEM_DIAS.includes(criterios.dia)) return criterios;
+    const semana = criterios.semana === 'proxima' ? 'proxima' : 'esta';
+    const comFesta = C.ORDEM_DIAS.find((dia) => L.reaisDoPedido(reaisVigentes(), { ...criterios, dia, semana }, relogio()).festas.length);
+    criterios.dia = comFesta || 'sex';
+    return criterios;
+  }
+
+  function resultado(pedido) {
     const base = fonte.base();
     const agoraMs = relogio();
+    const criterios = comDia(pedido);
     const agora = new Date(agoraMs);
     // A fictícia de "hoje" leva a data da noite de hoje (antes das 6h, a da
     // véspera): é dela que o filtro abaixo tira as festas.
@@ -901,7 +913,7 @@ function montarServidor({
     'POST /api/festas': (corpo) => {
       // A semana pode vir dentro dos critérios ou ao lado deles.
       const bruto = corpo.semana !== undefined && corpo.criterios && typeof corpo.criterios === 'object' ? { ...corpo.criterios, semana: corpo.semana } : corpo.criterios;
-      const criterios = exigirCriterios(bruto);
+      const criterios = comDia(exigirCriterios(bruto));
       const r = resultado(criterios);
       if (r.oferta) criterios.oferta = r.oferta.frase;
       return [200, {
@@ -911,7 +923,7 @@ function montarServidor({
     },
 
     'POST /api/conversa': (corpo) => {
-      const antes = exigirCriterios(corpo.criterios);
+      const antes = comDia(exigirCriterios(corpo.criterios));
       if (typeof corpo.texto !== 'string' || !corpo.texto.trim()) throw new ErroPlano(400, 'Escreva o que quer mudar.');
       if (corpo.texto.length > LIMITE_TEXTO) throw new ErroPlano(400, 'Frase longa demais. Tente em poucas palavras.');
       const antesIds = idsNaTela(corpo.atuais);

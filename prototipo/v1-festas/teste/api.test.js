@@ -841,3 +841,25 @@ test('revisão app-5: "hoje" sem real num dia útil não diz que a lista está v
   assert.ok(r.outrosDias.some((d) => d.reais > 0));
   assert.doesNotMatch(`${r.aviso || ''} ${r.resposta}`, /lista de festas está vazia/);
 });
+
+test('POST /api/festas sem dia não quebra: vale o primeiro dia com festa (conserto de 25/11, dava 500)', async () => {
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const path = require('node:path');
+  const { criarServidor } = require('../servidor');
+  const pasta = fs.mkdtempSync(path.join(os.tmpdir(), 'finde-sem-dia-'));
+  const s = criarServidor({ dados: path.join(__dirname, '..', 'dados', 'festas.json'), varDir: pasta, log: { info() {}, warn() {}, error() {} } });
+  await new Promise((r) => s.listen(0, '127.0.0.1', r));
+  try {
+    const r = await fetch(`http://127.0.0.1:${s.address().port}/api/festas`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ criterios: { janela: 'cedo', faixa: '28-35', teto: 'sem-limite', estilos: [] } }),
+    });
+    const d = await r.json();
+    assert.notEqual(r.status, 500, JSON.stringify(d));
+    if (r.status === 200) assert.ok(['hoje', 'qui', 'sex', 'sab', 'dom'].includes(d.criterios.dia), JSON.stringify(d.criterios));
+  } finally {
+    await new Promise((r) => s.close(r));
+    fs.rmSync(pasta, { recursive: true, force: true });
+  }
+});
