@@ -854,8 +854,12 @@ function montarServidor({
     }
     const semana = criterios.semana === 'proxima' ? 'proxima' : 'esta';
     const daData = L.reaisDoPedido(vigentes, { ...criterios, semana }, agoraMs).festas;
-    // "Hoje" é um dia da semana para o motor: o das festas de hoje.
-    const diaReal = criterios.dia === 'hoje' && daData.length ? daData[0].dia : criterios.dia;
+    // "Hoje" é um dia da semana para o motor: o das festas de hoje, se ele
+    // for um dos dias do pedido (quinta a domingo). Numa segunda a quarta, o
+    // dia da festa ("qua") não existe para o motor e o pedido ficava sem dia
+    // (500 em 25/11): aí segue "hoje", que o motor aceita sem filtrar por dia.
+    const diaDaFesta = daData.length ? daData[0].dia : null;
+    const diaReal = criterios.dia === 'hoje' && C.ORDEM_DIAS.includes(diaDaFesta) ? diaDaFesta : criterios.dia;
     const cReal = { ...criterios, dia: diaReal };
     const pedidoReal = motor.completar(motor.sanearCriterios(cReal));
     // A recusada de propósito (estilo, bairro, casa, "essa não") fica fora
