@@ -842,24 +842,16 @@ test('revisão app-5: "hoje" sem real num dia útil não diz que a lista está v
   assert.doesNotMatch(`${r.aviso || ''} ${r.resposta}`, /lista de festas está vazia/);
 });
 
-test('POST /api/festas sem dia não quebra: vale o primeiro dia com festa (conserto de 25/11, dava 500)', async () => {
-  const fs = require('node:fs');
-  const os = require('node:os');
-  const path = require('node:path');
-  const { criarServidor } = require('../servidor');
-  const pasta = fs.mkdtempSync(path.join(os.tmpdir(), 'finde-sem-dia-'));
-  const s = criarServidor({ dados: path.join(__dirname, '..', 'dados', 'festas.json'), varDir: pasta, log: { info() {}, warn() {}, error() {} } });
-  await new Promise((r) => s.listen(0, '127.0.0.1', r));
-  try {
-    const r = await fetch(`http://127.0.0.1:${s.address().port}/api/festas`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ criterios: { janela: 'cedo', faixa: '28-35', teto: 'sem-limite', estilos: [] } }),
-    });
-    const d = await r.json();
-    assert.notEqual(r.status, 500, JSON.stringify(d));
-    if (r.status === 200) assert.ok(['hoje', 'qui', 'sex', 'sab', 'dom'].includes(d.criterios.dia), JSON.stringify(d.criterios));
-  } finally {
-    await new Promise((r) => s.close(r));
-    fs.rmSync(pasta, { recursive: true, force: true });
-  }
+
+test('POST /api/festas com "hoje" numa quarta com festa: 200, não 500 (conserto de 25/11)', async () => {
+  // O motor só conhece hoje e quinta a domingo; o dia da festa de quarta
+  // ("qua") não pode virar o dia do pedido.
+  const base = FIXTURE.festas[0];
+  const quarta = { ...base, id: 'quarta-exemplo-20261202', data: '2026-12-02', inicio: '2026-12-02T23:00:00-03:00', fim: '2026-12-03T05:00:00-03:00' };
+  const reais = path.join(pasta, 'reais-quarta.json');
+  fs.writeFileSync(reais, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas: [quarta] }));
+  const app = await subirApp({ reais, relogio: () => Date.parse('2026-12-02T12:00:00-03:00') });
+  const r = await app.ir('/api/festas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 150 } }) });
+  assert.equal(r.status, 200, JSON.stringify(r.corpo));
+  assert.equal(r.corpo.criterios.dia, 'hoje');
 });
