@@ -1052,7 +1052,7 @@ function montarServidor({
   // convite (U24), sempre em endereço absoluto.
   const pagina = (req, res, nome, opcoes = {}) => enviarPagina(req, res, path.join(PUBLICO, nome), {
     ...opcoes,
-    enderecos: { ...enderecos, __IMAGEM_COMPARTILHAR__: `${origem(req)}/compartilhar.png`, ...(opcoes.enderecos || {}) },
+    enderecos: { ...enderecos, __IMAGEM_COMPARTILHAR__: `${origem(req)}/compartilhar.png?v=20261126`, ...(opcoes.enderecos || {}) },
   });
 
   // A landing vem montada: o destaque do herói e as telas da demo saem daqui.

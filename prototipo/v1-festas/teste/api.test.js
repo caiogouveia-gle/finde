@@ -269,10 +269,10 @@ test('/p/:id: 404 quando não existe; quando existe, as metas de compartilhament
   assert.match(sim.corpo, /<meta property="og:title" content="Exemplo · Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)">/);
   assert.match(sim.corpo, /<title>Exemplo · Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)<\/title>/);
   assert.match(sim.corpo, /<meta property="og:description" content="[^"]*Média de 31 anos, informada pela produtora\.">/);
-  assert.match(sim.corpo, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png">/);
+  assert.match(sim.corpo, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png\?v=\d{8}">/);
   assert.equal((await chamar('GET', '/plano.html')).status, 404);
   const inicio = await chamar('GET', '/');
-  assert.match(inicio.corpo, /og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png"/);
+  assert.match(inicio.corpo, /og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png\?v=\d{8}"/);
   assert.match(inicio.corpo, /apple-touch-icon" href="\/icone-180\.png"/);
 });
 
@@ -281,16 +281,16 @@ test('prévia do link atrás do proxy do Fly: a imagem sai em https quando X-For
   for (const pagina of ['/', '/app', `/p/${criado.corpo.id}`]) {
     const imagem = async (cabecalhos) => (await chamar('GET', pagina, undefined, cabecalhos)).corpo
       .match(/<meta property="og:image" content="([^"]*)">/)[1];
-    assert.match(await imagem({ 'X-Forwarded-Proto': 'https' }), /^https:\/\/127\.0\.0\.1:\d+\/compartilhar\.png$/, pagina);
+    assert.match(await imagem({ 'X-Forwarded-Proto': 'https' }), /^https:\/\/127\.0\.0\.1:\d+\/compartilhar\.png\?v=\d{8}$/, pagina);
     assert.match(await imagem({ 'X-Forwarded-Proto': 'HTTPS, http' }), /^https:\/\//, pagina);
     // Sem o cabeçalho, ou com qualquer outra coisa nele, fica http.
     for (const outro of [{}, { 'X-Forwarded-Proto': 'http' }, { 'X-Forwarded-Proto': 'javascript' }, { 'X-Forwarded-Proto': 'https://mal' }]) {
-      assert.match(await imagem(outro), /^http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png$/, `${pagina} ${JSON.stringify(outro)}`);
+      assert.match(await imagem(outro), /^http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png\?v=\d{8}$/, `${pagina} ${JSON.stringify(outro)}`);
     }
   }
   // Host estranho: nada de origem.
   const r = await bruto('GET', '/', { Host: 'mal"><script>', 'X-Forwarded-Proto': 'https' });
-  assert.match(r.corpo.toString('utf8'), /<meta property="og:image" content="\/compartilhar\.png">/);
+  assert.match(r.corpo.toString('utf8'), /<meta property="og:image" content="\/compartilhar\.png\?v=\d{8}">/);
 });
 
 test('planos: festa inexistente, id torto, resposta estranha, método errado', async () => {

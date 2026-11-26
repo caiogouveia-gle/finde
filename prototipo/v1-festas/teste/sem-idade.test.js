@@ -30,3 +30,14 @@ test('o app não pergunta a idade nem mostra a idade do público no detalhe ou n
   assert.doesNotMatch(perguntas, /chave: 'idade'/);
   assert.doesNotMatch(app, /'Idade do público'|divulgou a média de idade|'Com média informada'/);
 });
+
+test('a prévia de link do app, da landing e do convite não fala de idade nem de fase', () => {
+  for (const nome of ['index.html', 'landing.html', 'plano.html']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'publico', nome), 'utf8');
+    const metas = (html.match(/<meta (?:name|property)="(?:description|og:[a-z:]+|twitter:[a-z]+)"[^>]*>/g) || []).join('\n');
+    assert.ok(metas.includes('og:description'), nome);
+    assert.doesNotMatch(metas, /\bidade|da sua fase/i, nome);
+    // A imagem leva versão no endereço: o WhatsApp guarda a prévia pelo link da imagem.
+    if (nome !== 'plano.html') assert.match(metas, /compartilhar\.png\?v=\d{8}"/, nome);
+  }
+});
