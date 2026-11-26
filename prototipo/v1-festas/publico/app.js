@@ -2683,9 +2683,13 @@
     // Por link, só a lista volta, e só quando o link pede (/app?ver=lista,
     // o "ver outras festas" do convite); as respostas de antes ficam marcadas.
     const busca = new URLSearchParams(window.location.search);
-    const verLista = busca.get('ver') === 'lista';
+    // O QR Code de divulgação começa sempre pelas perguntas (26/11/2026),
+    // mesmo o impresso com ?ver=lista. O medir.js já tirou o ?de= do
+    // endereço e guarda a origem em FindeMedir.chegouDe.
+    const deQr = busca.get('de') === 'qr' || Boolean(window.FindeMedir && window.FindeMedir.chegouDe === 'qr');
+    const verLista = busca.get('ver') === 'lista' && !deQr;
     // Quem chega pela lista sem nada respondido nesta aba (o amigo do
-    // convite, o QR Code) vê a lista do dia, sem as perguntas.
+    // convite) vê a lista do dia, sem as perguntas.
     if (verLista && chegouPorLink() && !(estado.resultado && estado.criterios)) {
       if (abrirListaNeutra({ dia: busca.get('dia'), data: busca.get('data') })) {
         if (!estado.form) buscarFormulario();
@@ -2697,7 +2701,7 @@
       Object.assign(estado, { tela: lista ? 'resultado' : 'pergunta', passo: 0, editando: null, festa: null, mandar: null, rolagemLista: 0 });
     }
     // O ?ver=lista sai do endereço, que fica no caminho em que o app está.
-    if (verLista) history.replaceState(history.state, '', window.location.pathname);
+    if (busca.get('ver') === 'lista') history.replaceState(history.state, '', window.location.pathname);
     // Recarregar devolve a pessoa onde ela estava: o histórico ganha a
     // pergunta 1 embaixo, e a tela salva em cima.
     const voltavel = (estado.tela === 'resultado' && estado.resultado)

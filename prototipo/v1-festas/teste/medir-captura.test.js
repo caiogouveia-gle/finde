@@ -112,6 +112,8 @@ test('?de= conta a chegada com a origem e sai do endereço; qr conta também che
   const qr = abrir({ url: 'https://finde-app.fly.dev/?de=qr&ver=lista' });
   assert.deepEqual(await qr.eventos(), [['abriu-app'], ['chegou', 'qr'], ['chegou-qr']]);
   assert.equal(qr.endereco, 'https://finde-app.fly.dev/?ver=lista');
+  // A origem fica para o app.js, que roda depois e começa o QR pelas perguntas.
+  assert.equal(qr.ctx.FindeMedir.chegouDe, 'qr');
   for (const de of ['landing', 'insta', 'zap', 'mbm', 'cartaz', 'convite']) {
     const n = abrir({ url: `https://finde-app.fly.dev/?de=${de}` });
     assert.deepEqual(await n.eventos(), [['abriu-app'], ['chegou', de]]);

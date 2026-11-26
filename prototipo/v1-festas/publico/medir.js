@@ -174,6 +174,8 @@
     const de = busca.get('de');
     if (de !== null) {
       if (ORIGENS.has(de)) {
+        // O app.js lê a origem daqui: a marca sai do endereço antes dele rodar.
+        window.FindeMedir.chegouDe = de;
         contar('chegou', de);
         if (de === 'qr') contar('chegou-qr');
       }
