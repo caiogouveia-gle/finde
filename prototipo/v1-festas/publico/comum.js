@@ -193,30 +193,10 @@
   // detalhe e no convite. Texto, nunca só cor.
   const marcaExemplo = (classe = '', texto = 'Exemplo') => el('span', { class: `marca-exemplo${classe ? ` ${classe}` : ''}`, texto });
 
-  // De onde vem a média ("informada pela produtora"). Se a API não mandar,
-  // a média aparece sozinha, sem "undefined".
-  const origemDaIdade = (f) => (f && typeof f.origemIdade === 'string' ? f.origemIdade.trim() : '');
-  function idadeOrigem(f) {
-    const t = origemDaIdade(f);
-    return t ? el('span', { class: 'idade-origem', texto: t }) : null;
-  }
-  // "média 31 anos, informada pela produtora", para leitor de tela, e a
-  // linha da festa sem a média: as frases moram em festa-texto.js.
-  const mediaFalada = (f) => window.FindeTexto.mediaFalada(f);
-  const linhaSemMedia = (linha) => window.FindeTexto.linhaSemMedia(linha);
-
-  // A festa do convite: "18h00" e "média 31 anos" na mesma linha de base, e a
-  // origem da média junto dela.
-  function quandoGrande(o) {
-    return el('p', { class: 'quando-grande', 'aria-hidden': 'true' },
-      hora(FT().horaCurta(o.hora)),
-      Number.isInteger(o.festa.mediaIdade) ? el('span', { class: 'media-grande', texto: `média ${o.festa.mediaIdade} anos` }) : null,
-      idadeOrigem(o.festa));
-  }
-
   // O convite como painel (Landing do manual v2): wordmark, "CONVITE · SÁB,
-  // 21 NOV", o título com um itálico, a hora grande com a média, a origem da
-  // média, o nome, "casa · preço · produtora" e a frase do horário. O que vem
+  // 21 NOV", o título com um itálico, a hora grande, o nome, "casa · preço ·
+  // produtora" e a frase do horário. A média de idade saiu em 26/11/2026,
+  // até a idade do público ser validada. O que vem
   // depois (as respostas, no convite) entra em `resto`. Sem canto, sem sombra.
   const DIA_PAINEL = {
     seg: ['na ', 'segunda?'], ter: ['na ', 'terça?'], qua: ['na ', 'quarta?'], qui: ['na ', 'quinta?'],
@@ -230,8 +210,6 @@
     const [na, dia] = DIA_PAINEL[f.dia] || ['', 'quando?'];
     const p = FT().preco(f);
     const lineup = Array.isArray(f.lineup) ? f.lineup.filter((x) => typeof x === 'string' && x.trim()) : [];
-    const temMedia = Number.isInteger(f.mediaIdade);
-    const origem = origemDaIdade(f);
     const h1 = passou
       ? el('h1', { class: 'painel-nome painel-nome--registro', tabindex: '-1', id: 'convite-titulo', texto: FT().semViuva(f.nome) })
       : el('h1', { class: 'painel-titulo', tabindex: '-1', id: 'convite-titulo' }, `Bora ${na}`, el('em', { texto: dia }));
@@ -241,14 +219,11 @@
       // Festa fictícia: o convite sai do app, e quem recebe não vê o rodapé.
       f.real !== true ? el('p', { class: 'painel-exemplo' }, marcaExemplo('', 'Exemplo · festa fictícia')) : null,
       h1,
-      el('p', { class: 'vh', texto: `${linhaSemMedia(o.linha)}, ${mediaFalada(f)}.` }),
-      // Sem média, o convite não abre com "média não informada" (R35): a
-      // hora fica sozinha, e a casa, o bairro, o preço e o lineup vêm embaixo.
+      el('p', { class: 'vh', texto: `${o.linha}.` }),
+      // A hora fica sozinha, e a casa, o bairro, o preço e o lineup vêm embaixo.
       el('div', { class: 'painel-quando', 'aria-hidden': 'true' },
         el('p', { class: 'painel-hora' },
-          o.hora ? hora(FT().horaCurta(o.hora)) : el('span', { class: 'painel-media', texto: 'horário a confirmar' }),
-          temMedia ? el('span', { class: 'painel-media', texto: `média ${f.mediaIdade} anos` }) : null),
-        temMedia && origem ? el('p', { class: 'painel-origem', texto: origem }) : null),
+          o.hora ? hora(FT().horaCurta(o.hora)) : el('span', { class: 'painel-nota', texto: 'horário a confirmar' }))),
       passou ? null : el('h2', { class: 'painel-nome', id: 'nome-festa', texto: FT().semViuva(f.nome) }),
       // Quebra só antes de um "·", e a hora nunca desce sozinha (FT).
       el('p', { class: 'painel-onde', texto: FT().ondeSemQuebra([FT().casaComBairro(f.casa, o.bairro) || o.bairro, p.tipo === 'sem-preco' ? null : FT().precoNaLista(f), f.produtora && f.produtora !== f.casa ? f.produtora : null]) }),
@@ -607,7 +582,7 @@
       else if (x.matches('.painel-quando')) {
         anims.push(subir(x, { atraso: d, y: 0, duracao: v.estado }));
         anims.push(mascara(x.querySelector('.painel-hora .hora'), { atraso: d, duracao: v.bloco }));
-        anims.push(subir(x.querySelectorAll('.painel-media, .painel-origem'), { atraso: d + 160, y: 6, duracao: v.estado }));
+        anims.push(subir(x.querySelectorAll('.painel-nota'), { atraso: d + 160, y: 6, duracao: v.estado }));
       } else anims.push(subir(x, { atraso: d, y: 10, duracao: v.estado }));
     }));
     return vivas(anims);
@@ -754,7 +729,7 @@
   };
 
   window.Finde = {
-    el, titulo, chamar, site, marca, lockup, rodape, definirNota, marcaExemplo, quandoGrande, casaCurta, reduzir, hora, anunciar, idadeOrigem, mediaFalada, linhaSemMedia, manterVisivel,
+    el, titulo, chamar, site, marca, lockup, rodape, definirNota, marcaExemplo, casaCurta, reduzir, hora, anunciar, manterVisivel,
     linkFora, cartaz, ausente, blocoOnde, blocoIngresso, blocoLinks, seta, avanco, acaoC, painelConvite, mov,
   };
 })();

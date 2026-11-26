@@ -5,9 +5,6 @@
 // o que a lista mostra, a fala não repete.
 
 const C = require('./catalogo');
-// A idade de cada festa diante do pedido (dentro, fora, sem dado) e a
-// avaliação de quem foi: a mesma régua da lista.
-const M = require('./motor');
 
 const PERTO_MIN = 10;
 const PERTO_KM = 3;
@@ -76,44 +73,6 @@ function sobreTeto(teto, antes) {
 
 // Verdadeiro quando tudo na tela acaba até a meia-noite.
 const dormeBem = (opcoes) => opcoes.length > 0 && opcoes.every((o) => typeof o.festa.fim === 'number' && o.festa.fim <= 24);
-
-// O nome da faixa que vale: o intervalo do formulário, ou a faixa fixa.
-const nomeDaFaixa = (c) => (c.idade ? `${c.idade.min} a ${c.idade.max}${c.idade.max >= 50 ? ' ou mais' : ''}` : C.nomeFaixa(c.faixa));
-const mesmaFaixa = (a, b) => (a.idade && b.idade ? a.idade.min === b.idade.min && a.idade.max === b.idade.max : a.faixa === b.faixa);
-
-// A idade em três grupos (R27): dentro, fora e sem dado. Sem dado não é "não":
-// a festa que não divulgou a média nunca é dada como da sua idade nem como
-// fora dela. A avaliação de quem foi diz o que mede ("4 de 5 que foram...").
-function sobreIdade(c, opcoes) {
-  if (!opcoes.length) return '';
-  const nome = nomeDaFaixa(c);
-  const grupo = (o) => M.idadeNoPedido(o.festa, c);
-  const dentro = opcoes.filter((o) => grupo(o) === 'dentro').length;
-  const fora = opcoes.filter((o) => grupo(o) === 'fora').length;
-  const sem = opcoes.length - dentro - fora;
-  const todas = opcoes.length === 1 ? 'ela' : opcoes.length === 2 ? 'as duas' : 'todas';
-  let frase;
-  if (sem === opcoes.length) {
-    frase = opcoes.length === 1 ? 'Ela não divulgou a média de idade ainda.' : 'Nenhuma delas divulgou a média de idade ainda.';
-  } else if (!sem && !fora) frase = `Sim: ${todas} com média de ${nome}.`;
-  else if (!sem && !dentro) frase = `Nenhuma com média de ${nome} nesse pedido.`;
-  else if (!sem) frase = `${numeral(dentro)} com média de ${nome}; ${fora === 1 ? 'a outra' : 'as outras'}, não.`;
-  else {
-    const partes = [];
-    if (dentro) partes.push(`${numeral(dentro).toLowerCase()} com média de ${nome}`);
-    if (fora) partes.push(`${numeral(fora).toLowerCase()} fora da sua faixa`);
-    const naoDisse = sem === 1 ? 'a outra não divulgou a média' : `as outras ${numeral(sem).toLowerCase()} não divulgaram a média`;
-    frase = `${maiuscula(partes.join(', '))}; ${naoDisse}.`;
-  }
-  // A avaliação de quem foi, quando houver na tela: o que a pergunta mede.
-  const avaliada = opcoes.find((o) => M.avaliacao(o.festa) && M.avaliacaoCruza(o.festa, c));
-  if (avaliada) {
-    const a = M.avaliacao(avaliada.festa);
-    const faixa = [Math.min(...a.faixa), Math.max(...a.faixa)];
-    frase += ` Na ${avaliada.festa.nome}, ${Math.round(a.naMedida * a.avaliacoes)} de ${a.avaliacoes} que foram, de ${faixa[0]} a ${faixa[1]} anos, acharam o público da idade deles.`;
-  }
-  return frase;
-}
 
 // "limite de idade": a idade mínima que cada festa diz, sem supor nada.
 function sobreLimite(opcoes) {
@@ -185,18 +144,6 @@ function reagir(pedidos, antes, depois, resultado, extra) {
       case 'sem-limite':
       case 'teto':
         f.push(extra.piso ? `R$ ${depois.teto} é o mais barato ${noDia(depois.dia)} nesse pedido.` : sobreTeto(depois.teto, antes.teto));
-        break;
-      case 'mais-velho':
-        f.push(mesmaFaixa(depois, antes) ? 'Essa já é a faixa mais velha.' : `Gente de ${nomeDaFaixa(depois)}, então.`);
-        break;
-      case 'mais-novo':
-        f.push(mesmaFaixa(depois, antes) ? 'Essa já é a faixa mais nova.' : `Gente de ${nomeDaFaixa(depois)}, então.`);
-        break;
-      case 'faixa':
-        f.push(mesmaFaixa(depois, antes) ? `Já é gente de ${nomeDaFaixa(depois)}.` : `Gente de ${nomeDaFaixa(depois)}, então.`);
-        break;
-      case 'minha-idade':
-        f.push(sobreIdade(depois, resultado.opcoes));
         break;
       case 'limite-idade':
         f.push(sobreLimite(resultado.opcoes));
@@ -338,7 +285,6 @@ function firmesDe(antes, depois) {
   const novos = [];
   if (antes.teto !== depois.teto) novos.push('preco');
   if (antes.janela !== depois.janela || antes.voltaMax !== depois.voltaMax) novos.push('horario');
-  if (!mesmaFaixa(antes, depois)) novos.push('idade');
   return [...new Set([...(antes.firmes || []), ...novos])];
 }
 

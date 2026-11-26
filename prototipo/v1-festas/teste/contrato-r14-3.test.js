@@ -72,7 +72,9 @@ test('/3 (U23): Primavera com a cidade pelo cadastro da casa entra; a mínima en
   const casa = copia(COMPLETO, { endereco: { ...COMPLETO.endereco, cidadeOrigem: 'casa' } });
   assert.equal(R.converterRegistro(casa).festa.endereco.cidadeOrigem, 'casa');
   const m = R.converterRegistro(MINIMO).festa;
-  assert.deepEqual([m.local, m.cartaz, m.imagens, m.bairroNome, m.avaliacaoIdade], [null, null, [], null, null]);
+  assert.deepEqual([m.local, m.cartaz, m.imagens, m.bairroNome], [null, null, [], null]);
+  // A média de idade e a avaliação de quem foi saíram em 26/11/2026.
+  for (const k of ['mediaIdade', 'avaliacaoIdade', 'origemIdade', 'faixas']) assert.equal(k in m, false, k);
   assert.deepEqual(m.encontradaEm, ['indicacao']);
   // encontradaEm deixa de fora quem só leu ou corrigiu.
   const lido = copia(MINIMO, { fontes: [...MINIMO.fontes, { id: 'claude', nome: 'Leitura', url: null, conferidoEm: MINIMO.coletadoEm }, { id: 'curadoria', nome: 'Curadoria', url: null, conferidoEm: MINIMO.coletadoEm }] });
@@ -117,11 +119,13 @@ test('/2 continua entrando sem os campos novos; /1 é recusado', () => {
 test('fixtures do app: a festa convertida e a resposta têm a forma combinada', () => {
   const f = CONVERTIDA.festa;
   for (const k of ['local', 'imagens', 'cartaz', 'encontradaEm', 'horarioIncerto', 'esgotado', 'precoConferidoEm', 'bairroNome', 'regiao',
-    'diaDaSemana', 'divergencias', 'idsAntigos', 'dataDaNoite', 'avaliacaoIdade', 'atualizadoEm']) assert.ok(k in f, k);
+    'diaDaSemana', 'divergencias', 'idsAntigos', 'dataDaNoite', 'atualizadoEm']) assert.ok(k in f, k);
+  for (const k of ['mediaIdade', 'avaliacaoIdade', 'origemIdade', 'faixas']) assert.equal(k in f, false, k);
   assert.deepEqual(f.cartaz, f.imagens[0]);
   assert.ok(!f.encontradaEm.some((x) => ['claude', 'regras', 'curadoria', 'avaliacoes'].includes(x)));
   for (const caso of [RESPOSTA.comReais, RESPOSTA.semReais]) {
-    for (const k of ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base', 'semMedia']) assert.ok(k in caso, k);
+    for (const k of ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base']) assert.ok(k in caso, k);
+    assert.equal('semMedia' in caso, false);
     for (const o of [...caso.opcoes, ...caso.maisDoDia]) {
       assert.equal(o.exemplo, false);
       assert.equal(typeof o.pct, 'number');

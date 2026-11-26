@@ -3,8 +3,7 @@
    voz, o pré-quiz com fios rosé. Botão principal é o retângulo em caixa alta
    (opção D), o secundário é o link com fio e seta (opção C); o contorno D
    serve ao par lado a lado. Sem pílula e sem raio em nada: só os marcadores
-   de opção e os pontos do seletor de idade são redondos, porque ali a forma
-   é função.
+   de opção são redondos, porque ali a forma é função.
    O acabamento é editorial: hierarquia por tamanho, peso e itálico; fios no
    lugar de caixas; resultados como programação; o ponto rosé como gesto de
    acento. Sem sombra, degradê, ícone ou emoji. */
@@ -566,39 +565,6 @@ p.carregando {
   .chip[aria-pressed="false"]:hover { color: var(--tinta); text-decoration-color: var(--tinta); }
 }
 
-/* A faixa de idade (R20, R22): o intervalo grande, em serifa; o trilho com
-   dois pontos de 44 px de alvo; a escala; os botões de passo. */
-.faixa { display: flex; flex-direction: column; gap: var(--e4); margin-top: var(--e6); }
-.faixa-valor { font-family: var(--serifa); font-size: 44px; line-height: 1; color: var(--tinta); font-variant-numeric: lining-nums; }
-.faixa-trilho { position: relative; height: 44px; margin: 0 22px; touch-action: pan-y; cursor: pointer; container-type: inline-size; }
-.faixa-passo[aria-disabled="true"] { color: var(--fio-off); cursor: default; }
-.faixa-base { position: absolute; left: -22px; right: -22px; top: 21px; border-top: 1px solid var(--fio-off); }
-/* Pontos e trecho andam por translate e scale, em % do trilho (cqw): o
-   valor vem do app em --p, --a e --b (0 a 100). No toque e nos passos eles
-   deslizam em 160 ms; no arrasto seguem o dedo, sem transição. */
-.faixa-sel { position: absolute; left: 0; top: 20px; width: 100%; height: 3px; background: var(--tinta); transform-origin: 0 50%; translate: calc(var(--a, 0) * 1cqw) 0; scale: calc((var(--b, 100) - var(--a, 0)) / 100) 1; transition: translate var(--mov-toque) var(--mov-saida), scale var(--mov-toque) var(--mov-saida); }
-.faixa-ponto { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin-left: -22px; display: grid; place-items: center; border-radius: 50%; outline-offset: -6px; cursor: grab; translate: calc(var(--p, 0) * 1cqw) 0; transition: translate var(--mov-toque) var(--mov-saida); }
-.faixa-ponto-marca { width: 20px; height: 20px; border-radius: 50%; background: var(--fundo); border: 1.5px solid var(--tinta); transition: scale var(--mov-toque) var(--mov-saida); }
-.arrastando .faixa-ponto, .arrastando .faixa-sel { transition: none; }
-.arrastando .faixa-ponto:focus .faixa-ponto-marca { scale: 1.2; }
-@supports not (width: 1cqw) {
-  .faixa-sel, .faixa-ponto { translate: none; scale: none; }
-}
-.faixa-ponto:focus-visible .faixa-ponto-marca, .arrastando .faixa-ponto:focus .faixa-ponto-marca { background: var(--tinta); }
-.faixa-escala { display: flex; justify-content: space-between; margin-top: -20px; font-size: 12px; font-weight: 500; color: var(--rotulo); }
-.faixa-passos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e4); margin-top: var(--e3); padding-top: var(--e3); border-top: .5px solid var(--fio); }
-.faixa-passo-grupo { display: flex; flex-direction: column; gap: 0; min-width: 0; }
-.faixa-passo-grupo + .faixa-passo-grupo { align-items: flex-end; }
-.faixa-passo-linha { display: flex; align-items: center; gap: 0; }
-/* O número entre os sinais, em serifa; os sinais sem caixa, alvo de 44 px. */
-.faixa-num { min-width: 2.2ch; text-align: center; font-family: var(--serifa); font-size: 26px; line-height: 1; color: var(--tinta); }
-.faixa-passo { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 0; background: none; color: var(--tinta); font: 400 22px/1 var(--sans); cursor: pointer; }
-@media (max-width: 359px) {
-  .faixa-passos { grid-template-columns: 1fr; row-gap: var(--e2); }
-  .faixa-passos .faixa-passo-grupo, .faixa-passos .faixa-passo-grupo + .faixa-passo-grupo { flex-direction: row; align-items: center; justify-content: space-between; }
-}
-.faixa-passo:active { opacity: .85; }
-
 /* ---------------------------------------------------------------- resultado */
 
 /* O pedido como frase: cada trecho reabre a pergunta dele. Cada linha da
@@ -806,9 +772,9 @@ h2.secao-rotulo { margin: 0; }
 
 .guia-titulo { display: flex; flex-direction: column; gap: var(--e3); padding: var(--e6) 0 var(--e4); }
 .guia-titulo .pedido { margin: var(--e1) 0 calc(-1 * var(--e1)); }
-/* A linha única sem média (D3) e o aviso da lista: o traço rosé à esquerda. */
-.sem-media, .aviso-lista { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
-.sem-media::before, .aviso-lista::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
+/* O aviso da lista: o traço rosé à esquerda. */
+.aviso-lista { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
+.aviso-lista::before { content: ''; position: absolute; left: 0; top: .72em; width: 10px; border-top: 1px solid var(--fio); }
 
 /* As abas dos dias: serifa, um fio só que desliza (transform), a contagem
    real em DM Sans pequena. */
@@ -976,7 +942,6 @@ h2.secao-rotulo { margin: 0; }
 .cara-texto { font-size: 14px; line-height: 1.45; color: var(--tinta); text-wrap: pretty; }
 .cara-linha--nao .cara-texto { color: var(--corrido); }
 .cara-linha--sem-dado .cara-texto { color: var(--rotulo); }
-.idade-frase { font: 400 22px/1.15 var(--serifa); color: var(--tinta); max-width: 22ch; text-wrap: pretty; }
 
 .endereco small { display: block; font-size: 13px; color: var(--rotulo); }
 .acoes { display: flex; flex-wrap: wrap; column-gap: var(--e5); }
@@ -1148,8 +1113,7 @@ h2.secao-rotulo { margin: 0; }
 .painel-quando { display: flex; flex-direction: column; gap: 6px; margin-top: var(--e2); padding-top: 14px; border-top: .5px solid var(--fio-off); }
 .painel-hora { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 10px; row-gap: var(--e1); }
 .painel-hora .hora { font-family: var(--serifa); font-size: 52px; line-height: 1; letter-spacing: 0; color: var(--tinta); }
-.painel-media { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
-.painel-origem { font-size: 13px; line-height: 1.45; color: var(--rotulo); }
+.painel-nota { font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--rotulo); }
 .painel-nome { margin-top: var(--e3); font: 400 26px/1.05 var(--serifa); letter-spacing: 0; color: var(--tinta); text-wrap: balance; overflow-wrap: break-word; }
 /* O convite que passou é registro: o nome da festa no lugar de "Bora…?". */
 .painel-nome--registro { margin-top: var(--e1); font-size: 34px; line-height: 1.08; }
@@ -1239,17 +1203,11 @@ h2.secao-rotulo { margin: 0; }
 .convite-bloco .ingresso-valor { font-size: 30px; }
 .convite--passou .convite-detalhes { opacity: .8; }
 
-/* A avaliação depois da festa (R34): o pré-quiz, a idade num campo de fio,
-   a finalidade; depois, "Anotado. Valeu." e o "como foi?" pro grupo. */
-.avaliar-lugar:empty { display: none; }
+/* Os formulários de opinião: as opções do pré-quiz e a finalidade. A
+   avaliação de idade depois da festa (R34) saiu em 26/11/2026. */
 .avaliar { display: flex; flex-direction: column; gap: var(--e4); padding-top: var(--e6); }
 .avaliar .opcoes { margin-top: 0; }
-.idade-campo { display: grid; grid-template-columns: auto 64px auto 1fr; align-items: end; column-gap: var(--e3); }
-.idade-campo label, .idade-campo .anos { padding-bottom: 10px; font-size: 15px; color: var(--tinta); }
-.idade-campo .apoio { grid-column: 1 / -1; padding-top: var(--e2); }
-.campo-idade { font: 400 26px/1 var(--serifa); text-align: center; }
 .finalidade { font-size: 13px; line-height: 1.5; color: var(--corrido); max-width: 38ch; }
-.confirmacao { display: flex; flex-direction: column; gap: var(--e2); padding: var(--e6) 0 var(--e2); }
 .convite-acoes { padding-top: var(--e3); }
 
 /* ---------------------------------------------------------------- rodapé */

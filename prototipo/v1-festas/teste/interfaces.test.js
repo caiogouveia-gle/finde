@@ -25,7 +25,6 @@ const MODULOS = {
   },
   '../nucleo/fonte-motor': { criarFonteMotor: 'function' },
   '../nucleo/geo': { haversineKm: 'function', pontoDoBairro: 'function', dentroDeSP: 'function' },
-  '../nucleo/avaliacoes': { criarAvaliacoes: 'function', chave: 'function', RESPOSTAS: 'object' },
   '../nucleo/ics': { montarIcs: 'function', escaparTexto: 'function', dobrarLinha: 'function' },
   '../nucleo/rotas-app': { ligarRotasApp: 'function' },
   '../nucleo/motor': { sanearCriterios: 'function', completar: 'function', escolher: 'function', opcao: 'function' },
@@ -102,7 +101,7 @@ test('esqueletos: geo funciona; fonte do motor sem URL é null; o resultado tem 
   for (const k of ['festas', 'atualizar', 'pronta', 'estado']) assert.equal(typeof fm[k], 'function', k);
   const L = require('../nucleo/lista');
   const RESPOSTA = JSON.parse(fs.readFileSync(path.join(__dirname, 'dados', 'resposta-festas-r14-3.json'), 'utf8'));
-  const chaves = ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base', 'semMedia'];
+  const chaves = ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base'];
   const r = L.montarResultado({ real: { opcoes: RESPOSTA.comReais.opcoes } });
   assert.deepEqual(Object.keys(r).sort(), [...chaves].sort());
   for (const k of chaves) assert.ok(k in RESPOSTA.comReais && k in RESPOSTA.semReais, k);

@@ -2,8 +2,8 @@
 // Planos: uma festa mandada pro grupo, e quem respondeu "tô dentro" ou "não rola".
 // Guardados em <var>/planos.json, regravado inteiro a cada mudança
 // (arquivo temporário e rename, para nunca deixar o arquivo pela metade).
-// Depois da festa, quem disse "tô dentro" pode avaliar (R34, KTD13): `avaliar`
-// confere quem pode e devolve o que nucleo/avaliacoes.js guarda, sem o nome.
+// A avaliação pós-festa ("O público tinha a sua idade?") saiu em 26/11/2026,
+// com a idade do produto, até a idade do público ser validada.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -20,8 +20,6 @@ class ErroPlano extends Error {
 const LIMITE_NOME = 24;
 const LIMITE_RESPOSTAS = 60;
 const RESPOSTAS = ['dentro', 'fora'];
-const RESPOSTAS_AVALIACAO = ['mais-novo', 'na-medida', 'mais-velho'];
-const FINALIDADE = 'Opcional e sem nome: serve para dizer a quem procura esta festa se o público tinha a idade de quem foi. A resposta fica guardada até 31/12/2026.';
 const FORMATO_ID = /^[a-z0-9]{8}$/;
 
 // Nome de gente: guardado como texto, do jeito que veio (a página escreve com
@@ -47,33 +45,64 @@ function novoId(existe) {
   }
 }
 
+// A idade saiu do produto em 26/11/2026. O convite criado antes guardou o
+// retrato da festa com ela (a média, a origem, a linha "· média 31 anos", a
+// faixa do pedido e o porquê); daqui pra fora, ele sai sem nada disso.
+const CAMPOS_DE_IDADE = ['mediaIdade', 'origemIdade', 'origemIdadeCurta', 'origemDetalhe', 'avaliacaoIdade', 'faixas'];
+const FALA_DE_IDADE = /\bm[ée]dia\b|\bidade\b|\bfaixa\b/i;
+const objeto = (v) => Boolean(v) && typeof v === 'object' && !Array.isArray(v);
+function festaSemIdade(f) {
+  if (!objeto(f)) return f;
+  const limpa = Object.fromEntries(Object.entries(f).filter(([k]) => !CAMPOS_DE_IDADE.includes(k)));
+  if (objeto(f.campos)) limpa.campos = Object.fromEntries(Object.entries(f.campos).filter(([k]) => k !== 'mediaIdade'));
+  // A fonte das avaliações de idade de quem foi só dava a média.
+  if (Array.isArray(f.fontes)) limpa.fontes = f.fontes.filter((x) => !objeto(x) || x.id !== 'avaliacoes');
+  if (Array.isArray(f.encontradaEm)) limpa.encontradaEm = f.encontradaEm.filter((x) => x !== 'avaliacoes');
+  return limpa;
+}
+const semFalaDeIdade = (xs) => (Array.isArray(xs) ? xs.filter((x) => !(typeof x === 'string' && FALA_DE_IDADE.test(x))) : xs);
+function retratoSemIdade(o) {
+  if (!objeto(o)) return o;
+  const r = { ...o, festa: festaSemIdade(o.festa) };
+  delete r.origem;
+  if (typeof r.linha === 'string') r.linha = r.linha.replace(/ · média \d+ anos$/, '');
+  r.fora = semFalaDeIdade(r.fora);
+  r.motivos = semFalaDeIdade(r.motivos);
+  if (typeof r.aviso === 'string' && FALA_DE_IDADE.test(r.aviso)) {
+    const resto = r.aviso.replace(/\.$/, '').split('; ').filter((x) => !FALA_DE_IDADE.test(x));
+    r.aviso = resto.length ? `${resto.join('; ').replace(/^./, (x) => x.toUpperCase())}.` : null;
+  }
+  if (objeto(r.cara) && Array.isArray(r.cara.partes)) {
+    r.cara = { ...r.cara, partes: r.cara.partes.filter((p) => !objeto(p) || p.criterio !== 'idade') };
+    if (Array.isArray(r.cara.semDado)) r.cara.semDado = r.cara.semDado.filter((x) => x !== 'idade');
+  }
+  if (objeto(r.porque)) {
+    const fora = (xs) => (Array.isArray(xs) ? xs.filter((p) => !objeto(p) || p.criterio !== 'idade') : xs);
+    r.porque = { ...r.porque, cabe: fora(r.porque.cabe), falta: fora(r.porque.falta) };
+  }
+  return r;
+}
+// "Sáb · 19h à 1h · 30 a 35 · até R$ 80": sai a faixa ("30 a 35", "36 ou mais", "28 a 50+").
+const pedidoSemIdade = (p) => (typeof p === 'string' ? p.replace(/ · (?:\d{2} a \d{2}\+?|\d{2} ou mais)(?= · |$)/, '') : p);
+
 // O que vai para fora. `passou`: a festa já acabou, e o convite não aceita mais resposta.
-// Depois da festa, `podeAvaliar` (alguém disse "tô dentro"), quantas
-// avaliações a festa tem e de quantos convites (sem nomes) e a linha de
-// finalidade do formulário.
-function vista(plano, agora, contar = null) {
+function vista(plano, agora) {
   const nomes = (r) => plano.respostas.filter((x) => x.resposta === r).map((x) => x.nome);
   const passou = Boolean(plano.ate && agora && new Date(agora) > new Date(plano.ate));
-  const festaId = plano.festa && plano.festa.festa ? plano.festa.festa.id : null;
-  const contagem = contar && festaId ? contar(festaId) : { avaliacoes: 0, convites: 0 };
   return {
     id: plano.id,
     autor: plano.autor,
     criadoEm: plano.criadoEm,
-    festa: plano.festa,
-    pedido: plano.pedido,
+    festa: retratoSemIdade(plano.festa),
+    pedido: pedidoSemIdade(plano.pedido),
     data: plano.data || null,
     passou,
     dentro: nomes('dentro'),
     fora: nomes('fora'),
-    podeAvaliar: passou && nomes('dentro').length > 0,
-    avaliacoes: { total: contagem.avaliacoes, convites: contagem.convites },
-    finalidadeAvaliacao: FINALIDADE,
   };
 }
 
-// contarAvaliacoes(festaId) -> { avaliacoes, convites } (nucleo/avaliacoes.js).
-function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = console, contarAvaliacoes = null } = {}) {
+function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = console } = {}) {
   fs.mkdirSync(pasta, { recursive: true });
   const arquivo = path.join(pasta, 'planos.json');
   let planos = {};
@@ -133,11 +162,11 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
       if (nome) registrar(plano, nome, 'dentro');
       planos[id] = plano;
       gravar();
-      return vista(plano, agora(), contarAvaliacoes);
+      return vista(plano, agora());
     },
 
     ler(id) {
-      return vista(pegar(id), agora(), contarAvaliacoes);
+      return vista(pegar(id), agora());
     },
 
     existe(id) {
@@ -149,26 +178,10 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
       const plano = pegar(id);
       const limpo = exigirNome(nome);
       if (!RESPOSTAS.includes(resposta)) throw new ErroPlano(400, 'Responda "dentro" ou "fora".');
-      if (vista(plano, agora(), contarAvaliacoes).passou) throw new ErroPlano(410, 'Essa já foi. O convite não aceita mais resposta.');
+      if (vista(plano, agora()).passou) throw new ErroPlano(410, 'Essa já foi. O convite não aceita mais resposta.');
       registrar(plano, limpo, resposta, confirmar === true);
       gravar();
-      return vista(plano, agora(), contarAvaliacoes);
-    },
-
-    // Quem pode avaliar: o nome que disse "tô dentro", depois da festa. Devolve
-    // o que a avaliação leva (o nome só para fazer a chave; não é guardado).
-    // A idade é obrigatória para contar (18 a 60).
-    avaliar(id, nome, aparelho, resposta, idade) {
-      const plano = pegar(id);
-      const limpo = exigirNome(nome);
-      if (!RESPOSTAS_AVALIACAO.includes(resposta)) throw new ErroPlano(400, 'Responda "mais-novo", "na-medida" ou "mais-velho".');
-      if (!(Number.isInteger(idade) && idade >= 18 && idade <= 60)) throw new ErroPlano(400, 'Diga a sua idade (de 18 a 60): sem ela, a resposta não conta.');
-      if (typeof aparelho !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(aparelho)) throw new ErroPlano(400, 'Faltou o aparelho.');
-      if (!vista(plano, agora()).passou) throw new ErroPlano(409, 'A festa ainda não aconteceu. A pergunta abre depois dela.');
-      const dentro = plano.respostas.find((r) => chaveNome(r.nome) === chaveNome(limpo) && r.resposta === 'dentro');
-      if (!dentro) throw new ErroPlano(403, 'Só quem disse "tô dentro" neste convite responde.');
-      const festa = plano.festa && plano.festa.festa ? plano.festa.festa : {};
-      return { planoId: plano.id, festaId: festa.id, real: festa.real === true, nome: dentro.nome, aparelho, resposta, idade };
+      return vista(plano, agora());
     },
 
     // Os hashes das imagens citadas por convite de festa que não passou: a
@@ -190,4 +203,4 @@ function criarPlanos(pasta, { agora = () => new Date().toISOString(), log = cons
   };
 }
 
-module.exports = { criarPlanos, limparNome, ErroPlano, LIMITE_NOME, LIMITE_RESPOSTAS, RESPOSTAS_AVALIACAO, FINALIDADE };
+module.exports = { criarPlanos, limparNome, ErroPlano, LIMITE_NOME, LIMITE_RESPOSTAS, retratoSemIdade, pedidoSemIdade };

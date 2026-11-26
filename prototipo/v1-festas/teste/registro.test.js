@@ -89,8 +89,9 @@ test('o que segue adiante fica congelado até o fundo', () => {
   assert.ok(Object.isFrozen(f.lotes) && Object.isFrozen(f.lotes[0]));
   assert.ok(Object.isFrozen(f.endereco) && Object.isFrozen(f.regras) && Object.isFrozen(f.campos));
   assert.ok(Object.isFrozen(f.fontes[0]));
-  assert.equal(typeof f.origemIdade, 'string', 'a origem da média continua texto');
-  assert.match(f.campos.mediaIdade.conferidoEm, /-03:00$/);
+  assert.equal(f.origemIdade, undefined, 'a média de idade e a origem dela saíram em 26/11/2026');
+  assert.equal(f.mediaIdade, undefined);
+  assert.match(f.campos.inicio.conferidoEm, /-03:00$/);
 });
 
 test('base fictícia: os carimbos andam com o relógio e mantêm as distâncias', () => {
@@ -104,8 +105,8 @@ test('base fictícia: os carimbos andam com o relógio e mantêm as distâncias'
   assert.ok(agora - mais >= 0 && agora - mais < 3600e3, 'o carimbo mais novo fica a menos de uma hora de agora');
   const a = bruto.festas[0];
   const b = r.base.find((f) => f.id === a.id);
-  const d0 = Date.parse(a.campos.mediaIdade.conferidoEm) - Date.parse(a.coletadoEm);
-  const d1 = Date.parse(b.campos.mediaIdade.conferidoEm) - Date.parse(b.coletadoEm);
+  const d0 = Date.parse(a.campos.inicio.conferidoEm) - Date.parse(a.coletadoEm);
+  const d1 = Date.parse(b.campos.inicio.conferidoEm) - Date.parse(b.coletadoEm);
   assert.equal(d1, d0);
   assert.match(b.coletadoEm, /-03:00$/);
   assert.equal(bruto.festas[0].coletadoEm, a.coletadoEm, 'o original não muda');

@@ -3,39 +3,35 @@
 // Puro e determinístico. Não escolhe nem ordena nada: o motor monta a lista
 // e só acrescenta este campo em cada opção.
 //
-// Pesos: horário 30, idade 25, bairro 20, preço 15, som 10. Critério que a
-// pessoa não pediu (nenhum som marcado, a cidade inteira, sem teto, idade de
-// 18 a 50 ou mais) sai da conta, e os pesos dos outros se renormalizam.
-// Crédito: cabe = 1; 'quase' = 0,5; não cabe = 0. Duas exceções (KTD15,
-// U27), com o crédito na própria parte: o som parecido vale 0,5 + 0,4 ×
-// afinidade (quem tem o dado nunca fica abaixo de quem não tem); a idade pela
-// avaliação de quem foi vale a proporção que achou o público da idade
-// (naMedida) quando a faixa de quem avaliou cruza a pedida, e 0,5 (sem dado)
-// quando não cruza (KTD13).
+// Pesos: horário 30, bairro 20, preço 15, som 10. A idade (25) saiu em
+// 26/11/2026, até a idade do público ser validada. Critério que a pessoa não
+// pediu (nenhum som marcado, a cidade inteira, sem teto) sai da conta, e os
+// pesos dos outros se renormalizam.
+// Crédito: cabe = 1; 'quase' = 0,5; não cabe = 0. Uma exceção (KTD15, U27),
+// com o crédito na própria parte: o som parecido vale 0,5 + 0,4 × afinidade
+// (quem tem o dado nunca fica abaixo de quem não tem).
 //
 // Cada parte cabe numa linha do detalhe a 390 px (até umas 36 letras) quando
 // cabe no pedido: o rótulo ao lado (cabe, quase, não cabe) já dá o veredito,
 // e o texto diz só o fato e a referência.
 //
-// Horário e idade usam a régua do motor, para a parte nunca dizer o contrário
-// do aviso da festa: cabe o que ele põe no pedido; 'quase', o que ele só aceita
+// O horário usa a régua do motor, para a parte nunca dizer o contrário do
+// aviso da festa: cabe o que ele põe no pedido; 'quase', o que ele só aceita
 // afrouxando (a pista até duas horas antes de você chegar, o fim até duas
-// horas depois da sua volta; a média até 3 anos fora, o "um pouco" do aviso);
-// o resto não cabe.
+// horas depois da sua volta); o resto não cabe.
 
 const C = require('./catalogo');
 // O motor não carrega este arquivo no topo (carrega na hora de usar), então
 // aqui ele já chega completo.
 const M = require('./motor');
 
-const PESOS = { horario: 30, idade: 25, bairro: 20, preco: 15, som: 10 };
-const CRITERIOS = ['horario', 'idade', 'bairro', 'preco', 'som'];
-const QUASE_ANOS = M.QUASE_NA_FAIXA;
+const PESOS = { horario: 30, bairro: 20, preco: 15, som: 10 };
+const CRITERIOS = ['horario', 'bairro', 'preco', 'som'];
 // Preço "quase": até 20% acima do teto (conta em inteiros: acima × 5 ≤ teto).
 const QUASE_PRECO_DIVISOR = 5;
 
-// Festa real pode não ter o dado de um critério pedido (a média, o bairro, o
-// preço, o som). Esse critério entra nas partes com cabe: null ("não se sabe")
+// Festa real pode não ter o dado de um critério pedido (o bairro, o preço,
+// o som). Esse critério entra nas partes com cabe: null ("não se sabe")
 // e conta pela metade, como um 'quase': tirá-lo da conta dava 100% a festa que
 // só se sabe o horário, e contar zero puniria a festa pelo que a fonte não
 // disse. Assim, festa com dado faltando nunca chega a 100%.
@@ -54,12 +50,6 @@ function emHoras(d) {
   const nome = `${HORAS[h] || h} ${h === 1 ? 'hora' : 'horas'}`;
   if (!resto) return nome;
   return resto === 30 ? `${nome} e meia` : `${nome} e ${resto} min`;
-}
-
-// 1 -> "1 ano"; 5 -> "5 anos"; 2,5 -> "2,5 anos". Em algarismos, como a média
-// e a linha da faixa no detalhe ("3 anos acima da sua faixa").
-function emAnos(n) {
-  return `${String(n).replace('.', ',')} ${n === 1 ? 'ano' : 'anos'}`;
 }
 
 // O som pelo rótulo inteiro do catálogo, como o bloco Som do detalhe:
@@ -119,37 +109,6 @@ function furoDoHorario(f, c, j) {
     furos.push(furos.length ? `acaba ${C.asHoras(f.fim)}` : `acaba ${C.asHoras(f.fim)}, ${depoisDaVolta(f.fim - volta)}`);
   }
   return furos.join(', e ');
-}
-
-// Média dentro da faixa = cabe; até 3 anos fora = quase (o "um pouco" do aviso
-// do motor). O número da média não se repete aqui: no detalhe, ele está logo
-// acima, com a origem; a parte diz só o encaixe, e quanto fura.
-function idade(f, c) {
-  if (c.idade && c.idade.min <= M.IDADE_MIN && c.idade.max >= M.IDADE_MAX) return null;
-  const fx = M.faixaDe(c);
-  if (!fx) return null;
-  // Pela avaliação de quem foi: a média não fala sozinha (KTD13).
-  const a = M.avaliacao(f);
-  if (a) {
-    const de = `${Math.round(a.naMedida * a.avaliacoes)} de ${a.avaliacoes}`;
-    if (!M.avaliacaoCruza(f, c)) return { cabe: null, credito: 0.5, texto: 'quem avaliou é de outra faixa' };
-    return {
-      cabe: a.naMedida >= 0.75 ? true : a.naMedida >= 0.5 ? 'quase' : false,
-      credito: a.naMedida,
-      texto: `${de} acharam o público da idade`,
-    };
-  }
-  // Sem média nem avaliação, a idade sai da conta (24/11/2026): nenhuma fonte
-  // informa a idade do público, então o meio ponto baixava todas as festas
-  // igual e não ordenava nada. A ausência é dita uma vez, no topo da lista.
-  if (!num(f.mediaIdade)) return null;
-  if (f.mediaIdade >= fx.min && f.mediaIdade <= fx.max) return { cabe: true, texto: 'média dentro da sua faixa' };
-  const abaixo = f.mediaIdade < fx.min;
-  const d = abaixo ? fx.min - f.mediaIdade : f.mediaIdade - fx.max;
-  return {
-    cabe: d <= QUASE_ANOS ? 'quase' : false,
-    texto: `média ${emAnos(d)} ${abaixo ? 'abaixo' : 'acima'} da sua faixa`,
-  };
 }
 
 // Bairro marcado = cabe; vizinho de um marcado (a mesma noção do motor) = quase.
@@ -219,7 +178,7 @@ function som(f, c) {
   return { cabe: false, texto: `${parece}${nomeDoSom(maisPerto)}, fora ${um ? 'do que' : 'dos que'} você pediu` };
 }
 
-const AVALIAR = { horario, idade, bairro, preco, som };
+const AVALIAR = { horario, bairro, preco, som };
 
 // cara(festa, criteriosCompletos) -> { pct, partes: [{ criterio, cabe, texto }], semDado? } | null
 // null só quando nada foi pedido (não acontece numa lista do motor: a janela é obrigatória).
@@ -250,4 +209,4 @@ function cara(f, c) {
   return semDado.length ? { pct, partes, semDado } : { pct, partes };
 }
 
-module.exports = { cara, PESOS, CRITERIOS, emHoras, emAnos, nomeDoSom, credito };
+module.exports = { cara, PESOS, CRITERIOS, emHoras, nomeDoSom, credito };

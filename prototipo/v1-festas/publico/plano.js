@@ -5,7 +5,7 @@
 // com ela oculta; uma leitura velha nunca desfaz a resposta da própria pessoa.
 
 (() => {
-  const { el, chamar, site, marca, rodape, definirNota, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, avanco, painelConvite, mov: M } = window.Finde;
+  const { el, chamar, site, marca, rodape, definirNota, anunciar, cartaz, blocoOnde, blocoIngresso, blocoLinks, acaoC, painelConvite, mov: M } = window.Finde;
   const FT = window.FindeTexto;
   const $tela = document.getElementById('tela');
   const id = decodeURIComponent(window.location.pathname.split('/')[2] || '');
@@ -237,12 +237,9 @@
     document.title = `${f.nome} · finde.`;
 
     $tela.setAttribute('aria-busy', 'false');
-    // Depois da festa: a avaliação de quem foi e o "como foi?" pro grupo (R34).
-    dom.avaliar = el('div', { class: 'avaliar-lugar' });
     dom.tela = el('div', { class: 'tela-plano convite convite--sem-resposta entra' },
       painelConvite(o, { rotulo: quando ? `${de} · ${quando}` : de, marcaHref: LANDING, resto: [form], passou: Boolean(plano.passou) }),
       dom.status,
-      dom.avaliar,
       el('section', { class: 'quem', 'aria-label': 'Quem vai' },
         el('div', { class: 'quem-bloco' }, dom.rotuloDentro, dom.nomesDentro),
         el('div', { class: 'quem-bloco' }, dom.rotuloFora, dom.nomesFora)),
@@ -336,7 +333,7 @@
 
     if (plano.passou) {
       // A festa já foi: o convite vira registro, sem resposta, sem campo e
-      // sem botões; quem disse "tô dentro" neste aparelho avalia (R34).
+      // sem botões.
       marcar(null, true);
       if (!dom.form.classList.contains('passou')) {
         dom.form.classList.add('passou');
@@ -351,7 +348,6 @@
           dentro ? el('p', { class: 'texto', texto: `Você disse tô dentro${outros.length ? `, com ${juntar(outros)}` : ''}.` }) : null,
         ].filter(Boolean));
         if (dom.status.textContent) dom.status.textContent = '';
-        montarAvaliacao(dentro && plano.podeAvaliar !== false);
       }
       clearTimeout(timer);
       return;
@@ -472,142 +468,6 @@
     desenhar();
     anunciar(resposta === 'dentro' ? 'Você está dentro.' : 'Anotado: não rola.');
     agendar();
-  }
-
-  // ------------------------------------------------------------ depois da festa
-
-  // O aparelho, por um id aleatório guardado nele (o servidor guarda só um
-  // HMAC dele); e os convites já avaliados aqui. Sem armazenamento, um id da
-  // página: a resposta conta, só não fica lembrada.
-  function aparelho() {
-    try {
-      let a = localStorage.getItem('finde.aparelho');
-      if (!/^[a-f0-9]{32}$/.test(a || '')) {
-        a = [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('');
-        localStorage.setItem('finde.aparelho', a);
-      }
-      return a;
-    } catch {
-      return [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('');
-    }
-  }
-  function jaAvaliei() {
-    try {
-      return Boolean(JSON.parse(localStorage.getItem('finde.avaliados') || '{}')[id]);
-    } catch {
-      return false;
-    }
-  }
-  function anotarAvaliacao() {
-    try {
-      const x = JSON.parse(localStorage.getItem('finde.avaliados') || '{}');
-      x[id] = true;
-      localStorage.setItem('finde.avaliados', JSON.stringify(x));
-    } catch { /* tudo bem */ }
-  }
-
-  const FINALIDADE = 'Opcional. Serve pra dizer, a quem procurar esta festa, se o público é da fase dela. Guardamos sem o seu nome, até 31/12/2026.';
-
-  // jaRespondida: o servidor disse que este nome ou aparelho já respondeu
-  // (409); a tela confirma do mesmo jeito, sem o formulário e sem o botão.
-  function confirmacao(jaRespondida = false) {
-    return el('div', { class: 'confirmacao', id: 'confirmacao', tabindex: '-1' },
-      jaRespondida
-        ? el('p', { class: 'titulo titulo--secao' }, 'Você já ', el('em', { texto: 'respondeu' }), ' por este convite.')
-        : el('p', { class: 'titulo titulo--secao' }, 'Anotado. ', el('em', { texto: 'Valeu.' })),
-      el('p', { class: 'texto', texto: 'Quando cinco pessoas responderem, a festa ganha a idade de quem foi.' }));
-  }
-
-  // "O público tinha a sua idade?": as três opções no desenho do pré-quiz, a
-  // idade (sem ela a resposta não conta), a finalidade e o prazo (D15).
-  function formularioDaAvaliacao() {
-    const opcoes = [['mais-novo', 'Mais novo que eu'], ['na-medida', 'Da minha idade'], ['mais-velho', 'Mais velho que eu']];
-    const h = el('h2', { class: 'titulo titulo--secao', id: 'avaliar-titulo' }, 'O público tinha a ', el('em', { texto: 'sua' }), ' idade?');
-    const idade = el('input', { class: 'campo campo-idade', id: 'sua-idade', inputmode: 'numeric', maxlength: '2', autocomplete: 'off', 'aria-describedby': 'idade-nota' });
-    const erro = el('p', { class: 'aviso-erro', role: 'alert' });
-    const enviar = el('button', { type: 'submit', class: 'botao botao--largo' }, 'Mandar resposta', avanco());
-    const form = el('form', { class: 'avaliar', novalidate: true, 'aria-labelledby': 'avaliar-titulo' },
-      el('p', { class: 'rotulo', texto: 'Como foi' }),
-      h,
-      el('div', { class: 'opcoes', role: 'radiogroup', 'aria-labelledby': 'avaliar-titulo' }, opcoes.map(([valor, texto]) => el('label', { class: 'opcao opcao--um' },
-        el('input', { type: 'radio', name: 'resposta', value: valor }),
-        el('span', { class: 'marcador', 'aria-hidden': 'true' }),
-        el('span', { class: 'opcao-nome', texto }),
-        el('span')))),
-      el('div', { class: 'idade-campo' },
-        el('label', { for: 'sua-idade', texto: 'Você tem' }), idade, el('span', { class: 'anos', texto: 'anos' }),
-        el('p', { class: 'apoio', id: 'idade-nota', texto: 'Sem a idade, a resposta não conta.' })),
-      el('p', { class: 'finalidade', texto: plano.finalidade || FINALIDADE }),
-      enviar, erro);
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (ocupado) return;
-      const marcada = form.querySelector('input[name="resposta"]:checked');
-      const n = Number(idade.value.trim());
-      erro.textContent = '';
-      if (!marcada) {
-        erro.textContent = 'Escolha uma das três.';
-        return;
-      }
-      if (!Number.isInteger(n) || n < 18 || n > 60) {
-        erro.textContent = 'Diga a sua idade (de 18 a 60) pra resposta contar.';
-        idade.focus();
-        return;
-      }
-      ocupado = true;
-      enviar.classList.add('carregando');
-      enviar.setAttribute('aria-busy', 'true');
-      let r;
-      try {
-        r = await chamar(`/api/planos/${encodeURIComponent(id)}/avaliacao`, { nome: meuNomeAqui(), aparelho: aparelho(), resposta: marcada.value, idade: n });
-      } catch {
-        r = null;
-      }
-      ocupado = false;
-      enviar.classList.remove('carregando');
-      enviar.removeAttribute('aria-busy');
-      // Já respondida (o mesmo nome ou o mesmo aparelho): não é erro, é a
-      // mesma confirmação, com a primeira linha dizendo isso.
-      const repetida = Boolean(r && r.status === 409 && r.dados && /repetid/.test(r.dados.motivo || ''));
-      if ((!r || !r.ok) && !repetida) {
-        erro.textContent = r && r.dados && r.dados.erro ? r.dados.erro : 'A internet sumiu no meio. Toque de novo.';
-        return;
-      }
-      anotarAvaliacao();
-      // O botão se enche da esquerda, o formulário sai, a confirmação sobe.
-      encher(enviar);
-      const trocar = () => {
-        const ok = confirmacao(repetida);
-        form.replaceWith(ok);
-        ok.focus({ preventScroll: true });
-        M.subir([...ok.children], { y: 12 });
-        anunciar(repetida ? 'Você já respondeu por este convite.' : 'Anotado. Valeu.');
-      };
-      const saida = M.pode() ? M.animar(form, [{ opacity: 1 }, { opacity: 0 }], { duration: M.v().toque, easing: M.v().troca, fill: 'forwards', delay: M.v().estado }) : null;
-      if (saida) saida.finished.then(trocar, trocar);
-      else trocar();
-    });
-    return form;
-  }
-
-  // "Mandar 'como foi?' pro grupo", com a mensagem pronta e o link.
-  function blocoComoFoi() {
-    const url = window.location.href.split('#')[0];
-    const linhas = FT.mensagemComoFoi({ festa: plano.festa.festa, link: url });
-    const curtas = FT.mensagemComoFoi({ festa: plano.festa.festa, link: `${window.location.host}${window.location.pathname}` });
-    return el('div', { class: 'bloco bloco--grupo' },
-      el('p', { class: 'rotulo', texto: 'Pro grupo' }),
-      el('p', { class: 'previa', texto: curtas.join('\n') }),
-      acaoC('a', { href: `https://wa.me/?text=${encodeURIComponent(linhas.join('\n'))}`, target: '_blank', rel: 'noopener noreferrer' }, 'Mandar "como foi?" pro grupo'));
-  }
-
-  function montarAvaliacao(podeAvaliar) {
-    if (!dom.avaliar) return;
-    const partes = [];
-    if (podeAvaliar) partes.push(jaAvaliei() ? confirmacao() : formularioDaAvaliacao());
-    partes.push(blocoComoFoi());
-    dom.avaliar.replaceChildren(...partes);
-    M.subir([...dom.avaliar.children], { atraso: 200, y: 12 });
   }
 
   // Pôr na agenda (.ics, com o link do convite) e compartilhar o convite.

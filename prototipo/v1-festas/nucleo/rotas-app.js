@@ -4,7 +4,6 @@
 //   GET  /api/reais/estado                 de onde vem a base viva (token de admin do app)
 //   GET  /api/festa/:id/agenda.ics         "Pôr na agenda" a partir do detalhe
 //   GET  /p/:id/agenda.ics                 "Pôr na agenda" a partir do convite, com o link dele
-//   POST /api/planos/:id/avaliacao         a avaliação pós-festa (R34)
 //   GET  /imagens/<sha16>-(480|1080).webp  o flyer, só o da base atual ou de convite vivo
 // E as contas que o servidor junta para o formulário e a lista (KTD15):
 // `diasDoFormulario`, `bairrosDoFormulario`, `outrosDias` e `maisDoDia`.
@@ -227,7 +226,6 @@ function criarImagens({ dir, reserva = null, motorUrl = null, fetch: buscar = gl
 //                  limpar o cache de imagens só quando a lista muda)
 //   achar(id)      uma festa pelo id ou id antigo (fictícia ou real)
 //   planos         nucleo/planos.js
-//   avaliacoes     nucleo/avaliacoes.js, ou null
 //   quando(festa)  { data } da festa (a real tem; a fictícia, o próximo dia dela)
 //   imagens        criarImagens(...), ou null
 //   adminToken     FINDE_ADMIN_TOKEN do app
@@ -236,7 +234,7 @@ function criarImagens({ dir, reserva = null, motorUrl = null, fetch: buscar = gl
 // A função devolvida responde e devolve true quando a rota é dela; senão, false.
 function ligarRotasApp(contexto = {}) {
   const {
-    fonteMotor = null, reais = () => [], listaAtual = null, achar = () => null, planos = null, avaliacoes = null,
+    fonteMotor = null, reais = () => [], listaAtual = null, achar = () => null, planos = null,
     quando = (f) => ({ data: f.data || null }), imagens = null, adminToken = null,
     relogio = () => Date.now(), log = console, origem = () => '', json, erro, enviarCorpo, lerCorpo,
   } = contexto;
@@ -264,24 +262,6 @@ function ligarRotasApp(contexto = {}) {
       'Content-Disposition': `attachment; filename="${nome}.ics"`,
       'Cache-Control': 'no-store',
     }, Buffer.from(texto, 'utf8'));
-  }
-
-  async function avaliar(req, res, id) {
-    if (!planos) return erro(res, 404, 'Não achei esse caminho.');
-    if (!avaliacoes) return erro(res, 503, 'As avaliações não estão ligadas aqui.');
-    const corpo = await lerCorpo(req);
-    const idade = typeof corpo.idade === 'string' && /^\d{2}$/.test(corpo.idade) ? Number(corpo.idade) : corpo.idade;
-    const quem = planos.avaliar(id, corpo.nome, corpo.aparelho, corpo.resposta, idade);
-    const r = await avaliacoes.registrar(quem);
-    if (!r.ok) {
-      const frases = {
-        repetida: 'Você já respondeu por este convite. Obrigado!',
-        'aparelho repetido': 'Este aparelho já respondeu sobre esta festa.',
-        idade: 'Diga a sua idade (de 18 a 60): sem ela, a resposta não conta.',
-      };
-      return erro(res, r.motivo === 'repetida' || r.motivo === 'aparelho repetido' ? 409 : 400, frases[r.motivo] || 'Não deu para guardar a resposta.', { motivo: r.motivo });
-    }
-    return json(res, 201, { conta: true, avaliacoes: { total: r.contagem.avaliacoes, convites: r.contagem.convites } });
   }
 
   async function servirImagem(req, res, nome) {
@@ -321,7 +301,6 @@ function ligarRotasApp(contexto = {}) {
         estado: fonteMotor ? fonteMotor.estado() : null,
         reais: reais().length,
         vigentes: L.vigentes(reais(), relogio()).length,
-        avaliacoesPendentes: avaliacoes ? avaliacoes.pendentes().length : 0,
       }));
     }
 
@@ -350,12 +329,6 @@ function ligarRotasApp(contexto = {}) {
         const urlConvite = `${origem(req)}/p/${id}`;
         return enviarIcs(req, res, ics.montarIcs({ festa, data: p.data, uid: `${id}-${festa.id}@finde`, urlConvite, agora: relogio() }), festa.id);
       });
-    }
-
-    const avaliacao = pathname.match(/^\/api\/planos\/([^/]+)\/avaliacao$/);
-    if (avaliacao) {
-      if (metodo !== 'POST') return correr(() => erro(res, 405, 'Esse caminho não aceita esse método.'));
-      return correr(() => avaliar(req, res, avaliacao[1]));
     }
 
     const imagem = pathname.match(/^\/imagens\/([^/]*)$/);

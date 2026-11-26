@@ -11,7 +11,8 @@
 //
 // Padrões: --var é FINDE_VAR, ou var/ ao lado do servidor (no Fly, /data).
 // Com --simular, só lista o que apagaria. Rode com o app parado (ou reinicie
-// depois): o processo vivo guarda as avaliações em memória.
+// depois). As avaliações de idade saíram do app em 26/11/2026; o
+// avaliacoes.json e o sal que um volume antigo ainda tenha saem aqui.
 //
 // A imagem Docker do app carrega dados/ (COPY dados ./dados): depois do
 // expurgo, o deploy precisa sair com dados/reais.json e dados/imagens/ vazios

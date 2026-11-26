@@ -1,6 +1,6 @@
 'use strict';
 // As frases do detalhe da festa e do convite, a partir do registro
-// finde-r14/2: preço e lote, média e origem, som, regras de entrada, fontes e
+// finde-r14/2: preço e lote, som, regras de entrada, fontes e
 // o destino de cada link. Puro, sem DOM: roda no navegador (window.FindeTexto)
 // e no node --test (module.exports).
 
@@ -270,23 +270,6 @@
     return `em ${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
   }
 
-  function media(f, agora = Date.now()) {
-    if (!Number.isInteger(f.mediaIdade)) {
-      return { ausente: true, numero: null, texto: 'Média de idade ainda não informada', origem: null, quando: null, frase: 'Média de idade ainda não informada.' };
-    }
-    const c = f.campos && f.campos.mediaIdade;
-    const quando = c ? ha(c.conferidoEm, agora) : null;
-    const base = typeof f.origemIdade === 'string' && f.origemIdade.trim() ? f.origemIdade.trim() : null;
-    // Festa real: de onde a produtora publicou ("no post de 12/11").
-    const detalhe = base && typeof f.origemDetalhe === 'string' && f.origemDetalhe.trim() ? f.origemDetalhe.trim() : null;
-    const origem = detalhe ? `${base}, ${detalhe}` : base;
-    return {
-      ausente: false, numero: f.mediaIdade, texto: `média ${f.mediaIdade} anos`, origem, quando: quando ? `conferida ${quando}` : null,
-      // "Média de 32 anos, informada pela produtora."
-      frase: `Média de ${f.mediaIdade} anos${origem ? `, ${origem}` : ''}.`,
-    };
-  }
-
   function som(f) {
     const nomes = (f.estilos || []).map((e) => ESTILOS[e]).filter(Boolean);
     const estilos = nomes.map((n, i) => (i ? n.charAt(0).toLocaleLowerCase('pt-BR') + n.slice(1) : n)).join(', ');
@@ -423,24 +406,12 @@
     return /^[a-z0-9-]{1,60}$/.test(id) ? id : null;
   }
 
-  // "média 31 anos, informada pela produtora", para leitor de tela.
-  function mediaFalada(f) {
-    if (!f || !Number.isInteger(f.mediaIdade)) return 'média de idade não informada';
-    const origem = typeof f.origemIdade === 'string' ? f.origemIdade.trim() : '';
-    return `média ${f.mediaIdade} anos${origem ? `, ${origem}` : ''}`;
-  }
-
-  // A linha da festa da API ("Sáb · 17h00 · Pinheiros · média 30 anos") sem
-  // a média, que vai em seguida com a origem, uma vez só.
-  const linhaSemMedia = (linha) => String(linha || '').replace(/ · média \d+ anos$/, '');
-
-  // O que o leitor de tela ouve de um cartão da lista: a linha da festa, a
-  // média uma vez só (com a origem), o preço, a % quando ela aparece no
-  // cartão e as marcas.
+  // O que o leitor de tela ouve de um cartão da lista: a linha da festa, o
+  // preço, a % quando ela aparece no cartão e as marcas.
   function cartaoFalado(o, { pct = null, nova = false } = {}) {
     const f = o.festa;
-    return [o.exemplo === true ? 'exemplo, festa fictícia' : null, linhaSemMedia(o.linha), o.dataDistante && o.data ? dataDoCartao(o.data, f.dia) : null,
-      mediaFalada(f), precoNaLista(f), Number.isInteger(pct) ? `${pct}% a sua cara` : null,
+    return [o.exemplo === true ? 'exemplo, festa fictícia' : null, o.linha, o.dataDistante && o.data ? dataDoCartao(o.data, f.dia) : null,
+      precoNaLista(f), Number.isInteger(pct) ? `${pct}% a sua cara` : null,
       o.patrocinada ? 'patrocinado' : null, nova ? 'nova na lista' : null].filter(Boolean).join(' · ');
   }
 
@@ -460,14 +431,12 @@
   };
 
   // A mensagem que vai pro grupo, em texto corrido (a caixa alta do manual é
-  // estilo de rótulo, não cabe no WhatsApp). Abre com a hora e a média, com a
-  // origem (regra 3 da voz). data: "sáb, 21 nov".
-  // Sem média, a mensagem não abre com "média não informada" (R35): traz a
-  // casa, o bairro, o preço e o lineup ("com Louie Vega").
+  // estilo de rótulo, não cabe no WhatsApp). Abre com a data e a hora
+  // (regra 3 da voz). data: "sáb, 21 nov". Depois, a casa, o bairro, o preço
+  // e o lineup ("com Louie Vega"). A média de idade saiu em 26/11/2026, até
+  // a idade do público ser validada, mesmo da festa que ainda a traga.
   function mensagem({ data, hora, bairro, festa: f, link }) {
-    const origem = typeof f.origemIdade === 'string' && f.origemIdade.trim() ? f.origemIdade.trim() : '';
-    const media = Number.isInteger(f.mediaIdade) ? `média ${f.mediaIdade} anos${origem ? ` (${origem})` : ''}` : null;
-    const quando = [data, hora, media].filter(Boolean).join(' · ');
+    const quando = [data, hora].filter(Boolean).join(' · ');
     const nomes = Array.isArray(f.lineup) ? f.lineup.filter((x) => typeof x === 'string' && x.trim()) : [];
     const lineup = nomes.length > 3 ? `${nomes.slice(0, 3).join(', ')} e mais ${nomes.length - 3}` : lista(nomes);
     const p = preco(f);
@@ -489,9 +458,9 @@
   }
 
   // "% a sua cara". A ordem dos critérios é a dos pesos de nucleo/cara.js
-  // (horário 30, idade 25, bairro 20, preço 15, som 10; um teste confere).
-  const CARA_ORDEM = ['horario', 'idade', 'bairro', 'preco', 'som'];
-  const CARA_NOME = { horario: 'o horário', idade: 'a idade', bairro: 'o bairro', preco: 'o preço', som: 'o som' };
+  // (horário 30, bairro 20, preço 15, som 10; um teste confere).
+  const CARA_ORDEM = ['horario', 'bairro', 'preco', 'som'];
+  const CARA_NOME = { horario: 'o horário', bairro: 'o bairro', preco: 'o preço', som: 'o som' };
   const pctDe = (o) => {
     const c = o && o.cara;
     return c && Number.isInteger(c.pct) && c.pct >= 0 && c.pct <= 100 ? c.pct : null;
@@ -507,7 +476,7 @@
       .map((x, i) => [x, i]).sort((a, b) => pos(a[0]) - pos(b[0]) || a[1] - b[1]).map(([x]) => x);
   }
 
-  // "Conta mais o horário, depois a idade e o bairro." Só quando ajuda a
+  // "Conta mais o horário, depois o bairro e o preço." Só quando ajuda a
   // conferir a conta: dois critérios ou mais, e algum que não cabe inteiro.
   function pesoDaCara(cara) {
     // O que não se sabe fica na frase de semDadoDaCara.
@@ -519,7 +488,7 @@
     return `Conta mais ${nomes[0]}, depois ${lista(resto)}.`;
   }
 
-  // "Sem dado, conta pela metade: a idade e o som." Quando a festa real
+  // "Sem dado, conta pela metade: o bairro e o som." Quando a festa real
   // não informa algum critério pedido (cara.semDado, nucleo/cara.js).
   function semDadoDaCara(cara) {
     const ids = cara && Array.isArray(cara.semDado) ? cara.semDado : [];
@@ -596,18 +565,12 @@
   // O que cada critério que cabe diz, em pedaço de frase.
   const PEDACO = {
     horario: (v) => `começa ${asHoras(v)}`,
-    idade: (v) => {
-      const a = String(v).match(/^(\d+) de (\d+)/);
-      if (a) return `${a[1]} de ${a[2]} que foram acharam o público da idade`;
-      const m = String(v).match(/(\d+)/);
-      return m ? `média de ${m[1]} anos` : null;
-    },
     bairro: (v) => (/^a \d/.test(v) ? `fica ${v} do bairro pedido` : `fica ${emBairro(v)}`),
     // "Começa às 21h e é de graça." / "Começa às 23h e custa R$ 70." (24/11/2026)
     preco: (v) => (/^gr[aá]tis$/i.test(String(v).trim()) ? 'é de graça' : `custa ${v}`),
     som: (v) => `toca ${minuscula(v)}`,
   };
-  const FALTA_NOME = { horario: 'o horário', idade: 'a média de idade', bairro: 'o bairro', preco: 'o preço', som: 'o som' };
+  const FALTA_NOME = { horario: 'o horário', bairro: 'o bairro', preco: 'o preço', som: 'o som' };
   // "Não diz o som." / "Não diz o preço nem o som." / "Não diz o bairro, o preço nem o som."
   function naoDiz(nomes) {
     if (!nomes.length) return '';
@@ -618,10 +581,9 @@
   // O porquê de cada cartão real (R26, KTD15 do plano de 24/11/2026): a opção
   // traz `porque: { cabe: [{ criterio, valor }], falta: [{ criterio, valor }] }`
   // como dado, e o texto sai daqui: até duas partes que cabem e uma linha
-  // honesta do que falta. Com a linha única do cabeçalho (semMedia, D3), a
-  // média não se repete em cartão nenhum.
-  // partesDoPorque(opcao, { semMedia }) -> { cabe: ['começa às 23h', ...], falta: 'Não diz o som.' }
-  function partesDoPorque(opcao, { semMedia = false } = {}) {
+  // honesta do que falta.
+  // partesDoPorque(opcao) -> { cabe: ['começa às 23h', ...], falta: 'Não diz o som.' }
+  function partesDoPorque(opcao) {
     const p = opcao && opcao.porque && typeof opcao.porque === 'object' ? opcao.porque : {};
     const cabe = (Array.isArray(p.cabe) ? p.cabe : [])
       .filter((x) => x && PEDACO[x.criterio] && x.valor !== null && x.valor !== undefined && String(x.valor).trim())
@@ -630,7 +592,7 @@
       .slice(0, 2);
     const faltam = (Array.isArray(p.falta) ? p.falta : [])
       .map((x) => x && x.criterio)
-      .filter((c, i, xs) => FALTA_NOME[c] && xs.indexOf(c) === i && !(semMedia && c === 'idade'))
+      .filter((c, i, xs) => FALTA_NOME[c] && xs.indexOf(c) === i)
       .sort((a, b) => CARA_ORDEM.indexOf(a) - CARA_ORDEM.indexOf(b))
       .map((c) => FALTA_NOME[c]);
     return { cabe, falta: naoDiz(faltam) };
@@ -638,8 +600,8 @@
 
   // O porquê pronto para o cartão: "Começa às 23h e fica em Pinheiros." e a
   // linha do que falta. Sem nada, os dois vazios (o cartão não mostra a linha).
-  function porqueDoCartao(opcao, opcoes) {
-    const { cabe, falta } = partesDoPorque(opcao, opcoes);
+  function porqueDoCartao(opcao) {
+    const { cabe, falta } = partesDoPorque(opcao);
     // Duas partes com "e"; com vírgula na primeira, ponto e vírgula.
     const juntas = cabe.length > 1 && cabe[0].includes(', ') ? cabe.join('; ') : cabe.join(' e ');
     return { cabe: cabe.length ? `${maiuscula(juntas)}.` : '', falta };
@@ -678,9 +640,9 @@
   const rotuloDaCompra = (p) => (p && p.valor === null ? 'Ver ingressos' : 'Comprar');
 
   // As fontes que acharam a festa (encontradaEm do /3; sem ele, as fontes do
-  // registro), sem as que só leram ou corrigiram: claude, regras, curadoria
-  // e avaliações não "acham" festa.
-  const SO_LEITURA = new Set(['claude', 'regras', 'curadoria', 'avaliacoes', 'nominatim']);
+  // registro), sem as que só leram ou corrigiram: claude, regras e curadoria
+  // não "acham" festa.
+  const SO_LEITURA = new Set(['claude', 'regras', 'curadoria', 'nominatim']);
   function encontradaEm(f) {
     const ids = Array.isArray(f && f.encontradaEm) ? f.encontradaEm
       : (Array.isArray(f && f.fontes) ? f.fontes : []).map((x) => x && x.id);
@@ -691,7 +653,7 @@
   const NOME_CURTO = {
     paginas: 'a página do ingresso', instagram: 'o post', indicacao: 'a indicação', envio: 'a produtora', ical: 'a agenda da casa',
     'mapas-culturais': 'a agenda da Prefeitura', shotgun: 'a Shotgun', sympla: 'a Sympla', ingresse: 'a Ingresse', curadoria: 'a curadoria',
-    plataformas: 'a plataforma de ingresso', claude: 'a leitura da descrição', regras: 'a leitura da descrição', avaliacoes: 'quem foi',
+    plataformas: 'a plataforma de ingresso', claude: 'a leitura da descrição', regras: 'a leitura da descrição',
   };
   const nomeCurto = (id) => NOME_CURTO[id] || 'outra fonte';
   // "Página do ingresso", "Post no Instagram": o que a fonte é, no rótulo da lista.
@@ -703,7 +665,7 @@
   // O que cada campo lido é, em palavras, para "o que se leu nela".
   const CAMPO_LIDO = [
     [['nome'], 'nome'], [['data', 'inicio', 'fim'], 'horário'], [['lotes', 'precoAPartirDe', 'entradaNaPorta'], 'preço'],
-    [['casa', 'endereco', 'geo'], 'endereço'], [['lineup'], 'lineup'], [['estilos'], 'som'], [['mediaIdade'], 'idade'],
+    [['casa', 'endereco', 'geo'], 'endereço'], [['lineup'], 'lineup'], [['estilos'], 'som'],
   ];
 
   // A lista das fontes (R31): cada uma com o link para a página ou o post
@@ -811,24 +773,10 @@
     }).filter(Boolean);
   }
 
-  // A avaliação de quem foi (R34, KTD13): o que a pergunta mede, nunca "média
-  // do público". "4 de 5 que foram, de 29 a 34 anos, acharam o público da
-  // idade deles."
-  function fraseDaAvaliacao(f) {
-    const a = f && f.avaliacaoIdade;
-    if (!a || !Number.isInteger(a.avaliacoes) || a.avaliacoes < 1 || typeof a.naMedida !== 'number') return null;
-    const n = Math.round(a.naMedida * a.avaliacoes);
-    const fx = Array.isArray(a.faixa) && a.faixa.length === 2 && a.faixa.every(Number.isInteger) ? a.faixa : null;
-    const idade = fx ? (fx[0] === fx[1] ? `, com ${fx[0]} anos` : `, de ${fx[0]} a ${fx[1]} anos`) : '';
-    const quem = a.avaliacoes === 1 ? '1 pessoa que foi' : `${n} de ${a.avaliacoes} que foram`;
-    if (a.avaliacoes === 1) return `${maiuscula(quem)}${idade}, ${n ? 'achou o público da idade dela' : 'não achou o público da idade dela'}.`;
-    return `${quem}${idade}, ${n === 1 ? 'achou' : 'acharam'} o público da idade deles.`;
-  }
-
   // De onde vem (R31): uma linha por campo, o rótulo e a fonte com quando.
   const FONTE_DITA = {
     paginas: 'Página do ingresso', instagram: 'Post no Instagram', indicacao: 'Indicação ao finde', envio: 'A produtora',
-    ical: 'Agenda da casa', 'mapas-culturais': 'Agenda da Prefeitura', curadoria: 'Curadoria do finde', avaliacoes: 'Avaliações de quem foi',
+    ical: 'Agenda da casa', 'mapas-culturais': 'Agenda da Prefeitura', curadoria: 'Curadoria do finde',
     claude: 'Leitura da descrição', regras: 'Leitura da descrição', nominatim: 'OpenStreetMap',
   };
   // "Indicação ao finde" -> "de uma indicação ao finde", para a frase única.
@@ -865,8 +813,6 @@
     if (local.length) linhas.push({ campo: 'Local', texto: `${local.join('; ')}.` });
     const s = som(f || {});
     if (s.estilos) linhas.push({ campo: 'Som', texto: s.inferido ? 'Leitura da descrição da página.' : fonteDe('estilos') || 'Fonte não informada.' });
-    const m = fonteDe('mediaIdade');
-    if (m && Number.isInteger(f.mediaIdade)) linhas.push({ campo: 'Idade', texto: m });
     // Tudo da mesma fonte: uma frase só, e não a mesma linha três vezes
     // ("Horário, preço e local vieram de uma indicação ao finde, há 2h.").
     if (linhas.length > 1 && linhas.every((x) => x.texto === linhas[0].texto)) {
@@ -891,8 +837,6 @@
     const itens = [
       typeof f.inicio !== 'number' || f.horarioIncerto === true ? 'horário' : null,
       typeof f.fim !== 'number' ? 'fim' : null,
-      // A média de idade saiu daqui (24/11/2026): nenhuma fonte informa, e a
-      // lista já diz isso uma vez, no topo.
       !f.endereco || typeof f.endereco.texto !== 'string' || !f.endereco.texto.trim() ? 'endereço' : null,
       p.tipo === 'sem-preco' ? 'preço' : null,
       !(Array.isArray(f.estilos) && f.estilos.length) ? 'som' : null,
@@ -973,16 +917,11 @@
     return sairam;
   }
 
-  // A mensagem "como foi?" do convite de festa que passou (R34).
-  function mensagemComoFoi({ festa: f, link }) {
-    return [`Como foi a ${f && f.nome ? f.nome : 'festa'}? Responde em 10 segundos: o público era da nossa idade?`, link];
-  }
-
   return {
     partesDoPorque, porqueDoCartao, baseViva, precoVelho, rotuloDaCompra, encontradaEm, fontesDaFesta, fraseDaJuncao, divergencias,
-    fraseDaAvaliacao, deOndeVem, vaziosDaFesta, cartazDe, creditoDaPeca, altDaPeca, mensagemComoFoi, EM_BAIRRO, semQuebraNoPreco,
-    preco, precoNaLista, centavos, condicoesDoLote, CONDICOES, DE_PESSOA, ha, media, som, regras, regrasFrase, fontes, paginas, origemDoPreco, servico, usuario, destino, links, mapa, ESTILOS,
-    idDeFesta, casaComBairro, mensagem, CARA_ORDEM, ordemDaCara, pesoDaCara, semDadoDaCara, dataDoCartao, pctNosCartoes, mediaFalada, linhaSemMedia, cartaoFalado,
+    deOndeVem, vaziosDaFesta, cartazDe, creditoDaPeca, altDaPeca, EM_BAIRRO, semQuebraNoPreco,
+    preco, precoNaLista, centavos, condicoesDoLote, CONDICOES, DE_PESSOA, ha, som, regras, regrasFrase, fontes, paginas, origemDoPreco, servico, usuario, destino, links, mapa, ESTILOS,
+    idDeFesta, casaComBairro, mensagem, CARA_ORDEM, ordemDaCara, pesoDaCara, semDadoDaCara, dataDoCartao, pctNosCartoes, cartaoFalado,
     horarioSemQuebra, ondeSemQuebra, semViuva, horaCurta, passaNosFiltros, facetas, podarFiltros,
   };
 });

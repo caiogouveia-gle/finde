@@ -37,7 +37,7 @@ function r14(extra = {}) {
   };
 }
 
-const PEDIDO = { dia: 'sex', janela: 'comeco-da-noite', idade: { min: 28, max: 35 }, bairros: [], teto: 150, estilos: [] };
+const PEDIDO = { dia: 'sex', janela: 'comeco-da-noite', bairros: [], teto: 150, estilos: [] };
 const completo = (c) => motor.completar(motor.sanearCriterios(c));
 
 // ---------------------------------------------------------------- conversor
@@ -60,7 +60,7 @@ test('conversor: data vira dia da semana e fica a data; ISO vira as horas do app
 
 test('conversor: o que o motor não trouxe fica null ou vazio, nunca um padrão fictício', () => {
   const { festa: f } = R.converterRegistro(r14());
-  for (const k of ['produtora', 'casa', 'bairro', 'regiao', 'esquenta', 'fim', 'mediaIdade', 'origemIdade', 'frase', 'cartaz', 'lineup', 'distanciaMin', 'endereco', 'linkEvento', 'instagram']) {
+  for (const k of ['produtora', 'casa', 'bairro', 'regiao', 'esquenta', 'fim', 'frase', 'cartaz', 'lineup', 'distanciaMin', 'endereco', 'linkEvento', 'instagram']) {
     assert.equal(f[k], null, k);
   }
   assert.deepEqual(f.estilos, []);
@@ -99,14 +99,21 @@ test('conversor: casa que é a cidade vira null; produtora igual à casa não se
   assert.equal(g.produtora, null);
 });
 
-test('conversor: média só com origem; o preço sai dos lotes (a conta do motor); o cartaz de fora não vira imagem', () => {
-  assert.equal(R.converterRegistro(r14({ mediaIdade: { valor: 31 } })).festa.mediaIdade, null);
-  assert.equal(R.converterRegistro(r14({ mediaIdade: { valor: 31, origem: 'chute' } })).festa.mediaIdade, null);
-  const f = R.converterRegistro(r14({ mediaIdade: { valor: 31, origem: 'produtora', detalhe: 'no post de 12/11' } })).festa;
-  assert.equal(f.mediaIdade, 31);
-  assert.equal(f.origemIdade, 'informada pela produtora');
-  assert.equal(f.origemDetalhe, 'no post de 12/11');
-  assert.equal(T.media(f, AGORA).origem, 'informada pela produtora, no post de 12/11');
+test('conversor: a média de idade cai na entrada; o preço sai dos lotes (a conta do motor); o cartaz de fora não vira imagem', () => {
+  // Desde 26/11/2026 a média que o motor mande, com origem ou não, não entra
+  // no app; nem o carimbo dela, nem a fonte das avaliações, nem a página que a leu.
+  const comMedia = r14({
+    mediaIdade: { valor: 31, origem: 'avaliacoes', avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2, detalhe: 'no post de 12/11' },
+    campos: { nome: { fonte: 'indicacao', conferidoEm: CONF }, mediaIdade: { fonte: 'avaliacoes', conferidoEm: CONF } },
+    fontes: [...r14().fontes, { id: 'avaliacoes', nome: 'Avaliações de quem foi', url: null, conferidoEm: CONF }],
+    paginas: [{ tipo: 'ingresso', url: 'https://www.ingresse.com/teste', lidoEm: CONF, campos: ['nome', 'mediaIdade'] }],
+  });
+  const f = R.converterRegistro(comMedia).festa;
+  for (const k of ['mediaIdade', 'origemIdade', 'origemIdadeCurta', 'origemDetalhe', 'avaliacaoIdade', 'faixas']) assert.equal(k in f, false, k);
+  assert.deepEqual(Object.keys(f.campos), ['nome']);
+  assert.ok(!f.fontes.some((x) => x.id === 'avaliacoes'));
+  assert.ok(f.paginas.every((p) => !p.campos.includes('mediaIdade')));
+  assert.doesNotMatch(JSON.stringify(f), /m[ée]dia|avaliac/i);
   assert.equal(R.converterRegistro(r14({ lotes: [{ nome: 'x', preco: 469.9, disponivel: true }] })).festa.preco, 469.9);
   // Sem lote nem porta, o do motor, se vier.
   assert.equal(R.converterRegistro(r14({ lotes: [], precoAPartirDe: { valor: 469.9, lote: 'x', esgotadosAntes: 0 } })).festa.preco, 469.9);
@@ -242,7 +249,7 @@ test('% a sua cara: critério sem dado conta pela metade e aparece como "não se
   const c = completo({ ...PEDIDO, bairros: ['pinheiros'], estilos: ['funk'], teto: 80 });
   const k = cara(f, c);
   // Só o horário tem dado: ele cabe (30), e bairro, preço e som (45) contam
-  // pela metade. A idade sem média sai da conta (24/11/2026): 52,5 de 75.
+  // pela metade. A idade saiu da conta (24/11/2026) e do app (26/11/2026): 52,5 de 75.
   // Festa com dado faltando nunca chega a 100%.
   assert.equal(k.pct, 70);
   assert.deepEqual(k.semDado, ['bairro', 'preco', 'som']);
@@ -320,7 +327,7 @@ test('servidor com reais (D11, KTD15): reais em cima; fictícias só no dia sem 
   assert.equal(f.corpo.misto, true);
   assert.equal(f.corpo.reais, 2);
   const r = await chamar('POST', '/api/festas', { criterios: PEDIDO });
-  for (const k of ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base', 'semMedia']) assert.ok(k in r.corpo, k);
+  for (const k of ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base']) assert.ok(k in r.corpo, k);
   assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), ['teste-20261120-aaaa']);
   const [primeira] = r.corpo.opcoes;
   assert.equal(primeira.exemplo, false);

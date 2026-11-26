@@ -11,7 +11,7 @@ const { criarServidor } = require('../servidor');
 
 const DADOS = path.join(__dirname, '..', 'dados', 'festas.json');
 const mudo = { info() {}, warn() {}, error() {} };
-const PEDIDO = { dia: 'sab', janela: 'comeco-da-noite', faixa: '30-35', teto: 80, estilos: ['house-disco', 'pop-2000'] };
+const PEDIDO = { dia: 'sab', janela: 'comeco-da-noite', teto: 80, estilos: ['house-disco', 'pop-2000'] };
 let servidor;
 let raiz;
 let pasta;
@@ -76,7 +76,9 @@ test('GET /api/formulario traz as cinco perguntas e a contagem, sem cache', asyn
   // Sem real nenhuma, os dias da base fictícia, com data (U24).
   assert.deepEqual(r.corpo.dias.map((d) => d.id).filter((id) => id !== 'hoje' && id !== 'qui'), ['sex', 'sab', 'dom']);
   assert.ok(r.corpo.dias.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d.data) && typeof d.rotulo === 'string' && d.reais === 0));
-  assert.deepEqual(r.corpo.faixas.map((f) => f.rotulo), ['18 a 24', '25 a 29', '30 a 35', '36 ou mais']);
+  // A faixa e o intervalo de idade saíram do formulário em 26/11/2026.
+  assert.equal(r.corpo.faixas, undefined);
+  assert.equal(r.corpo.idade, undefined);
   assert.deepEqual(r.corpo.tetos.map((t) => t.rotulo), ['R$ 50', 'R$ 80', 'R$ 150', 'Sem limite']);
   assert.equal(r.corpo.estilos.length, 6);
   assert.match(r.corpo.janelas[1].rotulo, /19h à 1h · começo da noite/);
@@ -116,9 +118,9 @@ test('POST /api/festas: três festas com linha, motivos e a fala de abertura', a
   assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), ['funk-ao-entardecer', 'sabado-groove', 'noite-aurora']);
   assert.equal(r.corpo.resposta, 'A primeira enche antes e custa menos.');
   assert.equal(r.corpo.atendem, 3);
-  assert.ok(r.corpo.opcoes.every((o) => o.origem && o.origem.longa));
-  assert.deepEqual(r.corpo.pedidoPartes.map((x) => x.texto), ['Sábado', 'das 19h à 1h', 'gente de 30 a 35', 'até R$ 80', 'house ou pop 2000']);
-  assert.match(r.corpo.pedido, /^Sáb · 19h à 1h · 30 a 35 · até R\$ 80/);
+  assert.ok(r.corpo.opcoes.every((o) => o.origem === undefined && o.festa.mediaIdade === undefined && o.festa.origemIdade === undefined));
+  assert.deepEqual(r.corpo.pedidoPartes.map((x) => x.texto), ['Sábado', 'das 19h à 1h', 'em toda a cidade', 'até R$ 80', 'house ou pop 2000']);
+  assert.match(r.corpo.pedido, /^Sáb · 19h à 1h · até R\$ 80/);
   assert.equal(r.corpo.opcoes[2].patrocinada, true);
   assert.equal(r.corpo.opcoes[0].patrocinada, false);
 });
@@ -127,7 +129,7 @@ test('POST /api/festas sem as quatro respostas devolve 400 dizendo o que falta',
   const r = await chamar('POST', '/api/festas', { criterios: { dia: 'sab' } });
   assert.equal(r.status, 400);
   assert.equal(r.corpo.erro, 'Faltou responder umas perguntas. Vamos do começo?');
-  assert.deepEqual(r.corpo.faltam, ['janela', 'faixa', 'teto']);
+  assert.deepEqual(r.corpo.faltam, ['janela', 'teto']);
 });
 
 test('conversa: "mais perto de Pinheiros" responde com minutos', async () => {
@@ -193,7 +195,7 @@ test('planos: criar, abrir /p/:id, responder, ver os nomes', async () => {
   const caminho = `/api/planos/${criado.corpo.id}`;
   const lido = await chamar('GET', caminho);
   assert.equal(lido.corpo.festa.festa.nome, 'Sábado Groove');
-  assert.equal(lido.corpo.festa.linha, 'Sáb · 19h00 · Pinheiros · média 31 anos');
+  assert.equal(lido.corpo.festa.linha, 'Sáb · 19h00 · Pinheiros');
   assert.deepEqual(lido.corpo.dentro, ['Bruna']);
 
   await chamar('POST', `${caminho}/respostas`, { nome: 'Ju', resposta: 'dentro' });
@@ -265,10 +267,12 @@ test('/p/:id: 404 quando não existe; quando existe, as metas de compartilhament
   const criado = await chamar('POST', '/api/planos', { criterios: PEDIDO, festa: 'sabado-groove' });
   const sim = await chamar('GET', `/p/${criado.corpo.id}`);
   assert.equal(sim.status, 200);
-  // A prévia do link (o que o grupo vê primeiro) traz a média com a origem.
-  assert.match(sim.corpo, /<meta property="og:title" content="Exemplo · Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)">/);
-  assert.match(sim.corpo, /<title>Exemplo · Bora no sábado\? Sábado Groove, 19h00 · média 31 \(pela produtora\)<\/title>/);
-  assert.match(sim.corpo, /<meta property="og:description" content="[^"]*Média de 31 anos, informada pela produtora\.">/);
+  // A prévia do link (o que o grupo vê primeiro) diz o dia, a festa e a
+  // hora; a média de idade saiu dela em 26/11/2026.
+  assert.match(sim.corpo, /<meta property="og:title" content="Exemplo · Bora no sábado\? Sábado Groove, 19h00">/);
+  assert.match(sim.corpo, /<title>Exemplo · Bora no sábado\? Sábado Groove, 19h00<\/title>/);
+  assert.match(sim.corpo, /<meta property="og:description" content="[^"]*Começa às 19h, a pista enche às 21h e acaba à 1h\.">/);
+  assert.doesNotMatch(sim.corpo, /[Mm]édia|\banos\b/);
   assert.match(sim.corpo, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:\d+\/compartilhar\.png\?v=\d{8}">/);
   assert.equal((await chamar('GET', '/plano.html')).status, 404);
   const inicio = await chamar('GET', '/');
@@ -408,8 +412,10 @@ test('cada opção traz a festa inteira do registro e a data', async () => {
       assert.ok(k in o.festa, `${o.festa.id} sem ${k}`);
     }
     assert.equal(o.festa.exemplo, true);
-    assert.equal(typeof o.festa.origemIdade, 'string');
-    assert.match(o.festa.campos.mediaIdade.conferidoEm, /-03:00$/);
+    assert.equal(o.festa.origemIdade, undefined);
+    assert.equal(o.festa.mediaIdade, undefined);
+    assert.equal(o.festa.campos.mediaIdade, undefined);
+    assert.match(o.festa.campos.inicio.conferidoEm, /-03:00$/);
   }
 });
 
@@ -492,11 +498,11 @@ test('/fora.html: a página de saída do protótipo, sem script inline', async (
 
 // ---------------------------------------------------------------- perguntas novas (R18 a R22)
 
-const PEDIDO_NOVO = { dia: 'sab', janela: 'fim-de-tarde', idade: { min: 28, max: 35 }, teto: 80, estilos: [], bairros: ['pinheiros', 'centro'] };
+const PEDIDO_NOVO = { dia: 'sab', janela: 'fim-de-tarde', teto: 80, estilos: [], bairros: ['pinheiros', 'centro'] };
 
-test('formulário traz as zonas com os 14 bairros do motor e a faixa padrão de 28 a 35', async () => {
+test('formulário traz as zonas com os 14 bairros do motor, e não a faixa de idade', async () => {
   const r = await chamar('GET', '/api/formulario');
-  assert.deepEqual(r.corpo.idade, { min: 18, max: 50, padrao: { min: 28, max: 35 } });
+  assert.equal(r.corpo.idade, undefined);
   assert.deepEqual(r.corpo.zonas.map((z) => z.nome), ['Zona Oeste', 'Centro', 'Centro-Sul', 'Zona Norte', 'Zona Sul', 'Zona Leste']);
   assert.equal(r.corpo.zonas.flatMap((z) => z.bairros).length, 14);
   // Sem festa na semana, o bairro aparece sem contagem.
@@ -505,40 +511,27 @@ test('formulário traz as zonas com os 14 bairros do motor e a faixa padrão de 
   assert.ok(r.corpo.zonas.flatMap((z) => z.bairros).every((b) => b.ponto && b.ponto.lat < -23.3 && b.ponto.lng < -46.3));
 });
 
-test('festas com bairros e intervalo: blocos, frase do pedido e nada de faixa obrigatória', async () => {
-  const r = await chamar('POST', '/api/festas', { criterios: PEDIDO_NOVO });
+test('festas com bairros: blocos e frase do pedido; o intervalo de idade de um link antigo cai', async () => {
+  const r = await chamar('POST', '/api/festas', { criterios: { ...PEDIDO_NOVO, idade: { min: 28, max: 35 } } });
   assert.equal(r.status, 200);
   assert.deepEqual(r.corpo.opcoes.map((o) => o.bloco), ['pedido', 'pedido', 'perto']);
   assert.ok(r.corpo.pedidoPartes.some((p) => p.chave === 'bairros'));
-  assert.ok(r.corpo.pedidoPartes.some((p) => p.chave === 'idade' && p.texto === 'gente de 28 a 35'));
-  assert.deepEqual(r.corpo.criterios.idade, { min: 28, max: 35 });
+  assert.ok(!r.corpo.pedidoPartes.some((p) => p.chave === 'idade' || p.chave === 'faixa'));
+  assert.equal(r.corpo.criterios.idade, undefined);
+  assert.equal(r.corpo.criterios.faixa, undefined);
 });
 
-test('conversa com intervalo: entende e responde 200', async () => {
+test('conversa: "mais velha", "de 30 a 40" e "da minha idade" não mudam o pedido nem falam de idade (26/11/2026)', async () => {
   const antes = await chamar('POST', '/api/festas', { criterios: PEDIDO_NOVO });
-  const r = await conversar(antes.corpo.criterios, antes.corpo.opcoes.map((o) => o.festa.id), 'gente mais velha');
-  assert.equal(r.status, 200);
-  assert.equal(r.corpo.entendeu, true);
-});
-
-test('conversa com intervalo: "mais velha" desloca o intervalo; no teto, diz que já é o mais velho', async () => {
-  const pedir = async (idade, texto) => {
-    const antes = await chamar('POST', '/api/festas', { criterios: { ...PEDIDO_NOVO, idade } });
-    return conversar(antes.corpo.criterios, antes.corpo.opcoes.map((o) => o.festa.id), texto);
-  };
-  let r = await pedir({ min: 28, max: 35 }, 'gente mais velha');
-  assert.deepEqual(r.corpo.criterios.idade, { min: 33, max: 40 });
-  assert.match(r.corpo.resposta, /33 a 40/);
-  r = await pedir({ min: 40, max: 50 }, 'gente mais velha');
-  assert.deepEqual(r.corpo.criterios.idade, { min: 40, max: 50 });
-  assert.match(r.corpo.resposta, /já é a faixa mais velha/i);
-  r = await pedir({ min: 28, max: 35 }, 'mais nova');
-  assert.deepEqual(r.corpo.criterios.idade, { min: 23, max: 30 });
-  r = await pedir({ min: 18, max: 50 }, 'público de 30 a 40');
-  assert.deepEqual(r.corpo.criterios.idade, { min: 30, max: 40 });
-  r = await pedir({ min: 18, max: 50 }, 'tem gente da minha idade?');
-  assert.match(r.corpo.resposta, /18 a 50/);
-  assert.doesNotMatch(r.corpo.resposta, /25 a 29/);
+  const atuais = antes.corpo.opcoes.map((o) => o.festa.id);
+  for (const texto of ['gente mais velha', 'mais nova', 'público de 30 a 40', 'tem gente da minha idade?']) {
+    const r = await conversar(antes.corpo.criterios, atuais, texto);
+    assert.equal(r.status, 200, texto);
+    assert.equal(r.corpo.criterios.idade, undefined, texto);
+    assert.equal(r.corpo.criterios.faixa, undefined, texto);
+    assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), atuais, texto);
+    assert.doesNotMatch(r.corpo.resposta, /m[ée]dia|faixa|(?<![a-zà-ú])idade|\d+ a \d+/i, texto);
+  }
 });
 
 // ---------------------------------------------------------------- U24: o servidor do app
@@ -667,15 +660,17 @@ test('POST /api/festas (U24): a forma de resposta-festas-r14-3.json, com a base 
   const reais = path.join(pasta, 'reais-u24b.json');
   fs.writeFileSync(reais, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas: FIXTURE.festas }));
   const app = await subirApp({ reais, relogio: () => Date.parse('2026-11-26T12:00:00-03:00') });
-  const r = await app.ir('/api/festas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 }, semana: 'proxima' }) });
+  const r = await app.ir('/api/festas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', teto: 150 }, semana: 'proxima' }) });
   assert.equal(r.status, 200);
-  for (const k of ['criterios', 'pedido', 'pedidoPartes', 'resposta', 'opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base', 'semMedia']) assert.ok(k in r.corpo, k);
+  for (const k of ['criterios', 'pedido', 'pedidoPartes', 'resposta', 'opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base']) assert.ok(k in r.corpo, k);
+  // A linha única "sem média" (D3) saiu com a idade, em 26/11/2026.
+  assert.equal(r.corpo.semMedia, undefined);
   assert.deepEqual(r.corpo.opcoes.map((o) => o.festa.id), ['noite-exemplo-20261205-a1b2']);
   assert.equal(r.corpo.opcoes[0].festa.cartaz.arquivo, `/imagens/${SHA}-1080.webp`);
   assert.deepEqual(r.corpo.exemplos, []);
   assert.ok(r.corpo.outrosDias.some((d) => d.dia === 'sex' && d.data === '2026-12-04' && d.reais === 1));
   assert.equal(r.corpo.base.total, 3);
-  assert.equal(r.corpo.semMedia, false);
+  assert.equal(r.corpo.opcoes[0].festa.mediaIdade, undefined);
 });
 
 test('/imagens/: fora do padrão e hash fora da base dão 404; com o motor, grava o cache; a que sai da base dá 404 na atualização seguinte', async () => {
@@ -731,7 +726,7 @@ test('convite de festa real com flyer: a prévia leva a versão 1080, absoluta; 
   fs.writeFileSync(reais, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas: FIXTURE.festas }));
   let agora = Date.parse('2026-11-26T12:00:00-03:00');
   const app = await subirApp({ reais, relogio: () => agora });
-  const p = await app.ir('/api/planos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 }, festa: 'noite-exemplo-20261205-a1b2' }) });
+  const p = await app.ir('/api/planos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', teto: 150 }, festa: 'noite-exemplo-20261205-a1b2' }) });
   assert.equal(p.status, 201);
   const html = (await app.ir(`/p/${p.corpo.id}`, { headers: { 'X-Forwarded-Proto': 'https' } })).corpo;
   assert.doesNotMatch(html, /__IMAGEM_COMPARTILHAR__/);
@@ -773,18 +768,18 @@ const pedirFestas = (app, criterios, extra = {}) => app.ir('/api/festas', { meth
 
 test('revisão app-1: a festa recusada de propósito não volta em "ver todas" (maisDoDia)', async () => {
   const app = await appCom(cincoNoSabado({ funk: 'a' }), '2026-12-01T12:00:00-03:00');
-  const r = (await pedirFestas(app, { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150, evitarEstilos: ['funk'] })).corpo;
+  const r = (await pedirFestas(app, { dia: 'sab', janela: 'noite', teto: 150, evitarEstilos: ['funk'] })).corpo;
   const ids = [...r.opcoes, ...r.maisDoDia].map((o) => o.festa.id);
   assert.equal(ids.length, 4);
   assert.ok(!ids.includes('noite-a-20261205-a1b0'), 'a de funk ficou fora');
   // "essa não": o id recusado também sai de maisDoDia.
-  const r2 = (await pedirFestas(app, { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150, evitar: ['noite-e-20261205-a1b4'] })).corpo;
+  const r2 = (await pedirFestas(app, { dia: 'sab', janela: 'noite', teto: 150, evitar: ['noite-e-20261205-a1b4'] })).corpo;
   assert.ok(![...r2.opcoes, ...r2.maisDoDia].some((o) => o.festa.id === 'noite-e-20261205-a1b4'));
 });
 
 test('revisão app-2: esgotada não ocupa vaga; as 3 recomendadas são abertas e ela desce para o fim', async () => {
   const app = await appCom(cincoNoSabado({ esgotada: 'a' }), '2026-12-01T12:00:00-03:00');
-  const r = (await pedirFestas(app, { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 })).corpo;
+  const r = (await pedirFestas(app, { dia: 'sab', janela: 'noite', teto: 150 })).corpo;
   assert.equal(r.opcoes.length, 3);
   assert.ok(r.opcoes.every((o) => o.festa.esgotado !== true));
   const ultima = r.maisDoDia[r.maisDoDia.length - 1];
@@ -798,7 +793,7 @@ test('revisão app-3: à 1h30 de sábado, a festa de sexta que segue rolando é 
   const f = (await app.ir('/api/formulario')).corpo;
   const hoje = f.dias.find((d) => d.hoje);
   assert.deepEqual([hoje.id, hoje.rotulo, hoje.data, hoje.reais], ['sex', 'Hoje, sexta', '2026-11-27', 1]);
-  const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 150 })).corpo;
+  const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', teto: 150 })).corpo;
   assert.deepEqual([...r.opcoes, ...r.maisDoDia].map((o) => o.festa.id), ['depois-da-meia-noite-20261128-d4e5']);
   assert.deepEqual(r.exemplos, []);
   // Às 7h de sábado a noite virou: "hoje" é sábado, e a de sexta passou.
@@ -810,7 +805,7 @@ test('revisão app-3: à 1h30 de sábado, a festa de sexta que segue rolando é 
 test('verif-app-3: entre 0h e 6h, a fictícia de "hoje" é da noite de hoje, não da semana seguinte', async () => {
   for (const hora of ['2026-11-28T00:30:00-03:00', '2026-11-28T05:59:00-03:00']) {
     const app = await appCom([], hora);
-    const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 'sem-limite' })).corpo;
+    const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', teto: 'sem-limite' })).corpo;
     const datas = [...r.opcoes, ...(r.exemplos || [])].map((o) => `${o.festa.dia} ${o.data}`);
     assert.ok(datas.length, hora);
     for (const d of datas) assert.equal(d, 'sex 2026-11-27', hora);
@@ -824,7 +819,7 @@ test('verif-app-3: entre 0h e 6h, a fictícia de "hoje" é da noite de hoje, nã
 test('verif-app-5: "$2" ou "$&" no nome da festa não vira padrão de troca nas metas do convite', async () => {
   const nome = 'Noite $2 data-x=$2y $& $` fim';
   const app = await appCom([{ ...FIXTURE.festas[0], nome }], '2026-12-01T12:00:00-03:00');
-  const p = await app.ir('/api/planos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', faixa: '30-35', teto: 150 }, festa: FIXTURE.festas[0].id }) });
+  const p = await app.ir('/api/planos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'sab', janela: 'noite', teto: 150 }, festa: FIXTURE.festas[0].id }) });
   assert.equal(p.status, 201);
   const html = (await app.ir(`/p/${p.corpo.id}`)).corpo;
   const og = html.match(/<meta property="og:title" content="([^"]*)">/);
@@ -836,7 +831,7 @@ test('verif-app-5: "$2" ou "$&" no nome da festa não vira padrão de troca nas 
 
 test('revisão app-5: "hoje" sem real num dia útil não diz que a lista está vazia quando outro dia tem', async () => {
   const app = await appCom(FIXTURE.festas, '2026-12-01T20:00:00-03:00');
-  const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 150 })).corpo;
+  const r = (await pedirFestas(app, { dia: 'hoje', janela: 'noite', teto: 150 })).corpo;
   assert.deepEqual(r.opcoes, []);
   assert.ok(r.outrosDias.some((d) => d.reais > 0));
   assert.doesNotMatch(`${r.aviso || ''} ${r.resposta}`, /lista de festas está vazia/);
@@ -851,7 +846,7 @@ test('POST /api/festas com "hoje" numa quarta com festa: 200, não 500 (conserto
   const reais = path.join(pasta, 'reais-quarta.json');
   fs.writeFileSync(reais, JSON.stringify({ contrato: 'finde-r14/3', geradoEm: FIXTURE.geradoEm, festas: [quarta] }));
   const app = await subirApp({ reais, relogio: () => Date.parse('2026-12-02T12:00:00-03:00') });
-  const r = await app.ir('/api/festas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'hoje', janela: 'noite', faixa: '30-35', teto: 150 } }) });
+  const r = await app.ir('/api/festas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ criterios: { dia: 'hoje', janela: 'noite', teto: 150 } }) });
   assert.equal(r.status, 200, JSON.stringify(r.corpo));
   assert.equal(r.corpo.criterios.dia, 'hoje');
 });

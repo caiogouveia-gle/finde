@@ -24,9 +24,8 @@
     { chave: 'dia', tipo: 'um', titulo: ['Sair ', 'quando?'], lista: 'dias' },
     { chave: 'janela', tipo: 'um', titulo: ['A que horas chegar e ', 'voltar?'], lista: 'janelas' },
     { chave: 'bairros', tipo: 'bairros', titulo: ['Pra que lado da ', 'cidade?'], dica: 'Um ou vários.' },
-    // A pergunta da idade saiu do fluxo em 25/11/2026, até a idade do
-    // público ser validada: o pedido vai com a faixa inteira (idadeDe), que
-    // não pesa na "% a sua cara" nem aparece na frase do pedido.
+    // A pergunta da idade saiu do fluxo em 25/11/2026 e a idade saiu do
+    // pedido em 26/11/2026, até a idade do público ser validada.
     { chave: 'teto', tipo: 'um', titulo: ['Até quanto você quer ', 'gastar?'], lista: 'tetos' },
     { chave: 'estilos', tipo: 'varios', titulo: ['E o ', 'som?'], lista: 'estilos', dica: 'Pode marcar mais de um. Ou nenhum.' },
   ];
@@ -60,7 +59,7 @@
 
   const estado = {
     form: null,
-    respostas: { dia: null, semana: 'esta', janela: null, bairros: [], idade: null, teto: null, estilos: [] },
+    respostas: { dia: null, semana: 'esta', janela: null, bairros: [], teto: null, estilos: [] },
     tela: 'pergunta',
     passo: 0,
     // Aberto por /app?festa=<id>: o detalhe sem pedido, sem "sua janela".
@@ -256,7 +255,7 @@
   function recuar(velho, volta, seguir) {
     const v = M.v();
     velho.classList.add('saindo');
-    const alvos = velho.querySelectorAll('.cabeca-pergunta, .opcoes, .onde-chips, .faixa, .pe');
+    const alvos = velho.querySelectorAll('.cabeca-pergunta, .opcoes, .onde-chips, .pe');
     const anims = [...alvos].map((x) => M.animar(x, [{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: `0 ${volta ? 10 : -10}px` }], {
       duration: v.toque, easing: v.troca, fill: 'forwards',
     })).filter(Boolean);
@@ -398,7 +397,7 @@
     M.subir(raiz.querySelector('.dica'), { atraso: troca ? 60 : 320, y: 6, duracao: troca ? v.estado : v.bloco });
     // A base viva e "Esta semana / A próxima" (só na primeira pergunta).
     M.subir(raiz.querySelectorAll('.cabeca-pergunta .base-viva, .semanas'), { atraso: troca ? 40 : 180, y: 12, duracao: troca ? v.estado : v.bloco });
-    M.subir(raiz.querySelectorAll('.opcoes > .opcao, .onde-chips > *, .faixa > *'), troca ? { atraso: 40, y: 10, duracao: v.estado } : { atraso: 260, y: 14 });
+    M.subir(raiz.querySelectorAll('.opcoes > .opcao, .onde-chips > *'), troca ? { atraso: 40, y: 10, duracao: v.estado } : { atraso: 260, y: 14 });
     M.subir(raiz.querySelector('.pe'), { atraso: troca ? 120 : 520, y: 0, duracao: v.estado });
   }
 
@@ -499,7 +498,7 @@
     clearTimeout(estado.avancoPendente);
     cancelarEspera();
     Object.assign(estado, {
-      respostas: { dia: null, semana: 'esta', janela: null, bairros: [], idade: null, teto: null, estilos: [] },
+      respostas: { dia: null, semana: 'esta', janela: null, bairros: [], teto: null, estilos: [] },
       editando: null, criterios: null, resultado: null, fala: null, novas: [], mandar: null, festa: null, rolagemLista: 0, todasAbertas: false, pedidoNeutro: false,
       tela: 'pergunta', passo: 0,
     });
@@ -593,7 +592,7 @@
   function abrirListaNeutra(ref) {
     const alvo = diaParaLista(ref || {});
     if (!alvo) return false;
-    estado.respostas = { dia: alvo.dia, semana: alvo.semana, janela: 'comeco-da-noite', bairros: [], idade: null, teto: 'sem-limite', estilos: [] };
+    estado.respostas = { dia: alvo.dia, semana: alvo.semana, janela: 'comeco-da-noite', bairros: [], teto: 'sem-limite', estilos: [] };
     Object.assign(estado, { avulsa: false, festa: null, mandar: null, editando: null, tela: 'pergunta', passo: 0, pedidoNeutro: true });
     history.replaceState({ tela: 'pergunta', passo: 0, n: 0 }, '', window.location.pathname);
     buscarFestas(criteriosDoFormulario(), { substituir: true });
@@ -754,8 +753,7 @@
         detalhe ? el('span', { class: 'opcao-detalhe' }, el('span', { class: 'vh', texto: ', ' }), detalhe) : el('span'));
     }));
     const lista = p.tipo === 'bairros' ? perguntaBairros(idTitulo, p)
-      : p.tipo === 'idade' ? perguntaIdade(idTitulo, p)
-        : criarOpcoes(opcoes);
+      : criarOpcoes(opcoes);
 
     // Esta semana / a próxima, acima das opções: as opções saem em 140 ms e
     // as da outra semana sobem como na entrada. São dois botões, não abas.
@@ -812,14 +810,6 @@
     return form;
   }
 
-  // A faixa que vale: a respondida ou, sem a pergunta no fluxo, a faixa
-  // inteira do formulário (18 a 50+), que o motor lê como "sem preferência".
-  function idadeDe(r) {
-    if (r.idade && Number.isInteger(r.idade.min) && Number.isInteger(r.idade.max)) return r.idade;
-    const lim = estado.form && estado.form.idade ? estado.form.idade : { min: 18, max: 50 };
-    return { min: lim.min, max: lim.max };
-  }
-
   // Onde (R19): bairros em chips por zona, que se somam; "São Paulo inteira"
   // começa marcado e é exclusivo: marcá-lo limpa os outros, e marcar um
   // bairro o desmarca. Botões com aria-pressed, alvo de 44 px.
@@ -854,163 +844,13 @@
     return raiz;
   }
 
-  // A faixa de idade (R20, R22): dois pontos num trilho de 18 a 50, no padrão
-  // de vários pontos do W3C. Cada ponto é um slider próprio, com o valor dito
-  // em anos; setas, Page Up/Down, Home e End; arrasto por toque ou mouse; e
-  // botões de passo para quem não arrasta.
-  function perguntaIdade(idTitulo, p) {
-    const LIM = estado.form.idade || { min: 18, max: 50 };
-    const v = { ...idadeDe(estado.respostas) };
-    const anos = (n) => (n >= LIM.max ? `${n} anos ou mais` : `${n} anos`);
-    const valor = el('p', { class: 'faixa-valor', 'aria-hidden': 'true' });
-    const sel = el('span', { class: 'faixa-sel' });
-    const ponto = (qual) => el('div', {
-      class: `faixa-ponto faixa-ponto--${qual}`, role: 'slider', tabindex: '0',
-      'aria-label': qual === 'min' ? 'Idade mínima' : 'Idade máxima', 'aria-orientation': 'horizontal',
-      'data-qual': qual,
-    }, el('span', { class: 'faixa-ponto-marca' }));
-    const pMin = ponto('min');
-    const pMax = ponto('max');
-    const trilho = el('div', { class: 'faixa-trilho' }, el('span', { class: 'faixa-base' }), sel, pMin, pMax);
-    const passo = (qual, delta, rotulo) => {
-      const b = el('button', { type: 'button', class: 'faixa-passo', 'aria-label': rotulo, texto: delta < 0 ? '−' : '+' });
-      b.dataset.qual = qual;
-      b.dataset.delta = String(delta);
-      b.addEventListener('click', () => {
-        if (b.getAttribute('aria-disabled') === 'true') return;
-        mudar(qual, v[qual] + delta);
-        // Quem usa só os botões ouve o valor novo.
-        anunciar(`${qual === 'min' ? 'mínimo' : 'máximo'}, ${anos(v[qual])}`);
-      });
-      return b;
-    };
-    const numMin = el('span', { class: 'faixa-num', 'aria-hidden': 'true' });
-    const numMax = el('span', { class: 'faixa-num', 'aria-hidden': 'true' });
-    const passos = el('div', { class: 'faixa-passos' },
-      el('div', { class: 'faixa-passo-grupo' }, el('span', { class: 'rotulo', 'aria-hidden': 'true', texto: 'Mínimo' }),
-        el('div', { class: 'faixa-passo-linha' }, passo('min', -1, 'Diminuir a idade mínima'), numMin, passo('min', +1, 'Aumentar a idade mínima'))),
-      el('div', { class: 'faixa-passo-grupo' }, el('span', { class: 'rotulo', 'aria-hidden': 'true', texto: 'Máximo' }),
-        el('div', { class: 'faixa-passo-linha' }, passo('max', -1, 'Diminuir a idade máxima'), numMax, passo('max', +1, 'Aumentar a idade máxima'))));
-    const pos = (n) => `${((n - LIM.min) / (LIM.max - LIM.min)) * 100}%`;
-    const p100 = (n) => String(((n - LIM.min) / (LIM.max - LIM.min)) * 100);
-    // Os pontos andam por translate em % do trilho (cqw, no CSS): mexer em
-    // left refaria o layout a cada passo do dedo. Sem cqw, left.
-    const cq = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('width', '1cqw');
-    function pintar() {
-      valor.textContent = `${v.min} a ${anos(v.max)}`;
-      pMin.style.setProperty('--p', p100(v.min));
-      pMax.style.setProperty('--p', p100(v.max));
-      sel.style.setProperty('--a', p100(v.min));
-      sel.style.setProperty('--b', p100(v.max));
-      if (!cq) {
-        pMin.style.left = pos(v.min);
-        pMax.style.left = pos(v.max);
-        sel.style.left = pos(v.min);
-        sel.style.width = `calc(${pos(v.max)} - ${pos(v.min)})`;
-      }
-      for (const [el2, qual, de, ate] of [[pMin, 'min', LIM.min, v.max - 1], [pMax, 'max', v.min + 1, LIM.max]]) {
-        el2.setAttribute('aria-valuemin', String(de));
-      (qual === 'min' ? numMin : numMax).textContent = qual === 'max' && v.max >= LIM.max ? `${LIM.max}+` : String(v[qual]);
-        el2.setAttribute('aria-valuemax', String(ate));
-        el2.setAttribute('aria-valuenow', String(v[qual]));
-        el2.setAttribute('aria-valuetext', `${qual === 'min' ? 'mínimo' : 'máximo'}, ${anos(v[qual])}`);
-      }
-      // Botão de passo no limite fica desligado, e diz isso.
-      for (const b of passos.querySelectorAll('.faixa-passo')) {
-        const q = b.dataset.qual;
-        const d = Number(b.dataset.delta);
-        const limite = q === 'min' ? (d < 0 ? v.min <= LIM.min : v.min >= v.max - 1) : (d < 0 ? v.max <= v.min + 1 : v.max >= LIM.max);
-        b.setAttribute('aria-disabled', String(limite));
-      }
-    }
-    function mudar(qual, n) {
-      const novo = qual === 'min' ? Math.max(LIM.min, Math.min(v.max - 1, n)) : Math.min(LIM.max, Math.max(v.min + 1, n));
-      if (novo === v[qual]) return;
-      v[qual] = novo;
-      estado.respostas.idade = { ...v };
-      pintar();
-      salvar();
-    }
-    for (const pt of [pMin, pMax]) {
-      pt.addEventListener('keydown', (e) => {
-        const qual = pt.dataset.qual;
-        const passos2 = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -5, PageUp: 5 };
-        if (e.key in passos2) mudar(qual, v[qual] + passos2[e.key]);
-        else if (e.key === 'Home') mudar(qual, qual === 'min' ? LIM.min : v.min + 1);
-        else if (e.key === 'End') mudar(qual, qual === 'min' ? v.max - 1 : LIM.max);
-        else return;
-        e.preventDefault();
-      });
-    }
-    // Arrasto: só depois que o dedo anda na horizontal; gesto vertical rola a
-    // página. Toque sem arrasto leva o ponto mais perto até ali. Pontos
-    // encostados (49–50) decidem pelo lado para onde o dedo vai. Botão direito
-    // e segundo dedo não contam.
-    let gesto = null;
-    const idadeNo = (x) => {
-      const r = trilho.getBoundingClientRect();
-      return Math.round(LIM.min + Math.max(0, Math.min(1, (x - r.left) / r.width)) * (LIM.max - LIM.min));
-    };
-    const maisPerto = (n, dx = 0) => {
-      if (v.max - v.min <= 2 && dx) return dx < 0 ? 'min' : 'max';
-      const dMin = Math.abs(n - v.min);
-      const dMax = Math.abs(n - v.max);
-      if (dMin === dMax) return n < v.min ? 'min' : 'max';
-      return dMin < dMax ? 'min' : 'max';
-    };
-    trilho.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0 || gesto) return;
-      const alvo = e.target.closest('.faixa-ponto');
-      gesto = { id: e.pointerId, x0: e.clientX, y0: e.clientY, alvo: alvo ? alvo.dataset.qual : null, qual: null };
-      if (e.pointerType === 'mouse') e.preventDefault();
-    });
-    trilho.addEventListener('pointermove', (e) => {
-      if (!gesto || e.pointerId !== gesto.id) return;
-      const dx = e.clientX - gesto.x0;
-      const dy = e.clientY - gesto.y0;
-      if (!gesto.qual) {
-        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-        if (Math.abs(dy) > Math.abs(dx)) {
-          gesto = null;
-          return;
-        }
-        gesto.qual = gesto.alvo && v.max - v.min > 2 ? gesto.alvo : maisPerto(idadeNo(gesto.x0), dx);
-        try { trilho.setPointerCapture(e.pointerId); } catch { /* sem captura */ }
-        (gesto.qual === 'min' ? pMin : pMax).focus({ preventScroll: true });
-        trilho.classList.add('arrastando');
-      }
-      mudar(gesto.qual, idadeNo(e.clientX));
-    });
-    trilho.addEventListener('pointerup', (e) => {
-      if (!gesto || e.pointerId !== gesto.id) return;
-      if (!gesto.qual) {
-        const n = idadeNo(e.clientX);
-        const qual = maisPerto(n);
-        (qual === 'min' ? pMin : pMax).focus({ preventScroll: true });
-        mudar(qual, n);
-      }
-      gesto = null;
-      trilho.classList.remove('arrastando');
-    });
-    trilho.addEventListener('pointercancel', () => {
-      gesto = null;
-      trilho.classList.remove('arrastando');
-    });
-    estado.respostas.idade = { ...v };
-    pintar();
-    return el('div', { class: 'faixa', role: 'group', 'aria-labelledby': idTitulo, 'aria-describedby': p.dica ? `${idTitulo}-dica` : null },
-      valor, trilho,
-      el('div', { class: 'faixa-escala', 'aria-hidden': 'true' }, el('span', { texto: String(LIM.min) }), el('span', { texto: `${LIM.max}+` })),
-      passos);
-  }
-
   // ------------------------------------------------------------ resultado
 
   function criteriosDoFormulario() {
     const r = estado.respostas;
     // "Hoje" é sempre desta semana; os outros dias, da semana escolhida.
     const semana = r.dia === 'hoje' ? 'esta' : r.semana === 'proxima' ? 'proxima' : 'esta';
-    return { dia: r.dia, semana, janela: r.janela, idade: { ...idadeDe(r) }, bairros: [...(r.bairros || [])], teto: r.teto, estilos: r.estilos };
+    return { dia: r.dia, semana, janela: r.janela, bairros: [...(r.bairros || [])], teto: r.teto, estilos: r.estilos };
   }
 
   // Um trecho do pedido reabre só aquela pergunta.
@@ -1019,10 +859,10 @@
     estado.pedidoNeutro = false;
     estado.respostas = {
       dia: c.dia, semana: c.semana === 'proxima' ? 'proxima' : 'esta', janela: c.janela, teto: c.teto, estilos: [...(c.estilos || [])],
-      bairros: [...(c.bairros || [])], idade: c.idade ? { ...c.idade } : null,
+      bairros: [...(c.bairros || [])],
     };
-    // Convite e sessões antigos falam em "faixa" ou "idade": a pergunta saiu
-    // do fluxo, então não há o que reabrir.
+    // Convite e sessões antigos falam em "faixa" ou "idade": saíram do
+    // pedido, então não há o que reabrir.
     if (!PERGUNTAS.some((p) => p.chave === chave)) return;
     estado.editando = chave;
     ir('pergunta', { passo: PERGUNTAS.findIndex((p) => p.chave === chave), deLista: true });
@@ -1030,10 +870,8 @@
 
   // Depois de mudar uma pergunta: o resto do que foi conversado continua valendo.
   function reabrirResultado(chave, botao) {
-    const dim = { janela: 'horario', teto: 'preco', idade: 'idade' }[chave];
+    const dim = { janela: 'horario', teto: 'preco' }[chave];
     const c = { ...estado.criterios, ...criteriosDoFormulario(), evitar: [] };
-    // A faixa da conversa sai do intervalo novo.
-    delete c.faixa;
     c.firmes = (c.firmes || []).filter((d) => d !== dim);
     delete c.oferta;
     estado.editando = null;
@@ -1050,7 +888,7 @@
     // Faltou alguma resposta (voltou depois de recarregar, por exemplo): volta pra ela.
     const falta = primeiraSemResposta();
     const vazio = (k) => criterios[k] === null || criterios[k] === undefined;
-    if (!estado.editando && falta >= 0 && (['dia', 'janela', 'teto'].some(vazio) || (vazio('faixa') && vazio('idade')))) {
+    if (!estado.editando && falta >= 0 && ['dia', 'janela', 'teto'].some(vazio)) {
       ir('pergunta', { passo: falta });
       return;
     }
@@ -1346,7 +1184,7 @@
     if (o.exemplo === true) return null;
     // Só o que cabe (24/11/2026): o que a fonte não diz fica no detalhe, não
     // em cada cartão da lista.
-    const { cabe } = FT.porqueDoCartao(o, { semMedia: Boolean(estado.resultado && estado.resultado.semMedia) });
+    const { cabe } = FT.porqueDoCartao(o);
     if (!cabe) return null;
     return el('p', { class: 'porque' }, el('b', { texto: cabe }));
   }
@@ -1529,7 +1367,7 @@
             if (marcados.has(c.id)) marcados.delete(c.id);
             else {
               marcados.add(c.id);
-              // Só a zona (som, bairro, preço, idade), sem o valor escolhido.
+              // Só a zona (som, bairro, preço), sem o valor escolhido.
               contar('filtro', String(c.id).split(':')[0]);
             }
             b.setAttribute('aria-pressed', String(marcados.has(c.id)));
@@ -1744,8 +1582,8 @@
     const oferta = r.oferta ? el('button', { type: 'button', class: 'botao botao--vazado oferta', texto: r.oferta.rotulo }) : null;
     if (oferta) oferta.addEventListener('click', () => ajustar(r.oferta.frase, { exibido: r.oferta.rotulo, origem: oferta }));
 
-    // A conversa aparece depois de um ajuste; na chegada, o título e a
-    // linha sem média já dizem o que há.
+    // A conversa aparece depois de um ajuste; na chegada, o título e o
+    // aviso já dizem o que há.
     const conversa = el('div', { class: 'conversa', id: 'conversa' },
       estado.fala.voce ? el('p', { class: 'fala-voce' }, el('span', { class: 'vh', texto: 'Você: ' }), estado.fala.voce) : null,
       estado.fala.voce && estado.fala.finde ? el('p', { class: 'fala-finde' }, el('span', { class: 'vh', texto: 'Finde: ' }), semQuebraNoPreco(estado.fala.finde)) : null,
@@ -2193,7 +2031,7 @@
   // "% a sua cara" no detalhe: o número e, critério por critério, na ordem do
   // peso, se cabe, quase cabe ou não cabe; o sem dado conta pela metade.
   const CABE = { true: 'Cabe', quase: 'Quase', false: 'Não cabe', null: 'Sem dado' };
-  const ROTULO_CRITERIO = { horario: 'Horário', idade: 'Idade', bairro: 'Bairro', preco: 'Preço', som: 'Som' };
+  const ROTULO_CRITERIO = { horario: 'Horário', bairro: 'Bairro', preco: 'Preço', som: 'Som' };
   function blocoCara(o) {
     const cara = estado.avulsa ? null : caraDe(o);
     if (!cara) return null;
@@ -2339,7 +2177,7 @@
   }
 
   // O detalhe, na ordem do celular (R28 e o rascunho da U39): a capa (quando,
-  // régua, nome com o cartaz ao lado), "% a sua cara", a idade, onde e como
+  // régua, nome com o cartaz ao lado), "% a sua cara", onde e como
   // chegar, o ingresso, o som, as fontes, de onde vem e os vazios numa linha
   // só no pé. A barra fixa leva o preço, a compra e o envio ao grupo; a peça
   // inteira abre por cima, num diálogo.
@@ -2485,8 +2323,8 @@
     return `${d0.curto ? `${d0.curto}, ` : ''}${d} ${MESES[m - 1]}`;
   }
 
-  // A mensagem do grupo em texto corrido, sem caixa alta: a hora e a média
-  // (com a origem) abrem a linha da festa (FT.mensagem).
+  // A mensagem do grupo em texto corrido, sem caixa alta: a hora abre a
+  // linha da festa (FT.mensagem).
   function linhasDaMensagem(o, link, data) {
     return FT.mensagem({ data: dataCurta(data, o.festa.dia), hora: o.hora, bairro: o.bairro, festa: o.festa, link });
   }
@@ -2542,11 +2380,11 @@
   }
 
   // O convite precisa de um pedido. Aberto por link, não houve pedido: vai um
-  // neutro, tirado da própria festa (o dia dela, qualquer bairro, preço e som,
-  // e a faixa de idade inteira), para nada no convite dizer que ela fura.
+  // neutro, tirado da própria festa (o dia dela, qualquer bairro, preço e
+  // som), para nada no convite dizer que ela fura.
   function pedidoNeutro(f) {
     const janela = f.inicio < 19 ? 'fim-de-tarde' : f.inicio < 22 ? 'comeco-da-noite' : 'noite';
-    return { dia: f.dia, janela, idade: { min: 18, max: 50 }, bairros: [], teto: 'sem-limite', estilos: [] };
+    return { dia: f.dia, janela, bairros: [], teto: 'sem-limite', estilos: [] };
   }
 
   function blocoCriar(o, campoNome) {

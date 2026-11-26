@@ -80,7 +80,8 @@ test('GET /api/painel: sem token ou com token errado, 401; com o token, landing 
   const p = JSON.parse(texto);
   assert.equal(p.landing.pessoas, 4);
   assert.equal(typeof p.app.pessoas, 'number');
-  assert.deepEqual(p.motor, { festas: 1, produtoras: 1, comMediaDeIdade: 1, atualizadoEm: '2026-11-25T12:00:00.000Z' });
+  // A festa do motor ainda traz a média de idade, mas o painel não a conta (26/11/2026).
+  assert.deepEqual(p.motor, { festas: 1, produtoras: 1, atualizadoEm: '2026-11-25T12:00:00.000Z' });
   assert.equal(p.listaUnicos, 2);
   assert.equal(p.equipeFora, 1);
   assert.doesNotMatch(texto, /@exemplo\.com/, 'e-mail nunca sai no painel');

@@ -5,7 +5,9 @@
 // Puro: não lê arquivo; o relógio entra como argumento.
 //
 // O que o motor não trouxe fica null ou lista vazia, nunca um padrão
-// fictício: sem casa, sem bairro, sem média, o app mostra o vazio. Fica fora
+// fictício: sem casa, sem bairro, o app mostra o vazio. A média de idade
+// (`mediaIdade`) que o motor ainda mande é descartada aqui desde 26/11/2026,
+// até a idade do público ser validada. Fica fora
 // a festa que a fonte disse que não é festa, a de exemplo do motor, a sem
 // data, a de fora da cidade de São Paulo ou de cidade que a fonte não diz e a
 // que já acabou (o fim, ou as 6h do dia seguinte, no momento do pedido; ver
@@ -128,36 +130,6 @@ function horasDoApp(iso, data) {
 }
 
 // ---------------------------------------------------------------- conversão
-
-// A média vem com a origem, ou não vem (R16). Só os três tipos que o app
-// sabe dizer; "avaliacoes" precisa do número de avaliações.
-function mediaDe(m) {
-  if (!objeto(m) || !numero(m.valor) || m.valor < 18 || m.valor > 60 || !C.ORIGENS.includes(m.origem)) return null;
-  const tipo = { tipo: m.origem };
-  let avaliacao = null;
-  if (m.origem === 'avaliacoes') {
-    if (!(Number.isInteger(m.avaliacoes) && m.avaliacoes >= 5)) return null;
-    tipo.avaliacoes = m.avaliacoes;
-    // O que a pergunta mede (KTD13): quantos acharam o público da idade deles,
-    // de que idades, de quantos convites. A média sozinha nunca é "do público".
-    const faixa = Array.isArray(m.faixa) && m.faixa.length === 2 && m.faixa.every((x) => Number.isInteger(x) && x >= 18 && x <= 60) && m.faixa[0] <= m.faixa[1]
-      ? [m.faixa[0], m.faixa[1]] : null;
-    avaliacao = {
-      avaliacoes: m.avaliacoes,
-      naMedida: numero(m.naMedida) && m.naMedida >= 0 && m.naMedida <= 1 ? Math.round(m.naMedida * 100) / 100 : null,
-      faixa,
-      convites: Number.isInteger(m.convites) && m.convites >= 1 ? m.convites : null,
-    };
-  }
-  return {
-    // O app escreve a média em anos inteiros; a origem diz de onde ela vem.
-    mediaIdade: Math.round(m.valor),
-    origemIdade: C.origemLonga(tipo),
-    origemIdadeCurta: C.origemCurta(tipo),
-    origemDetalhe: texto(m.detalhe, 160),
-    avaliacaoIdade: avaliacao,
-  };
-}
 
 // Os 14 bairros do motor (C.TODOS_OS_BAIRROS), com o nome que o motor leu
 // (Vila Leopoldina aponta para lapa e continua se chamando Vila Leopoldina).
@@ -305,7 +277,9 @@ const carimbo = (v) => typeof v === 'string' && ISO.test(v) && !Number.isNaN(Dat
 const NOME_DA_FONTE = { indicacao: 'Lido na página do ingresso' };
 function fontesDe(fontes) {
   if (!Array.isArray(fontes)) return [];
-  return fontes.filter((x) => objeto(x) && texto(x.id, 40) && texto(x.nome, 80) && carimbo(x.conferidoEm))
+  // A fonte `avaliacoes` (as avaliações de idade de quem foi) só dava a
+  // média de idade, que saiu em 26/11/2026: cai aqui.
+  return fontes.filter((x) => objeto(x) && texto(x.id, 40) && x.id !== 'avaliacoes' && texto(x.nome, 80) && carimbo(x.conferidoEm))
     .map((x) => {
       const fonte = { id: x.id, nome: NOME_DA_FONTE[x.id] || texto(x.nome, 80), url: https(x.url), conferidoEm: x.conferidoEm };
       // Do /3: o motivo da junção. O /2 não traz, e a chave não aparece.
@@ -325,7 +299,7 @@ function paginasDe(ps) {
     nome: texto(x.nome, 60),
     url: https(x.url),
     lidoEm: x.lidoEm,
-    campos: Array.isArray(x.campos) ? x.campos.filter((c) => typeof c === 'string' && /^[A-Za-z]{1,40}$/.test(c)).slice(0, 30) : [],
+    campos: Array.isArray(x.campos) ? x.campos.filter((c) => typeof c === 'string' && /^[A-Za-z]{1,40}$/.test(c) && c !== 'mediaIdade').slice(0, 30) : [],
   }));
 }
 
@@ -350,13 +324,13 @@ function foraDaCidade(e) {
 function camposDe(campos) {
   if (!objeto(campos)) return {};
   return Object.fromEntries(Object.entries(campos)
-    .filter(([k, x]) => /^[A-Za-z]{1,40}$/.test(k) && objeto(x) && texto(x.fonte, 40) && carimbo(x.conferidoEm))
+    .filter(([k, x]) => /^[A-Za-z]{1,40}$/.test(k) && k !== 'mediaIdade' && objeto(x) && texto(x.fonte, 40) && carimbo(x.conferidoEm))
     .map(([k, x]) => [k, { fonte: x.fonte, conferidoEm: x.conferidoEm }]));
 }
 
 // As fontes que descobriram a festa (o "Encontrada em N fontes"): sem quem
 // só leu ou corrigiu o que outra trouxe.
-const SO_LEITURA = ['claude', 'regras', 'curadoria', 'avaliacoes'];
+const SO_LEITURA = ['claude', 'regras', 'curadoria'];
 
 // Quando o preço foi conferido: o carimbo do campo que deu o preço.
 function precoConferidoDe(campos) {
@@ -405,7 +379,6 @@ function converterRegistro(r, contexto = {}) {
   const p = FT.preco({ lotes, entradaNaPorta: porta });
   const preco = valorDe(p.valor) !== null ? valorDe(p.valor) : !lotes && !porta && objeto(r.precoAPartirDe) ? valorDe(r.precoAPartirDe.valor) : null;
   const { endereco, bairro, regiao, bairroNome } = enderecoDe(r.endereco);
-  const media = mediaDe(r.mediaIdade);
   const estilos = Array.isArray(r.estilos) ? [...new Set(r.estilos.filter((e) => C.ID_ESTILOS.includes(e)))] : [];
   const lineup = Array.isArray(r.lineup) ? r.lineup.map((n) => texto(n, 80)).filter(Boolean).slice(0, 30) : [];
   // Casa que é só o nome da cidade não é casa; produtora igual à casa não se repete.
@@ -433,12 +406,6 @@ function converterRegistro(r, contexto = {}) {
     // A pista cheia e o fim só quando vêm e fazem sentido; senão, null.
     esquenta: esquenta !== null && esquenta >= inicio && esquenta <= inicio + 12 ? esquenta : null,
     fim: fimOk ? fim : null,
-    mediaIdade: media ? media.mediaIdade : null,
-    origemIdade: media ? media.origemIdade : null,
-    origemIdadeCurta: media ? media.origemIdadeCurta : null,
-    origemDetalhe: media ? media.origemDetalhe : null,
-    avaliacaoIdade: media ? media.avaliacaoIdade : null,
-    faixas: [],
     preco,
     precoConferidoEm: precoConferidoDe(r.campos),
     // Esgotada entra marcada; a lista a põe no fim, fora do ranking.

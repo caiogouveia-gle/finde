@@ -1,5 +1,5 @@
 {
-  "_leia": "Alvo da U23 (plano de 24/11/2026): o que converterRegistro devolve para o registro completo de motor/teste/dados/registro-r14-3.json. Dados fictícios. Congelada depois da fundação: só a costura muda. Nomes novos do /3: bairroNome, diaDaSemana, dataDaNoite, horarioIncerto, avaliacaoIdade, precoConferidoEm, esgotado, local, imagens, cartaz (a principal), fontes[].vinculo, encontradaEm (fontes de descoberta, sem claude, regras, curadoria e avaliacoes), divergencias, idsAntigos, atualizadoEm (o geradoEm do envelope), endereco.cidadeOrigem/cep/lugar.",
+  "_leia": "Alvo da U23 (plano de 24/11/2026): o que converterRegistro devolve para o registro completo de motor/teste/dados/registro-r14-3.json. Dados fictícios. Congelada depois da fundação: só a costura muda. Nomes novos do /3: bairroNome, diaDaSemana, dataDaNoite, horarioIncerto, precoConferidoEm, esgotado, local, imagens, cartaz (a principal), fontes[].vinculo, encontradaEm (fontes de descoberta, sem claude, regras e curadoria), divergencias, idsAntigos, atualizadoEm (o geradoEm do envelope), endereco.cidadeOrigem/cep/lugar. A média de idade (mediaIdade, avaliacaoIdade, a fonte avaliacoes) é descartada desde 26/11/2026.",
   "registro": "noite-exemplo-20261205-a1b2",
   "festa": {
     "id": "noite-exemplo-20261205-a1b2",
@@ -17,20 +17,6 @@
     "horarioIncerto": false,
     "esquenta": null,
     "fim": 29,
-    "mediaIdade": 31,
-    "origemIdade": "a partir de 5 avaliações de quem foi",
-    "origemIdadeCurta": "5 avaliações",
-    "origemDetalhe": null,
-    "avaliacaoIdade": {
-      "avaliacoes": 5,
-      "naMedida": 0.8,
-      "faixa": [
-        29,
-        34
-      ],
-      "convites": 2
-    },
-    "faixas": [],
     "preco": 40,
     "precoConferidoEm": "2026-11-25T10:30:00-03:00",
     "esgotado": false,
@@ -259,10 +245,6 @@
       "estilos": {
         "fonte": "claude",
         "conferidoEm": "2026-11-25T10:30:00-03:00"
-      },
-      "mediaIdade": {
-        "fonte": "avaliacoes",
-        "conferidoEm": "2026-11-26T09:00:00-03:00"
       },
       "ehFesta": {
         "fonte": "paginas",

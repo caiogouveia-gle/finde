@@ -43,7 +43,7 @@ async function conversar(criterios, ...falas) {
   return passos;
 }
 
-const SAB = { dia: 'sab', janela: 'comeco-da-noite', faixa: '30-35', teto: 80 };
+const SAB = { dia: 'sab', janela: 'comeco-da-noite', teto: 80 };
 
 test('negação não inverte: "funk não" tira funk; "sexta não" não vai pra sexta; "Pinheiros não" tira Pinheiros', async () => {
   const [, funk] = await conversar({ ...SAB, estilos: ['house-disco'] }, 'funk não');
@@ -78,7 +78,7 @@ test('"domingo tem almoço" não troca o dia: pergunta, e "sim" aceita', async (
   assert.equal(sim.criterios.dia, 'dom');
 });
 
-test('frases que o público diz: "tanto faz", "às 10 da noite", "depois das 22h", "da minha idade"', async () => {
+test('frases que o público diz: "tanto faz", "às 10 da noite", "depois das 22h"; "da minha idade" não é mais pedido', async () => {
   const [ini, tanto] = await conversar(SAB, 'tanto faz');
   assert.deepEqual(ids(tanto), ids(ini));
   assert.match(tanto.resposta, /^Então vai na primeira/);
@@ -86,8 +86,10 @@ test('frases que o público diz: "tanto faz", "às 10 da noite", "depois das 22h
   assert.equal(dez.criterios.janela, 'noite');
   const [, depois] = await conversar(SAB, 'depois das 22h');
   assert.equal(depois.criterios.janela, 'noite');
-  const [, idade] = await conversar(SAB, 'tem com gente da minha idade?');
-  assert.match(idade.resposta, /^Sim: todas com média de 30 a 35\./);
+  // Até 26/11/2026, respondia "Sim: todas com média de 30 a 35."
+  const [ini2, idade] = await conversar(SAB, 'tem com gente da minha idade?');
+  assert.equal(idade.resposta, 'Não peguei. Dá pra pedir mais cedo, mais barato, outro dia, um bairro ou um som.');
+  assert.deepEqual(ids(idade), ids(ini2));
 });
 
 test('quando não entende, diz o que dá pra pedir; quando não sabe, diz que ainda não sabe', async () => {
@@ -112,7 +114,7 @@ test('"mais barato" desce a partir do mais caro da lista e para no mais barato q
 });
 
 test('lista vazia com teto firme: diz o que travou, oferece, e "sim" aceita', async () => {
-  const [, vazio, sim] = await conversar({ dia: 'dom', janela: 'noite', faixa: '36+', teto: 50 }, 'de graça', 'sim');
+  const [, vazio, sim] = await conversar({ dia: 'dom', janela: 'noite', teto: 50 }, 'de graça', 'sim');
   assert.deepEqual(vazio.opcoes, []);
   assert.equal(vazio.resposta, 'Até R$ 0, nada cabe. Até R$ 80, sim.');
   assert.deepEqual(vazio.oferta, { frase: 'ate 80', rotulo: 'Subir pra R$ 80' });
@@ -121,9 +123,10 @@ test('lista vazia com teto firme: diz o que travou, oferece, e "sim" aceita', as
 });
 
 test('pedido difícil: o resultado diz que nada é do jeito pedido, e cada festa diz o que fura', async () => {
-  const [r] = await conversar({ dia: 'dom', janela: 'noite', faixa: '36+', teto: 50, estilos: ['funk'] });
+  const [r] = await conversar({ dia: 'dom', janela: 'noite', teto: 50, estilos: ['funk'] });
   assert.equal(r.atendem, 0);
-  assert.equal(r.resposta, 'Funk no domingo, só às 17h, com média 24.');
+  // Antes de a idade sair (26/11/2026), terminava em ", com média 24".
+  assert.equal(r.resposta, 'Funk no domingo, só às 17h.');
   for (const o of r.opcoes) {
     assert.equal(o.atende, false);
     assert.ok(o.motivos.length >= 2);
@@ -154,7 +157,7 @@ test('"tem algo de MPB?": só confirma quando a lista tem MPB; senão, diz o que
   const [, com] = await conversar(SAB, 'tem algo de MPB?');
   assert.ok(com.opcoes.some((o) => o.festa.estilos.includes('mpb-samba')));
   assert.match(com.resposta, /^MPB, então\./);
-  const [, sem] = await conversar({ dia: 'dom', janela: 'noite', faixa: '30-35', teto: 80 }, 'tem algo de MPB?');
+  const [, sem] = await conversar({ dia: 'dom', janela: 'noite', teto: 80 }, 'tem algo de MPB?');
   assert.doesNotMatch(sem.resposta, /MPB, então/);
   assert.match(sem.resposta, /MPB no domingo, só às 15h/);
 });
@@ -197,11 +200,11 @@ const { entender } = require('../nucleo/entender');
 function real(id, extra = {}) {
   return {
     id, nome: `Festa ${id}`, casa: `Casa ${id}`, bairro: 'pinheiros', regiao: 'oeste', dia: 'sab', data: '2026-11-28', dataDaNoite: '2026-11-28',
-    inicio: 23, esquenta: null, fim: null, mediaIdade: null, faixas: [], preco: 40, estilos: ['house-disco'], selo: 'editorial',
+    inicio: 23, esquenta: null, fim: null, preco: 40, estilos: ['house-disco'], selo: 'editorial',
     distanciaMin: null, idadeMinima: null, real: true, ...extra,
   };
 }
-const PEDIDO_REAL = motor.completar({ dia: 'sab', janela: 'noite', idade: { min: 28, max: 35 }, teto: 150, bairros: [], estilos: [] });
+const PEDIDO_REAL = motor.completar({ dia: 'sab', janela: 'noite', teto: 150, bairros: [], estilos: [] });
 // A fala para um texto sobre uma lista de reais.
 function falar(texto, festas, extra = {}) {
   const { mudar, pedidos, duvida } = entender(texto, { ...PEDIDO_REAL, agoraMs: Date.parse('2026-11-24T12:00:00-03:00'), comDistancia: false });
@@ -210,21 +213,21 @@ function falar(texto, festas, extra = {}) {
   return conversa.responder({ pedidos, antes: PEDIDO_REAL, depois, antesIds: festas.map((f) => f.id), resultado, nomeDe: (id) => id, duvida }).texto;
 }
 
-test('"tem com gente da minha idade?" com três reais sem média: nenhuma divulgou', () => {
-  const tres = [real('a'), real('b', { inicio: 23.5 }), real('c', { inicio: 24 })];
-  assert.match(falar('tem com gente da minha idade?', tres), /^Nenhuma delas divulgou a média de idade ainda\./);
-  // Uma com média dentro e duas sem: separa os três grupos, sem dizer "não" a quem não divulgou.
-  const mistas = [real('a', { mediaIdade: 31 }), real('b', { inicio: 23.5 }), real('c', { inicio: 24 })];
-  assert.match(falar('tem com gente da minha idade?', mistas), /^Uma com média de 28 a 35; as outras duas não divulgaram a média\./);
-  const tresGrupos = [real('a', { mediaIdade: 31 }), real('b', { inicio: 23.5, mediaIdade: 45 }), real('c', { inicio: 24 })];
-  assert.match(falar('tem com gente da minha idade?', tresGrupos), /^Uma com média de 28 a 35, uma fora da sua faixa; a outra não divulgou a média\./);
-});
-
-test('a avaliação de quem foi diz o que a pergunta mede', () => {
-  const av = real('av', { nome: 'Noite Exemplo', mediaIdade: 31, avaliacaoIdade: { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 } });
-  const fala = falar('da minha idade?', [av]);
-  assert.match(fala, /Na Noite Exemplo, 4 de 5 que foram, de 29 a 34 anos, acharam o público da idade deles\./);
-  assert.doesNotMatch(fala, /média de 31|média 31/);
+test('"tem com gente da minha idade?" não fala de média, nem de festa que ainda a traga (26/11/2026)', () => {
+  // Antes: "Nenhuma delas divulgou a média de idade ainda.", "Uma com média de
+  // 28 a 35..." e "4 de 5 que foram... acharam o público da idade deles."
+  const grupos = [
+    [real('a'), real('b', { inicio: 23.5 }), real('c', { inicio: 24 })],
+    [real('a', { mediaIdade: 31 }), real('b', { inicio: 23.5, mediaIdade: 45 }), real('c', { inicio: 24 })],
+    [real('av', { nome: 'Noite Exemplo', mediaIdade: 31, avaliacaoIdade: { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 } })],
+  ];
+  for (const festas of grupos) {
+    for (const texto of ['tem com gente da minha idade?', 'da minha idade?', 'gente mais velha']) {
+      const fala = falar(texto, festas);
+      assert.equal(fala, 'Não peguei. Dá pra pedir mais cedo, mais barato, outro dia, um bairro ou um som.', texto);
+      assert.doesNotMatch(fala, /m[ée]dia|faixa|anos/);
+    }
+  }
 });
 
 test('"quanto custa?" lista os preços, e diz quem não divulgou', () => {

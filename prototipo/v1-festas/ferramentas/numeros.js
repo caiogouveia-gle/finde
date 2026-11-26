@@ -79,7 +79,7 @@ const ETAPAS = {
 // Os rótulos das categorias, quando o código não se explica sozinho.
 const ROTULOS = {
   qr: 'QR Code', landing: 'landing', insta: 'Instagram', zap: 'WhatsApp', mbm: 'MBM', cartaz: 'cartaz', convite: 'convite',
-  som: 'som', bairro: 'bairro', preco: 'preço', idade: 'idade',
+  som: 'som', bairro: 'bairro', preco: 'preço',
   qui: 'quinta', sex: 'sexta', sab: 'sábado', dom: 'domingo', hoje: 'hoje',
   entendido: 'entendido', 'nao-entendido': 'não entendido',
   nativo: 'compartilhar do celular', copiou: 'copiou o link',
@@ -237,7 +237,7 @@ function textoDoPainel(resumo, { festas = null, agora = new Date() } = {}) {
   p.push(`Equipe e testes fora da conta: ${resumo.equipeFora || 0} aparelho${resumo.equipeFora === 1 ? '' : 's'}`);
   p.push('');
   if (resumo.motor?.erro) p.push(`Motor: ${resumo.motor.erro}`);
-  else if (resumo.motor) p.push(`Motor: ${resumo.motor.festas} festas reais, de ${resumo.motor.produtoras} produtoras; ${resumo.motor.comMediaDeIdade} com média de idade.`);
+  else if (resumo.motor) p.push(`Motor: ${resumo.motor.festas} festas reais, de ${resumo.motor.produtoras} produtoras.`);
   for (const [nome, s] of [['Landing', landing], ['App', app]]) {
     p.push('');
     if (!s) continue;

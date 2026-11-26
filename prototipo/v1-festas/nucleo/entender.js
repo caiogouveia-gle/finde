@@ -206,19 +206,6 @@ function degrauAcima(teto) {
   return C.DEGRAUS_TETO.find((x) => x === 'sem-limite' || x > teto);
 }
 
-// ---------------------------------------------------------------- faixa
-
-function faixaDaIdade(n) {
-  const f = C.FAIXAS.find((x) => n >= x.min && n <= x.max);
-  return f ? f.id : undefined;
-}
-
-function deslocarFaixa(atual, passo) {
-  const i = C.FAIXAS.findIndex((f) => f.id === atual);
-  const k = Math.max(0, Math.min(C.FAIXAS.length - 1, (i < 0 ? 2 : i) + passo));
-  return C.FAIXAS[k].id;
-}
-
 // ---------------------------------------------------------------- entender
 
 function entender(texto, atuais = {}) {
@@ -366,32 +353,8 @@ function entender(texto, atuais = {}) {
     }
   }
 
-  // idade do público
-  if (limiteIdade) {
-    // a pergunta é sobre a idade mínima: não mexe na faixa.
-  } else if (tem(t, /\b(da minha idade|da nossa idade|minha faixa|da minha fase|gente como eu)\b/)) {
-    pedir('minha-idade');
-  } else if (tem(t, /\b(mais velh[oa]s?|mais madur[oa]s?|mais adult[oa]s?|menos novinh[oa]s?|sem novinh[oa]s?|menos jovem|menos jovens|gente mais velha)\b/)) {
-    mudar.faixa = deslocarFaixa(a.faixa, +1);
-    pedir('mais-velho');
-  } else if (tem(t, /\b(mais nov[oa]s?|mais jovem|mais jovens|mais novinh[oa]s?)\b/)) {
-    mudar.faixa = deslocarFaixa(a.faixa, -1);
-    pedir('mais-novo');
-  } else if (tem(t, /\b(publico|idade|anos|gente|galera|turma|povo|pessoal|faixa)\b/)) {
-    let m = t.match(/\b(\d{2})\s*(?:a|ate|e|-)\s*(\d{2})\b/);
-    let idade;
-    if (m) idade = Math.round((Number(m[1]) + Number(m[2])) / 2);
-    else {
-      m = t.match(/\b(\d{2})\s*(?:\+|ou mais|anos|e poucos|e tantos)/) || t.match(/\b(?:de|dos|das) (\d{2})\b/);
-      if (m) idade = Number(m[1]);
-    }
-    if (tem(t, /\btrinta e poucos|trintoes\b/)) idade = 32;
-    if (tem(t, /\bquarenta|quarentoes\b/)) idade = 40;
-    if (idade && idade >= 18 && idade <= 70) {
-      mudar.faixa = faixaDaIdade(idade);
-      pedir('faixa');
-    }
-  }
+  // A idade do público saiu da conversa em 26/11/2026, até ser validada:
+  // "gente de 30", "mais velha" e "da minha idade" não mudam nem respondem nada.
 
   // estilo
   const est = lerEstilos(t);

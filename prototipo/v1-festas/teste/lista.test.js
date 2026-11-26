@@ -25,14 +25,14 @@ function real(id, data, extra = {}) {
   return {
     id, nome: `Festa ${id}`, produtora: null, casa: `Casa ${id}`, bairro: 'pinheiros', regiao: 'oeste',
     dia: L.idDoDia(data), diaDaSemana: L.idDoDia(data), data, dataDaNoite: data,
-    inicio: 23, horarioIncerto: false, esquenta: null, fim: 29, mediaIdade: null, origemIdade: null, origemIdadeCurta: null,
-    faixas: [], preco: 40, esgotado: false, estilos: ['house-disco'], estilosInferidos: false, frase: null, selo: 'editorial',
+    inicio: 23, horarioIncerto: false, esquenta: null, fim: 29,
+    preco: 40, esgotado: false, estilos: ['house-disco'], estilosInferidos: false, frase: null, selo: 'editorial',
     distanciaMin: null, endereco: null, local: null, lotes: null, entradaNaPorta: null, linkCompra: 'https://ingressos.example/x',
     real: true, exemplo: false, ...extra,
   };
 }
 
-const PEDIDO = { janela: 'noite', idade: { min: 28, max: 35 }, teto: 150 };
+const PEDIDO = { janela: 'noite', teto: 150 };
 const pedido = (extra = {}) => ({ ...PEDIDO, ...extra });
 
 // ---------------------------------------------------------------- as datas
@@ -158,7 +158,7 @@ test('dia sem real: só exemplos, marcados, sem pct e sem cara, e a nota diz iss
     assert.equal(o.data, '2026-11-29');
   }
   assert.equal(r.nota, 'Ainda não tenho festa real no domingo. Seguem exemplos, festas fictícias.');
-  assert.equal(r.semMedia, true);
+  assert.equal('semMedia' in r, false);
   assert.deepEqual(r.outrosDias.find((d) => d.dia === 'sex'), { dia: 'sex', data: '2026-11-27', reais: 1 });
 });
 
@@ -210,17 +210,19 @@ test('nada cabe, mas o dia tem real: a lista diz que elas estão logo abaixo, e 
   assert.equal(uma.aviso, 'Nada cabe nesse pedido. Segue a festa no sábado, com o que falta.');
 });
 
-test('semMedia: nenhuma real da resposta com média; com avaliação de quem foi, já tem', () => {
+test('sem a linha "sem média" (D3): a resposta não diz nada de idade, com ou sem média na festa (26/11/2026)', () => {
   const sem = L.resultadoDoPedido({ reais: [real('a', '2026-11-28'), real('b', '2026-11-28')], criterios: pedido({ dia: 'sab' }), agoraMs: TERCA });
-  assert.equal(sem.semMedia, true);
+  assert.equal('semMedia' in sem, false);
   assert.equal(sem.nota, 'Duas festas pro seu sábado.');
   const av = { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 };
   const com = L.resultadoDoPedido({ reais: [real('a', '2026-11-28'), real('b', '2026-11-28', { mediaIdade: 31, avaliacaoIdade: av })], criterios: pedido({ dia: 'sab' }), agoraMs: TERCA });
-  assert.equal(com.semMedia, false);
+  assert.equal('semMedia' in com, false);
+  assert.deepEqual(com.opcoes.map((o) => o.festa.id), sem.opcoes.map((o) => o.festa.id));
+  for (const o of com.opcoes) assert.doesNotMatch(`${o.linha} ${o.aviso || ''} ${o.motivos.join(' ')}`, /m[ée]dia|faixa/);
 });
 
 test('a saída tem a forma de resposta-festas-r14-3.json (comReais e semReais)', () => {
-  const chaves = ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base', 'semMedia'];
+  const chaves = ['opcoes', 'maisDoDia', 'outrosDias', 'exemplos', 'aviso', 'nota', 'base'];
   const base = RESPOSTA.comReais.base;
   const festas = ['a', 'b', 'c', 'd'].map((id) => real(`sab-${id}`, '2026-12-05', { local: { lat: -23.5667, lng: -46.6934, precisao: 'rua', origemGeo: 'pagina', lugar: null, atribuicaoOsm: false } }));
   const c = pedido({ dia: 'sab', semana: 'proxima', bairros: ['pinheiros'] });

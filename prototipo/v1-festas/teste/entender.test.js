@@ -8,7 +8,7 @@ const { entender } = require('../nucleo/entender');
 const conversa = require('../nucleo/conversa');
 
 const atuais = {
-  dia: 'sab', janela: 'comeco-da-noite', faixa: '30-35', teto: 80,
+  dia: 'sab', janela: 'comeco-da-noite', teto: 80,
   estilos: ['house-disco'], evitarEstilos: [], perto: null, evitar: [],
   mostradas: ['sabado-groove', 'noite-pop-2000', 'noite-aurora'],
   estilosMostrados: ['house-disco', 'pop-2000', 'house-disco'],
@@ -30,9 +30,10 @@ const casos = [
   ['tem de samba?', { estilos: ['mpb-samba'] }, ['estilo']],
   ['bora num pagodinho', { estilos: ['mpb-samba'] }, ['estilo']],
   ['funk também', { estilos: ['house-disco', 'funk'] }, ['estilo']],
-  ['gente mais velha', { faixa: '36+' }, ['mais-velho']],
-  ['público de 25 a 29', { faixa: '25-29' }, ['faixa']],
-  ['na faixa dos 30', { faixa: '30-35' }, ['faixa']],
+  // A idade do público saiu da conversa em 26/11/2026: nada muda nem é pedido.
+  ['gente mais velha', {}, []],
+  ['público de 25 a 29', {}, []],
+  ['na faixa dos 30', {}, []],
   ['perto da Paulista', { perto: 'paulista' }, ['perto']],
   ['outro estilo', { estilos: ['mpb-samba', 'funk', 'indie-rock', 'eletronica'], evitar: ['sabado-groove', 'noite-pop-2000', 'noite-aurora'] }, ['outro-estilo']],
   ['mostra outras', { evitar: ['sabado-groove', 'noite-pop-2000', 'noite-aurora'] }, ['outras']],
@@ -68,7 +69,7 @@ const casos = [
   ['quero voltar cedo, acordo às 8', { voltaMax: 24 }, ['fim']],
   ['dormir cedo', { voltaMax: 24 }, ['fim']],
   // perguntas e indiferença
-  ['tem com gente da minha idade?', {}, ['minha-idade']],
+  ['tem com gente da minha idade?', {}, []],
   ['tanto faz', {}, ['surpresa']],
   ['qualquer coisa', {}, ['surpresa']],
   ['me surpreende', {}, ['surpresa']],
@@ -98,7 +99,7 @@ test('negação nunca inverte: "funk não" não pede funk, "Pinheiros não" não
   assert.equal(entender('sexta não', { ...atuais, dia: 'sex' }).mudar.dia, 'sab');
 });
 
-test('frase longa não troca o dia por palavra solta, e lê chegada, volta, idade e som juntos', () => {
+test('frase longa não troca o dia por palavra solta, e lê chegada, volta e som juntos (a idade, não)', () => {
   const longa = 'então, a gente é um grupo de umas 6 pessoas, todo mundo na faixa dos 30, queremos chegar umas 20h, dançar um pouco de música brasileira e estar em casa antes da 1h porque domingo tem almoço de família';
   const r = entender(longa, atuais);
   assert.equal(r.mudar.dia, undefined);
@@ -106,6 +107,7 @@ test('frase longa não troca o dia por palavra solta, e lê chegada, volta, idad
   assert.equal(r.mudar.janela, 'comeco-da-noite');
   assert.equal(r.mudar.voltaMax, 25);
   assert.deepEqual(r.mudar.estilos, ['mpb-samba']);
+  assert.equal(r.mudar.faixa, undefined);
   const almoco = entender('domingo tem almoço', atuais);
   assert.deepEqual(almoco, { mudar: {}, pedidos: [], duvida: { dia: 'dom' } });
 });
@@ -140,10 +142,12 @@ test('"na faixa" sozinho não é grátis; "até as 23h" não é preço; "até 20
 });
 
 test('pedido explícito na conversa vira dimensão firme, só quando muda algo', () => {
-  const antes = { teto: 80, janela: 'fim-de-tarde', faixa: '30-35', voltaMax: null, firmes: [] };
+  const antes = { teto: 80, janela: 'fim-de-tarde', voltaMax: null, firmes: [] };
   assert.deepEqual(conversa.firmesDe(antes, { ...antes, teto: 50 }), ['preco']);
   assert.deepEqual(conversa.firmesDe({ ...antes, firmes: ['preco'] }, { ...antes, voltaMax: 23 }), ['preco', 'horario']);
   assert.deepEqual(conversa.firmesDe(antes, { ...antes }), []);
+  // A faixa de idade não vira dimensão firme (saiu em 26/11/2026).
+  assert.deepEqual(conversa.firmesDe({ ...antes, faixa: '30-35' }, { ...antes, faixa: '36+', idade: { min: 36, max: 50 } }), []);
 });
 
 // ---------------------------------------------------------------- U28 (plano de 24/11/2026)

@@ -1,5 +1,5 @@
 {
-  "aviso": "Base fictícia do protótipo do Finde. Festas, produtoras, casas e a origem da média de idade são inventadas; nenhuma existe.",
+  "aviso": "Base fictícia do protótipo do Finde. Festas, produtoras e casas são inventadas; nenhuma existe.",
   "ficticia": true,
   "referencia": "2026-11-10T15:00:00-03:00",
   "fimDeSemana": "sexta, sábado e domingo",
@@ -15,10 +15,6 @@
       "inicio": 18,
       "esquenta": 20,
       "fim": 23,
-      "mediaIdade": 32,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 60,
       "estilos": [
         "house-disco"
@@ -26,9 +22,6 @@
       "frase": "Sai do trabalho direto pra pista. O crachá fica na bolsa.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Clarice Vasconcelos Prado, 1.658",
         "bairro": "pinheiros",
@@ -128,10 +121,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T15:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-08T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -148,11 +137,6 @@
       "inicio": 17,
       "esquenta": 19,
       "fim": 23,
-      "mediaIdade": 31,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 50,
       "estilos": [
         "house-disco",
@@ -161,9 +145,6 @@
       "frase": "O sol vai embora às seis. A pista fica.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua da Cantareira Pequena, 207",
         "bairro": "bela-vista",
@@ -268,10 +249,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T14:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-07T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:00:00-03:00",
@@ -288,11 +265,6 @@
       "inicio": 18,
       "esquenta": 20,
       "fim": 23,
-      "mediaIdade": 35,
-      "faixas": [
-        "30-35",
-        "36+"
-      ],
       "preco": 30,
       "estilos": [
         "mpb-samba"
@@ -300,10 +272,6 @@
       "frase": "Samba de roda no quintal, cerveja gelada e cadeira pra quem pedir.",
       "selo": "editorial",
       "distanciaMin": 6,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 42
-      },
       "endereco": {
         "texto": "Rua Coronel Bento Arraes, 1.475",
         "bairro": "vila-mariana",
@@ -395,10 +363,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T18:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-01T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T11:30:00-03:00",
@@ -415,11 +379,6 @@
       "inicio": 22,
       "esquenta": 24,
       "fim": 28,
-      "mediaIdade": 29,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 70,
       "estilos": [
         "pop-2000"
@@ -427,9 +386,6 @@
       "frase": "Os hits de 2003, com o coro inteiro sabendo a letra.",
       "selo": "editorial",
       "distanciaMin": 7,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua dos Trilhos Velhos, 1.044",
         "bairro": "barra-funda",
@@ -528,10 +484,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T13:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:00:00-03:00",
@@ -548,10 +500,6 @@
       "inicio": 22,
       "esquenta": 23.5,
       "fim": 28,
-      "mediaIdade": 27,
-      "faixas": [
-        "25-29"
-      ],
       "preco": 40,
       "estilos": [
         "indie-rock"
@@ -559,9 +507,6 @@
       "frase": "Porão, guitarra e aquela banda que você jurava que tinha acabado.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Largo da Cigarra Branca, 325",
         "bairro": "centro",
@@ -671,10 +616,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T12:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T14:00:00-03:00",
@@ -691,10 +632,6 @@
       "inicio": 23,
       "esquenta": 25,
       "fim": 29,
-      "mediaIdade": 23,
-      "faixas": [
-        "18-24"
-      ],
       "preco": 50,
       "estilos": [
         "funk"
@@ -702,10 +639,6 @@
       "frase": "Começa quando a sua festa já estaria acabando.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 18
-      },
       "endereco": {
         "texto": "Rua Conselheiro Otaviano Leme, 290",
         "bairro": "centro",
@@ -801,10 +734,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T11:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-01T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:30:00-03:00",
@@ -821,11 +750,6 @@
       "inicio": 23,
       "esquenta": 25,
       "fim": 30,
-      "mediaIdade": 28,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 90,
       "estilos": [
         "eletronica"
@@ -833,9 +757,6 @@
       "frase": "Techno até o sol nascer. Planeje o sábado de acordo.",
       "selo": "editorial",
       "distanciaMin": 6,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Engenheiro Ataliba Correia, 1.059",
         "bairro": "barra-funda",
@@ -944,10 +865,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T22:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-03T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T12:30:00-03:00",
@@ -964,10 +881,6 @@
       "inicio": 20,
       "esquenta": 22,
       "fim": 25,
-      "mediaIdade": 39,
-      "faixas": [
-        "36+"
-      ],
       "preco": 120,
       "estilos": [
         "mpb-samba",
@@ -976,9 +889,6 @@
       "frase": "Janta às oito, dança às dez. Ninguém precisa escolher.",
       "selo": "editorial",
       "distanciaMin": 3,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Alameda Josefina Barcellos, 1.288",
         "bairro": "jardins",
@@ -1074,10 +984,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T13:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:00:00-03:00",
@@ -1094,10 +1000,6 @@
       "inicio": 19,
       "esquenta": 21,
       "fim": 25,
-      "mediaIdade": 31,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 45,
       "estilos": [
         "mpb-samba"
@@ -1105,10 +1007,6 @@
       "frase": "Forró, samba e MPB, nessa ordem. Sapato confortável ajuda.",
       "selo": "editorial",
       "distanciaMin": 3,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 67
-      },
       "endereco": {
         "texto": "Travessa Celina Moura, 1.859",
         "bairro": "vila-madalena",
@@ -1214,10 +1112,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T22:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-07T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -1234,10 +1128,6 @@
       "inicio": 21,
       "esquenta": 23,
       "fim": 27,
-      "mediaIdade": 21,
-      "faixas": [
-        "18-24"
-      ],
       "preco": 30,
       "estilos": [
         "pop-2000",
@@ -1246,9 +1136,6 @@
       "frase": "Público de faculdade. Se a sua formatura foi há dez anos, fica a dica.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua das Tipuanas Floridas, 1.692",
         "bairro": "vila-madalena",
@@ -1354,10 +1241,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T17:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-02T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T14:00:00-03:00",
@@ -1374,10 +1257,6 @@
       "inicio": 19,
       "esquenta": 21,
       "fim": 25,
-      "mediaIdade": 33,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 80,
       "estilos": [
         "house-disco",
@@ -1386,9 +1265,6 @@
       "frase": "Espumante por conta da casa até as 21h para quem chega cedo.",
       "selo": "patrocinado",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Alameda Josefina Barcellos, 1.727",
         "bairro": "jardins",
@@ -1492,10 +1368,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T06:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-08T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:30:00-03:00",
@@ -1512,10 +1384,6 @@
       "inicio": 22,
       "esquenta": 23.5,
       "fim": 27,
-      "mediaIdade": 33,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 70,
       "estilos": [
         "house-disco"
@@ -1523,10 +1391,6 @@
       "frase": "Pra quem ainda topa a noite, mas sem fila na porta.",
       "selo": "editorial",
       "distanciaMin": 6,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 31
-      },
       "endereco": {
         "texto": "Rua Clarice Vasconcelos Prado, 1.735",
         "bairro": "pinheiros",
@@ -1623,10 +1487,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T10:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-02T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T14:00:00-03:00",
@@ -1643,10 +1503,6 @@
       "inicio": 19,
       "esquenta": 21,
       "fim": 25,
-      "mediaIdade": 31,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 60,
       "estilos": [
         "house-disco"
@@ -1654,9 +1510,6 @@
       "frase": "House no terraço, pista cheia às 21h e a volta ainda com metrô.",
       "selo": "editorial",
       "distanciaMin": 3,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Clarice Vasconcelos Prado, 601",
         "bairro": "pinheiros",
@@ -1766,10 +1619,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T16:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-02T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T14:00:00-03:00",
@@ -1786,11 +1635,6 @@
       "inicio": 20,
       "esquenta": 22,
       "fim": 26,
-      "mediaIdade": 30,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 70,
       "estilos": [
         "pop-2000"
@@ -1798,9 +1642,6 @@
       "frase": "Todo mundo aqui já teve um fotolog. Ninguém toca no assunto.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua Aurélio Bentes Lacerda, 1.594",
         "bairro": "vila-madalena",
@@ -1912,10 +1753,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T23:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-03T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:00:00-03:00",
@@ -1932,11 +1769,6 @@
       "inicio": 18,
       "esquenta": 20,
       "fim": 23,
-      "mediaIdade": 34,
-      "faixas": [
-        "30-35",
-        "36+"
-      ],
       "preco": 50,
       "estilos": [
         "mpb-samba"
@@ -1944,10 +1776,6 @@
       "frase": "MPB com vista pro Centro. Dá pra conversar sem gritar.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 124
-      },
       "endereco": {
         "texto": "Rua Conselheiro Otaviano Leme, 791",
         "bairro": "centro",
@@ -2044,10 +1872,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T10:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-01T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T11:30:00-03:00",
@@ -2064,11 +1888,6 @@
       "inicio": 17,
       "esquenta": 19,
       "fim": 23,
-      "mediaIdade": 30,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 80,
       "estilos": [
         "house-disco"
@@ -2076,9 +1895,6 @@
       "frase": "Disco com o céu ainda claro. Boa hora pra chegar e pra voltar.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua dos Tamboris Altos, 1.409",
         "bairro": "pinheiros",
@@ -2189,10 +2005,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T00:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-04T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T11:00:00-03:00",
@@ -2209,11 +2021,6 @@
       "inicio": 15,
       "esquenta": 18,
       "fim": 22,
-      "mediaIdade": 36,
-      "faixas": [
-        "30-35",
-        "36+"
-      ],
       "preco": 40,
       "estilos": [
         "mpb-samba"
@@ -2221,9 +2028,6 @@
       "frase": "Feijoada às três, samba às seis, cama às onze.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua das Quaresmeiras Roxas, 1.009",
         "bairro": "vila-mariana",
@@ -2314,10 +2118,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T16:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:00:00-03:00",
@@ -2334,11 +2134,6 @@
       "inicio": 17,
       "esquenta": 19,
       "fim": 24,
-      "mediaIdade": 29,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 70,
       "estilos": [
         "eletronica",
@@ -2347,10 +2142,6 @@
       "frase": "O mesmo techno da madrugada, só que você lembra de tudo depois.",
       "selo": "editorial",
       "distanciaMin": 6,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 25
-      },
       "endereco": {
         "texto": "Avenida Ernestina Quaresma, 1.910",
         "bairro": "barra-funda",
@@ -2457,10 +2248,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T11:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-07T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:30:00-03:00",
@@ -2477,10 +2264,6 @@
       "inicio": 23,
       "esquenta": 25,
       "fim": 29,
-      "mediaIdade": 23,
-      "faixas": [
-        "18-24"
-      ],
       "preco": 40,
       "estilos": [
         "funk"
@@ -2488,9 +2271,6 @@
       "frase": "Baile cheio, e a pista só pega depois da 1h.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Conselheiro Otaviano Leme, 1.346",
         "bairro": "centro",
@@ -2597,10 +2377,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T03:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-04T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T12:00:00-03:00",
@@ -2617,11 +2393,6 @@
       "inicio": 18,
       "esquenta": 20,
       "fim": 23,
-      "mediaIdade": 31,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 50,
       "estilos": [
         "funk",
@@ -2630,9 +2401,6 @@
       "frase": "Os funks que você sabia de cor em 2012, com hora pra acabar.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua dos Trilhos Velhos, 347",
         "bairro": "barra-funda",
@@ -2736,10 +2504,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T10:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-02T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:30:00-03:00",
@@ -2756,10 +2520,6 @@
       "inicio": 21,
       "esquenta": 23,
       "fim": 27,
-      "mediaIdade": 28,
-      "faixas": [
-        "25-29"
-      ],
       "preco": 50,
       "estilos": [
         "indie-rock"
@@ -2767,10 +2527,6 @@
       "frase": "Indie num sobrado com cara de casa de amigo.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 53
-      },
       "endereco": {
         "texto": "Rua das Tipuanas Floridas, 920",
         "bairro": "vila-madalena",
@@ -2877,10 +2633,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T13:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-02T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -2897,11 +2649,6 @@
       "inicio": 19,
       "esquenta": 21,
       "fim": 24,
-      "mediaIdade": 36,
-      "faixas": [
-        "30-35",
-        "36+"
-      ],
       "preco": 110,
       "estilos": [
         "mpb-samba",
@@ -2910,9 +2657,6 @@
       "frase": "Disco de vinil, taça de vinho e pista pequena. Ninguém derruba nada.",
       "selo": "editorial",
       "distanciaMin": 3,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Alameda Josefina Barcellos, 621",
         "bairro": "jardins",
@@ -3023,10 +2767,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T20:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -3043,10 +2783,6 @@
       "inicio": 20,
       "esquenta": 22,
       "fim": 26,
-      "mediaIdade": 40,
-      "faixas": [
-        "36+"
-      ],
       "preco": 90,
       "estilos": [
         "pop-2000",
@@ -3055,9 +2791,6 @@
       "frase": "Os hits que você dançava no casamento dos outros.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua das Quaresmeiras Roxas, 872",
         "bairro": "vila-mariana",
@@ -3156,10 +2889,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T13:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-02T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T11:30:00-03:00",
@@ -3176,10 +2905,6 @@
       "inicio": 23,
       "esquenta": 25.5,
       "fim": 31,
-      "mediaIdade": 27,
-      "faixas": [
-        "25-29"
-      ],
       "preco": 120,
       "estilos": [
         "eletronica"
@@ -3187,10 +2912,6 @@
       "frase": "A noite do jeito tradicional: começa tarde e acaba de dia.",
       "selo": "editorial",
       "distanciaMin": 8,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 88
-      },
       "endereco": {
         "texto": "Rua dos Trilhos Velhos, 434",
         "bairro": "barra-funda",
@@ -3297,10 +3018,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T11:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-08T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:00:00-03:00",
@@ -3317,10 +3034,6 @@
       "inicio": 20,
       "esquenta": 22,
       "fim": 25,
-      "mediaIdade": 32,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 35,
       "estilos": [
         "indie-rock"
@@ -3328,9 +3041,6 @@
       "frase": "Rock na laje do Bixiga. Os joelhos agradecem a escada curta.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua da Cantareira Pequena, 511",
         "bairro": "bela-vista",
@@ -3436,10 +3146,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T10:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-07T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:30:00-03:00",
@@ -3456,10 +3162,6 @@
       "inicio": 19,
       "esquenta": 21,
       "fim": 25,
-      "mediaIdade": 32,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 80,
       "estilos": [
         "house-disco",
@@ -3468,9 +3170,6 @@
       "frase": "Open bar até as 21h para quem chega cedo.",
       "selo": "patrocinado",
       "distanciaMin": 3,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua Embaixador Teles Fonseca, 139",
         "bairro": "jardins",
@@ -3575,10 +3274,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T22:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-04T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T12:30:00-03:00",
@@ -3595,11 +3290,6 @@
       "inicio": 19,
       "esquenta": 21,
       "fim": 24,
-      "mediaIdade": 34,
-      "faixas": [
-        "30-35",
-        "36+"
-      ],
       "preco": 40,
       "estilos": [
         "mpb-samba"
@@ -3607,10 +3297,6 @@
       "frase": "Gafieira com meia hora de aula pra quem chega cedo.",
       "selo": "editorial",
       "distanciaMin": 6,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 36
-      },
       "endereco": {
         "texto": "Rua Major Firmino Abreu, 246",
         "bairro": "centro",
@@ -3704,10 +3390,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T11:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-03T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:00:00-03:00",
@@ -3724,10 +3406,6 @@
       "inicio": 16,
       "esquenta": 18,
       "fim": 22,
-      "mediaIdade": 32,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 50,
       "estilos": [
         "house-disco"
@@ -3735,9 +3413,6 @@
       "frase": "Acaba às 22h. A segunda nem percebe.",
       "selo": "editorial",
       "distanciaMin": 3,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Clarice Vasconcelos Prado, 1.459",
         "bairro": "pinheiros",
@@ -3841,10 +3516,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T02:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-02T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -3861,11 +3532,6 @@
       "inicio": 15,
       "esquenta": 17,
       "fim": 21,
-      "mediaIdade": 34,
-      "faixas": [
-        "30-35",
-        "36+"
-      ],
       "preco": 0,
       "estilos": [
         "mpb-samba"
@@ -3873,9 +3539,6 @@
       "frase": "Roda na praça, de graça. Leve uma canga e um amigo.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua Professora Nair Toledo, 679",
         "bairro": "bela-vista",
@@ -3963,10 +3626,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T06:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-03T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -3983,11 +3642,6 @@
       "inicio": 17,
       "esquenta": 19,
       "fim": 23,
-      "mediaIdade": 29,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 40,
       "estilos": [
         "pop-2000"
@@ -3995,10 +3649,6 @@
       "frase": "A matinê que você ia aos 15, agora com bar.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 140
-      },
       "endereco": {
         "texto": "Rua das Tipuanas Floridas, 765",
         "bairro": "vila-madalena",
@@ -4108,10 +3758,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T00:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T14:00:00-03:00",
@@ -4128,10 +3774,6 @@
       "inicio": 16,
       "esquenta": 19,
       "fim": 24,
-      "mediaIdade": 28,
-      "faixas": [
-        "25-29"
-      ],
       "preco": 60,
       "estilos": [
         "eletronica"
@@ -4139,9 +3781,6 @@
       "frase": "Techno de domingo com luz de fim de tarde.",
       "selo": "editorial",
       "distanciaMin": 6,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Engenheiro Ataliba Correia, 320",
         "bairro": "barra-funda",
@@ -4252,10 +3891,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T05:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-09T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -4272,11 +3907,6 @@
       "inicio": 18,
       "esquenta": 20,
       "fim": 24,
-      "mediaIdade": 35,
-      "faixas": [
-        "30-35",
-        "36+"
-      ],
       "preco": 70,
       "estilos": [
         "house-disco"
@@ -4284,9 +3914,6 @@
       "frase": "O último disco do fim de semana toca às 23h50, pontual.",
       "selo": "editorial",
       "distanciaMin": 4,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Alameda Josefina Barcellos, 1.523",
         "bairro": "jardins",
@@ -4390,10 +4017,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T18:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:30:00-03:00",
@@ -4410,11 +4033,6 @@
       "inicio": 17,
       "esquenta": 19,
       "fim": 23,
-      "mediaIdade": 24,
-      "faixas": [
-        "18-24",
-        "25-29"
-      ],
       "preco": 20,
       "estilos": [
         "funk"
@@ -4422,10 +4040,6 @@
       "frase": "Baile de fim de tarde, público de faculdade.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 22
-      },
       "endereco": {
         "texto": "Largo da Cigarra Branca, 674",
         "bairro": "centro",
@@ -4525,10 +4139,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-09T23:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T10:00:00-03:00",
@@ -4545,10 +4155,6 @@
       "inicio": 18,
       "esquenta": 20,
       "fim": 23,
-      "mediaIdade": 31,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 30,
       "estilos": [
         "indie-rock"
@@ -4556,9 +4162,6 @@
       "frase": "Banda ao vivo às oito, discotecagem até as onze.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Coronel Bento Arraes, 1.057",
         "bairro": "vila-mariana",
@@ -4661,10 +4264,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T12:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-04T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T12:00:00-03:00",
@@ -4681,10 +4280,6 @@
       "inicio": 16,
       "esquenta": 18,
       "fim": 22,
-      "mediaIdade": 38,
-      "faixas": [
-        "36+"
-      ],
       "preco": 30,
       "estilos": [
         "mpb-samba"
@@ -4692,9 +4287,6 @@
       "frase": "Pagode dos anos 90 pra quem estava lá.",
       "selo": "editorial",
       "distanciaMin": 6,
-      "origemIdade": {
-        "tipo": "edicoes"
-      },
       "endereco": {
         "texto": "Rua das Quaresmeiras Roxas, 744",
         "bairro": "vila-mariana",
@@ -4789,10 +4381,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T01:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-05T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T14:30:00-03:00",
@@ -4809,11 +4397,6 @@
       "inicio": 16,
       "esquenta": 18,
       "fim": 21,
-      "mediaIdade": 30,
-      "faixas": [
-        "25-29",
-        "30-35"
-      ],
       "preco": 0,
       "estilos": [
         "house-disco",
@@ -4822,10 +4405,6 @@
       "frase": "Grátis, ao ar livre e acaba antes do jantar.",
       "selo": "editorial",
       "distanciaMin": 3,
-      "origemIdade": {
-        "tipo": "avaliacoes",
-        "avaliacoes": 71
-      },
       "endereco": {
         "texto": "Rua Conselheiro Otaviano Leme, 686",
         "bairro": "centro",
@@ -4915,10 +4494,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T07:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-01T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T12:00:00-03:00",
@@ -4935,10 +4510,6 @@
       "inicio": 20,
       "esquenta": 22,
       "fim": 26,
-      "mediaIdade": 33,
-      "faixas": [
-        "30-35"
-      ],
       "preco": 60,
       "estilos": [
         "pop-2000",
@@ -4947,9 +4518,6 @@
       "frase": "Pra quem emendou a segunda de folga. Ou finge que emendou.",
       "selo": "editorial",
       "distanciaMin": 5,
-      "origemIdade": {
-        "tipo": "produtora"
-      },
       "endereco": {
         "texto": "Rua Cônego Bernardo Arruda, 909",
         "bairro": "bela-vista",
@@ -5052,10 +4620,6 @@
         "regras": {
           "fonte": "envio",
           "conferidoEm": "2026-11-10T04:00:00-03:00"
-        },
-        "mediaIdade": {
-          "fonte": "envio",
-          "conferidoEm": "2026-11-08T15:00:00-03:00"
         }
       },
       "coletadoEm": "2026-11-10T13:00:00-03:00",

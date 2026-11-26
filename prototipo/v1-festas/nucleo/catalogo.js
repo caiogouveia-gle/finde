@@ -1,5 +1,5 @@
 'use strict';
-// O vocabulário do Finde: dias, janelas de horário, faixas de idade, tetos,
+// O vocabulário do Finde: dias, janelas de horário, tetos,
 // estilos e bairros, e as funções que escrevem horário e preço do jeito da marca.
 // Puro: sem arquivo, sem relógio.
 
@@ -61,13 +61,6 @@ const JANELAS = [
   { id: 'fim-de-tarde', inicio: 17, fim: 23, rotulo: '17h às 23h', nome: 'fim de tarde', pra: 'pro fim de tarde', no: 'no fim de tarde' },
   { id: 'comeco-da-noite', inicio: 19, fim: 25, rotulo: '19h à 1h', nome: 'começo da noite', pra: 'pro começo da noite', no: 'no começo da noite' },
   { id: 'noite', inicio: 22, fim: 27, rotulo: '22h às 3h', nome: 'noite', pra: 'pra noite', no: 'na noite' },
-];
-
-const FAIXAS = [
-  { id: '18-24', min: 18, max: 24, centro: 21.5, rotulo: '18 a 24' },
-  { id: '25-29', min: 25, max: 29, centro: 27, rotulo: '25 a 29' },
-  { id: '30-35', min: 30, max: 35, centro: 32.5, rotulo: '30 a 35' },
-  { id: '36+', min: 36, max: 99, centro: 39, rotulo: '36 ou mais' },
 ];
 
 // Teto por pessoa, em reais. "sem-limite" é a quarta resposta.
@@ -248,25 +241,19 @@ function rotuloTeto(teto) {
   return `até R$ ${teto}`;
 }
 
-function nomeFaixa(id) {
-  const f = FAIXAS.find((x) => x.id === id);
-  return f ? f.rotulo : id;
-}
-
 function nomeEstilo(id) {
   const e = ESTILOS.find((x) => x.id === id);
   return e ? e.curto : id;
 }
 
-// "Sáb · 19h00 · Pinheiros · média 31 anos": horário primeiro, idade junto (regra 3 da voz).
-// Festa real sem bairro ou sem média: o trecho sai, nunca vira um padrão.
-// Sem início (horarioIncerto), "horário a confirmar". A média que vem das
-// avaliações de quem foi não aparece sozinha (KTD13): a linha a omite.
+// "Sáb · 19h00 · Pinheiros": horário primeiro (regra 3 da voz). Festa real
+// sem bairro: o trecho sai, nunca vira um padrão. Sem início
+// (horarioIncerto), "horário a confirmar". A média de idade saiu da linha em
+// 26/11/2026, até a idade do público ser validada.
 const temInicio = (f) => typeof f.inicio === 'number' && Number.isFinite(f.inicio) && f.horarioIncerto !== true;
 function linhaDaFesta(f) {
   const partes = [DIAS[f.dia] ? DIAS[f.dia].curto : '', temInicio(f) ? horaCheia(f.inicio) : 'horário a confirmar'].filter(Boolean);
   if (f.bairro && BAIRROS[f.bairro]) partes.push(BAIRROS[f.bairro].nome);
-  if (Number.isInteger(f.mediaIdade) && !f.avaliacaoIdade) partes.push(`média ${f.mediaIdade} anos`);
   return partes.join(' · ');
 }
 
@@ -283,19 +270,6 @@ function fraseDoHorario(f) {
   return `Começa ${asHoras(f.inicio)}. A hora de acabar não foi divulgada.`;
 }
 
-// De onde vem a média de idade. O número nunca aparece sem a origem.
-const ORIGENS = ['produtora', 'edicoes', 'avaliacoes'];
-function origemLonga(o) {
-  if (o.tipo === 'produtora') return 'informada pela produtora';
-  if (o.tipo === 'edicoes') return 'estimada pelo público das edições anteriores';
-  return `a partir de ${o.avaliacoes} avaliações de quem foi`;
-}
-function origemCurta(o) {
-  if (o.tipo === 'produtora') return 'pela produtora';
-  if (o.tipo === 'edicoes') return 'edições passadas';
-  return `${o.avaliacoes} avaliações`;
-}
-
 // "house", "house ou pop 2000", "funk, indie ou MPB"
 function listaDeEstilos(ids, conjuncao = 'ou') {
   const nomes = ids.map(nomeEstilo);
@@ -305,8 +279,7 @@ function listaDeEstilos(ids, conjuncao = 'ou') {
 
 module.exports = {
   CASAS, semAcento,
-  ORIGENS, origemLonga, origemCurta,
-  DIAS, TODOS_OS_DIAS, DIAS_DA_SEMANA, ORDEM_DIAS, DIAS_DA_SEMANA_DO_PEDIDO, DIAS_FICTICIOS, noDia, proDia, nesteDia, proSeuDia, temInicio, JANELAS, FAIXAS, TETOS, DEGRAUS_TETO, DEGRAUS_BARATO, ESTILOS, ID_ESTILOS, AFINIDADE,
+  DIAS, TODOS_OS_DIAS, DIAS_DA_SEMANA, ORDEM_DIAS, DIAS_DA_SEMANA_DO_PEDIDO, DIAS_FICTICIOS, noDia, proDia, nesteDia, proSeuDia, temInicio, JANELAS, TETOS, DEGRAUS_TETO, DEGRAUS_BARATO, ESTILOS, ID_ESTILOS, AFINIDADE,
   REGIOES, TODAS_AS_REGIOES, BAIRROS, TODOS_OS_BAIRROS, REFERENCIAS, listaDeEstilos,
-  minutosEntre, horaCheia, hora, asHoras, ateAs, reais, rotuloTeto, nomeFaixa, nomeEstilo, linhaDaFesta, fraseDoHorario,
+  minutosEntre, horaCheia, hora, asHoras, ateAs, reais, rotuloTeto, nomeEstilo, linhaDaFesta, fraseDoHorario,
 };

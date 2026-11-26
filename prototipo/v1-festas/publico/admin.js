@@ -215,7 +215,6 @@
     secoes.push(secao('Motor', false, m ? pares([
       ['Festas reais', String(m.festas)],
       ['Produtoras', String(m.produtoras)],
-      ['Com média de idade', String(m.comMediaDeIdade)],
     ]) : vazio(r.motor?.erro || 'Sem resposta do motor.')));
 
     const rodape = el('p', { class: 'rodape-painel' }, porUso ? 'Funil, landing e ingresso contam usos: cada vez que alguém abre a página, ou volta depois de 30 min, é um uso novo, mesmo no mesmo celular. Volta, origem e convite contam aparelhos.' : 'Cada número conta aparelhos distintos.',

@@ -21,17 +21,17 @@ test('a base inteira é válida: cerca de 36 festas, nenhum aviso', () => {
 const DIAS_DA_BASE = ['sex', 'sab', 'dom'];
 const BAIRROS_DA_BASE = ['pinheiros', 'vila-madalena', 'barra-funda', 'centro', 'bela-vista', 'jardins', 'vila-mariana'];
 
-test('cobre os três dias, os sete bairros e as quatro faixas', () => {
+test('cobre os três dias, os sete bairros e os estilos, sem média de idade', () => {
   for (const d of DIAS_DA_BASE) assert.ok(base.some((f) => f.dia === d), d);
   for (const b of BAIRROS_DA_BASE) assert.ok(base.some((f) => f.bairro === b), b);
   assert.ok(base.every((f) => BAIRROS_DA_BASE.includes(f.bairro) && DIAS_DA_BASE.includes(f.dia)));
-  for (const fx of C.FAIXAS) assert.ok(base.some((f) => f.faixas.includes(fx.id)), fx.id);
+  // A média, as faixas e a origem delas saíram da base em 26/11/2026.
+  for (const f of base) for (const k of ['mediaIdade', 'faixas', 'origemIdade', 'origemIdadeCurta']) assert.equal(k in f, false, `${f.id} ${k}`);
+  for (const f of bruto.festas) assert.equal(f.mediaIdade, undefined, f.id);
   for (const e of C.ID_ESTILOS) assert.ok(base.some((f) => f.estilos.includes(e)), e);
 });
 
-test('a maioria tem média de idade entre 27 e 36; o peso do horário está no começo da noite', () => {
-  const nafaixa = base.filter((f) => f.mediaIdade >= 27 && f.mediaIdade <= 36).length;
-  assert.ok(nafaixa / base.length > 0.6, `${nafaixa} de ${base.length}`);
+test('o peso do horário está no começo da noite', () => {
   const comeco = base.filter((f) => f.inicio >= 18 && f.inicio <= 21).length;
   const tarde = base.filter((f) => f.inicio < 18).length;
   const noite = base.filter((f) => f.inicio >= 22).length;
@@ -46,12 +46,8 @@ test('no máximo duas patrocinadas, todas identificadas pelo selo', () => {
   assert.ok(base.every((f) => f.selo === 'editorial' || f.selo === 'patrocinado'));
 });
 
-test('a regiao bate com o bairro e a média cai numa das faixas atendidas', () => {
-  for (const f of base) {
-    assert.equal(f.regiao, C.TODOS_OS_BAIRROS[f.bairro].regiao, f.id);
-    const fx = C.FAIXAS.find((x) => f.mediaIdade >= x.min && f.mediaIdade <= x.max);
-    assert.ok(f.faixas.includes(fx.id), f.id);
-  }
+test('a regiao bate com o bairro', () => {
+  for (const f of base) assert.equal(f.regiao, C.TODOS_OS_BAIRROS[f.bairro].regiao, f.id);
 });
 
 test('linha inválida sai com aviso que diz o campo; o resto fica', () => {
@@ -59,13 +55,10 @@ test('linha inválida sai com aviso que diz o campo; o resto fica', () => {
   const linhas = [
     boa,
     { ...boa, id: 'sem-nome', nome: '' },
-    { ...boa, id: 'idade-fora', mediaIdade: 40, faixas: ['30-35'] },
     { ...boa, id: 'ao-contrario', inicio: 23, esquenta: 22, fim: 21 },
     { ...boa, id: 'bairro-inventado', bairro: 'atlantida' },
     { ...boa, id: 'preco-quebrado', preco: 49.9 },
     { ...boa, id: 'estilo-estranho', estilos: ['axe'] },
-    { ...boa, id: 'faixas-longe', mediaIdade: 32, faixas: ['18-24', '30-35'] },
-    { ...boa, id: 'faixas-demais', mediaIdade: 32, faixas: ['25-29', '30-35', '36+'] },
     { ...boa }, // id repetido
     'não é festa',
     null,
@@ -74,13 +67,10 @@ test('linha inválida sai com aviso que diz o campo; o resto fica', () => {
   assert.equal(r.base.length, 1);
   assert.equal(r.avisos.length, linhas.length - 1);
   assert.match(r.avisos.join('\n'), /"sem-nome": nome/);
-  assert.match(r.avisos.join('\n'), /"idade-fora": faixas/);
   assert.match(r.avisos.join('\n'), /"ao-contrario": esquenta, fim/);
   assert.match(r.avisos.join('\n'), /"bairro-inventado": bairro/);
   assert.match(r.avisos.join('\n'), /"preco-quebrado": preco/);
   assert.match(r.avisos.join('\n'), /"estilo-estranho": estilos/);
-  assert.match(r.avisos.join('\n'), /"faixas-longe": faixas \(no máximo a da média e uma vizinha\)/);
-  assert.match(r.avisos.join('\n'), /"faixas-demais": faixas \(no máximo/);
   assert.match(r.avisos.join('\n'), /id repetido/);
 });
 
@@ -91,13 +81,19 @@ test('a terceira patrocinada é ignorada com aviso', () => {
   assert.match(r.avisos[0], /"p3".*2 patrocinadas/);
 });
 
-test('origem da média: objeto na base, texto na saída; sem origem, a linha cai', () => {
-  for (const f of base) assert.match(f.origemIdade, /^(informada pela produtora|estimada pelo público das edições anteriores|a partir de \d+ avaliações de quem foi)$/);
-  const sem = { ...bruto.festas[0], id: 'sem-origem' };
-  delete sem.origemIdade;
-  const r = prepararBase([sem, { ...bruto.festas[0], id: 'origem-torta', origemIdade: { tipo: 'chute' } }]);
-  assert.equal(r.base.length, 0);
-  assert.match(r.avisos.join('\n'), /"sem-origem": origemIdade/);
+test('linha antiga com média, faixas e origem da idade entra e as perde (26/11/2026)', () => {
+  // Antes, a média era obrigatória e a linha sem origem caía. Agora a linha
+  // que ainda traga a idade (até torta) não falha, e nada dela passa.
+  const velha = {
+    ...bruto.festas[0], id: 'velha', mediaIdade: 40, faixas: ['18-24', '30-35', '36+'], origemIdade: { tipo: 'chute' },
+    campos: { ...bruto.festas[0].campos, mediaIdade: { fonte: 'envio', conferidoEm: bruto.festas[0].coletadoEm } },
+  };
+  const r = prepararBase([velha]);
+  assert.deepEqual(r.avisos, []);
+  const [f] = r.base;
+  for (const k of ['mediaIdade', 'faixas', 'origemIdade', 'origemIdadeCurta']) assert.equal(k in f, false, k);
+  assert.equal(f.campos.mediaIdade, undefined);
+  assert.ok(Object.isFrozen(f.campos));
 });
 
 test('validarFesta aceita a forma documentada e devolve os campos ruins', () => {

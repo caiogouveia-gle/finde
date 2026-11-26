@@ -304,8 +304,8 @@ a.marca:hover { color: var(--bordo); }
   margin-top: 8px; padding-top: 12px;
   border-top: .5px solid var(--rose);
 }
-.destaque-media { display: flex; flex-direction: column; font-size: 15px; line-height: 1.3; color: var(--corrido); white-space: nowrap; }
-.destaque-media small { font-size: 12px; color: var(--rotulo); }
+.destaque-preco { display: flex; flex-direction: column; font-size: 15px; line-height: 1.3; color: var(--corrido); white-space: nowrap; }
+.destaque-preco small { font-size: 12px; color: var(--rotulo); }
 .destaque-exemplo { padding-top: 6px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--rotulo); }
 
 /* ------------------------------------------------------------ fólio */

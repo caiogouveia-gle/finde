@@ -35,7 +35,6 @@ const CHEGA = {
   estilos: 'estilos',
   idadeMinima: 'idadeMinima',
   regras: 'regras',
-  mediaIdade: 'mediaIdade', // e `avaliacaoIdade`, `origemIdade`
   geo: 'local', // a coordenada vem dentro de `endereco` no registro e vira `local` no app
   exemplo: 'exemplo',
 };
@@ -47,11 +46,13 @@ const IGNORADOS = {
   tipo: 'só vai ao registro em classificacao.tipo; o app não mostra',
   bairroDaCasa: 'o motor o põe em endereco.bairro quando nenhuma fonte deu bairro',
   idPlataforma: 'só a correlação usa (KTD3)',
+  mediaIdade: 'a média de idade saiu do app em 26/11/2026, até a idade do público ser validada; o conversor a descarta',
 };
 
 // Chave do registro /3 que o app não carrega, com o porquê.
 const REGISTRO_IGNORADO = {
   pistaCheia: 'vira `esquenta` (em horas do app)',
+  mediaIdade: 'a média de idade saiu do app em 26/11/2026; o conversor a descarta',
   ehFesta: 'é corte: só entra o registro com ehFesta diferente de false',
   contrato: 'o envelope e o conversor conferem o contrato',
   dataDaNoite: 'vira `data` e `dataDaNoite` (o dia é o da noite)',

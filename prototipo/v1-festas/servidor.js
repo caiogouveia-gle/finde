@@ -29,7 +29,6 @@ const FT = require('./publico/festa-texto');
 // A base viva do motor, as avaliações e as rotas novas do app (U22 a U25 do
 // plano de 24/11/2026) moram em nucleo/; aqui, só a ligação.
 const { criarFonteMotor } = require('./nucleo/fonte-motor');
-const { criarAvaliacoes } = require('./nucleo/avaliacoes');
 const { criarValidacao, criarLimite } = require('./nucleo/validacao');
 const { criarPainel } = require('./nucleo/painel');
 const A = require('./nucleo/rotas-app');
@@ -546,7 +545,7 @@ function proximaPista(base, agora = new Date()) {
     for (const d of resto) f = f || primeira(d);
   }
   f = f || primeira('sex');
-  return f ? { linha: C.linhaDaFesta(f), nome: f.nome, origem: f.origemIdade } : null;
+  return f ? { linha: C.linhaDaFesta(f), nome: f.nome } : null;
 }
 
 // extra (U24, KTD15): `semanas` ({ esta, proxima }, de rotas-app.diasDoFormulario),
@@ -571,9 +570,6 @@ function formulario(base, reais = 0, extra = {}) {
     semanas: extra.semanas || null,
     base: extra.base || null,
     janelas: C.JANELAS.map((j) => ({ id: j.id, rotulo: `${j.rotulo} · ${j.nome}` })),
-    faixas: C.FAIXAS.map((f) => ({ id: f.id, rotulo: f.rotulo })),
-    // A faixa em que a pessoa se sente bem (R20): de 18 a 50, padrão 28 a 35.
-    idade: { min: motor.IDADE_MIN, max: motor.IDADE_MAX, padrao: { min: 28, max: 35 } },
     // Os bairros por zona (R19, R29), na ordem das regiões do catálogo.
     zonas: extra.zonas || Object.entries(C.REGIOES).map(([id, nome]) => ({
       id, nome, bairros: Object.entries(C.BAIRROS).filter(([, b]) => b.regiao === id).map(([bid, b]) => ({ id: bid, rotulo: b.nome })),
@@ -606,8 +602,7 @@ const precoCurto = (f) => {
 };
 
 // O cartão sobre a foto do herói: a festa do desenho (Sexta Sem Pressa), com
-// a hora primeiro, o preço e a marca de exemplo. A média de idade saiu em
-// 25/11/2026, até a idade do público ser validada. É ilustração:
+// a hora primeiro, o preço e a marca de exemplo. É ilustração:
 // o único convite para agir no herói é o botão do app (25/11, menos CTAs).
 function htmlDoDestaque(f, agora) {
   if (!f) return '';
@@ -617,7 +612,7 @@ function htmlDoDestaque(f, agora) {
         <span class="destaque-hora">${escapar(C.horaCheia(f.inicio))}</span>
         <span class="destaque-nome">${escapar(f.nome)}</span>
         <div class="destaque-pe">
-          <span class="destaque-media">${escapar(FT.precoNaLista(f) || '')}</span>
+          <span class="destaque-preco">${escapar(FT.precoNaLista(f) || '')}</span>
         </div>
         <span class="destaque-exemplo">Exemplo · festa fictícia</span>
       </div>`;
@@ -693,10 +688,10 @@ function festaDoConvite(base) {
 
 // O detalhe de uma festa sem pedido (/app?festa=<id>): o mesmo formato de
 // um item de opcoes, com um pedido neutro tirado da própria festa (o dia
-// dela, a janela em que ela cabe, idade de 18 a 50, sem teto). Sem a cara,
+// dela, a janela em que ela cabe, sem teto). Sem a cara,
 // que só existe diante de um pedido de verdade.
 function opcaoSemPedido(f, agora, { misto = false } = {}) {
-  const pedido = (janela) => motor.completar({ dia: f.dia, janela, idade: { min: motor.IDADE_MIN, max: motor.IDADE_MAX }, teto: 'sem-limite' });
+  const pedido = (janela) => motor.completar({ dia: f.dia, janela, teto: 'sem-limite' });
   const opcoes = C.JANELAS.map((j) => motor.opcao(f, pedido(j.id)));
   const o = { ...(opcoes.find((x) => x.atende) || opcoes[0]) };
   delete o.cara;
@@ -735,7 +730,6 @@ function montarServidor({
   // Tokens só por variável (KTD20): o de admin do app (/api/reais/estado) e o
   // que o app usa para mandar as avaliações ao motor.
   adminToken = process.env.FINDE_ADMIN_TOKEN,
-  appToken = process.env.FINDE_APP_TOKEN,
   // As festas fictícias de exemplo (24/11/2026: o app não mostra mais). Só
   // voltam com FINDE_EXEMPLOS=1, ou nos testes que passam outra base.
   exemplos = outraBase || process.env.FINDE_EXEMPLOS === '1',
@@ -791,12 +785,10 @@ function montarServidor({
   // A landing sozinha não abre convite nenhum: os convites moram no app.
   // Os convites usam o mesmo relógio: "passou" é o do servidor.
   const agoraIso = () => new Date(relogio()).toISOString();
-  // As avaliações pós-festa (U25): no volume, ao lado dos convites; o lote de
-  // festa real vai ao motor com FINDE_APP_TOKEN.
-  const avaliacoes = temApp ? criarAvaliacoes({ dir: path.resolve(varDir), motorUrl, token: appToken, fetch: buscar, agora: agoraIso, log }) : null;
-  const planos = temApp ? criarPlanos(path.resolve(varDir), { log, agora: agoraIso, contarAvaliacoes: avaliacoes.contagem }) : null;
-  // O que ficou pendente de outra subida vai agora, por trás.
-  if (avaliacoes && motorUrl && appToken && avaliacoes.pendentes().length) avaliacoes.enviarPendentes().catch(() => {});
+  // A avaliação pós-festa de idade (U25) saiu em 26/11/2026: o app não
+  // pergunta nem manda nada ao motor. O avaliacoes.json antigo no volume não
+  // é lido; o ferramentas/expurgar.js ainda o apaga no prazo.
+  const planos = temApp ? criarPlanos(path.resolve(varDir), { log, agora: agoraIso }) : null;
 
   // De onde vem a lista ("Atualizado há 3 h · 41 festas lidas de 50 perfis e
   // 3 sites de ingresso", R23). Sem real nenhuma, null.
@@ -851,7 +843,7 @@ function montarServidor({
     // "Hoje" é a noite de hoje (antes das 6h, a da véspera), como em lista.js.
     const ficticiasDoPedido = criterios.dia === 'hoje' ? base.filter((f) => f.dia === L.idDoDia(L.noiteEmSaoPaulo(agoraMs))) : base;
     if (!vigentes.length) {
-      const vazio = { maisDoDia: [], outrosDias: [], exemplos: [], nota: null, base: null, semMedia: false };
+      const vazio = { maisDoDia: [], outrosDias: [], exemplos: [], nota: null, base: null };
       if (!exemplos) return { opcoes: [], afrouxou: [], ...vazio, aviso: 'Ainda não tenho festa para mostrar agora. A lista se atualiza durante o dia.' };
       if (!base.length) return { opcoes: [], afrouxou: [], ...vazio, aviso: 'A lista de festas está vazia agora. Volte daqui a pouco.' };
       const r = motor.escolher(criterios, ficticiasDoPedido);
@@ -956,20 +948,6 @@ function montarServidor({
         ({ mudar, pedidos, duvida, diaRecusado } = entender(antes.oferta, contexto));
       }
       const mudanca = motor.sanearCriterios(mudar);
-      // Com o intervalo de idade (R20): "mais velha" e "mais nova" deslocam o
-      // intervalo em cinco anos; "de 30 a 40" vira o intervalo dito; uma idade
-      // solta ("gente de 40") vira a faixa fixa dela.
-      if (antes.idade && (mudanca.faixa || pedidos.some((p) => p === 'mais-velho' || p === 'mais-novo'))) {
-        if (pedidos.includes('mais-velho')) mudanca.idade = motor.deslocarIdade(antes.idade, +5);
-        else if (pedidos.includes('mais-novo')) mudanca.idade = motor.deslocarIdade(antes.idade, -5);
-        else {
-          const m = corpo.texto.match(/\b(\d{2})\s*(?:a|até|ate|e|-)\s*(\d{2})\b/);
-          const fx = C.FAIXAS.find((x) => x.id === mudanca.faixa);
-          mudanca.idade = m ? { min: Number(m[1]), max: Number(m[2]) } : { min: fx.min, max: Math.min(fx.max, motor.IDADE_MAX) };
-          Object.assign(mudanca, motor.sanearCriterios({ idade: mudanca.idade }));
-        }
-        delete mudanca.faixa;
-      }
       const depois = motor.completar({ ...antes, ...mudanca });
       if (antes.semana && !depois.semana) depois.semana = antes.semana;
       delete depois.oferta;
@@ -1093,20 +1071,17 @@ function montarServidor({
     const o = p.festa;
     const f = o.festa;
     const dia = C.DIAS[f.dia];
-    // A prévia do link é a primeira coisa que o grupo vê: a média vai sempre
-    // com a origem (curta no título, inteira na descrição).
-    const temMedia = Number.isInteger(f.mediaIdade);
-    const curta = f.origemIdadeCurta || (o.origem && o.origem.curta);
-    const media = temMedia ? ` · média ${f.mediaIdade}${curta ? ` (${curta})` : ''}` : '';
+    // A prévia do link é a primeira coisa que o grupo vê. A média de idade
+    // saiu dela em 26/11/2026, até a idade do público ser validada, mesmo no
+    // convite antigo que guardou a festa com a média.
     // Festa fictícia: a prévia diz que é exemplo antes de tudo, porque no
     // grupo ninguém vê o rodapé do protótipo.
     const ficticia = f.real !== true;
-    const titulo = `${ficticia ? 'Exemplo · ' : ''}Bora ${dia.artigo || (dia.id === 'sex' ? 'na' : 'no')} ${dia.frase}? ${f.nome}, ${o.hora}${media}`;
+    const titulo = `${ficticia ? 'Exemplo · ' : ''}Bora ${dia.artigo || (dia.id === 'sex' ? 'na' : 'no')} ${dia.frase}? ${f.nome}, ${o.hora}`;
     // Festa real sem casa ou sem endereço: o que tem, sem "null".
     const onde = [f.casa, f.endereco && f.endereco.texto].filter(Boolean).join(', ') || 'Endereço não divulgado';
-    const mediaLonga = temMedia ? ` Média de ${f.mediaIdade} anos${f.origemIdade ? `, ${f.origemIdade}` : ''}.` : '';
     const ondeFrase = ficticia ? `Festa fictícia, exemplo do protótipo. ${onde.replace(/^./, (x) => x.toLocaleUpperCase('pt-BR'))}` : onde;
-    const descricao = `${ondeFrase} · ${FT.precoNaLista(f)}. ${o.horario}${mediaLonga}`;
+    const descricao = `${ondeFrase} · ${FT.precoNaLista(f)}. ${o.horario}`;
     // Festa real com flyer: a versão 1080 na prévia do link (R35), servida
     // por /imagens/ enquanto o convite estiver vivo.
     const flyer = !ficticia && f.cartaz && typeof f.cartaz === 'object' && /^\/imagens\/[a-f0-9]{16}-1080\.webp$/.test(f.cartaz.arquivo) ? f.cartaz.arquivo : null;
@@ -1283,7 +1258,6 @@ function montarServidor({
     listaAtual: fonteReais.festas,
     achar: acharFesta,
     planos,
-    avaliacoes,
     quando: (f) => (f.real ? { data: f.data } : dataDaFesta(f, new Date(relogio())) || {}),
     imagens: A.criarImagens({ dir: path.join(path.resolve(varDir), 'imagens'), reserva: path.join(RAIZ, 'dados', 'imagens'), motorUrl, fetch: buscar, log }),
     adminToken,

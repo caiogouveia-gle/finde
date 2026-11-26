@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const motor = require('../nucleo/motor');
-const { cara, PESOS, CRITERIOS, emHoras, emAnos, nomeDoSom } = require('../nucleo/cara');
+const { cara, PESOS, CRITERIOS, emHoras, nomeDoSom } = require('../nucleo/cara');
 const { prepararBase, lerLinhas } = require('../nucleo/base');
 const C = require('../nucleo/catalogo');
 
@@ -17,14 +17,13 @@ const { base } = prepararBase(lerLinhas(require(DADOS)));
 
 // O pedido completo, como o motor o usa.
 const pedido = (extra = {}) => motor.completar(motor.sanearCriterios({
-  dia: 'sab', janela: 'comeco-da-noite', idade: { min: 28, max: 35 }, bairros: ['pinheiros'], teto: 80, estilos: ['house-disco'], ...extra,
+  dia: 'sab', janela: 'comeco-da-noite', bairros: ['pinheiros'], teto: 80, estilos: ['house-disco'], ...extra,
 }));
 
 function festa(extra = {}) {
   return {
     id: 'teste', nome: 'Teste', bairro: 'pinheiros', dia: 'sab', inicio: 19, esquenta: 21, fim: 25,
-    mediaIdade: 32, preco: 50, estilos: ['house-disco'], selo: 'editorial', distanciaMin: 3,
-    origemIdadeCurta: 'pela produtora', ...extra,
+    preco: 50, estilos: ['house-disco'], selo: 'editorial', distanciaMin: 3, ...extra,
   };
 }
 
@@ -33,11 +32,10 @@ const porCriterio = (r) => Object.fromEntries(r.partes.map((p) => [p.criterio, p
 test('100%: bate em tudo, com um texto concreto por critério, horário primeiro', () => {
   const r = cara(festa(), pedido());
   assert.equal(r.pct, 100);
-  assert.deepEqual(r.partes.map((p) => p.criterio), ['horario', 'idade', 'bairro', 'preco', 'som']);
+  assert.deepEqual(r.partes.map((p) => p.criterio), ['horario', 'bairro', 'preco', 'som']);
   assert.ok(r.partes.every((p) => p.cabe === true));
   assert.deepEqual(r.partes.map((p) => p.texto), [
     'começa às 19h, no seu horário',
-    'média dentro da sua faixa',
     'em Pinheiros, como você marcou',
     'R$ 50, abaixo do seu teto',
     'house e disco, como você pediu',
@@ -45,26 +43,23 @@ test('100%: bate em tudo, com um texto concreto por critério, horário primeiro
 });
 
 test('0%: fura tudo, e cada parte diz quanto', () => {
-  const r = cara(festa({ inicio: 14, esquenta: 16, fim: 22, mediaIdade: 45, bairro: 'vila-mariana', preco: 150, estilos: ['funk'] }), pedido());
+  const r = cara(festa({ inicio: 14, esquenta: 16, fim: 22, bairro: 'vila-mariana', preco: 150, estilos: ['funk'] }), pedido());
   assert.equal(r.pct, 0);
   assert.ok(r.partes.every((p) => p.cabe === false));
   assert.deepEqual(r.partes.map((p) => p.texto), [
     'enche às 16h, três horas antes do seu horário',
-    'média 10 anos acima da sua faixa',
     'na Vila Mariana, longe de Pinheiros',
     'R$ 150, R$ 70 acima do seu teto',
     'funk, fora do que você pediu',
   ]);
 });
 
-test('quase vale meio: horário só abrindo, 2 anos fora, bairro vizinho, até 20% acima do teto', () => {
+test('quase vale meio: horário só abrindo, bairro vizinho, até 20% acima do teto', () => {
   // A pista enche duas horas antes de você chegar: o motor só aceita abrindo o horário.
-  const r = cara(festa({ inicio: 15, esquenta: 17, fim: 23, mediaIdade: 37, bairro: 'vila-madalena', preco: 96, estilos: ['eletronica'] }), pedido());
+  const r = cara(festa({ inicio: 15, esquenta: 17, fim: 23, bairro: 'vila-madalena', preco: 96, estilos: ['eletronica'] }), pedido());
   const p = porCriterio(r);
   assert.equal(p.horario.cabe, 'quase');
   assert.equal(p.horario.texto, 'enche às 17h, duas horas antes do seu horário');
-  assert.equal(p.idade.cabe, 'quase');
-  assert.equal(p.idade.texto, 'média 2 anos acima da sua faixa');
   assert.equal(p.bairro.cabe, 'quase');
   assert.equal(p.bairro.texto, 'na Vila Madalena, a 6 min de Pinheiros');
   assert.equal(p.preco.cabe, 'quase');
@@ -74,24 +69,29 @@ test('quase vale meio: horário só abrindo, 2 anos fora, bairro vizinho, até 2
   assert.equal(p.som.cabe, 'quase');
   assert.equal(p.som.credito, 0.9);
   assert.equal(p.som.texto, 'eletrônica, parecido com house e disco');
-  // (30 + 25 + 20 + 15) × 0,5 + 10 × 0,9 = 54 de 100.
-  assert.equal(r.pct, 54);
+  // (30 + 20 + 15) × 0,5 + 10 × 0,9 = 41,5 de 75: 55%. (Com a idade, que
+  // saiu em 26/11/2026, eram 54 de 100.)
+  assert.equal(r.pct, 55);
 });
 
-test('quase tem limite: além do horário aberto, de 3 anos ou de 20%, não cabe', () => {
-  const p = porCriterio(cara(festa({ inicio: 14.5, esquenta: 16.5, fim: 23, mediaIdade: 39, preco: 97 }), pedido()));
+test('quase tem limite: além do horário aberto ou de 20%, não cabe', () => {
+  const p = porCriterio(cara(festa({ inicio: 14.5, esquenta: 16.5, fim: 23, preco: 97 }), pedido()));
   assert.equal(p.horario.cabe, false);
   assert.equal(p.horario.texto, 'enche às 16h30, duas horas e meia antes do seu horário');
-  assert.equal(p.idade.cabe, false);
-  assert.equal(p.idade.texto, 'média 4 anos acima da sua faixa');
   assert.equal(p.preco.cabe, false);
-  // 3 anos fora ainda é quase: o mesmo "um pouco" do aviso do motor.
-  const tres = porCriterio(cara(festa({ mediaIdade: 38 }), pedido()));
-  assert.equal(tres.idade.cabe, 'quase');
-  assert.equal(tres.idade.texto, 'média 3 anos acima da sua faixa');
-  const abaixo = porCriterio(cara(festa({ mediaIdade: 27 }), pedido()));
-  assert.equal(abaixo.idade.cabe, 'quase');
-  assert.equal(abaixo.idade.texto, 'média 1 ano abaixo da sua faixa');
+});
+
+test('a idade não entra na cara (26/11/2026): nem a média, nem a avaliação, nem a faixa de um link antigo', () => {
+  assert.ok(!CRITERIOS.includes('idade'));
+  assert.equal(PESOS.idade, undefined);
+  const limpa = cara(festa(), pedido());
+  for (const extra of [{ mediaIdade: 45 }, { mediaIdade: 27, origemIdade: 'informada pela produtora' },
+    { mediaIdade: 31, avaliacaoIdade: { avaliacoes: 5, naMedida: 0.2, faixa: [41, 48], convites: 2 } }]) {
+    for (const idade of [undefined, { min: 28, max: 35 }, { min: 18, max: 20 }]) {
+      const k = cara(festa(extra), pedido(idade ? { idade, faixa: '30-35' } : {}));
+      assert.deepEqual(k, limpa, `${JSON.stringify(extra)} ${JSON.stringify(idade)}`);
+    }
+  }
 });
 
 test('horário pela régua do motor: começar antes não fura se a pista enche no seu horário', () => {
@@ -131,21 +131,17 @@ test('horário: o fim conta contra a sua volta, e a volta dita na conversa não 
 });
 
 test('renormaliza: critério que a pessoa não pediu sai da conta e das partes', () => {
-  // Cidade inteira, sem teto, nenhum som: sobram horário (30) e idade (25).
+  // Cidade inteira, sem teto, nenhum som: sobra o horário (30).
   const solto = pedido({ bairros: [], teto: 'sem-limite', estilos: [] });
   const r = cara(festa({ inicio: 15, esquenta: 17, fim: 23 }), solto);
-  assert.deepEqual(r.partes.map((p) => p.criterio), ['horario', 'idade']);
-  // (30 × 0,5 + 25 × 1) / 55 = 72,7%.
-  assert.equal(r.pct, 73);
-  // Idade de 18 a 50 ou mais também é "qualquer idade": só o horário conta.
-  const qualquer = cara(festa({ inicio: 15, esquenta: 17, fim: 23, mediaIdade: 45 }), { ...solto, idade: { min: 18, max: 50 } });
-  assert.deepEqual(qualquer.partes.map((p) => p.criterio), ['horario']);
-  assert.equal(qualquer.pct, 50);
-  // A faixa fixa da conversa antiga conta como pedida.
+  assert.deepEqual(r.partes.map((p) => p.criterio), ['horario']);
+  // 30 × 0,5 / 30 = 50%. (Antes de 26/11/2026, a idade da faixa fixa entrava: 73%.)
+  assert.equal(r.pct, 50);
+  // A faixa fixa da conversa antiga não conta mais.
   const fixa = motor.completar(motor.sanearCriterios({ dia: 'sab', janela: 'comeco-da-noite', faixa: '30-35', teto: 'sem-limite' }));
-  assert.deepEqual(cara(festa(), fixa).partes.map((p) => p.criterio), ['horario', 'idade']);
+  assert.deepEqual(cara(festa(), fixa).partes.map((p) => p.criterio), ['horario']);
   // Horário fora (30 × 0) e preço quase (15 × 0,5), sem o resto: 7,5 de 45 = 17%.
-  const dois = cara(festa({ inicio: 17, esquenta: 19, fim: 23, preco: 90 }), pedido({ bairros: [], estilos: [], janela: 'noite', idade: { min: 18, max: 50 } }));
+  const dois = cara(festa({ inicio: 17, esquenta: 19, fim: 23, preco: 90 }), pedido({ bairros: [], estilos: [], janela: 'noite' }));
   assert.deepEqual(dois.partes.map((p) => [p.criterio, p.cabe]), [['horario', false], ['preco', 'quase']]);
   assert.equal(dois.pct, 17);
 });
@@ -175,55 +171,49 @@ test('som parecido nomeia o estilo da festa que mais lembra o pedido, pelo rótu
     ['house e disco', 'pop anos 2000', 'MPB e samba', 'funk', 'indie e rock', 'eletrônica']);
 });
 
-test('horas por extenso, anos em algarismos (como a linha da faixa no detalhe)', () => {
+test('horas por extenso', () => {
   assert.equal(emHoras(0.5), 'meia hora');
   assert.equal(emHoras(1), 'uma hora');
   assert.equal(emHoras(1.5), 'uma hora e meia');
   assert.equal(emHoras(2), 'duas horas');
-  assert.equal(emAnos(1), '1 ano');
-  assert.equal(emAnos(5), '5 anos');
-  assert.equal(emAnos(2.5), '2,5 anos');
 });
 
 // ---------------------------------------------------------------- no motor
 
-// A grade de pedidos: o formulário antigo (faixa fixa) e o novo (intervalo,
-// bairros), com e sem teto e som, nos três dias e três janelas.
+// A grade de pedidos: sem bairro (a conversa antiga) e com bairros, com e
+// sem teto e som, nos três dias e três janelas. A faixa e o intervalo de
+// idade saíram em 26/11/2026.
 function* grade() {
   for (const dia of C.DIAS_FICTICIOS) {
     for (const j of C.JANELAS) {
-      for (const fx of C.FAIXAS) {
-        for (const teto of [0, 50, 80, 150, 'sem-limite']) {
-          for (const estilos of [[], ['funk'], ['house-disco', 'pop-2000']]) yield { dia, janela: j.id, faixa: fx.id, teto, estilos };
-        }
+      for (const teto of [0, 50, 80, 150, 'sem-limite']) {
+        for (const estilos of [[], ['funk'], ['house-disco', 'pop-2000']]) yield { dia, janela: j.id, teto, estilos };
       }
-      for (const idade of [{ min: 28, max: 35 }, { min: 18, max: 50 }, { min: 33, max: 40 }]) {
-        for (const bairros of [[], ['pinheiros'], ['centro', 'jardins']]) {
-          for (const teto of [50, 'sem-limite']) {
-            for (const estilos of [[], ['mpb-samba', 'indie-rock']]) yield { dia, janela: j.id, idade, bairros, teto, estilos };
-          }
+      for (const bairros of [['pinheiros'], ['centro', 'jardins']]) {
+        for (const teto of [50, 'sem-limite']) {
+          for (const estilos of [[], ['mpb-samba', 'indie-rock']]) yield { dia, janela: j.id, bairros, teto, estilos };
         }
       }
     }
   }
 }
 
-test('a ordem e as festas não mudaram: a mesma lista de antes do campo novo, nos 864 pedidos da grade', () => {
+test('a ordem e as festas não mudam sem querer: a mesma lista nos 207 pedidos da grade', () => {
   const linhas = [];
   for (const p of grade()) linhas.push(motor.escolher(p, base).opcoes.map((o) => o.festa.id).join(','));
-  assert.equal(linhas.length, 864);
-  // Impressão digital tirada com o motor de antes do "% a sua cara" (16/11/2026).
-  // Só muda se a base de festas ou a escolha do motor mudarem de propósito.
-  // 19/11/2026: o lote com hora ("R$ 45 até as 20h") não vale para quem chega
-  // depois dela, e 19 dos 864 pedidos mudam. Sem o `ate` dos lotes, a grade
-  // dá a impressão antiga: a mudança é só essa.
+  assert.equal(linhas.length, 207);
+  // Impressão digital da lista: só muda se a base de festas ou a escolha do
+  // motor mudarem de propósito. Tirada de novo em 26/11/2026, quando a idade
+  // saiu do pedido e da base (antes: 864 pedidos, com as quatro faixas e três
+  // intervalos). A segunda confere a lista sem o `ate` dos lotes (o lote com
+  // hora, de 19/11/2026, não vale para quem chega depois dela).
   const digital = (b) => crypto.createHash('sha256')
     .update([...grade()].map((p) => motor.escolher(p, b).opcoes.map((o) => o.festa.id).join(',')).join('\n')).digest('hex');
   assert.equal(crypto.createHash('sha256').update(linhas.join('\n')).digest('hex'),
-    'd3812d662809e6e5765a355e5b3ef1bb700dc2cfb7dc9d156b918d7ccbc0ba2e');
+    '39e4a2066e4efc7ebf81678f84db901a50ee5c1eb617084e036e014c68671cbc');
   const semHora = base.map((f) => ({ ...f, lotes: f.lotes ? f.lotes.map(({ ate, ...l }) => l) : f.lotes }));
-  assert.equal(digital(semHora), '49b382ad527a7448676cf65041ebbd502f6cad2b82c882a8314d3a37253ea282');
-  const video = motor.escolher({ dia: 'sab', janela: 'comeco-da-noite', faixa: '30-35', teto: 80, estilos: ['house-disco', 'pop-2000'] }, base);
+  assert.equal(digital(semHora), '0760ca35fdacd3d20eb09c2a56f4887aa6566e414a893b15de79febb63750ff0');
+  const video = motor.escolher({ dia: 'sab', janela: 'comeco-da-noite', teto: 80, estilos: ['house-disco', 'pop-2000'] }, base);
   assert.deepEqual(video.opcoes.map((o) => o.festa.id), ['funk-ao-entardecer', 'sabado-groove', 'noite-aurora']);
   // Funk ao Entardecer começa às 18h e enche às 20h: cabe no horário, como o motor diz.
   assert.deepEqual(video.opcoes.map((o) => o.cara.pct), [100, 100, 100]);
@@ -256,15 +246,13 @@ test('toda opção do motor traz a cara bem formada, e o resto da opção fica i
   }
 });
 
-// A grade do formulário novo (intervalo de idade e bairros), com os sons e
-// tetos que mais furam: 1.728 pedidos.
+// A grade do formulário (bairros), com os sons e tetos que mais furam: 432
+// pedidos (o intervalo de idade saiu em 26/11/2026).
 function* gradeNova() {
   for (const dia of C.DIAS_FICTICIOS) for (const j of C.JANELAS) {
     for (const bairros of [[], ['pinheiros'], ['centro', 'jardins'], ['vila-mariana']]) {
-      for (const idade of [{ min: 28, max: 35 }, { min: 18, max: 50 }, { min: 25, max: 30 }, { min: 33, max: 40 }]) {
-        for (const teto of [0, 50, 80, 'sem-limite']) {
-          for (const estilos of [[], ['funk'], ['mpb-samba', 'indie-rock']]) yield { dia, janela: j.id, bairros, idade, teto, estilos };
-        }
+      for (const teto of [0, 50, 80, 'sem-limite']) {
+        for (const estilos of [[], ['funk'], ['mpb-samba', 'indie-rock']]) yield { dia, janela: j.id, bairros, teto, estilos };
       }
     }
   }
@@ -275,11 +263,9 @@ test('a cara nunca contradiz o aviso: furo dá menos de 100, o que cabe dá 100,
   for (const p of [...grade(), ...gradeNova()]) {
     const c = motor.completar(motor.sanearCriterios(p));
     const lista = motor.escolher(p, base).opcoes;
-    // No formulário do app (intervalo de idade), a primeira, quando cabe no
-    // pedido, nunca tem % menor que outra da lista: o Finde não recomenda
-    // primeiro a que tem menos a sua cara. (A faixa fixa da conversa antiga
-    // aceita a média 1 ano fora sem aviso, e a cara conta esse ano como quase.)
-    if (c.idade && lista.length && lista[0].bloco === 'pedido' && lista[0].atende) {
+    // A primeira, quando cabe no pedido, nunca tem % menor que outra da
+    // lista: o Finde não recomenda primeiro a que tem menos a sua cara.
+    if (lista.length && lista[0].bloco === 'pedido' && lista[0].atende) {
       assert.ok(lista.every((o) => o.cara.pct <= lista[0].cara.pct),
         `a primeira tem % menor: ${lista.map((o) => `${o.festa.id} ${o.cara.pct}`).join(', ')} em ${JSON.stringify(p)}`);
     }
@@ -289,78 +275,77 @@ test('a cara nunca contradiz o aviso: furo dá menos de 100, o que cabe dá 100,
       const quem = `${o.festa.id} em ${JSON.stringify(p)}`;
       // Festa com aviso (o.fora) nunca sai com 100%.
       if (o.fora.length) assert.ok(o.cara.pct < 100, `100% com aviso: ${quem}`);
-      // Festa que cabe no pedido não tem parte que "não cabe"; no formulário novo, é 100%.
+      // Festa que cabe no pedido não tem parte que "não cabe", e é 100%.
       if (o.atende) {
         assert.ok(o.cara.partes.every((x) => x.cabe !== false), `cabe no pedido e tem "não cabe": ${quem}`);
-        if (c.idade) assert.equal(o.cara.pct, 100, `cabe no pedido e não é 100%: ${quem}`);
+        assert.equal(o.cara.pct, 100, `cabe no pedido e não é 100%: ${quem}`);
       }
       // O horário: cabe se, e só se, o motor não acusa furo de horário.
       const fura = motor.foraDoPedido(o.festa, c).includes('horario');
       assert.equal(parte.horario.cabe === true, !fura, `horário discorda do motor: ${quem}`);
-      // A idade: "um pouco" no aviso é "quase" na cara, nunca "não cabe".
-      if (c.idade && parte.idade) {
-        const umPouco = o.fora.some((x) => /um pouco/.test(x));
-        if (umPouco) assert.equal(parte.idade.cabe, 'quase', `"um pouco" virou "${parte.idade.cabe}": ${quem}`);
-        if (motor.foraDoPedido(o.festa, c).includes('idade')) assert.notEqual(parte.idade.cabe, true, quem);
-      }
+      // A idade saiu da cara e do aviso em 26/11/2026.
+      assert.equal(parte.idade, undefined, quem);
+      assert.doesNotMatch(o.fora.join(' '), /m[ée]dia|faixa/, quem);
       // As palavras do horário são as da pergunta: "seu horário" e "sua volta".
       for (const t of [...o.fora, ...o.cara.partes.map((x) => x.texto)]) {
         assert.doesNotMatch(t, /sua janela|sua hora\b/, quem);
       }
     }
   }
-  assert.ok(opcoes > 6000);
+  assert.ok(opcoes > 1500, String(opcoes));
 });
 
 test('os casos da revisão: a primeira da lista não perde ponto por começar antes, e o aviso de fim tira o 100%', () => {
   const lista = (p) => Object.fromEntries(motor.escolher(p, base).opcoes.map((o) => [o.festa.id, o]));
   // Sexta, das 19h à 1h, cidade inteira, sem teto: as três cabem no pedido e dão 100%.
-  const sexta = lista({ dia: 'sex', janela: 'comeco-da-noite', bairros: [], idade: { min: 28, max: 35 }, teto: 'sem-limite', estilos: [] });
+  const sexta = lista({ dia: 'sex', janela: 'comeco-da-noite', bairros: [], teto: 'sem-limite', estilos: [] });
   assert.deepEqual(Object.values(sexta).map((o) => [o.festa.id, o.cara.pct]),
     [['sexta-sem-pressa', 100], ['sexta-brasileira', 100], ['clube-varanda', 100]]);
   assert.equal(porCriterio(sexta['sexta-sem-pressa'].cara).horario.texto, 'enche às 20h, no seu horário');
   // O mesmo pedido das 22h às 3h, e o domingo das 19h à 1h: antes saíam 45%, 45%, 100% e 45%, 45%, 73%.
-  const noite = lista({ dia: 'sex', janela: 'noite', bairros: [], idade: { min: 28, max: 35 }, teto: 'sem-limite', estilos: [] });
+  const noite = lista({ dia: 'sex', janela: 'noite', bairros: [], teto: 'sem-limite', estilos: [] });
+  // Sem a idade (26/11/2026), a média deixa de ordenar: entram outras três,
+  // todas no pedido e com 100%.
   assert.deepEqual(Object.values(noite).map((o) => [o.festa.id, o.atende, o.cara.pct]),
-    [['sexta-brasileira', true, 100], ['clube-varanda', true, 100], ['madrugada-leve', true, 100]]);
-  assert.equal(porCriterio(noite['sexta-brasileira'].cara).horario.texto, 'você chega com a pista cheia');
-  const domingo = lista({ dia: 'dom', janela: 'comeco-da-noite', bairros: [], idade: { min: 28, max: 35 }, teto: 'sem-limite', estilos: [] });
+    [['jantar-dancante', true, 100], ['primeira-rodada', true, 100], ['madrugada-leve', true, 100]]);
+  const brasileira = motor.opcaoCompleta(base.find((f) => f.id === 'sexta-brasileira'), motor.completar({ dia: 'sex', janela: 'noite', teto: 'sem-limite' }));
+  assert.equal(porCriterio(brasileira.cara).horario.texto, 'você chega com a pista cheia');
+  const domingo = lista({ dia: 'dom', janela: 'comeco-da-noite', bairros: [], teto: 'sem-limite', estilos: [] });
   assert.deepEqual(Object.values(domingo).map((o) => o.cara.pct), [100, 100, 100]);
   // Sexta, das 17h às 23h, cidade inteira, até R$ 50: Sexta Brasileira tem aviso de fim e não sai com 100%.
-  const cedo = lista({ dia: 'sex', janela: 'fim-de-tarde', bairros: [], idade: { min: 28, max: 35 }, teto: 50, estilos: [] });
+  const cedo = lista({ dia: 'sex', janela: 'fim-de-tarde', bairros: [], teto: 50, estilos: [] });
   assert.equal(cedo['sexta-brasileira'].aviso, 'Acaba à 1h, depois da sua volta.');
   assert.equal(porCriterio(cedo['sexta-brasileira'].cara).horario.cabe, 'quase');
   assert.ok(cedo['sexta-brasileira'].cara.pct < 100);
   // Sábado em Pinheiros, house: Disco ao Pôr do Sol (17h, enche às 19h) cabe no horário.
-  const sab = lista({ dia: 'sab', janela: 'comeco-da-noite', bairros: ['pinheiros'], idade: { min: 28, max: 35 }, teto: 80, estilos: ['house-disco'] });
+  const sab = lista({ dia: 'sab', janela: 'comeco-da-noite', bairros: ['pinheiros'], teto: 80, estilos: ['house-disco'] });
   assert.equal(sab['disco-ao-por-do-sol'].cara.pct, 100);
   // Sábado das 17h às 23h: Sábado Groove acaba à 1h, depois da volta. Aviso e cara dizem o mesmo.
-  const tarde = lista({ dia: 'sab', janela: 'fim-de-tarde', bairros: ['pinheiros'], idade: { min: 28, max: 35 }, teto: 80, estilos: ['house-disco'] });
+  const tarde = lista({ dia: 'sab', janela: 'fim-de-tarde', bairros: ['pinheiros'], teto: 80, estilos: ['house-disco'] });
   assert.equal(tarde['sabado-groove'].aviso, 'Acaba à 1h, depois da sua volta.');
   assert.deepEqual(porCriterio(tarde['sabado-groove'].cara).horario,
     { criterio: 'horario', cabe: 'quase', texto: 'acaba à 1h, duas horas depois da sua volta' });
   assert.ok(tarde['sabado-groove'].cara.pct < 100);
   // Sexta na Vila Mariana, funk: Disco do Poente cabe no horário e o som citado é o pop, que lembra funk.
-  const funk = lista({ dia: 'sex', janela: 'comeco-da-noite', bairros: ['vila-mariana'], idade: { min: 28, max: 33 }, teto: 50, estilos: ['funk'] });
+  const funk = lista({ dia: 'sex', janela: 'comeco-da-noite', bairros: ['vila-mariana'], teto: 50, estilos: ['funk'] });
   const poente = porCriterio(funk['disco-do-poente'].cara);
   assert.equal(poente.horario.cabe, true);
   assert.equal(poente.som.texto, 'pop anos 2000, parecido com funk');
-  // Domingo, 25 a 30: Domingueira tem média 33, "um pouco acima" no aviso e "quase" na cara.
+  // Domingo com o intervalo de 25 a 30 de um link antigo: antes, Domingueira
+  // (média 33) saía com "um pouco acima da sua faixa"; desde 26/11/2026, nada
+  // de idade no aviso nem na cara.
   const dom = lista({ dia: 'dom', janela: 'noite', bairros: ['jardins', 'centro'], idade: { min: 25, max: 30 }, teto: 150, estilos: ['mpb-samba', 'indie-rock'] });
-  assert.equal(dom.domingueira.aviso, 'Média 33, um pouco acima da sua faixa.');
-  assert.deepEqual(porCriterio(dom.domingueira.cara).idade,
-    { criterio: 'idade', cabe: 'quase', texto: 'média 3 anos acima da sua faixa' });
+  assert.doesNotMatch(dom.domingueira.aviso || '', /m[ée]dia|faixa/);
+  assert.equal(porCriterio(dom.domingueira.cara).idade, undefined);
 });
 
 // No detalhe a 390 px, a coluna do texto da parte tem 250 px: umas 36 letras.
-// O que cabe no pedido (a lista de 100%, a mais comum) fica numa linha só, e
-// a idade não repete o número da média, que está logo acima com a origem.
+// O que cabe no pedido (a lista de 100%, a mais comum) fica numa linha só.
 test('as partes que cabem cabem numa linha a 390 px', () => {
   for (const p of gradeNova()) {
     for (const o of motor.escolher(p, base).opcoes) {
       for (const parte of o.cara.partes) {
         if (parte.cabe === true) assert.ok(parte.texto.length <= 36, `${parte.texto} (${parte.texto.length})`);
-        if (parte.criterio === 'idade') assert.doesNotMatch(parte.texto, /média \d+(?!\d| anos? (acima|abaixo))/, parte.texto);
       }
     }
   }
@@ -395,11 +380,11 @@ async function post(caminho, corpo) {
 }
 
 test('API: /api/festas e o ajuste em uma frase (/api/conversa) devolvem a cara, calculada pelo pedido novo', async () => {
-  const criterios = { dia: 'sab', janela: 'comeco-da-noite', idade: { min: 28, max: 35 }, bairros: ['pinheiros'], teto: 80, estilos: ['house-disco'] };
+  const criterios = { dia: 'sab', janela: 'comeco-da-noite', bairros: ['pinheiros'], teto: 80, estilos: ['house-disco'] };
   const inicio = await post('/api/festas', { criterios });
   assert.equal(inicio.status, 200);
   assert.ok(inicio.corpo.opcoes.length > 0);
-  assert.ok(inicio.corpo.opcoes.every((o) => Number.isInteger(o.cara.pct) && o.cara.partes.length === 5));
+  assert.ok(inicio.corpo.opcoes.every((o) => Number.isInteger(o.cara.pct) && o.cara.partes.length === 4));
   const atuais = inicio.corpo.opcoes.map((o) => o.festa.id);
 
   // "sem limite" tira o teto: o preço sai da conta.
@@ -446,7 +431,7 @@ test('propriedade: iguais menos no som, cara(casa) > cara(parecido) ≥ cara(sem
 });
 
 test('propriedade: nenhuma real com dado faltando chega a 100%', () => {
-  const faltas = [{ mediaIdade: null }, { bairro: null }, { preco: null }, { estilos: [] }, { inicio: null, horarioIncerto: true }];
+  const faltas = [{ bairro: null }, { preco: null }, { estilos: [] }, { inicio: null, horarioIncerto: true }];
   for (const p of grade()) {
     const c = motor.completar(motor.sanearCriterios(p));
     for (const f of base.filter((x) => x.dia === c.dia).slice(0, 4)) {
@@ -463,28 +448,8 @@ test('horário sem início conta a metade, como o que não se sabe', () => {
   const p = porCriterio(k);
   assert.deepEqual(p.horario, { criterio: 'horario', cabe: null, texto: 'horário não divulgado' });
   assert.ok(k.semDado.includes('horario'));
-  // 30 × 0,5 + o resto inteiro (70) = 85.
-  assert.equal(k.pct, 85);
-});
-
-test('idade pela avaliação de quem foi: vale naMedida quando a faixa cruza, e 0,5 quando não cruza', () => {
-  const av = festa({ mediaIdade: 31, avaliacaoIdade: { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 } });
-  const so = (idade) => pedido({ idade, bairros: [], teto: 'sem-limite', estilos: [], janela: 'comeco-da-noite' });
-  const dentro = cara(av, so({ min: 28, max: 35 }));
-  const pDentro = porCriterio(dentro).idade;
-  assert.equal(pDentro.credito, 0.8);
-  assert.equal(pDentro.cabe, true);
-  assert.equal(pDentro.texto, '4 de 5 acharam o público da idade');
-  // Horário 30 × 1 + idade 25 × 0,8 = 50 de 55.
-  assert.equal(dentro.pct, Math.round((30 + 25 * 0.8) * 100 / 55));
-  const fora = cara(av, so({ min: 40, max: 50 }));
-  const pFora = porCriterio(fora).idade;
-  assert.equal(pFora.credito, 0.5);
-  assert.equal(pFora.cabe, null);
-  assert.ok(fora.semDado.includes('idade'));
-  assert.equal(fora.pct, Math.round((30 + 25 * 0.5) * 100 / 55));
-  // A média 31 nunca aparece sozinha.
-  assert.doesNotMatch(JSON.stringify(dentro.partes), /31/);
+  // 30 × 0,5 + o resto inteiro (45) = 60 de 75: 80%.
+  assert.equal(k.pct, 80);
 });
 
 test('bairro de real com coordenada: perto pela distância em linha reta, em km', () => {

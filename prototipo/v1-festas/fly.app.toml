@@ -21,8 +21,9 @@ primary_region = "gru"
   # Os tiles do mapa (D8, KTD16): o <meta name="finde-tiles"> e o img-src da
   # CSP saem daqui; trocar de provedor é trocar esta linha e reiniciar.
   FINDE_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-  # Segredos (fly secrets, nunca aqui): FINDE_APP_TOKEN (manda as avaliações
-  # ao motor) e FINDE_ADMIN_TOKEN (GET /api/reais/estado).
+  # Segredo (fly secrets, nunca aqui): FINDE_ADMIN_TOKEN (GET /api/reais/estado).
+  # O FINDE_APP_TOKEN mandava as avaliações de idade ao motor, que saíram em
+  # 26/11/2026; o app não o lê mais.
 
 [http_service]
   internal_port = 8080

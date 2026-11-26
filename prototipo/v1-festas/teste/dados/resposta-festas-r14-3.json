@@ -1,10 +1,9 @@
 {
-  "_leia": "Forma da resposta de POST /api/festas do app depois do plano de 24/11/2026 (KTD15, R23 a R26). Congelada depois da fundação: só a costura muda. montarResultado (nucleo/lista.js) devolve as chaves opcoes, maisDoDia, outrosDias, exemplos, aviso, nota, base e semMedia; o servidor junta criterios, pedido, pedidoPartes e resposta. Cada opção real traz pct, exemplo: false, distanciaKm (null sem coordenada) e porque: { cabe, falta }, com itens { criterio, valor }; a fictícia traz exemplo: true e não traz pct nem cara (D11). comReais: sábado com reais (nenhuma fictícia); semReais: dia sem real (só exemplos, abaixo). outrosDias conta as reais dos outros dias de quinta a domingo da mesma semana. Dados fictícios.",
+  "_leia": "Forma da resposta de POST /api/festas do app depois do plano de 24/11/2026 (KTD15, R23 a R26). Congelada depois da fundação: só a costura muda. montarResultado (nucleo/lista.js) devolve as chaves opcoes, maisDoDia, outrosDias, exemplos, aviso, nota e base (o semMedia e a idade saíram em 26/11/2026); o servidor junta criterios, pedido, pedidoPartes e resposta. Cada opção real traz pct, exemplo: false, distanciaKm (null sem coordenada) e porque: { cabe, falta }, com itens { criterio, valor }; a fictícia traz exemplo: true e não traz pct nem cara (D11). comReais: sábado com reais (nenhuma fictícia); semReais: dia sem real (só exemplos, abaixo). outrosDias conta as reais dos outros dias de quinta a domingo da mesma semana. Dados fictícios.",
   "comReais": {
     "criterios": {
       "dia": "sab",
       "janela": "noite",
-      "faixa": "30-35",
       "teto": 150,
       "bairros": [],
       "estilos": [],
@@ -16,13 +15,9 @@
       "evitar": [],
       "firmes": [],
       "inicioMin": 22,
-      "fimMax": 27,
-      "idade": {
-        "min": 28,
-        "max": 35
-      }
+      "fimMax": 27
     },
-    "pedido": "Sáb · 22h às 3h · 28 a 35 · até R$ 150",
+    "pedido": "Sáb · 22h às 3h · até R$ 150",
     "pedidoPartes": [
       {
         "chave": "dia",
@@ -35,10 +30,6 @@
       {
         "chave": "bairros",
         "texto": "em toda a cidade"
-      },
-      {
-        "chave": "idade",
-        "texto": "gente de 28 a 35"
       },
       {
         "chave": "teto",
@@ -64,20 +55,6 @@
           "horarioIncerto": false,
           "esquenta": null,
           "fim": 29,
-          "mediaIdade": 31,
-          "origemIdade": "a partir de 5 avaliações de quem foi",
-          "origemIdadeCurta": "5 avaliações",
-          "origemDetalhe": null,
-          "avaliacaoIdade": {
-            "avaliacoes": 5,
-            "naMedida": 0.8,
-            "faixa": [
-              29,
-              34
-            ],
-            "convites": 2
-          },
-          "faixas": [],
           "preco": 40,
           "precoConferidoEm": "2026-11-25T10:30:00-03:00",
           "esgotado": false,
@@ -307,10 +284,6 @@
               "fonte": "claude",
               "conferidoEm": "2026-11-25T10:30:00-03:00"
             },
-            "mediaIdade": {
-              "fonte": "avaliacoes",
-              "conferidoEm": "2026-11-26T09:00:00-03:00"
-            },
             "ehFesta": {
               "fonte": "paginas",
               "conferidoEm": "2026-11-25T10:30:00-03:00"
@@ -333,16 +306,12 @@
         "atende": true,
         "fora": [],
         "incertos": [],
-        "linha": "Sáb · 23h00 · Pinheiros · média 31 anos",
+        "linha": "Sáb · 23h00 · Pinheiros",
         "hora": "23h00",
         "dia": "Sáb",
         "bairro": "Pinheiros",
         "horario": "Começa às 23h e acaba às 5h.",
         "preco": "R$ 40",
-        "origem": {
-          "curta": "5 avaliações",
-          "longa": "a partir de 5 avaliações de quem foi"
-        },
         "aviso": null,
         "motivos": [
           "bem abaixo do seu teto",
@@ -360,11 +329,6 @@
               "texto": "começa às 23h, no seu horário"
             },
             {
-              "criterio": "idade",
-              "cabe": true,
-              "texto": "média dentro da sua faixa"
-            },
-            {
               "criterio": "preco",
               "cabe": true,
               "texto": "R$ 40, abaixo do seu teto"
@@ -380,10 +344,6 @@
             {
               "criterio": "horario",
               "valor": "23h"
-            },
-            {
-              "criterio": "idade",
-              "valor": "4 de 5 da idade"
             }
           ],
           "falta": [
@@ -413,20 +373,6 @@
           "horarioIncerto": false,
           "esquenta": null,
           "fim": 29,
-          "mediaIdade": 31,
-          "origemIdade": "a partir de 5 avaliações de quem foi",
-          "origemIdadeCurta": "5 avaliações",
-          "origemDetalhe": null,
-          "avaliacaoIdade": {
-            "avaliacoes": 5,
-            "naMedida": 0.8,
-            "faixa": [
-              29,
-              34
-            ],
-            "convites": 2
-          },
-          "faixas": [],
           "preco": 40,
           "precoConferidoEm": "2026-11-25T10:30:00-03:00",
           "esgotado": true,
@@ -656,10 +602,6 @@
               "fonte": "claude",
               "conferidoEm": "2026-11-25T10:30:00-03:00"
             },
-            "mediaIdade": {
-              "fonte": "avaliacoes",
-              "conferidoEm": "2026-11-26T09:00:00-03:00"
-            },
             "ehFesta": {
               "fonte": "paginas",
               "conferidoEm": "2026-11-25T10:30:00-03:00"
@@ -682,16 +624,12 @@
         "atende": true,
         "fora": [],
         "incertos": [],
-        "linha": "Sáb · 23h00 · Pinheiros · média 31 anos",
+        "linha": "Sáb · 23h00 · Pinheiros",
         "hora": "23h00",
         "dia": "Sáb",
         "bairro": "Pinheiros",
         "horario": "Começa às 23h e acaba às 5h.",
         "preco": "R$ 40",
-        "origem": {
-          "curta": "5 avaliações",
-          "longa": "a partir de 5 avaliações de quem foi"
-        },
         "aviso": null,
         "motivos": [
           "bem abaixo do seu teto",
@@ -709,11 +647,6 @@
               "texto": "começa às 23h, no seu horário"
             },
             {
-              "criterio": "idade",
-              "cabe": true,
-              "texto": "média dentro da sua faixa"
-            },
-            {
               "criterio": "preco",
               "cabe": true,
               "texto": "R$ 40, abaixo do seu teto"
@@ -729,10 +662,6 @@
             {
               "criterio": "horario",
               "valor": "23h"
-            },
-            {
-              "criterio": "idade",
-              "valor": "4 de 5 da idade"
             }
           ],
           "falta": [
@@ -769,14 +698,12 @@
       "total": 41,
       "perfis": 50,
       "sites": 3
-    },
-    "semMedia": false
+    }
   },
   "semReais": {
     "criterios": {
       "dia": "sab",
       "janela": "noite",
-      "faixa": "30-35",
       "teto": 150,
       "bairros": [],
       "estilos": [],
@@ -788,13 +715,9 @@
       "evitar": [],
       "firmes": [],
       "inicioMin": 22,
-      "fimMax": 27,
-      "idade": {
-        "min": 28,
-        "max": 35
-      }
+      "fimMax": 27
     },
-    "pedido": "Sáb · 22h às 3h · 28 a 35 · até R$ 150",
+    "pedido": "Sáb · 22h às 3h · até R$ 150",
     "pedidoPartes": [
       {
         "chave": "dia",
@@ -807,10 +730,6 @@
       {
         "chave": "bairros",
         "texto": "em toda a cidade"
-      },
-      {
-        "chave": "idade",
-        "texto": "gente de 28 a 35"
       },
       {
         "chave": "teto",
@@ -850,10 +769,6 @@
           "inicio": 19,
           "esquenta": 21,
           "fim": 25,
-          "mediaIdade": 31,
-          "faixas": [
-            "30-35"
-          ],
           "preco": 60,
           "estilos": [
             "house-disco"
@@ -861,8 +776,6 @@
           "frase": "House no terraço, pista cheia às 21h e a volta ainda com metrô.",
           "selo": "editorial",
           "distanciaMin": 3,
-          "origemIdade": "informada pela produtora",
-          "origemIdadeCurta": "pela produtora",
           "endereco": {
             "texto": "Rua Clarice Vasconcelos Prado, 601",
             "bairro": "pinheiros",
@@ -972,10 +885,6 @@
             "regras": {
               "fonte": "envio",
               "conferidoEm": "2026-11-30T13:00:00-03:00"
-            },
-            "mediaIdade": {
-              "fonte": "envio",
-              "conferidoEm": "2026-11-23T12:00:00-03:00"
             }
           },
           "coletadoEm": "2026-12-01T11:00:00-03:00",
@@ -985,16 +894,12 @@
         "atende": true,
         "fora": [],
         "incertos": [],
-        "linha": "Sáb · 19h00 · Pinheiros · média 31 anos",
+        "linha": "Sáb · 19h00 · Pinheiros",
         "hora": "19h00",
         "dia": "Sáb",
         "bairro": "Pinheiros",
         "horario": "Começa às 19h, a pista enche às 21h e acaba à 1h.",
         "preco": "R$ 60",
-        "origem": {
-          "curta": "pela produtora",
-          "longa": "informada pela produtora"
-        },
         "aviso": null,
         "motivos": [
           "bem abaixo do seu teto",
@@ -1024,7 +929,6 @@
       "total": 41,
       "perfis": 50,
       "sites": 3
-    },
-    "semMedia": true
+    }
   }
 }

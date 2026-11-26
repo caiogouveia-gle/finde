@@ -19,7 +19,7 @@ const CSS = fs.readFileSync(path.join(PUBLICO, 'landing.css'), 'utf8');
 const JS = fs.readFileSync(path.join(PUBLICO, 'landing.js'), 'utf8');
 const mudo = { info() {}, warn() {}, error() {} };
 const AGORA = Date.parse('2026-11-16T12:00:00-03:00');
-const PEDIDO = { dia: 'sab', janela: 'comeco-da-noite', faixa: '30-35', teto: 80 };
+const PEDIDO = { dia: 'sab', janela: 'comeco-da-noite', teto: 80 };
 const abertos = [];
 let raiz;
 let raizVazia;
@@ -153,7 +153,7 @@ test('o cartão do herói sai do registro de Sexta Sem Pressa: hora primeiro, o 
   assert.match(d, /<span class="destaque-mini">sex, 20 nov · Pinheiros<\/span>/);
   assert.match(d, /<span class="destaque-hora">18h00<\/span>/);
   assert.match(d, /<span class="destaque-nome">Sexta Sem Pressa<\/span>/);
-  assert.match(d, /<span class="destaque-media">a partir de R\$ 60<\/span>/);
+  assert.match(d, /<span class="destaque-preco">a partir de R\$ 60<\/span>/);
   assert.doesNotMatch(d, /anos/);
   // É ilustração: nenhum link no cartão (25/11, menos CTAs).
   assert.doesNotMatch(d, /<a\s/);
@@ -235,7 +235,9 @@ test('GET /api/festa/<id>: a opção no formato de /api/festas, sem pedido e sem
   assert.equal(o.hora, '18h00');
   assert.equal(o.dia, 'Sex');
   assert.equal(o.horario, 'Começa às 18h, a pista enche às 20h e acaba às 23h.');
-  assert.equal(o.origem.longa, 'informada pela produtora');
+  // A média de idade e a origem dela saíram em 26/11/2026.
+  assert.equal(o.origem, undefined);
+  assert.equal(o.festa.mediaIdade, undefined);
   assert.equal(o.data, '2026-11-20');
   assert.equal(o.atende, true);
   assert.deepEqual(o.fora, []);

@@ -24,7 +24,6 @@ function montarResumo({ landing, app, motor, csvs = [], agora = new Date() }) {
     motor: festas ? {
       festas: festas.length,
       produtoras: new Set(festas.map((f) => f.produtora?.nome || f.produtora).filter(Boolean)).size,
-      comMediaDeIdade: festas.filter((f) => Number.isInteger(f.mediaIdade)).length,
       atualizadoEm: motor.geradoEm,
     } : motor,
     landing,

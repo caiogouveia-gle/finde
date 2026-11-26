@@ -8,6 +8,8 @@ const C = require('../nucleo/catalogo');
 
 const AGORA = Date.parse('2026-11-14T20:00:00-03:00');
 const horasAntes = (h) => new Date(AGORA - h * 3600e3).toISOString();
+// A festa traz a média de idade de propósito: um dado antigo que ainda a
+// tenha não pode fazer a idade aparecer em frase nenhuma (26/11/2026).
 const festa = (extra = {}) => ({
   id: 'x', nome: 'X', preco: 60, estilos: ['house-disco'], mediaIdade: 31, origemIdade: 'informada pela produtora',
   lotes: [{ nome: '1º lote', preco: 60, disponivel: true }], entradaNaPorta: null,
@@ -95,21 +97,9 @@ test('os rótulos de estilo são os do catálogo', () => {
   for (const e of C.ESTILOS) assert.equal(T.som(festa({ estilos: [e.id] })).estilos, e.rotulo);
 });
 
-test('Covers AE2. Média ausente: "ainda não informada", sem origem nem data', () => {
-  const m = T.media(festa({ mediaIdade: null, origemIdade: null }), AGORA);
-  assert.equal(m.ausente, true);
-  assert.equal(m.texto, 'Média de idade ainda não informada');
-  assert.equal(m.origem, null);
-  assert.equal(m.quando, null);
-});
-
-test('média informada: número, origem e quando foi conferida', () => {
-  const m = T.media(festa({ campos: { mediaIdade: { fonte: 'envio', conferidoEm: horasAntes(26) } } }), AGORA);
-  assert.equal(m.ausente, false);
-  assert.equal(m.numero, 31);
-  assert.equal(m.origem, 'informada pela produtora');
-  assert.equal(m.quando, 'conferida ontem');
-  assert.equal(T.media(festa(), AGORA).quando, null, 'sem carimbo, sem data inventada');
+test('Covers AE2, revisto em 26/11/2026: a média de idade não tem mais frase nenhuma', () => {
+  for (const k of ['media', 'mediaFalada', 'linhaSemMedia', 'fraseDaAvaliacao', 'mensagemComoFoi']) assert.equal(T[k], undefined, k);
+  assert.ok(!T.CARA_ORDEM.includes('idade'));
 });
 
 test('tempo relativo nas bordas', () => {
@@ -213,9 +203,7 @@ test('preço por horário: "R$ 35 até as 21h, R$ 50 depois"', () => {
   assert.equal(gratis.horario, 'até a meia-noite; depois, R$ 20');
 });
 
-test('frases da página: média, som, regras e o lote seguinte', () => {
-  assert.equal(T.media(festa(), AGORA).frase, 'Média de 31 anos, informada pela produtora.');
-  assert.equal(T.media(festa({ mediaIdade: null }), AGORA).frase, 'Média de idade ainda não informada.');
+test('frases da página: som, regras e o lote seguinte', () => {
   assert.equal(T.som(festa({ lineup: ['Duda Maré', 'Tati Varanda'] })).frase, 'House e disco, com Duda Maré e Tati Varanda.');
   assert.equal(T.som(festa({ lineup: null })).frase, 'House e disco. Lineup ainda não divulgado.');
   assert.equal(T.regrasFrase(festa({ regras: { documento: 'RG ou CNH, original ou digital', lista: 'Nome na lista até as 19h' } })), 'Só maiores de 18. RG ou CNH, original ou digital. Nome na lista até as 19h.');
@@ -242,7 +230,7 @@ test('/app?festa=<id>: caixa e espaço de um link copiado não derrubam o id; li
   assert.match(APP, /if \(pedida\.id\) abrirAvulsa\(pedida\.id\);\s*else semFesta\(true\);/);
 });
 
-test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na mesma linha', () => {
+test('mensagem pro grupo: sem caixa alta, a data e a hora na mesma linha, e nada de média de idade', () => {
   const f = festa({ nome: 'Disco ao Pôr do Sol', casa: 'terraço em Pinheiros', mediaIdade: 30, preco: 80, lotes: [{ nome: '1º lote', preco: 80, disponivel: true }, { nome: '2º lote', preco: 100, disponivel: true }] });
   const linhas = T.mensagem({ data: 'sáb, 21 nov', hora: '17h00', bairro: 'Pinheiros', festa: f, link: 'https://finde.example/p/abc' });
   assert.deepEqual(linhas, [
@@ -250,7 +238,7 @@ test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na me
     // Fictícia: no grupo ninguém vê o rodapé do protótipo, então a mensagem diz.
     '(Exemplo: festa fictícia do protótipo do Finde.)',
     '',
-    'Sáb, 21 nov · 17h00 · média 30 anos (informada pela produtora)',
+    'Sáb, 21 nov · 17h00',
     'Disco ao Pôr do Sol, com Duda Maré',
     'terraço em Pinheiros · a partir de R$ 80',
     '',
@@ -260,9 +248,11 @@ test('mensagem pro grupo: sem caixa alta, a hora e a média (com a origem) na me
   // Nenhuma linha em maiúsculas, e a hora com "h" minúsculo.
   for (const l of linhas) assert.ok(!l || l !== l.toLocaleUpperCase('pt-BR') || !/[a-zà-ú]/i.test(l), l);
   assert.doesNotMatch(linhas.join('\n'), /\d+H\d*/);
-  // A casa que não diz o bairro ganha o bairro; média sem origem e ausente.
+  // A média de idade que a festa ainda traga não entra (26/11/2026).
+  assert.doesNotMatch(linhas.join('\n'), /m[ée]dia|anos|idade/);
+  // A casa que não diz o bairro ganha o bairro.
   const sem = T.mensagem({ data: 'sex, 20 nov', hora: '18h00', bairro: 'Barra Funda', festa: festa({ casa: 'galpão', origemIdade: null }), link: 'x' });
-  assert.equal(sem[3], 'Sex, 20 nov · 18h00 · média 31 anos');
+  assert.equal(sem[3], 'Sex, 20 nov · 18h00');
   assert.match(sem[5], /^galpão · Barra Funda · /);
   // Sem média, a mensagem não abre com "média não informada" (R35).
   const semMedia = T.mensagem({ data: 'dom, 22 nov', hora: '16h00', bairro: 'Centro', festa: festa({ mediaIdade: null }), link: 'x' });
@@ -285,21 +275,23 @@ test('% a sua cara: as partes na ordem do peso de nucleo/cara.js, o horário pri
     { criterio: 'bairro', cabe: true, texto: 'em Pinheiros' },
     { criterio: 'horario', cabe: false, texto: 'começa às 17h, antes da sua janela' },
     { criterio: 'preco', cabe: 'quase', texto: 'R$ 90, pouco acima' },
-    { criterio: 'idade', cabe: true, texto: 'média 30 (pela produtora), dentro da sua faixa' },
-    { criterio: 'idade', cabe: true, texto: '  ' },
+    { criterio: 'bairro', cabe: true, texto: '  ' },
   ];
-  assert.deepEqual(T.ordemDaCara(partes).map((x) => x.criterio), ['horario', 'idade', 'bairro', 'preco', 'som']);
+  assert.deepEqual(T.ordemDaCara(partes).map((x) => x.criterio), ['horario', 'bairro', 'preco', 'som']);
   assert.deepEqual(T.ordemDaCara(null), []);
 });
 
 test('% a sua cara: a linha do peso só quando algo não cabe inteiro', () => {
-  const tudo = { pct: 100, partes: [{ criterio: 'idade', cabe: true, texto: 'a' }, { criterio: 'horario', cabe: true, texto: 'b' }] };
+  const tudo = { pct: 100, partes: [{ criterio: 'bairro', cabe: true, texto: 'a' }, { criterio: 'horario', cabe: true, texto: 'b' }] };
   assert.equal(T.pesoDaCara(tudo), '');
   assert.equal(T.pesoDaCara({ pct: 0, partes: [{ criterio: 'horario', cabe: false, texto: 'b' }] }), '');
-  const cinco = { pct: 70, partes: ['som', 'preco', 'bairro', 'idade', 'horario'].map((c) => ({ criterio: c, cabe: c !== 'horario', texto: c })) };
-  assert.equal(T.pesoDaCara(cinco), 'Conta mais o horário, depois a idade, o bairro, o preço e o som.');
-  const dois = { pct: 55, partes: [{ criterio: 'idade', cabe: 'quase', texto: 'a' }, { criterio: 'horario', cabe: true, texto: 'b' }] };
-  assert.equal(T.pesoDaCara(dois), 'Conta mais o horário, depois a idade.');
+  const quatro = { pct: 70, partes: ['som', 'preco', 'bairro', 'horario'].map((c) => ({ criterio: c, cabe: c !== 'horario', texto: c })) };
+  assert.equal(T.pesoDaCara(quatro), 'Conta mais o horário, depois o bairro, o preço e o som.');
+  const dois = { pct: 55, partes: [{ criterio: 'bairro', cabe: 'quase', texto: 'a' }, { criterio: 'horario', cabe: true, texto: 'b' }] };
+  assert.equal(T.pesoDaCara(dois), 'Conta mais o horário, depois o bairro.');
+  // A parte de idade de um convite antigo não entra no nome do peso.
+  const velha = { pct: 70, partes: [{ criterio: 'idade', cabe: 'quase', texto: 'a' }, { criterio: 'horario', cabe: true, texto: 'b' }, { criterio: 'som', cabe: true, texto: 'c' }] };
+  assert.doesNotMatch(T.pesoDaCara(velha), /idade/);
 });
 
 test('% a sua cara nos cartões: só quando varia na lista', () => {
@@ -313,15 +305,14 @@ test('% a sua cara nos cartões: só quando varia na lista', () => {
   assert.equal(T.pctNosCartoes(undefined), false);
 });
 
-test('cartão da lista para leitor de tela: a média uma vez só, com a origem', () => {
+test('cartão da lista para leitor de tela: a linha, o preço e a %, sem média de idade', () => {
   const f = festa({ id: 'sexta-sem-pressa', nome: 'Sexta Sem Pressa', mediaIdade: 32 });
-  const o = { festa: f, linha: 'Sex · 18h00 · Pinheiros · média 32 anos' };
+  const o = { festa: f, linha: 'Sex · 18h00 · Pinheiros' };
   const lido = T.cartaoFalado(o, { pct: 83 });
-  assert.equal(lido, 'Sex · 18h00 · Pinheiros · média 32 anos, informada pela produtora · R$ 60 · 83% a sua cara');
-  assert.equal((lido.match(/média/g) || []).length, 1);
-  assert.equal(T.cartaoFalado({ ...o, patrocinada: true }, { nova: true }), 'Sex · 18h00 · Pinheiros · média 32 anos, informada pela produtora · R$ 60 · patrocinado · nova na lista');
-  assert.equal(T.cartaoFalado({ festa: festa({ mediaIdade: null }), linha: 'Sáb · 22h00 · Centro' }), 'Sáb · 22h00 · Centro · média de idade não informada · R$ 60');
-  assert.equal(T.linhaSemMedia('Sáb · 17h00 · Pinheiros · média 30 anos'), 'Sáb · 17h00 · Pinheiros');
+  assert.equal(lido, 'Sex · 18h00 · Pinheiros · R$ 60 · 83% a sua cara');
+  assert.equal(T.cartaoFalado({ ...o, patrocinada: true }, { nova: true }), 'Sex · 18h00 · Pinheiros · R$ 60 · patrocinado · nova na lista');
+  // Até 26/11/2026, a festa sem média dizia "média de idade não informada".
+  assert.equal(T.cartaoFalado({ festa: festa({ mediaIdade: null }), linha: 'Sáb · 22h00 · Centro' }), 'Sáb · 22h00 · Centro · R$ 60');
   // No guia, cada cartão é um link (?festa=) com o texto inteiro dentro.
   assert.match(APP, /const hrefDe = \(o\) => `\?festa=\$\{encodeURIComponent\(o\.festa\.id\)\}`;/);
 });
@@ -586,8 +577,8 @@ const NA_FIXTURE = Date.parse('2026-11-26T12:00:00-03:00');
 
 test('porquê do cartão: até duas partes que cabem e uma linha honesta do que falta', () => {
   const o = RESPOSTA.comReais.opcoes[0];
-  assert.deepEqual(T.partesDoPorque(o), { cabe: ['começa às 23h', '4 de 5 que foram acharam o público da idade'], falta: 'Não diz o som.' });
-  assert.deepEqual(T.porqueDoCartao(o), { cabe: 'Começa às 23h e 4 de 5 que foram acharam o público da idade.', falta: 'Não diz o som.' });
+  assert.deepEqual(T.partesDoPorque(o), { cabe: ['começa às 23h'], falta: 'Não diz o som.' });
+  assert.deepEqual(T.porqueDoCartao(o), { cabe: 'Começa às 23h.', falta: 'Não diz o som.' });
   // Uma parte só, e o bairro com a preposição dele.
   const uma = { porque: { cabe: [{ criterio: 'bairro', valor: 'Vila Madalena' }], falta: [{ criterio: 'preco', valor: null }, { criterio: 'som', valor: null }] } };
   assert.deepEqual(T.porqueDoCartao(uma), { cabe: 'Fica na Vila Madalena.', falta: 'Não diz o preço nem o som.' });
@@ -595,10 +586,10 @@ test('porquê do cartão: até duas partes que cabem e uma linha honesta do que 
   assert.deepEqual(T.partesDoPorque({ porque: { cabe: [], falta: [] } }), { cabe: [], falta: '' });
   assert.deepEqual(T.partesDoPorque({}), { cabe: [], falta: '' });
   assert.deepEqual(T.porqueDoCartao({ porque: { cabe: [], falta: [] } }), { cabe: '', falta: '' });
-  // Com a linha única no cabeçalho (D3), a média não se repete no cartão.
-  const tres = { porque: { cabe: [], falta: [{ criterio: 'idade', valor: null }, { criterio: 'som', valor: null }, { criterio: 'bairro', valor: null }] } };
-  assert.equal(T.partesDoPorque(tres).falta, 'Não diz a média de idade, o bairro nem o som.');
-  assert.equal(T.partesDoPorque(tres, { semMedia: true }).falta, 'Não diz o bairro nem o som.');
+  // A idade de um convite antigo (no porquê guardado) não vira frase: nem no
+  // que cabe nem no que falta (26/11/2026).
+  const tres = { porque: { cabe: [{ criterio: 'idade', valor: 'média 31' }], falta: [{ criterio: 'idade', valor: null }, { criterio: 'som', valor: null }, { criterio: 'bairro', valor: null }] } };
+  assert.deepEqual(T.partesDoPorque(tres), { cabe: [], falta: 'Não diz o bairro nem o som.' });
   // Mais de duas que cabem: ficam as duas primeiras; preço sem quebra.
   const muitas = { porque: { cabe: [{ criterio: 'preco', valor: 'R$ 40' }, { criterio: 'horario', valor: '0h' }, { criterio: 'som', valor: 'House e disco' }], falta: [] } };
   assert.deepEqual(T.partesDoPorque(muitas).cabe, ['custa R$ 40', 'começa à meia-noite']);
@@ -646,9 +637,10 @@ test('preço conferido há mais de 72 h: marcado e fora da barra', () => {
   assert.match(barra, /p\.compra && !velho && p\.valor !== null/);
 });
 
-test('fontes que acharam a festa: sem claude, regras, curadoria e avaliações', () => {
+test('fontes que acharam a festa: sem claude, regras e curadoria', () => {
   assert.deepEqual(T.encontradaEm(CONVERTIDA), ['paginas', 'indicacao']);
-  const f = { fontes: ['claude', 'regras', 'instagram', 'curadoria', 'avaliacoes', 'paginas', 'instagram'].map((id) => ({ id, nome: id })) };
+  // A fonte `avaliacoes` (de idade) cai antes, no conversor (26/11/2026).
+  const f = { fontes: ['claude', 'regras', 'instagram', 'curadoria', 'paginas', 'instagram'].map((id) => ({ id, nome: id })) };
   assert.deepEqual(T.encontradaEm(f), ['instagram', 'paginas']);
   assert.deepEqual(T.encontradaEm({ encontradaEm: ['claude', 'envio'], fontes: [] }), ['envio']);
   assert.deepEqual(T.encontradaEm({}), []);
@@ -703,16 +695,11 @@ test('divergência: só quando os valores já normalizados diferem, dita numa fr
   assert.deepEqual(d('lineup', ['A'], ['B']), []);
 });
 
-test('a frase da avaliação: o que a pergunta mede, nunca "média do público"', () => {
-  assert.equal(T.fraseDaAvaliacao(CONVERTIDA), '4 de 5 que foram, de 29 a 34 anos, acharam o público da idade deles.');
-  assert.equal(T.fraseDaAvaliacao({ avaliacaoIdade: { avaliacoes: 6, naMedida: 0.5, faixa: [31, 31], convites: 2 } }), '3 de 6 que foram, com 31 anos, acharam o público da idade deles.');
-  assert.equal(T.fraseDaAvaliacao({ mediaIdade: 31 }), null);
-  assert.doesNotMatch(T.fraseDaAvaliacao(CONVERTIDA), /média/);
-});
-
 test('de onde vem: uma linha por campo, com a casa curada e a atribuição do OpenStreetMap', () => {
   const linhas = T.deOndeVem(CONVERTIDA, NA_FIXTURE);
-  assert.deepEqual(linhas.map((x) => x.campo), ['Horário', 'Preço', 'Local', 'Som', 'Idade']);
+  assert.deepEqual(linhas.map((x) => x.campo), ['Horário', 'Preço', 'Local', 'Som']);
+  // A linha da idade saiu em 26/11/2026, mesmo com o carimbo de um dado antigo.
+  assert.ok(!T.deOndeVem({ ...CONVERTIDA, mediaIdade: 31, campos: { ...CONVERTIDA.campos, mediaIdade: { fonte: 'avaliacoes', conferidoEm: '2026-11-26T09:00:00-03:00' } } }, NA_FIXTURE).some((x) => x.campo === 'Idade'));
   assert.equal(linhas.find((x) => x.campo === 'Som').texto, 'Leitura da descrição da página.');
   const curada = T.deOndeVem({ ...CONVERTIDA, endereco: { ...CONVERTIDA.endereco, cidadeOrigem: 'casa' }, local: { ...CONVERTIDA.local, origemGeo: 'curado', atribuicaoOsm: true } }, NA_FIXTURE);
   assert.equal(curada.find((x) => x.campo === 'Local').texto, 'Cadastro da casa no finde; cidade pelo cadastro da casa; mapa © OpenStreetMap.');
@@ -749,8 +736,8 @@ test('a peça de divulgação: o objeto do /3 ou o caminho da fictícia; crédit
   for (const ruim of ['https://cdn.example/x.jpg', '/imagens/../x.webp', '/imagens/0123-480.webp', { arquivo: '//x/y.webp' }, null]) assert.equal(T.cartazDe({ cartaz: ruim }), null);
 });
 
-test('convite: sem "média não informada", com casa, bairro, preço e lineup; e a mensagem "como foi?"', () => {
-  assert.doesNotMatch(COMUM_FONTE, /'média não informada'/);
+test('convite: sem média de idade, com casa, bairro, preço e lineup; sem a pergunta de idade depois da festa', () => {
+  assert.doesNotMatch(COMUM_FONTE, /'média não informada'|mediaIdade|media-grande|painel-media/);
   assert.match(COMUM_FONTE, /texto: `com \$\{lineup\.length > 3/);
   const linhas = T.mensagem({ data: 'sex, 27 nov', hora: '23h00', bairro: 'Pinheiros', festa: festa({ real: true, mediaIdade: null, casa: 'Casa Exemplo', lineup: ['DJ Exemplo'] }), link: 'https://finde.example/p/abcd1234' });
   assert.equal(linhas[2], 'Sex, 27 nov · 23h00');
@@ -759,14 +746,9 @@ test('convite: sem "média não informada", com casa, bairro, preço e lineup; e
   // Sem preço: a linha fica com a casa e o bairro.
   const semPreco = T.mensagem({ data: 'sex, 27 nov', hora: '23h00', bairro: 'Pinheiros', festa: festa({ real: true, casa: 'Casa Exemplo', lotes: [], preco: null }), link: 'x' });
   assert.equal(semPreco[4], 'Casa Exemplo · Pinheiros');
-  assert.deepEqual(T.mensagemComoFoi({ festa: { nome: 'Sexta Sem Pressa' }, link: 'https://finde.example/p/abcd1234' }), [
-    'Como foi a Sexta Sem Pressa? Responde em 10 segundos: o público era da nossa idade?',
-    'https://finde.example/p/abcd1234',
-  ]);
-  // A avaliação no convite: só resposta com idade de 18 a 60, com aparelho e sem expor o nome em outro lugar.
-  assert.match(PLANO_FONTE, /n < 18 \|\| n > 60/);
-  assert.match(PLANO_FONTE, /`\/api\/planos\/\$\{encodeURIComponent\(id\)\}\/avaliacao`, \{ nome: meuNomeAqui\(\), aparelho: aparelho\(\), resposta: marcada\.value, idade: n \}/);
-  assert.match(PLANO_FONTE, /Guardamos sem o seu nome, até 31\/12\/2026\./);
+  // A avaliação pós-festa ("O público tinha a sua idade?") e o "como foi?"
+  // pro grupo saíram em 26/11/2026: o convite não pergunta nem manda nada.
+  assert.doesNotMatch(PLANO_FONTE, /\/avaliacao|sua-idade|O público tinha|Como foi|mensagemComoFoi|idade/);
 });
 
 test('páginas do app: noindex, tiles pela meta, mapa e local com defer, sem preload da Fraunces', () => {

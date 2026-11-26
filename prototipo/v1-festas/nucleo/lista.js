@@ -293,9 +293,6 @@ function comoExemplo(o, data) {
   return x;
 }
 
-// A festa tem dado de idade: a média ou a avaliação de quem foi.
-const temMedia = (f) => Boolean(f) && ((typeof f.mediaIdade === 'number' && Number.isFinite(f.mediaIdade)) || Boolean(f.avaliacaoIdade));
-
 // O título começa pelo que existe (R25): "Duas festas pro seu sábado.";
 // sem real no dia, diz isso e marca os exemplos à parte.
 function notaDoResultado({ reais, cabem, exemplos, dia }) {
@@ -309,7 +306,7 @@ function notaDoResultado({ reais, cabem, exemplos, dia }) {
 }
 
 // montarResultado({ real, ficticio, maisDoDia, outrosDias, criterios, data, base })
-//   -> { opcoes, maisDoDia, outrosDias, exemplos, aviso, nota, base, semMedia }
+//   -> { opcoes, maisDoDia, outrosDias, exemplos, aviso, nota, base }
 // a forma de teste/dados/resposta-festas-r14-3.json (comReais e semReais).
 //   real, ficticio: o que o motor devolveu (escolher) para as reais do dia e
 //     para a base fictícia; maisDoDia: as outras reais do dia, já na ordem do
@@ -317,7 +314,6 @@ function notaDoResultado({ reais, cabem, exemplos, dia }) {
 // Até 3 recomendadas; as que o motor devolver além disso descem para
 // maisDoDia. Esgotada nunca fica entre as 3 (desce, marcada). Fictícias só
 // quando o dia não tem real nenhuma, abaixo, com exemplo: true e sem pct.
-// semMedia: nenhuma real da resposta tem média (D3, a linha única).
 function montarResultado({ real = null, ficticio = null, maisDoDia = [], outrosDias = [], criterios = {}, data = null, base = null } = {}) {
   const doMotor = (real && real.opcoes ? real.opcoes : []).map((o) => comoReal(o, data));
   const esgotada = (o) => o.esgotada === true || (o.festa && o.festa.esgotado === true);
@@ -352,7 +348,6 @@ function montarResultado({ real = null, ficticio = null, maisDoDia = [], outrosD
     aviso,
     nota: notaDoResultado({ reais: reais.length, cabem, exemplos: exemplos.length, dia: criterios.dia }),
     base: base || null,
-    semMedia: reais.every((o) => !temMedia(o.festa)),
   };
 }
 

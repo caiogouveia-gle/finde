@@ -91,33 +91,49 @@ test('arquivo corrompido: começa vazio, com aviso, sem cair', () => {
   assert.ok(planos.criar({ festa }).id);
 });
 
-// ---------------------------------------------------------------- avaliação (U25)
+// ---------------------------------------------------------------- sem idade (26/11/2026)
 
-test('avaliar: só quem disse "tô dentro", só depois da festa, com idade de 18 a 60', () => {
+test('a avaliação pós-festa de idade saiu: nem avaliar, nem podeAvaliar, nem finalidade', () => {
   let agora = '2026-11-27T12:00:00.000Z';
-  const planos = criarPlanos(pasta, { log: mudo, agora: () => agora, contarAvaliacoes: () => ({ avaliacoes: 2, convites: 1 }) });
+  const planos = criarPlanos(pasta, { log: mudo, agora: () => agora });
   const real = { festa: { id: 'festa-real-1', nome: 'Real', real: true }, linha: 'Sáb · 22h00' };
   const { id } = planos.criar({ festa: real, autor: 'Ju', quando: { data: '2026-11-28', ate: '2026-11-29T09:00:00.000Z' } });
-  planos.responder(id, 'Bia', 'fora');
-  const codigo = (f) => { try { f(); return null; } catch (e) { return e.status; } };
-  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'na-medida', 31)), 409);
-  let v = planos.ler(id);
-  assert.equal(v.podeAvaliar, false);
-  assert.deepEqual(v.avaliacoes, { total: 2, convites: 1 });
-  assert.match(v.finalidadeAvaliacao, /Opcional/);
   agora = '2026-11-29T12:00:00.000Z';
-  v = planos.ler(id);
+  const v = planos.ler(id);
   assert.equal(v.passou, true);
-  assert.equal(v.podeAvaliar, true);
-  assert.equal(codigo(() => planos.avaliar(id, 'Bia', 'aparelho-0001', 'na-medida', 31)), 403);
-  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'na-medida', null)), 400);
-  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'na-medida', 61)), 400);
-  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'aparelho-0001', 'talvez', 31)), 400);
-  assert.equal(codigo(() => planos.avaliar(id, 'Ju', 'x', 'na-medida', 31)), 400);
-  assert.equal(codigo(() => planos.avaliar('zzzzzzzz', 'Ju', 'aparelho-0001', 'na-medida', 31)), 404);
-  assert.deepEqual(planos.avaliar(id, 'ju', 'aparelho-0001', 'mais-novo', 31), {
-    planoId: id, festaId: 'festa-real-1', real: true, nome: 'Ju', aparelho: 'aparelho-0001', resposta: 'mais-novo', idade: 31,
-  });
+  assert.equal(planos.avaliar, undefined);
+  for (const k of ['podeAvaliar', 'avaliacoes', 'finalidadeAvaliacao']) assert.equal(k in v, false, k);
+});
+
+test('convite criado antes de 26/11/2026 sai sem a idade que guardou', () => {
+  const planos = criarPlanos(pasta, { log: mudo, agora: () => '2026-11-27T12:00:00.000Z' });
+  const retrato = {
+    festa: {
+      id: 'velha', nome: 'Velha', mediaIdade: 31, origemIdade: 'informada pela produtora', origemIdadeCurta: 'pela produtora',
+      avaliacaoIdade: { avaliacoes: 5, naMedida: 0.8, faixa: [29, 34], convites: 2 }, faixas: ['30-35'],
+      campos: { inicio: { fonte: 'envio', conferidoEm: '2026-11-20T10:00:00-03:00' }, mediaIdade: { fonte: 'avaliacoes', conferidoEm: '2026-11-20T10:00:00-03:00' } },
+      fontes: [{ id: 'envio', nome: 'A produtora' }, { id: 'avaliacoes', nome: 'Avaliações de quem foi' }], encontradaEm: ['envio', 'avaliacoes'],
+    },
+    linha: 'Sáb · 19h00 · Pinheiros · média 31 anos',
+    origem: { curta: 'pela produtora', longa: 'informada pela produtora' },
+    fora: ['média 34, um pouco acima da sua faixa', 'R$ 10 acima do teto'],
+    motivos: ['média 34, um pouco acima da sua faixa', 'R$ 10 acima do teto', 'house'],
+    aviso: 'Média 34, um pouco acima da sua faixa; R$ 10 acima do teto.',
+    cara: { pct: 80, partes: [{ criterio: 'horario', cabe: true, texto: 'a' }, { criterio: 'idade', cabe: 'quase', texto: 'média 2 anos acima da sua faixa' }], semDado: ['idade'] },
+    porque: { cabe: [{ criterio: 'horario', valor: '19h' }, { criterio: 'idade', valor: 'média 31' }], falta: [{ criterio: 'idade', valor: null }] },
+  };
+  const { id } = planos.criar({ festa: retrato, pedido: 'Sáb · 19h à 1h · 30 a 35 · até R$ 80' });
+  const v = planos.ler(id);
+  assert.equal(v.festa.linha, 'Sáb · 19h00 · Pinheiros');
+  assert.equal(v.pedido, 'Sáb · 19h à 1h · até R$ 80');
+  assert.equal(v.festa.aviso, 'R$ 10 acima do teto.');
+  assert.deepEqual(v.festa.fora, ['R$ 10 acima do teto']);
+  assert.deepEqual(v.festa.cara.partes.map((p) => p.criterio), ['horario']);
+  assert.deepEqual(v.festa.porque, { cabe: [{ criterio: 'horario', valor: '19h' }], falta: [] });
+  assert.deepEqual(v.festa.festa.fontes.map((x) => x.id), ['envio']);
+  assert.doesNotMatch(JSON.stringify(v), /m[ée]dia|faixa|avaliac|(?<![a-zà-ú])idade/i);
+  // O arquivo guarda o que veio; só o que sai é limpo.
+  assert.equal(v.festa.festa.mediaIdade, undefined);
 });
 
 test('imagensVigentes: os flyers citados por convite de festa que não passou', () => {
