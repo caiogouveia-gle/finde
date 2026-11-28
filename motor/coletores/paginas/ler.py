@@ -1,7 +1,7 @@
 """Leitor de páginas do motor do Finde (KTD15).
 
 Lê do stdin um JSON { "urls": [...], "modo": "simples"|"dinamico", "timeoutMs": 30000,
-"pausaMs": 1500, "semRecursos": false, "esperar": null } e escreve uma linha JSON por URL:
+"pausaMs": 1500, "semRecursos": false, "esperar": null, "travas": ["ingresse.com"] } e escreve uma linha JSON por URL:
 { url, final, status, titulo, texto, jsonld, links, dados, meta, erro? }. `meta` traz as imagens que a
 própria página anuncia (og:image com largura e altura, twitter:image). `links` são os endereços absolutos
 da página; `dados` é o JSON da resposta, quando a URL devolve JSON, o __NEXT_DATA__ da página ou, nos
@@ -23,7 +23,9 @@ Como cada modo abre a página:
 
 Bloqueio é recusa (D14 do plano de 24/11/2026): não há modo furtivo, imitação de navegador, proxy,
 solução de Cloudflare nem nova tentativa. Quem pede o modo "furtivo" recebe o erro de volta. 403, 429
-e 503 ficam no `status`, e quem chama encerra a leitura daquela página.
+e 503 ficam no `status`, e quem chama encerra a leitura daquela página. O host que recusa uma vez não recebe outro pedido no
+mesmo lote quando responde 429 (a plataforma inteira, pelo domínio em `travas`): as URLs seguintes
+dela voltam com `recusaAnterior`, sem GET.
 """
 import glob
 import json
@@ -31,7 +33,7 @@ import os
 import re
 import sys
 import time
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 LIMITE_TEXTO = 20000
 # Quem lê se identifica (D14): o projeto, sem se passar por navegador de gente.
@@ -219,6 +221,24 @@ def ler(url, modo, timeout_ms, sem_recursos=False, esperar=None):
 
 
 MODOS = ("simples", "dinamico")
+# 429 é o site dizendo "pare" (D14): a plataforma que o responde não recebe mais
+# pedido neste lote, e as URLs seguintes dela voltam marcadas, sem nenhum GET.
+# 403 e 503 numa página avulsa (evento privado, instabilidade) encerram só ela.
+TRAVA = (429,)
+
+
+def chave_de_trava(host, travas):
+    """A plataforma do host (o domínio de `travas` que casa, com os subdomínios); fora delas, o host."""
+    casam = [t for t in travas if host == t or host.endswith("." + t)]
+    return min(casam, key=len) if casam else host
+
+
+def host_de(url):
+    try:
+        h = (urlparse(url).hostname or "").lower()
+        return h[4:] if h.startswith("www.") else h
+    except ValueError:
+        return ""
 
 
 def main():
@@ -228,15 +248,28 @@ def main():
     pausa = max(0, int(pedido.get("pausaMs") or 0)) / 1000
     sem_recursos = bool(pedido.get("semRecursos"))
     esperar = pedido.get("esperar") if isinstance(pedido.get("esperar"), str) else None
-    for i, url in enumerate(pedido.get("urls") or []):
-        if i and pausa:
+    travas = [str(t).lower().removeprefix("www.") for t in (pedido.get("travas") or []) if isinstance(t, str)]
+    recusados = set()
+    pediu = False
+    for url in pedido.get("urls") or []:
+        host = chave_de_trava(host_de(url), travas) if host_de(url) else ""
+        if host and host in recusados:
+            linha = {"url": url, "final": url, "status": 0, "titulo": "", "texto": "", "jsonld": [], "links": [], "dados": None, "meta": None,
+                     "erro": f"{host} recusou o acesso antes neste lote; não pedi de novo (D14)", "recusaAnterior": True}
+            sys.stdout.write(json.dumps(linha, ensure_ascii=False) + "\n")
+            sys.stdout.flush()
+            continue
+        if pediu and pausa:
             time.sleep(pausa)  # educação com o site: um pedido por vez, com pausa
+        pediu = True
         try:
             if modo not in MODOS:
                 raise ValueError(f"modo {modo!r} recusado: bloqueio é recusa, o leitor não contorna")
             linha = ler(url, modo, timeout_ms, sem_recursos, esperar)
         except Exception as e:  # noqa: BLE001 - uma URL ruim não derruba as outras
             linha = {"url": url, "final": url, "status": 0, "titulo": "", "texto": "", "jsonld": [], "links": [], "dados": None, "meta": None, "erro": f"{type(e).__name__}: {e}"[:300]}
+        if linha.get("status") in TRAVA and host:
+            recusados.add(host)
         sys.stdout.write(json.dumps(linha, ensure_ascii=False) + "\n")
         sys.stdout.flush()
 

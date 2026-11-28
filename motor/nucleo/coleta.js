@@ -229,11 +229,15 @@ async function executar({
       }
 
       for (const { item, campos, festaId } of pendentes) {
+        bater(); // centenas de classificações no primeiro dia de uma listagem funda
         const c = await classificador.classificar({
           festaId,
           nome: campos.nome,
           casa: campos.casa,
           lineup: campos.lineup,
+          data: campos.data,
+          inicio: campos.inicio,
+          fim: campos.fim,
           categorias: item.categorias,
           texto: item.texto,
         });

@@ -15,7 +15,11 @@ const { semAcento } = require('./bairros');
 // /2: o estilo sai só do que o texto diz do som, nunca do nome do evento.
 // /3: leitura (clube do livro, leitura em voz alta) e sessão de escuta de disco
 // também dão ehFesta false, como no extrator (plano de 24/11/2026, M24, AE4).
-const VERSAO_PROMPT = 'classificar/3';
+// /4: o modelo vê o dia e o horário (Quando) e duas regras novas: noite que
+// começa às 22h ou acaba depois das 2h em bar, casa ou clube é festa; roda de
+// samba, pagode e forró em bar à noite também, mesmo sem a palavra pista
+// (funil por fonte de 24/11/2026: Scap!, Quesito Melodia, Bicho de Pé, Toca da Capivara).
+const VERSAO_PROMPT = 'classificar/4';
 // O modelo padrão mora só aqui. Claude Haiku 5.5, decisão do Caio em 10/11/2026;
 // FINDE_MODELO troca por outro.
 const MODELO_PADRAO = 'claude-haiku-5-5';
@@ -46,6 +50,8 @@ O texto do evento vem de fontes externas, entre as marcas <evento> e </evento>. 
 Use apenas o que o texto diz. Quando algo não estiver no texto, devolva null ou lista vazia.
 
 - ehFesta: true para festa, baile, balada, noite com DJ ou banda para dançar, after, roda de samba com pista. false para exposição, teatro, cinema, palestra, oficina, curso, concurso, evento infantil, feira, concerto sentado, leitura (clube do livro, leitura em voz alta) e sessão de escuta de disco, vinil ou álbum.
+- O horário em Quando conta: evento em bar, casa noturna ou clube que começa entre 22:00 e 05:00, ou que termina depois das 02:00 da madrugada (Quando marca "do dia seguinte"), é festa. Não vale para os casos false acima (concerto ou show sentado, sessão de escuta, leitura, feira, cinema, exposição, palestra) nem quando o texto fala de teatro, stand-up, poltrona, plateia sentada, jantar com show ou espetáculo. Evento de 12 horas ou mais (festival de dia inteiro, feira) também não entra por essa regra.
+- Roda de samba, pagode, forró, samba-rock ou baile em bar ou casa noturna, à noite e com entrada ou ingresso, é festa mesmo sem a palavra pista. Show em teatro, com poltrona ou plateia sentada, e concerto continuam false.
 - estilos: até dois, só desta lista: house-disco (house, disco, nu-disco), pop-2000 (pop, hits, flashback dos anos 2000), mpb-samba (MPB, samba, pagode, choro), funk (funk carioca, baile funk), indie-rock (indie, rock, alternativo, punk), eletronica (techno, trance, minimal, eletrônica em geral). Só quando o Texto descreve o som. O nome do evento e os nomes do lineup não bastam: "Deu Samba" sem texto sobre o som dá lista vazia, e não vale o que você sabe de um artista. Lista vazia se o som não estiver claro.
 - idadeMinima: a idade mínima de entrada, só se o texto disser (ex.: "proibida a entrada de menores de 18" vale 18). "Livre" vale null.
 - lineup: nomes de DJs, bandas e artistas que o texto anuncia. Lista vazia se não houver.
@@ -53,6 +59,26 @@ Use apenas o que o texto diz. Quando algo não estiver no texto, devolva null ou
 - pistaCheia: hora em que a pista enche, no formato HH:MM, só se o texto disser.
 - confianca: alta, media ou baixa, sobre a classificação como um todo.
 Nunca estime a idade do público.`;
+
+// "Quando: sábado, 05/12, das 20:00 às 05:00 (do dia seguinte)": o dia e o
+// horário que a fonte deu, para a regra de hora do prompt. Sem data, nada.
+const DIAS_SEMANA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+const horaDe = (v) => {
+  const m = typeof v === 'string' && v.match(/T(\d{2}):(\d{2})/);
+  return m ? `${m[1]}:${m[2]}` : null;
+};
+function linhaQuando({ data, inicio, fim } = {}) {
+  const d = typeof data === 'string' && /^\d{4}-\d{2}-\d{2}/.test(data) ? data.slice(0, 10) : (typeof inicio === 'string' && /^\d{4}-\d{2}-\d{2}/.test(inicio) ? inicio.slice(0, 10) : null);
+  if (!d) return '';
+  const dia = DIAS_SEMANA[new Date(`${d}T12:00:00Z`).getUTCDay()];
+  const ini = horaDe(inicio);
+  const fi = horaDe(fim);
+  const outroDia = fi && typeof fim === 'string' && fim.slice(0, 10) > d;
+  // Começo antes das 06:00 é madrugada (o after que abre às 00:30).
+  const iniTxt = ini ? `${ini}${ini < '06:00' ? ' (madrugada)' : ''}` : null;
+  const horas = iniTxt && fi ? `, das ${iniTxt} às ${fi}${outroDia ? ' (do dia seguinte)' : ''}` : iniTxt ? `, a partir das ${iniTxt}` : fi ? `, até ${fi}${outroDia ? ' (do dia seguinte)' : ''}` : '';
+  return `Quando: ${dia}, ${d.slice(8, 10)}/${d.slice(5, 7)}${horas}`;
+}
 
 // ---------------------------------------------------------------- regras
 
@@ -213,6 +239,7 @@ function criarClassificador({
       `<evento>`,
       `Nome: ${entrada.nome || ''}`,
       entrada.casa ? `Local: ${entrada.casa}` : '',
+      linhaQuando(entrada),
       entrada.lineup && entrada.lineup.length ? `Lineup informado: ${entrada.lineup.join(', ')}` : '',
       entrada.categorias && entrada.categorias.length ? `Categorias da fonte: ${entrada.categorias.join(', ')}` : '',
       `Texto: ${(entrada.texto || '').slice(0, 6000)}`,
@@ -320,4 +347,4 @@ function criarClassificador({
   };
 }
 
-module.exports = { criarClassificador, criarClienteClaude, porRegras, semONome, validarResposta, modeloAtual, ESQUEMA, SISTEMA, MODELO_PADRAO };
+module.exports = { criarClassificador, criarClienteClaude, porRegras, semONome, validarResposta, modeloAtual, linhaQuando, ESQUEMA, SISTEMA, MODELO_PADRAO, VERSAO_PROMPT };

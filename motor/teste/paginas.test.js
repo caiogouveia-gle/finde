@@ -36,7 +36,7 @@ function contexto({ paginasLidas, extrator, config = {}, fila }) {
       extrator,
       dormir: async (ms) => { pausas.push(ms); },
       lerPaginas: async (urls, opcoes) => {
-        const { aoLer: _bater, ...semBatimento } = opcoes; // o batimento tem teste próprio
+        const { aoLer: _bater, travas: _travas, ...semBatimento } = opcoes; // o batimento e as travas têm teste próprio
         pedidos.push({ urls, opcoes: semBatimento });
         return paginasLidas(urls, opcoes);
       },
@@ -678,7 +678,7 @@ test('listagem: lê as páginas ?page=N até uma não trazer evento novo, e some
   assert.deepEqual(r.itens.map((i) => i.bruto.nome).sort(), ['a', 'b', 'c']);
 });
 
-test('listagem: página 2 recusada (429) encerra a paginação e segue com o que veio', async () => {
+test('listagem: página 2 recusada (429) encerra a paginação e trava o host: nenhum evento dele é pedido depois', async () => {
   const sg = dados('shotgun-evento.json');
   const leitor = (us) => us.map((u) => {
     if (u.endsWith('sao-paulo')) return pagina(u, { links: ['https://shotgun.live/pt-br/events/a'] });
@@ -688,8 +688,58 @@ test('listagem: página 2 recusada (429) encerra a paginação e segue com o que
   const { ctx, pedidos } = contexto({ config: { hosts: [], listagens: [{ ...LISTAGEM_SHOTGUN, paginas: 5 }] }, extrator: extratorQueFalha, paginasLidas: leitor });
   const r = await paginas.coletar(ctx);
   assert.equal(pedidos.filter((p) => /cities/.test(p.urls[0])).length, 2, 'a página 3 não é tentada');
-  assert.equal(r.itens.length, 1);
+  assert.equal(pedidos.length, 2, 'o evento achado na página 1 não é pedido: o host recusou');
+  assert.equal(r.itens.length, 0);
   assert.ok(r.avisos.some((a) => /\(página 2\): recusou o acesso \(429\)/.test(a)));
+  assert.ok(r.avisos.some((a) => /^shotgun\.live: recusou o acesso; 1 página\(s\) deixaram de ser pedidas/.test(a)));
+});
+
+test('trava por host: depois de um 429, o mesmo host não recebe pedido nem em outro lote; os outros seguem', async () => {
+  const url1 = 'https://www.ingresse.com/festa-a';
+  const url2 = 'https://bileto.sympla.com.br/event/1';
+  const casa = 'https://casa.example/agenda';
+  const leitor = (us) => us.map((u) => {
+    if (u === casa) return pagina(u, { links: ['https://www.ingresse.com/festa-b', 'https://www.ingresse.com/festa-c'] });
+    if (u === url1) return pagina(u, { status: 429 });
+    return pagina(u, { titulo: 'Outra' });
+  });
+  const { ctx, pedidos } = contexto({
+    fila: new Set([url1, url2]),
+    config: { hosts: ['ingresse.com', 'bileto.sympla.com.br'], agendas: [{ url: casa, modo: 'simples', seguir: true }] },
+    extrator: extratorQueFalha, paginasLidas: leitor,
+  });
+  const r = await paginas.coletar(ctx);
+  const pedidas = pedidos.flatMap((p) => p.urls);
+  assert.ok(pedidas.includes(url1) && pedidas.includes(url2) && pedidas.includes(casa));
+  assert.ok(!pedidas.includes('https://www.ingresse.com/festa-b'), 'o host que recusou não recebe os links da agenda');
+  assert.ok(r.avisos.some((a) => /^ingresse\.com: recusou o acesso; 2 página\(s\)/.test(a)));
+});
+
+test('agenda com seguir: só links de evento dos hosts da config (sem imagem, busca, raiz nem o próprio site), lidos no modo de cada host', async () => {
+  const casa = 'https://www.casa.example/';
+  const links = [
+    'https://www.ingresse.com/moving-26-11',
+    'https://www.ingresse.com/moving-26-11?utm_source=site',
+    'https://www.ingresse.com/busca/casa',
+    'https://www.ingresse.com/',
+    'https://festival-x.ingresse.com/',
+    'https://kraken.ingresse.com/event/posters/1/medium/a.jpg',
+    'https://www.casa.example/sobre',
+    'https://outro.example/evento',
+  ];
+  const lidas = [];
+  const leitor = (us) => us.map((u) => {
+    lidas.push(u);
+    return u === casa ? pagina(u, { links, titulo: 'Casa', texto: 'Programação' }) : pagina(u, { titulo: 'Evento' });
+  });
+  const extrator = { lerPagina: async ({ url }) => { if (url === casa) throw new Error('a página da casa não vai ao extrator'); return { confianca: 'alta', festas: [] }; } };
+  const { ctx, pedidos } = contexto({ config: { hosts: ['ingresse.com'], agendas: [{ url: casa, modo: 'simples', seguir: true }] }, extrator, paginasLidas: leitor });
+  const r = await paginas.coletar(ctx);
+  assert.deepEqual(lidas.filter((u) => u !== casa).sort(), ['https://festival-x.ingresse.com/', 'https://www.ingresse.com/moving-26-11']);
+  assert.equal(pedidos[0].opcoes.modo, 'simples');
+  const doEvento = pedidos.find((p) => p.urls.includes('https://www.ingresse.com/moving-26-11'));
+  assert.equal(doEvento.opcoes.modo, 'dinamico');
+  assert.ok(!r.avisos.some((a) => /a página da casa não vai ao extrator/.test(a)));
 });
 
 test('Sympla: a página de um produtor, vinda da fila, é agenda: os cartões do HTML viram os itens', async () => {
@@ -706,4 +756,66 @@ test('Sympla: a página de um produtor, vinda da fila, é agenda: os cartões do
   assert.equal(baile.idExterno, 'pagina:https://www.sympla.com.br/evento/baile-do-mirante/3400001');
   assert.equal(baile.bruto.paginas[0].url, 'https://www.sympla.com.br/evento/baile-do-mirante/3400001');
   assert.equal(baile.bruto.idPlataforma, 'sympla:3400001');
+});
+
+test('agenda: link com data DDMMAA que já passou nem é aberto; id numérico longo não é data', () => {
+  assert.equal(paginas.dataDoLink('https://www.ingresse.com/noite-exemplo261126/'), '2026-11-26');
+  assert.equal(paginas.dataDoLink('https://www.sympla.com.br/evento/festa-exemplo/3620056'), null);
+  assert.equal(paginas.dataDoLink('https://www.ingresse.com/noite-exemplo/'), null);
+  const p = { url: 'https://casa.example/', links: ['https://www.ingresse.com/noite-exemplo121126/', 'https://www.ingresse.com/noite-exemplo261126/', 'https://www.ingresse.com/noite-exemplo/'] };
+  assert.deepEqual(paginas.linksDaAgenda(p, { hosts: ['ingresse.com'] }, {}, '2026-11-24'), ['https://www.ingresse.com/noite-exemplo261126/', 'https://www.ingresse.com/noite-exemplo/']);
+});
+
+test('listagem com ligada:false não é pedida', async () => {
+  const { ctx, pedidos } = contexto({ config: { hosts: [], listagens: [{ ...LISTAGEM_SHOTGUN, ligada: false }] }, extrator: extratorQueFalha, paginasLidas: (us) => us.map((u) => pagina(u)) });
+  await paginas.coletar(ctx);
+  assert.equal(pedidos.length, 0);
+});
+
+test('trava: 403 numa página avulsa encerra só ela; a listagem do mesmo site segue', async () => {
+  const lista = dados('sympla-listagem.json');
+  const avulsa = 'https://www.sympla.com.br/evento/festa-privada-exemplo/3999001';
+  const { ctx, pedidos } = contexto({
+    fila: new Set([avulsa]),
+    config: { hosts: ['sympla.com.br'], dias: 30, janelas: null, precoSympla: false, listagens: [{ id: 'sympla', url: 'https://www.sympla.com.br/eventos/sao-paulo-sp', modo: 'simples', paginas: 1 }] },
+    extrator: extratorQueFalha,
+    paginasLidas: (us) => us.map((u) => (u === avulsa ? pagina(u, { status: 403 }) : { ...lista, url: u, final: u })),
+  });
+  await paginas.coletar(ctx);
+  assert.ok(pedidos.some((p) => p.urls[0] === 'https://www.sympla.com.br/eventos/sao-paulo-sp'), 'a listagem foi pedida');
+});
+
+test('trava pela plataforma: depois de um 429 em www.ingresse.com, o subdomínio também não é pedido; o leitor recebe as travas', async () => {
+  const casa = 'https://casa.example/';
+  const { ctx, pedidos } = contexto({
+    fila: new Set(['https://www.ingresse.com/noite-a']),
+    config: { hosts: ['ingresse.com'], agendas: [{ url: casa, modo: 'simples', seguir: true }] },
+    extrator: extratorQueFalha,
+    paginasLidas: (us) => us.map((u) => (u === casa ? pagina(u, { links: ['https://festival-exemplo.ingresse.com/'] }) : pagina(u, { status: 429 }))),
+  });
+  await paginas.coletar(ctx);
+  assert.ok(!pedidos.flatMap((p) => p.urls).includes('https://festival-exemplo.ingresse.com/'));
+});
+
+test('preço da Sympla: o lote que o banco já tem volta ao item e ele não vai de novo ao navegador', async () => {
+  const { novoBanco } = require('./ajuda');
+  const db = novoBanco();
+  const id = 'pagina:https://www.sympla.com.br/evento/noite-exemplo/3999002';
+  db.prepare("INSERT INTO festas (id, data, criada_em) VALUES ('f1', '2026-12-05', '2026-11-24T10:00:00Z')").run();
+  db.prepare("INSERT INTO vinculos (fonte, id_externo, festa_id, url, visto_em) VALUES ('paginas', ?, 'f1', 'u', '2026-11-24T10:00:00Z')").run(id);
+  db.prepare("INSERT INTO valores (festa_id, campo, fonte, valor, conferido_em, mudou_em) VALUES ('f1', 'lotes', 'paginas', ?, 'x', 'x')").run(JSON.stringify([{ nome: '1º lote', preco: 50, disponivel: true }]));
+  const evento = { url: 'https://www.sympla.com.br/evento/noite-exemplo/3999002', final: 'https://www.sympla.com.br/evento/noite-exemplo/3999002', status: 200, titulo: 'Noite Exemplo', texto: 'festa com DJ', links: [], meta: null, dados: null,
+    jsonld: [{ '@type': 'Event', name: 'Noite Exemplo', startDate: '2026-12-05T23:00:00-03:00', location: { '@type': 'Place', name: 'Casa Exemplo', address: { addressLocality: 'São Paulo', addressRegion: 'SP' } } }] };
+  const navegadas = [];
+  const { ctx } = contexto({
+    fila: new Set([evento.url]), config: { hosts: ['sympla.com.br'], dias: 30, janelas: null },
+    extrator: { lerPagina: async () => ({ confianca: 'alta', festas: [] }) },
+    paginasLidas: (us, o) => { if (o.modo === 'dinamico') navegadas.push(...us); return us.map(() => evento); },
+  });
+  ctx.db = db;
+  const r = await paginas.coletar(ctx);
+  const item = r.itens.find((i) => i.idExterno === id);
+  assert.ok(item, JSON.stringify(r.itens.map((i) => i.idExterno)));
+  assert.equal(item.bruto.lotes[0].preco, 50);
+  assert.deepEqual(navegadas, []);
 });
